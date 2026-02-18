@@ -10,12 +10,12 @@ use Illuminate\Http\Request;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', fn() => redirect('/login'));
+Route::get('/', fn() => redirect('/landing'));
 
 Route::get('/login', function () {
 
     if (session('token')) {
-        return redirect('/dashboard');
+        return redirect('/landing'); // Changed from /dashboard to /landing
     }
 
     return view('mobile.auth.login');
@@ -56,7 +56,7 @@ Route::post('/login', function (Request $request) {
 
         session(['token' => $data['token']]);
 
-        return redirect('/dashboard');
+        return redirect('/landing'); // Changed from /dashboard to /landing
     }
 
     return back()->with('error', $data['message'] ?? 'Login failed');
@@ -70,14 +70,12 @@ Route::post('/login', function (Request $request) {
 
 Route::post('/register', function (Request $request) {
 
+    \Log::info('WEB FORM DATA', $request->all());
 
-
-        \Log::info('WEB FORM DATA', $request->all());
-
-$response = Http::asForm()->post(
+    $response = Http::asForm()->post(
         env('API_BASE_URL') . '/user/register',
         [
-            'name' => $request->name,  // ✅ direct bhejo
+            'name' => $request->name,
             'email' => $request->email,
             'password' => $request->password,
             'password_confirmation' => $request->password_confirmation,
@@ -98,7 +96,6 @@ $response = Http::asForm()->post(
 
     return back()->with('error', $data['message'] ?? 'Registration failed');
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -130,9 +127,33 @@ Route::post('/verify-otp', function (Request $request) {
     return back()->with('error', $data['message'] ?? 'Invalid OTP');
 });
 
+Route::get('/landing', function () {
+
+    if (!session('token')) {
+        return redirect('/login');
+    }
+
+    // 1️⃣ Categories (ONLY PARENT)
+    $categoryResponse = Http::get(env('API_BASE_URL') . '/categories');
+
+    $categories = collect($categoryResponse->json()['data'] ?? [])
+        ->take(4); // sirf 4 parent categories
+
+    \Log::info('LANDING CATEGORIES', $categories->toArray());
+
+ $productResponse = Http::get(env('API_BASE_URL') . '/products/top-selling');
+
+    $products = $productResponse->json()['data']['products'] ?? [];
+
+    \Log::info('LANDING PRODUCTS', $products);
+
+    return view('mobile.landing', compact('categories', 'products'));
+});
+
+
 /*
 |--------------------------------------------------------------------------
-| Dashboard (Protected)
+| Dashboard (Optional - Agar chahein to rakhein)
 |--------------------------------------------------------------------------
 */
 
@@ -143,18 +164,21 @@ Route::get('/dashboard', function () {
     if (!$token) {
         return redirect('/login');
     }
+    
+    $productResponse = Http::withHeaders([
+        'Authorization' => 'Bearer ' . $token,
+        'Host'    => request()->getHost(),
+        'Origin'  => request()->getSchemeAndHttpHost(),
+        'Referer' => request()->getSchemeAndHttpHost(),
+    ])->get(env('API_BASE_URL') . '/products', [
+        'page' => 1
+    ]);
 
-    $response = Http::withToken($token)
-        ->get(env('API_BASE_URL') . '/me');
+    \Log::info('ALL PRODUCTS API RESPONSE', $productResponse->json());
 
-    if (!$response->successful()) {
-        session()->forget('token');
-        return redirect('/login');
-    }
+    $products = $productResponse->json()['data']['products'] ?? [];
 
-    $user = $response->json() ?? [];
-
-    return view('mobile.dashboard', compact('user'));
+    return view('mobile.dashboard', compact('products'));
 });
 
 /*

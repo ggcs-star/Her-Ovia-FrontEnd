@@ -177,47 +177,25 @@ body{
     <h1>NEW SEASON COLLECTION</h1>
 </div>
 
-<!-- Products Section -->
 <div class="section">
-    <div class="section-title">Trending Products</div>
+    <div class="section-title">All Products</div>
+
     <div class="products">
+        @forelse($products as $product)
+            <div class="product-card">
+<img src="{{ $product['image_url_public'] ?? 'https://via.placeholder.com/300' }}">
 
-        <div class="product-card">
-            <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab">
-            <div class="product-info">
-                <h3>Casual T-Shirt</h3>
-                <div class="price">₹799</div>
-                <a href="#" class="btn">Add to Cart</a>
+                <div class="product-info">
+                    <h3>{{ $product['name'] }}</h3>
+                    <div class="price">
+                        ₹{{ number_format($product['price']) }}
+                    </div>
+                    <a href="#" class="btn">Add to Cart</a>
+                </div>
             </div>
-        </div>
-
-        <div class="product-card">
-            <img src="https://images.unsplash.com/photo-1520975916090-3105956dac38">
-            <div class="product-info">
-                <h3>Denim Jacket</h3>
-                <div class="price">₹2,199</div>
-                <a href="#" class="btn">Add to Cart</a>
-            </div>
-        </div>
-
-        <div class="product-card">
-            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff">
-            <div class="product-info">
-                <h3>Sports Sneakers</h3>
-                <div class="price">₹3,499</div>
-                <a href="#" class="btn">Add to Cart</a>
-            </div>
-        </div>
-
-        <div class="product-card">
-            <img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f">
-            <div class="product-info">
-                <h3>Stylish Watch</h3>
-                <div class="price">₹4,999</div>
-                <a href="#" class="btn">Add to Cart</a>
-            </div>
-        </div>
-
+        @empty
+            <p>No products found</p>
+        @endforelse
     </div>
 </div>
 
