@@ -8,7 +8,16 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', fn() => redirect('/login'));
+Route::get('/', fn() => redirect('/landing'));
+
+Route::get('/login', function () {
+
+    if (session('token')) {
+        return redirect('/landing'); // Changed from /dashboard to /landing
+    }
+
+    return view('mobile.auth.login');
+});
 
 /*
 |--------------------------------------------------------------------------

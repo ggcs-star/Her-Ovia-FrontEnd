@@ -385,7 +385,7 @@ button:hover{
 }
 
 /* iOS specific fixes */
-@supports (-webkit-touch-callout: none) {
+@supports (-webkit-touch-callout) {
     .bg-video {
         height: 100%;
         width: 100%;
