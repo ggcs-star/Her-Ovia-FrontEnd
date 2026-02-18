@@ -486,8 +486,8 @@ input, button{
     <h2>Create Account</h2>
     <div class="subtitle">Start shopping smarter today.</div>
 
-    <form method="POST" action="/register">
-        @csrf
+<form id="registerForm">
+
 
         <div class="form-group">
             <label>Full Name</label>
@@ -516,7 +516,55 @@ input, button{
         </div>
     </form>
 </div>
+<script>
+const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
 
+document.addEventListener("DOMContentLoaded", function () {
+
+    const formElement = document.getElementById("registerForm");
+
+    formElement.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        try {
+
+            const response = await fetch(BASE_URL + "/user/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    name: document.querySelector("input[name='name']").value.trim(),
+                    email: document.querySelector("input[name='email']").value.trim(),
+                    password: document.querySelector("input[name='password']").value,
+                    password_confirmation: document.querySelector("input[name='password_confirmation']").value
+                })
+            });
+
+            const data = await response.json();
+            console.log("API Response:", data);
+if (response.ok) {
+
+    localStorage.setItem("verify_email",
+        document.querySelector("input[name='email']").value.trim()
+    );
+
+    window.location.href = "/verify-otp";
+
+} else {
+    alert(data.message || "Registration failed");
+}
+
+
+        } catch (error) {
+            console.error("Register error:", error);
+            alert("Server error. Please try again.");
+        }
+    });
+
+});
+</script>
 </div>
 
 </body>

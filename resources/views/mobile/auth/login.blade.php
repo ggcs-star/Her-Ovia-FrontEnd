@@ -466,7 +466,7 @@ button:hover{
         </div>
     @endif
 
-    <form method="POST" action="/login">
+<form id="loginForm">
         @csrf
 
         <div style="margin-bottom:18px;">
@@ -489,6 +489,57 @@ button:hover{
             Don't have an account? <a href="/register">Create Account</a>
         </div>
     </form>
+ <script>
+const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
+
+document.getElementById("loginForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const email = document.querySelector("input[name='email']").value.trim();
+    const password = document.querySelector("input[name='password']").value;
+
+    try {
+        const response = await fetch(BASE_URL + "/user/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+        console.log("LOGIN RESPONSE:", data);
+
+        if (response.ok && data.token) {
+
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+
+            window.location.href = "/dashboard";
+
+        } else {
+
+            if (data.message && data.message.toLowerCase().includes("verify")) {
+
+                localStorage.setItem("verify_email", email);
+                window.location.href = "/verify-otp";
+
+            } else {
+                alert(data.message || "Login failed");
+            }
+        }
+
+    } catch (error) {
+        console.error("Login error:", error);
+        alert("Server error. Please try again.");
+    }
+
+});
+</script>
+
+
+
 </div>
 
 </div>
