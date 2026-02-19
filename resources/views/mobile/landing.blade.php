@@ -2,301 +2,323 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rapid Retail - Royal Luxury Fashion</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>RAPID RETAIL | Fashion Store</title>
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body>
-    <div class="app-wrapper">
-        <!-- Royal Purple Header -->
-        <header class="header">
-            <div class="header-container">
-                <div class="logo">
-                    <h1>RAPID<span>RETAIL</span></h1>
-                </div>
-                
-                <!-- Dynamic Navigation Menu from Category API -->
-             
-                  <nav class="nav-menu">
-    @foreach($categories->take(6) as $category)
-        <a href="{{ url('/category/' . $category['slug']) }}">
-            {{ strtoupper($category['name']) }}
-        </a>
-    @endforeach
-</nav>
-            
-                
-                <div class="header-icons">
-                    <i class="far fa-heart"></i>
-                    <i class="far fa-user"></i>
-                    <i class="fas fa-shopping-bag"></i>
-                </div>
-            </div>
-        </header>
-
-        <!-- Search Section -->
-        <div class="search-section">
-            <div class="search-container">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search for luxury brands, products and more...">
+<body data-page="landing">
+    <header class="site-header">
+        <!-- Top Banner - RAPID RETAIL EXCLUSIVE -->
+        <div class="top-banner">
+            <div class="container">
+                <span class="banner-text">RAPID RETAIL <span class="exclusive">EXCLUSIVELY ON AJIO</span></span>
+                <span class="terms">*T&C APPLY</span>
             </div>
         </div>
-
-        <!-- Royal Hero Section -->
-        <section class="hero">
-            <div class="hero-main">
-                <span class="hero-tag">Royal Collection 2025</span>
-                <h1>Experience<br>Royal Luxury</h1>
-                <p>Discover our exclusive collection of premium fashion pieces crafted for the modern royalty.</p>
-                <button class="hero-btn">SHOP THE COLLECTION</button>
-                <div class="hero-img">
-                    <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&auto=format" alt="">
-                </div>
-            </div>
-            
-            <div class="hero-side">
-                <div class="hero-card">
-                    <div class="hero-card-icon"><i class="fas fa-crown"></i></div>
-                    <div class="hero-card-content">
-                        <h4>Royal Edit</h4>
-                        <p>Curated for you</p>
-                    </div>
-                </div>
-                <div class="hero-card">
-                    <div class="hero-card-icon"><i class="fas fa-gem"></i></div>
-                    <div class="hero-card-content">
-                        <h4>Premium Picks</h4>
-                        <p>Luxury pieces</p>
-                    </div>
-                </div>
-                <div class="hero-card">
-                    <div class="hero-card-icon"><i class="fas fa-star"></i></div>
-                    <div class="hero-card-content">
-                        <h4>Exclusive</h4>
-                        <p>Member only</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Features Section -->
-        <section class="features">
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-truck"></i></div>
-                <h4>Free Delivery</h4>
-                <p>On orders above ₹1999</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-undo-alt"></i></div>
-                <h4>Easy Returns</h4>
-                <p>30-day royal return</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
-                <h4>Secure Payment</h4>
-                <p>100% protected</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-headset"></i></div>
-                <h4>Royal Support</h4>
-                <p>24/7 concierge</p>
-            </div>
-        </section>
-
-        <!-- Categories Section - Your API se data aayega -->
-        <section class="categories">
-            <div class="section-header">
-                <h2>Shop by Category</h2>
-                <p>Discover your perfect style from our royal collection</p>
-            </div>
-
-            <div class="category-grid">
-                @forelse($categories as $category)
-                <div class="category-card">
-                    <img src="{{ $category['image_url'] ?? asset('images/default-category.jpg') }}" alt="{{ $category['name'] }}">
-                    <div class="category-overlay">
-                        <h3>{{ $category['name'] }}</h3>
-                        <span>EXPLORE →</span>
-                    </div>
-                </div>
-                @empty
-                    <p class="no-categories">No categories available</p>
-                @endforelse
-            </div>
-        </section>
-
-        <!-- Featured Products - Your API se data aayega -->
-        <section class="featured-products">
-            <div class="section-header">
-                <h2>Royal Picks</h2>
-                <p>Handpicked luxury just for you</p>
-            </div>
-
-            <div class="product-grid">
-                @forelse($products as $product)
-                <div class="product-card">
-                    @if(!empty($product['discount']))
-                    <div class="product-badge">{{ $product['discount']['value'] }}{{ $product['discount']['type'] === 'percentage' ? '% OFF' : ' OFF' }}</div>
-                    @endif
+        
+        <!-- Main Header -->
+        <div class="header-main">
+            <div class="container header-container">
+                <div class="header-left">
+                    <a href="/" class="brand-logo">RAPID RETAIL</a>
                     
-                    <div class="product-image">
-                        <img src="{{ $product['image_url'] ?? asset('images/default-product.jpg') }}" alt="{{ $product['name'] }}">
-                        <div class="product-actions">
-                            <button class="action-btn"><i class="far fa-heart"></i></button>
-                            <button class="action-btn"><i class="fas fa-eye"></i></button>
-                        </div>
-                    </div>
-                    
-                    <div class="product-details">
-                        <div class="product-category">LUXURY COLLECTION</div>
-                        <h3 class="product-title">{{ $product['name'] }}</h3>
-                        
-                        <div class="product-rating">
-                            <div class="stars">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i>
-                            </div>
-                            <span class="rating-count">(4.8k reviews)</span>
-                        </div>
-
-                        <div class="product-price">
-                            @if($product['final_price'])
-                            <span class="price-current">₹{{ number_format($product['final_price']) }}</span>
-                            @endif
-
-                            @if(!empty($product['price']) && $product['price'] > $product['final_price'])
-                            <span class="price-original">₹{{ number_format($product['price']) }}</span>
-                            <span class="discount">{{ round((($product['price'] - $product['final_price']) / $product['price']) * 100) }}% off</span>
-                            @endif
-                        </div>
-
-                        <button class="product-btn">Quick View</button>
-                    </div>
+                    <nav class="nav-menu desktop-only" id="desktop-nav-menu">
+                        <!-- MEN WOMEN KIDS BEAUTY HOME will load dynamically -->
+                    </nav>
                 </div>
-                @empty
-                <p class="no-products">No products available</p>
-                @endforelse
-            </div>
-        </section>
-
-        <!-- Royal Deal Banner -->
-        <section class="deal-banner">
-            <div class="deal-content">
-                <span class="deal-tag">⚡ LIMITED EDITION ⚡</span>
-                <h2>Royal Summer Sale</h2>
-                <p>Extra 30% off on premium ethnic wear + Free Gold Coins</p>
                 
-                <div class="deal-timer">
-                    <div class="timer-box">
-                        <span class="number">08</span>
-                        <span class="label">Hours</span>
+                <div class="header-right">
+                    <div class="search-container desktop-only">
+                        <input type="text" placeholder="Search RAPID RETAIL">
+                        <span class="search-icon">🔍</span>
                     </div>
-                    <div class="timer-box">
-                        <span class="number">45</span>
-                        <span class="label">Mins</span>
-                    </div>
-                    <div class="timer-box">
-                        <span class="number">32</span>
-                        <span class="label">Secs</span>
+                    
+                    <div class="header-actions">
+                        <div class="mobile-menu-toggle mobile-only" id="menuToggle">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        
+                        <a href="#" class="action-item">
+                            <span class="action-icon">👤</span>
+                            <span class="action-text desktop-only">Profile</span>
+                        </a>
+                        
+                        <a href="#" class="action-item">
+                            <span class="action-icon">❤️</span>
+                            <span class="action-text desktop-only">Wishlist</span>
+                        </a>
+                        
+                        <a href="#" class="action-item cart-wrap">
+                            <span class="action-icon">🛒</span>
+                            <span class="cart-badge">0</span>
+                            <span class="action-text desktop-only">Bag</span>
+                        </a>
                     </div>
                 </div>
-
-                <button class="deal-btn">CLAIM OFFER →</button>
             </div>
-            
-            <div class="deal-image">
-                <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&auto=format" alt="Royal Deal">
+        </div>
+        
+        <!-- Mobile Search -->
+        <div class="mobile-search mobile-only">
+            <input type="text" placeholder="Search RAPID RETAIL">
+        </div>
+        
+        <!-- Desktop Category Menu - Hidden by default, shown on hover/click -->
+        <div class="category-menu desktop-only" id="categoryMegaMenu">
+            <div class="container">
+                <div class="category-grid-menu" id="desktop-category-menu"></div>
+            </div>
+        </div>
+        
+        <!-- Mobile Category Menu (Side Drawer) -->
+        <div class="mobile-category-menu" id="mobileCategoryMenu">
+            <div class="mobile-menu-header">
+                <h3>SHOP BY CATEGORY</h3>
+                <span class="mobile-menu-close" id="menuClose">&times;</span>
+            </div>
+            <div class="mobile-menu-items" id="mobileCategoryItems"></div>
+        </div>
+    </header>
+
+    <main class="page-content">
+        <section class="hero-section">
+            <div id="hero-slider" class="hero-slider"></div>
+            <div class="slider-dots" id="slider-dots"></div>
+        </section>
+
+        <section class="section-container">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">CLEARANCE SALE</h2>
+                    <p class="section-subtitle">50-90% OFF* ENDS 24TH FEB</p>
+                </div>
+                <div id="category-grid" class="category-grid"></div>
             </div>
         </section>
 
-        <!-- Brands Section -->
-        <section class="brands">
-            <h3>Luxury Brands We Host</h3>
-            <div class="brand-grid">
-                <div class="brand-item"><img src="https://logo.clearbit.com/gucci.com" alt="Gucci"></div>
-                <div class="brand-item"><img src="https://logo.clearbit.com/louisvuitton.com" alt="Louis Vuitton"></div>
-                <div class="brand-item"><img src="https://logo.clearbit.com/chanel.com" alt="Chanel"></div>
-                <div class="brand-item"><img src="https://logo.clearbit.com/dior.com" alt="Dior"></div>
-                <div class="brand-item"><img src="https://logo.clearbit.com/versace.com" alt="Versace"></div>
-                <div class="brand-item"><img src="https://logo.clearbit.com/prada.com" alt="Prada"></div>
+        <section class="container">
+            <div class="spring-banner">
+                <div class="spring-content">
+                    <h3>Spring Is Here, So Is Style</h3>
+                    <p>Let Your Wardrobe Catch The Sunshine</p>
+                </div>
+                <div class="spring-offer">
+                    <span class="brand">PARK AVENUE & more</span>
+                    <span class="offer">MIN. 50% OFF*</span>
+                </div>
             </div>
         </section>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <div class="footer-content">
-                <div class="footer-col footer-logo">
-                    <h3>RAPID<span>RETAIL</span></h3>
-                    <p>India's premier luxury fashion destination. Curating elegance since 2020.</p>
-                    <div class="social-links">
-                        <i class="fab fa-facebook-f"></i>
-                        <i class="fab fa-twitter"></i>
-                        <i class="fab fa-instagram"></i>
-                        <i class="fab fa-pinterest-p"></i>
-                        <i class="fab fa-youtube"></i>
+        <section class="section-container">
+            <div class="container">
+                <div class="section-header flex-header">
+                    <div>
+                        <h2 class="section-title">HOTTEST BRANDS</h2>
+                        <p class="section-subtitle">Min. 40% Off on top labels</p>
+                    </div>
+                    <a href="/products" class="view-all-link desktop-only">VIEW ALL &rarr;</a>
+                </div>
+                <div class="brand-grid">
+                    <div class="brand-card">
+                        <div class="brand-img">
+                            <img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=200&h=250&fit=crop" alt="Levi's">
+                        </div>
+                        <div class="brand-info">
+                            <h4>Levi's</h4>
+                            <p>MIN. 50% OFF*</p>
+                        </div>
+                    </div>
+                    <div class="brand-card">
+                        <div class="brand-img">
+                            <img src="https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=200&h=250&fit=crop" alt="H&M">
+                        </div>
+                        <div class="brand-info">
+                            <h4>H&M</h4>
+                            <p>UP TO 50% OFF*</p>
+                        </div>
+                    </div>
+                    <div class="brand-card">
+                        <div class="brand-img">
+                            <img src="https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=200&h=250&fit=crop" alt="GAP">
+                        </div>
+                        <div class="brand-info">
+                            <h4>GAP</h4>
+                            <p>MIN. 40% OFF*</p>
+                        </div>
+                    </div>
+                    <div class="brand-card">
+                        <div class="brand-img">
+                            <img src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=200&h=250&fit=crop" alt="SUPERDRY">
+                        </div>
+                        <div class="brand-info">
+                            <h4>SUPERDRY®</h4>
+                            <p>MIN. 40% OFF*</p>
+                        </div>
                     </div>
                 </div>
+            </div>
+        </section>
 
-                <div class="footer-col">
-                    <h4>THE COMPANY</h4>
-                    <ul>
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">Royal Club</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">Press</a></li>
-                        <li><a href="#">Sustainability</a></li>
-                    </ul>
+        <section class="section-container">
+            <div class="container">
+                <div class="section-header flex-header">
+                    <div>
+                        <h2 class="section-title">TOP SELLING</h2>
+                        <p class="section-subtitle">Most loved styles this week</p>
+                    </div>
+                    <a href="/products" class="view-all-link desktop-only">VIEW ALL &rarr;</a>
                 </div>
+                <div class="product-grid" id="top-selling-grid"></div>
+            </div>
+        </section>
 
-                <div class="footer-col">
-                    <h4>QUICK LINKS</h4>
-                    <ul>
-                        <li><a href="#">New Arrivals</a></li>
-                        <li><a href="#">Best Sellers</a></li>
-                        <li><a href="#">Gift Cards</a></li>
-                        <li><a href="#">Track Order</a></li>
-                        <li><a href="#">Size Guide</a></li>
-                    </ul>
+        <section class="container">
+            <div class="fashion-grid">
+                <div class="fashion-card">
+                    <img src="https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400&h=500&fit=crop" alt="Jeans">
+                    <div class="fashion-content">
+                        <h4>Jeans</h4>
+                        <p>MIN. 60% OFF*</p>
+                    </div>
                 </div>
-
-                <div class="footer-col">
-                    <h4>SUPPORT</h4>
-                    <ul>
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">FAQs</a></li>
-                        <li><a href="#">Shipping</a></li>
-                        <li><a href="#">Returns</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
+                <div class="fashion-card">
+                    <img src="https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400&h=500&fit=crop" alt="Tops">
+                    <div class="fashion-content">
+                        <h4>Tops, Tees & Shirts</h4>
+                        <p>MIN. 60% OFF*</p>
+                    </div>
                 </div>
-
-                <div class="footer-col">
-                    <h4>CONCIERGE</h4>
-                    <ul>
-                        <li><a href="#"><i class="fas fa-phone"></i> +91 98765 43210</a></li>
-                        <li><a href="#"><i class="fas fa-envelope"></i> royal@rapidretail.com</a></li>
-                        <li><a href="#"><i class="fas fa-map-marker-alt"></i> New Delhi, India</a></li>
-                    </ul>
+                <div class="fashion-card">
+                    <img src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=400&h=500&fit=crop" alt="Trackpants">
+                    <div class="fashion-content">
+                        <h4>Trackpants</h4>
+                        <p>MIN. 40% OFF*</p>
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <div class="footer-bottom">
-                <p>© 2025 Rapid Retail. Royalty redefined. All rights reserved.</p>
-                <div class="payment-icons">
-                    <i class="fab fa-cc-visa"></i>
-                    <i class="fab fa-cc-mastercard"></i>
-                    <i class="fab fa-cc-amex"></i>
-                    <i class="fab fa-cc-paypal"></i>
-                    <i class="fab fa-cc-rupay"></i>
+        <section class="container">
+            <div class="kids-grid">
+                <div class="kids-card">
+                    <img src="https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=400&h=500&fit=crop" alt="Boys Clothing">
+                    <div class="kids-content">
+                        <h4>Boys Clothing</h4>
+                        <p>STARTING ₹129*</p>
+                    </div>
+                </div>
+                <div class="kids-card">
+                    <img src="https://images.unsplash.com/photo-1514090458221-65bb69cf3436?w=400&h=500&fit=crop" alt="Kids Footwear">
+                    <div class="kids-content">
+                        <h4>Kids Footwear</h4>
+                        <p>30-50% OFF*</p>
+                    </div>
+                </div>
+                <div class="kids-card">
+                    <img src="https://images.unsplash.com/photo-1485546246426-74dc88dec4d9?w=400&h=500&fit=crop" alt="Girls Clothing">
+                    <div class="kids-content">
+                        <h4>Girls Clothing</h4>
+                        <p>STARTING ₹199*</p>
+                    </div>
                 </div>
             </div>
-        </footer>
+        </section>
+
+        <section class="container">
+            <div class="beauty-banner">
+                <div class="beauty-content">
+                    <h3>Sun, Skin & Shine</h3>
+                    <div class="beauty-offers">
+                        <span>Summer Collection UP TO 40% OFF*</span>
+                        <span>Summer Skin Care UP TO 50% OFF*</span>
+                        <span>Make Up UP TO 60% OFF*</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="ajio-cares">
+                <strong>RAPID CARES</strong>
+                <p>WE DO NOT ASK FOR YOUR BANK ACCOUNT OR CARD DETAILS VERBALLY OR TELEPHONICALLY. WE ALSO DO NOT ASK FOR MONEY TO PARTICIPATE IN ANY OF OUR OFFERS OR RUN ANY LUCKY DRAWS.</p>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="trust-strip">
+                <div class="trust-flex">
+                    <div class="trust-item">
+                        <span class="trust-icon">↺</span>
+                        <div class="trust-text">
+                            <h4>EASY EXCHANGE</h4>
+                            <p>30-day returns</p>
+                        </div>
+                    </div>
+                    <div class="trust-item">
+                        <span class="trust-icon">✓</span>
+                        <div class="trust-text">
+                            <h4>100% HANDPICKED</h4>
+                            <p>Curated collections</p>
+                        </div>
+                    </div>
+                    <div class="trust-item">
+                        <span class="trust-icon">⭐</span>
+                        <div class="trust-text">
+                            <h4>ASSURED QUALITY</h4>
+                            <p>Brand certified</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="popular-searches">
+                <h4>POPULAR SEARCHES</h4>
+                <div class="search-tags">
+                    <span>Denim</span><span>Backless Blouses</span><span>Handloom Sarees</span>
+                    <span>Monte Carlo Jackets</span><span>Ajrakh Sarees</span><span>Chinos</span>
+                    <span>Formal Pants</span><span>Cotton Kurtis</span><span>Printed Shirts</span>
+                    <span>Oxford Shoes</span><span>Mini Skirts</span><span>Jogger Pants</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="popular-searches">
+                <h4>POPULAR BRANDS</h4>
+                <div class="search-tags">
+                    <span>puma</span><span>nike</span><span>red tape</span><span>superdry</span>
+                    <span>gap</span><span>us polo assn</span><span>adidas</span><span>levis</span>
+                    <span>hm</span><span>skechers</span><span>crocs</span><span>tommy hilfiger</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer" id="site-footer"></footer>
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
+    <div class="mobile-sticky-cta" id="mobile-sticky-cta"></div>
+
+    <!-- Category Modal - AJIO Style Popup -->
+    <div class="category-modal" id="category-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>SHOP BY CATEGORY</h2>
+                <span class="modal-close" id="close-category-modal">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-popup-body">
+                <!-- Categories will be loaded here by JavaScript -->
+            </div>
+        </div>
     </div>
 
     <script src="{{ asset('mobile/script.js') }}"></script>
+    
 </body>
 </html>
