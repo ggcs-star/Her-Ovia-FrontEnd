@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>RAPID RETAIL | Fashion Store</title>
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,80 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body data-page="landing">
-    <header class="site-header">
-        <!-- Top Banner - RAPID RETAIL EXCLUSIVE -->
-        <div class="top-banner">
-            <div class="container">
-                <span class="banner-text">RAPID RETAIL <span class="exclusive">EXCLUSIVELY ON AJIO</span></span>
-                <span class="terms">*T&C APPLY</span>
-            </div>
-        </div>
-        
-        <!-- Main Header -->
-        <div class="header-main">
-            <div class="container header-container">
-                <div class="header-left">
-                    <a href="/" class="brand-logo">RAPID RETAIL</a>
-                    
-                    <nav class="nav-menu desktop-only" id="desktop-nav-menu">
-                        <!-- MEN WOMEN KIDS BEAUTY HOME will load dynamically -->
-                    </nav>
-                </div>
-                
-                <div class="header-right">
-                    <div class="search-container desktop-only">
-                        <input type="text" placeholder="Search RAPID RETAIL">
-                        <span class="search-icon">🔍</span>
-                    </div>
-                    
-                    <div class="header-actions">
-                        <div class="mobile-menu-toggle mobile-only" id="menuToggle">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </div>
-                        
-                        <a href="#" class="action-item">
-                            <span class="action-icon">👤</span>
-                            <span class="action-text desktop-only">Profile</span>
-                        </a>
-                        
-                        <a href="#" class="action-item">
-                            <span class="action-icon">❤️</span>
-                            <span class="action-text desktop-only">Wishlist</span>
-                        </a>
-                        
-                        <a href="#" class="action-item cart-wrap">
-                            <span class="action-icon">🛒</span>
-                            <span class="cart-badge">0</span>
-                            <span class="action-text desktop-only">Bag</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Mobile Search -->
-        <div class="mobile-search mobile-only">
-            <input type="text" placeholder="Search RAPID RETAIL">
-        </div>
-        
-        <!-- Desktop Category Menu - Hidden by default, shown on hover/click -->
-        <div class="category-menu desktop-only" id="categoryMegaMenu">
-            <div class="container">
-                <div class="category-grid-menu" id="desktop-category-menu"></div>
-            </div>
-        </div>
-        
-        <!-- Mobile Category Menu (Side Drawer) -->
-        <div class="mobile-category-menu" id="mobileCategoryMenu">
-            <div class="mobile-menu-header">
-                <h3>SHOP BY CATEGORY</h3>
-                <span class="mobile-menu-close" id="menuClose">&times;</span>
-            </div>
-            <div class="mobile-menu-items" id="mobileCategoryItems"></div>
-        </div>
-    </header>
+    <header class="site-header" id="site-header"></header>
 
     <main class="page-content">
         <section class="hero-section">

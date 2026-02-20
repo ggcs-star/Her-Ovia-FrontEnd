@@ -42,6 +42,19 @@
     <footer class="site-footer" id="site-footer"></footer>
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
 
+    <!-- Global Category Popup (shared header modal) -->
+    <div class="category-modal" id="category-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>SHOP BY CATEGORY</h2>
+                <span class="modal-close" id="close-category-modal">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-popup-body">
+                <!-- Categories will be loaded by JavaScript -->
+            </div>
+        </div>
+    </div>
+
     <script src="{{ asset('mobile/script.js') }}"></script>
 </body>
 </html>

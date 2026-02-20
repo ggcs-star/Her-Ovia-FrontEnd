@@ -45,16 +45,17 @@ class RapidRetailsEngine {
         this.slideTimer = null;
         this.allCategories = [];
         this.mobileMenuOpen = false;
+        this.currentImageIndex = 0;
+        this.galleryImages = [];
     }
 
     async init() {
-            if (window.innerWidth <= 768) {
+        // Ensure category popup starts closed (all devices)
         const modal = document.getElementById('category-modal');
         if (modal) {
             modal.classList.remove('active');
         }
         document.body.style.overflow = '';
-    }
 
         this.renderGlobalUI();
         this.setupCoreEvents();
@@ -77,62 +78,94 @@ class RapidRetailsEngine {
         const header = document.getElementById('site-header');
         if (header) {
             header.innerHTML = `
-                <div class="header-top desktop-only">
-                    GLOBAL FREE EXPRESS SHIPPING ON ALL ORDERS
+    <!-- Desktop Top Bar -->
+    <div class="header-top desktop-only">
+        GLOBAL FREE EXPRESS SHIPPING ON ALL ORDERS
+    </div>
+    <div class="offer-strip desktop-only">
+        10% INSTANT DISCOUNT* ON ALL CARDS <span>CLICK TO KNOW MORE ></span>
+    </div>
+    
+    <!-- Main Header -->
+    <div class="header-main">
+        <div class="header-container">
+            <!-- Desktop Left Section -->
+            <div class="header-left">
+                <a href="/" class="brand-logo">RAPID RETAIL</a>
+                <nav class="nav-menu desktop-only" id="desktop-nav-menu"></nav>
+            </div>
+            
+            <!-- Desktop Right Section -->
+            <div class="header-right desktop-only">
+                <div class="search-container">
+                    <input type="text" placeholder="Search RAPID RETAIL">
+                    <span class="search-icon">🔍</span>
                 </div>
-                <div class="offer-strip desktop-only">
-                    10% INSTANT DISCOUNT* ON ALL CARDS <span>CLICK TO KNOW MORE ></span>
+                <div class="header-actions">
+                    <a href="/login" class="action-item" title="Sign In / Register">
+                        <svg class="header-icon" width="22" height="22" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5Z" stroke="currentColor" stroke-width="1.8"/>
+                            <path d="M4 20c0-3.314 3.582-6 8-6s8 2.686 8 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="action-item" title="Customer Care">
+                        <svg class="header-icon" width="22" height="22" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 3a9 9 0 0 0-9 9v4a2 2 0 0 0 2 2h2v-6H5a7 7 0 0 1 14 0h-2v6h2a2 2 0 0 0 2-2v-4a9 9 0 0 0-9-9Z" stroke="currentColor" stroke-width="1.8"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="action-item">
+                        <svg class="header-icon" width="22" height="22" viewBox="0 0 24 24" fill="none">
+                            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="action-item cart-wrap">
+                        <svg class="header-icon" width="22" height="22" viewBox="0 0 24 24" fill="none">
+                            <path d="M6 6h15l-1.5 9h-12L6 6Z" stroke="currentColor" stroke-width="1.8"/>
+                            <circle cx="9" cy="20" r="1.5" fill="currentColor"/>
+                            <circle cx="18" cy="20" r="1.5" fill="currentColor"/>
+                        </svg>
+                        <span class="cart-badge">${this.cartCount}</span>
+                    </a>
                 </div>
-                <div class="header-main">
-                    <a href="/" class="brand-logo">AJIO STYLE</a>
-                    <nav class="nav-menu desktop-only" id="desktop-nav-menu"></nav>
-                    <div class="search-container desktop-only">
-                        <input type="text" placeholder="Search AJIO">
-                        <span class="search-icon">🔍</span>
-                    </div>
-                    <div class="header-actions">
-                        <div class="mobile-menu-toggle mobile-only" id="menuToggle">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </div>
-                        <a href="#" class="action-item desktop-only">
-                            <span class="action-icon">👤</span>
-                            <span class="action-text">SIGN IN / JOIN</span>
-                        </a>
-                        <span class="auth-separator desktop-only">|</span>
-                        <a href="#" class="action-item desktop-only">
-                            <span class="action-icon">❓</span>
-                            <span class="action-text">CUSTOMER CARE</span>
-                        </a>
-                        <span class="auth-separator desktop-only">|</span>
-                        <a href="#" class="action-item desktop-only">
-                            <span class="action-icon">✨</span>
-                            <span class="action-text">AJIOLUXE</span>
-                        </a>
-                        <a href="#" class="action-item">
-                            <span class="action-icon">❤️</span>
-                        </a>
-                        <a href="#" class="action-item cart-wrap">
-                            <span class="action-icon">🛒</span>
-                            <span class="cart-badge">${this.cartCount}</span>
-                        </a>
-                    </div>
-                </div>
-                <div class="mobile-search mobile-only">
+            </div>
+            
+            <!-- Mobile Header - Sirf Mobile pe dikhega -->
+            <div class="mobile-only mobile-header-row">
+                <div class="mobile-search">
                     <input type="text" placeholder="Search AJIO">
                 </div>
-                <div class="category-menu desktop-only">
-                    <div class="category-grid-menu" id="desktop-category-menu"></div>
-                </div>
-                <div class="mobile-category-menu" id="mobileCategoryMenu">
-                    <div class="mobile-menu-header">
-                        <h3>SHOP BY CATEGORY</h3>
-                        <span class="mobile-menu-close" id="menuClose">&times;</span>
+                <div class="mobile-header-actions">
+                    <a href="#" class="action-item">
+                        <span class="action-icon">❤️</span>
+                    </a>
+                    <a href="#" class="action-item cart-wrap">
+                        <span class="action-icon">🛒</span>
+                        <span class="cart-badge">${this.cartCount}</span>
+                    </a>
+                    <div class="mobile-menu-toggle" id="menuToggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
                     </div>
-                    <div class="mobile-menu-items" id="mobileCategoryItems"></div>
                 </div>
-            `;
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop Category Menu -->
+    <div class="category-menu desktop-only">
+        <div class="category-grid-menu" id="desktop-category-menu"></div>
+    </div>
+    
+    <!-- Mobile Category Menu (Side Drawer) -->
+    <div class="mobile-category-menu" id="mobileCategoryMenu">
+        <div class="mobile-menu-header">
+            <h3>SHOP BY CATEGORY</h3>
+            <span class="mobile-menu-close" id="menuClose">&times;</span>
+        </div>
+        <div class="mobile-menu-items" id="mobileCategoryItems"></div>
+    </div>
+`;
         }
 
         const footer = document.getElementById('site-footer');
@@ -526,31 +559,62 @@ class RapidRetailsEngine {
             if (countEl) countEl.innerText = prods.length;
         }
     }
-setupNavItemClick() {
-    // Mobile par kuch mat karo
-    if (window.innerWidth <= 768) return;
     
-    const navItems = document.querySelectorAll('.nav-menu .nav-item'); 
-    navItems.forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            const categoryName = item.getAttribute('data-category') || item.textContent.trim();
-            this.openCategoryPopup(categoryName);
+    setupNavItemClick() {
+        const navItems = document.querySelectorAll('.nav-menu .nav-item');
+        const megaMenu = document.querySelector('.category-menu');
+
+        if (!navItems.length || !megaMenu) return;
+        if (window.innerWidth <= 1024) return;
+
+        navItems.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                this.openGlobalCategoryMegaMenu(); // 👈 SAME for all
+            });
         });
-    });
-}
-openCategoryPopup(selectedCategoryName = 'MEN') {
 
-    // 🚫 MOBILE = NEVER OPEN MODAL
-    if (window.innerWidth <= 768) return;
+        megaMenu.addEventListener('mouseleave', () => {
+            megaMenu.classList.remove('open');
+        });
+    }
 
-    const modal = document.getElementById('category-modal');
-    const modalBody = document.getElementById('modal-popup-body');
-    if (!modal || !modalBody) return;
+    openGlobalCategoryMegaMenu() {
+        const megaMenu = document.querySelector('.category-menu');
+        const content = document.getElementById('desktop-category-menu');
+        const categories = this.allCategories || [];
 
-    modal.classList.add('active');
-}
+        if (!categories.length) return;
 
+        content.innerHTML = `
+            <div class="category-popup-grid">
+                ${categories.map(cat => `
+                    <div class="category-popup-col">
+                        <h3>${cat.name}</h3>
+                        <ul>
+                            ${(cat.children || []).map(sub => `
+                                <li>
+                                    <a href="/category/${sub.id}">
+                                        ${sub.name}
+                                    </a>
+                                </li>
+                            `).join('')}
+                            <li>
+                                <a class="view-all" href="/category/${cat.id}">
+                                    View All
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        megaMenu.classList.add('open');
+    }
+    
+    closeCategoryMegaMenu() {
+        document.querySelector('.category-menu')?.classList.remove('open');
+    }
 
     renderSubCategoriesGrid(category) {
         const right = document.getElementById('modal-sub-cats');
@@ -624,65 +688,386 @@ openCategoryPopup(selectedCategoryName = 'MEN') {
     setupModalClose() {
         const modal = document.getElementById('category-modal');
         const closeBtn = document.getElementById('close-category-modal');
+        if (!modal) return;
+
+        const closeModal = () => {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        };
 
         if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                modal.classList.remove('active');
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                closeModal();
             });
         }
 
-        window.addEventListener('click', (e) => {
+        modal.addEventListener('click', (e) => {
             if (e.target === modal) {
-                modal.classList.remove('active');
+                closeModal();
             }
         });
     }
 
     async initAllProducts() {}
 
+    // ==================== ENHANCED PRODUCT DETAIL SECTION ====================
+    // Yeh sirf product details page ke liye hai, baaki sab same hai
+    
     async initProductDetail() {
         const parts = window.location.pathname.split('/');
         const slug = parts[parts.length - 1];
         const main = document.getElementById('product-detail-container');
         if (!main) return;
 
+        // Pehle check karo ki kya product already Blade se load ho chuka hai
+        const existingContent = main.innerHTML;
+        if (existingContent && !existingContent.includes('skeleton') && existingContent.includes('product-detail-wrapper')) {
+            console.log('Product already loaded from Blade, enhancing gallery...');
+            
+            // Gallery images collect karo
+            this.collectGalleryImages();
+            
+            // Gallery setup karo
+            this.setupProductGallery();
+            
+            // Mobile CTA update karo
+            this.updateMobileCTAFromDOM();
+            
+            return;
+        }
+
+        // Show loading skeleton (aapka existing code)
+        main.innerHTML = `
+            <div class="product-detail-layout">
+                <div class="detail-gallery skeleton" style="height:400px"></div>
+                <div class="detail-info">
+                    <div class="skeleton" style="height:30px; width:60%; margin-bottom:20px;"></div>
+                    <div class="skeleton" style="height:40px; width:80%; margin-bottom:20px;"></div>
+                    <div class="skeleton" style="height:50px; width:40%; margin-bottom:20px;"></div>
+                </div>
+            </div>
+        `;
+
         const response = await this.callAPI(APP_CONFIG.ENDPOINTS.PRODUCT_DETAIL(slug));
-        const p = response?.data || response;
+        
+        // Extract product data correctly from response
+        let p = null;
+        if (response) {
+            if (response.success && response.data) {
+                p = response.data; // Standard API wrapper
+            } else if (response.data) {
+                p = response.data; // Alternative structure
+            } else if (response.id || response.slug) {
+                p = response; // Direct product object
+            }
+        }
 
         if (p) {
-            main.innerHTML = `
-                <div class="product-detail-layout">
-                    <div class="detail-gallery">
-                        <img src="${p.image_url || this.resolveImage()}" onerror="this.src='${this.resolveImage()}'">
-                    </div>
-                    <div class="detail-info">
-                        <div class="detail-brand">${p.brand_name || 'AJIO EXCLUSIVES'}</div>
-                        <h1 class="detail-name">${p.name}</h1>
-                        <div class="detail-price-row">
-                            <span class="detail-price">₹${p.price ? p.price.toLocaleString() : 'N/A'}</span>
-                            ${p.mrp > p.price ? `<span class="detail-mrp">₹${p.mrp.toLocaleString()}</span>` : ''}
-                        </div>
-                        <div class="ajio-instant-discount" style="margin:20px 0; padding:15px; background:#e6f3ff;">10% INSTANT DISCOUNT* ON AU CREDIT CARDS</div>
-                        <div class="desktop-only" style="margin-top:30px">
-                            <button class="btn-luxury" style="width:100%; background:black; color:white; padding: 18px">ADD TO BAG</button>
-                        </div>
-                    </div>
-                </div>
-            `;
+            // Log the product data for debugging
+            console.log('Product data:', p);
+            
+            // Get all images
+            const images = this.extractAllImages(p);
+            
+            // Get brand name
+            const brandName = p.brand_name || p.brand?.name || p.brand || 'RAPID RETAIL EXCLUSIVES';
+            
+            // Get prices
+            const price = p.final_price || p.price || 0;
+            const mrp = p.mrp || p.original_price || price;
+            const discount = p.discount_percent || p.discount || 
+                            (mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0);
 
-            const mobileCTA = document.getElementById('mobile-sticky-cta');
-            if (mobileCTA) {
-                mobileCTA.style.display = 'flex';
-                mobileCTA.innerHTML = `
-                    <div style="flex:1">
-                        <div style="font-weight:900; font-size:16px">₹${p.price ? p.price.toLocaleString() : 'N/A'}</div>
-                        <div style="font-size:10px; color:var(--accent); font-weight:700">10% OFF ON CARDS</div>
+            // Generate HTML with gallery
+            main.innerHTML = this.generateProductHTML(images, p, brandName, price, mrp, discount);
+            
+            // Store gallery images
+            this.galleryImages = images;
+            this.currentImageIndex = 0;
+            
+            // Setup gallery interactions
+            this.setupProductGallery();
+            
+            // Mobile sticky CTA
+            this.updateMobileCTA(price, discount);
+        } else {
+            // Show error state
+            main.innerHTML = this.generateErrorHTML();
+        }
+    }
+    
+    // Helper method to extract all images
+    extractAllImages(product) {
+        let images = [];
+        
+        if (product.images && Array.isArray(product.images)) {
+            images = product.images.map(img => {
+                if (typeof img === 'string') return this.resolveImage(img);
+                if (img.url) return this.resolveImage(img.url);
+                if (img.image_url) return this.resolveImage(img.image_url);
+                return this.resolveImage();
+            });
+        } else if (product.image_url) {
+            images = [this.resolveImage(product.image_url)];
+        } else if (product.primary_image) {
+            images = [this.resolveImage(product.primary_image)];
+        } else {
+            // Try other fields
+            const possibleFields = ['featured_image', 'main_image', 'thumbnail'];
+            for (const field of possibleFields) {
+                if (product[field]) {
+                    images = [this.resolveImage(product[field])];
+                    break;
+                }
+            }
+        }
+        
+        // Fallback if no images
+        if (images.length === 0) {
+            images = [this.resolveImage()];
+        }
+        
+        // Filter and deduplicate
+        return [...new Set(images.filter(img => img && img.trim() !== ''))];
+    }
+    
+    // Generate product HTML with gallery
+    generateProductHTML(images, product, brandName, price, mrp, discount) {
+        return `
+            <div class="product-detail-wrapper">
+                <!-- Image Gallery -->
+                <div class="product-gallery">
+                    <div class="main-image-container">
+                        <img id="mainProductImage" 
+                             src="${images[0]}" 
+                             alt="${product.name || 'Product'}" 
+                             class="main-product-image"
+                             onerror="this.src='${this.resolveImage()}'">
+                        
+                        <!-- Navigation Arrows -->
+                        ${images.length > 1 ? `
+                            <button class="gallery-nav prev" onclick="window.app.navigateGallery(-1)">❮</button>
+                            <button class="gallery-nav next" onclick="window.app.navigateGallery(1)">❯</button>
+                        ` : ''}
                     </div>
-                    <button class="btn-luxury" style="flex:1; background:black; color:white; padding: 12px">ADD TO BAG</button>
-                `;
+                    
+                    <!-- Thumbnail Strip -->
+                    ${images.length > 1 ? `
+                        <div class="thumbnail-strip">
+                            ${images.map((img, index) => `
+                                <div class="thumbnail-item ${index === 0 ? 'active' : ''}" 
+                                     onclick="window.app.changeGalleryImage(${index})">
+                                    <img src="${img}" 
+                                         alt="Thumbnail ${index + 1}"
+                                         onerror="this.src='${this.resolveImage()}'">
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Image Counter -->
+                    ${images.length > 1 ? `
+                        <div class="image-counter">
+                            <span class="current-image">1</span>/<span class="total-images">${images.length}</span>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <!-- Product Info -->
+                <div class="product-info">
+                    <div class="product-brand">${brandName}</div>
+                    <h1 class="product-title">${product.name || 'Product Name'}</h1>
+                    
+                    ${product.short_description ? `
+                        <div class="short-description">${product.short_description}</div>
+                    ` : ''}
+                    
+                    <div class="price-row">
+                        <span class="current-price">₹${Number(price).toLocaleString()}</span>
+                        ${mrp > price ? `
+                            <span class="original-price">₹${Number(mrp).toLocaleString()}</span>
+                            <span class="discount-badge">${discount}% OFF</span>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="price-breakdown">
+                        <span>Inclusive of all taxes</span>
+                        ${mrp > price ? `
+                            <span class="savings">You save: ₹${(mrp - price).toLocaleString()}</span>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="instant-discount">
+                        10% INSTANT DISCOUNT* ON ALL CARDS
+                    </div>
+                    
+                    ${product.description ? `
+                        <div class="product-description">
+                            <h3>Product Description</h3>
+                            <p>${product.description}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <button class="add-to-cart-btn">
+                        ADD TO BAG
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Generate error HTML
+    generateErrorHTML() {
+        return `
+            <div class="error-container">
+                <div class="error-icon">😕</div>
+                <h2>Product Not Found</h2>
+                <p>The product you're looking for doesn't exist or has been removed.</p>
+                <div class="error-actions">
+                    <a href="/" class="btn-primary">Continue Shopping</a>
+                    <a href="/categories" class="btn-secondary">Browse Categories</a>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Collect gallery images from existing DOM (Blade se aaya hai)
+    collectGalleryImages() {
+        this.galleryImages = [];
+        const thumbnails = document.querySelectorAll('.thumbnail-item img');
+        
+        if (thumbnails.length > 0) {
+            thumbnails.forEach(img => {
+                this.galleryImages.push(img.src);
+            });
+        } else {
+            // Sirf ek image hai
+            const mainImage = document.getElementById('mainProductImage');
+            if (mainImage) {
+                this.galleryImages.push(mainImage.src);
+            }
+        }
+        
+        this.currentImageIndex = 0;
+    }
+    
+    // Setup gallery interactions
+    setupProductGallery() {
+        const thumbnails = document.querySelectorAll('.thumbnail-item');
+        const mainImage = document.getElementById('mainProductImage');
+        const prevBtn = document.querySelector('.gallery-nav.prev');
+        const nextBtn = document.querySelector('.gallery-nav.next');
+        
+        if (thumbnails.length > 0 && mainImage) {
+            thumbnails.forEach((thumb, index) => {
+                thumb.addEventListener('click', () => {
+                    this.changeGalleryImage(index);
+                });
+            });
+        }
+        
+        // Navigation arrows ke liye event listeners
+        if (prevBtn) {
+            prevBtn.onclick = (e) => {
+                e.preventDefault();
+                this.navigateGallery(-1);
+            };
+        }
+        
+        if (nextBtn) {
+            nextBtn.onclick = (e) => {
+                e.preventDefault();
+                this.navigateGallery(1);
+            };
+        }
+    }
+    
+    // Change gallery image
+    changeGalleryImage(index) {
+        if (!this.galleryImages || this.galleryImages.length === 0) return;
+        
+        const mainImage = document.getElementById('mainProductImage');
+        const thumbnails = document.querySelectorAll('.thumbnail-item');
+        const counter = document.querySelector('.current-image');
+        
+        if (mainImage) {
+            mainImage.src = this.galleryImages[index];
+            this.currentImageIndex = index;
+            
+            // Update active thumbnail
+            thumbnails.forEach((thumb, i) => {
+                if (i === index) {
+                    thumb.classList.add('active');
+                } else {
+                    thumb.classList.remove('active');
+                }
+            });
+            
+            // Update counter
+            if (counter) {
+                counter.textContent = index + 1;
             }
         }
     }
+    
+    // Navigate gallery
+    navigateGallery(direction) {
+        if (!this.galleryImages || this.galleryImages.length === 0) return;
+        
+        let newIndex = this.currentImageIndex + direction;
+        
+        if (newIndex < 0) {
+            newIndex = this.galleryImages.length - 1;
+        } else if (newIndex >= this.galleryImages.length) {
+            newIndex = 0;
+        }
+        
+        this.changeGalleryImage(newIndex);
+    }
+    
+    // Update mobile CTA from API
+    updateMobileCTA(price, discount) {
+        const mobileCTA = document.getElementById('mobile-sticky-cta');
+        if (mobileCTA) {
+            mobileCTA.style.display = 'flex';
+            mobileCTA.innerHTML = `
+                <div class="cta-price-info">
+                    <div class="cta-price">₹${Number(price).toLocaleString()}</div>
+                    <div class="cta-discount">${discount}% OFF</div>
+                </div>
+                <button class="cta-add-to-bag">
+                    ADD TO BAG
+                </button>
+            `;
+        }
+    }
+    
+    // Update mobile CTA from DOM (Blade se aaya hai)
+    updateMobileCTAFromDOM() {
+        const priceElement = document.querySelector('.current-price');
+        const discountElement = document.querySelector('.discount-badge');
+        const mobileCTA = document.getElementById('mobile-sticky-cta');
+        
+        if (mobileCTA && priceElement) {
+            const price = priceElement.innerText.replace('₹', '').replace(',', '');
+            const discount = discountElement ? discountElement.innerText : '10% OFF';
+            
+            mobileCTA.style.display = 'flex';
+            mobileCTA.innerHTML = `
+                <div class="cta-price-info">
+                    <div class="cta-price">₹${Number(price).toLocaleString()}</div>
+                    <div class="cta-discount">${discount}</div>
+                </div>
+                <button class="cta-add-to-bag">
+                    ADD TO BAG
+                </button>
+            `;
+        }
+    }
+
+    // ==================== END OF ENHANCED PRODUCT DETAIL SECTION ====================
 
     async loadCategoryMenu() {
         try {
@@ -725,38 +1110,10 @@ openCategoryPopup(selectedCategoryName = 'MEN') {
 
             this.allCategories = categories;
 
-            if (navMenu) {
-                navMenu.querySelectorAll('.nav-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const categoryName = e.target.getAttribute('data-category') || e.target.textContent.trim();
-                        this.openCategoryPopup(categoryName);
-                    });
-                });
-            }
-
         } catch (error) {
             console.error('Error loading category menu:', error);
-            const navMenu = document.getElementById('desktop-nav-menu');
-            if (navMenu) {
-                navMenu.innerHTML = `
-                    <a href="#" class="nav-item" data-category="MEN">MEN</a>
-                    <a href="#" class="nav-item" data-category="WOMEN">WOMEN</a>
-                    <a href="#" class="nav-item" data-category="KIDS">KIDS</a>
-                    <a href="#" class="nav-item" data-category="BEAUTY">BEAUTY</a>
-                    <a href="#" class="nav-item" data-category="HOME & KITCHEN">HOME & KITCHEN</a>
-                `;
-                navMenu.querySelectorAll('.nav-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const categoryName = e.target.getAttribute('data-category') || e.target.textContent.trim();
-                        this.openCategoryPopup(categoryName);
-                    });
-                });
-            }
         }
     }
-
 
     setupMobileMenu() {
         const menuToggle = document.getElementById('menuToggle');
@@ -861,11 +1218,15 @@ document.addEventListener('change', (e) => {
 document.querySelector('.more-link')?.addEventListener('click', async (e) => {
     e.preventDefault();
 
+    // Category popup system disabled on all devices
+    return;
+
     const modal = document.getElementById('category-modal');
     const left = document.getElementById('modal-parent-cats');
     const right = document.getElementById('modal-sub-cats');
 
     modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
 
     const res = await window.app.callAPI(APP_CONFIG.ENDPOINTS.CATEGORIES);
     const categories = res?.data || [];
@@ -893,12 +1254,6 @@ document.querySelector('.more-link')?.addEventListener('click', async (e) => {
     };
 });
 
-document.addEventListener('click', (e) => {
-    if (e.target.id === 'close-category-modal' || e.target.id === 'category-modal') {
-        document.getElementById('category-modal').classList.remove('active');
-    }
-});
-
 function updateSubCategories() {
     const checkedParents = Array.from(
         document.querySelectorAll('.filter-shop-for:checked')
@@ -916,29 +1271,6 @@ function updateSubCategories() {
         });
     });
 }
-// ===== CATEGORY MODAL CLOSE FIX (MOBILE + DESKTOP) =====
-document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById('category-modal');
-    const closeBtn = document.getElementById('close-category-modal');
-
-    if (closeBtn && modal) {
-        closeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            modal.classList.remove('active');
-            document.body.style.overflow = ''; // unlock scroll
-        });
-    }
-
-    // Close when clicking on dark overlay
-    modal?.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-    });
-});
 
 window.app = new RapidRetailsEngine();
 document.addEventListener('DOMContentLoaded', () => window.app.init());
