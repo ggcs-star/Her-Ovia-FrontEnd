@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Category | Rapid Retails</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <style>
         /* Mobile First Responsive Styles */
         @media (max-width: 768px) {
@@ -268,6 +267,39 @@
                 cursor: pointer;
             }
         }
+        /* Fix for category page dropdown */
+@media (min-width: 769px) {
+    .category-menu {
+        position: absolute;
+        top: 100% !important; /* Force it to appear right below header */
+        left: 0;
+        width: 100%;
+        background: white;
+        z-index: 10001 !important; /* Higher z-index to appear above products */
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+    
+    /* Ensure header has proper positioning context */
+    .site-header {
+        position: relative;
+        z-index: 10000;
+    }
+    
+    /* Make sure products don't overlay the dropdown */
+    .page-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* When dropdown is open */
+    .category-menu.open {
+        display: block !important;
+        max-height: 70vh;
+        opacity: 1;
+        padding: 24px 40px;
+        overflow-y: auto;
+    }
+}
 
         /* Small phones */
         @media (max-width: 380px) {
@@ -386,6 +418,19 @@
 
 <footer id="site-footer"></footer>
 <nav id="mobile-bottom-nav"></nav>
+
+<!-- Global Category Popup (shared header modal) -->
+<div class="category-modal" id="category-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>SHOP BY CATEGORY</h2>
+            <span class="modal-close" id="close-category-modal">&times;</span>
+        </div>
+        <div class="modal-body" id="modal-popup-body">
+            <!-- Categories will be loaded by JavaScript -->
+        </div>
+    </div>
+</div>
 
 <script src="{{ asset('mobile/script.js') }}"></script>
 

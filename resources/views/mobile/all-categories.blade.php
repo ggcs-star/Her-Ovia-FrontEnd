@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>All Departments | RAPID RETAILS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">    <title>All Departments | RAPID RETAILS</title>
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -339,7 +338,7 @@
     </style>
 </head>
 
-<body data-page="all-categories">
+<body data-page="all-products">
 
 <header class="site-header" id="site-header"></header>
 
@@ -433,18 +432,16 @@
 <footer class="site-footer" id="site-footer"></footer>
 <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
 
-<!-- MODAL -->
-<div id="category-modal" class="category-modal">
+<!-- Global Category Popup (shared header modal) -->
+<div class="category-modal" id="category-modal">
     <div class="modal-box">
         <div class="modal-header">
-            <h3>Choose Category</h3>
-            <span id="close-category-modal">×</span>
+            <h2>SHOP BY CATEGORY</h2>
+            <span class="modal-close" id="close-category-modal">&times;</span>
         </div>
-        <div class="modal-body">
-            <div id="modal-parent-cats"></div>
-            <div id="modal-sub-cats"></div>
+        <div class="modal-body" id="modal-popup-body">
+            <!-- Categories will be loaded by JavaScript -->
         </div>
-        <button class="modal-apply">APPLY</button>
     </div>
 </div>
 
@@ -492,6 +489,339 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+<!-- Yeh script aapke existing page ke ANDAR laga do, </body> se pehle -->
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const grid = document.getElementById('full-category-grid');
+    const countEl = document.getElementById('product-count');
+    const clearBtn = document.querySelector('.clear-all');
+
+    let selectedCategories = [];
+
+    /* ==========================
+       FETCH & RENDER PRODUCTS
+    ========================== */
+    async function loadProducts(categoryIds = []) {
+        grid.innerHTML = skeletonHTML();
+
+        try {
+            let url = 'https://retailadmin.ggconsultancy.services/api/products';
+
+            // Agar category selected hai
+            if (categoryIds.length > 0) {
+                url += '?category_ids=' + categoryIds.join(',');
+            }
+
+            const res = await fetch(url);
+            const data = await res.json();
+
+            let products = [];
+
+            if (data.data && Array.isArray(data.data.products)) {
+                products = data.data.products;
+            }
+
+            countEl.innerText = products.length;
+
+            if (products.length === 0) {
+                grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;padding:40px;color:#999">
+                    No products found
+                </p>`;
+                return;
+            }
+
+            grid.innerHTML = products.map(p => productCard(p)).join('');
+
+        } catch (err) {
+            console.error(err);
+            grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;padding:40px;color:#999">
+                Error loading products
+            </p>`;
+        }
+    }
+
+    /* ==========================
+       CHECKBOX CHANGE HANDLER
+    ========================== */
+    document.addEventListener('change', (e) => {
+        if (!e.target.classList.contains('category-filter')) return;
+
+        const id = e.target.value;
+
+        if (e.target.checked) {
+            selectedCategories.push(id);
+        } else {
+            selectedCategories = selectedCategories.filter(cid => cid !== id);
+        }
+
+        loadProducts(selectedCategories);
+    });
+
+    /* ==========================
+       CLEAR ALL
+    ========================== */
+    if (clearBtn) {
+        clearBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            document.querySelectorAll('.category-filter').forEach(cb => cb.checked = false);
+            selectedCategories = [];
+            loadProducts(); // ALL PRODUCTS
+        });
+    }
+
+    /* ==========================
+       PRODUCT CARD
+    ========================== */
+    function productCard(product) {
+        let img = product.image_url || product.image || '';
+        if (img && !img.startsWith('http')) {
+            img = 'https://inventorydata-s3-bucket.s3.amazonaws.com/' + img;
+        }
+        if (!img) {
+            img = 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=300&h=400&fit=crop';
+        }
+
+        return `
+            <div class="product-card" data-slug="${product.slug || ''}">
+                <div class="p-img-wrap">
+                    <img src="${img}" loading="lazy">
+                </div>
+                <div class="p-info">
+                    <div class="p-brand">${product.brand || 'RAPID RETAIL'}</div>
+                    <div class="p-name">${product.name || ''}</div>
+                    <div class="p-price-row">
+                        <span class="p-price">₹${product.price || product.final_price || 0}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /* ==========================
+       SKELETON
+    ========================== */
+    function skeletonHTML() {
+        return Array(6).fill(0).map(() => `
+            <div class="product-card skeleton">
+                <div class="p-img-wrap skeleton"></div>
+                <div class="p-info">
+                    <div class="skeleton" style="height:12px;width:60%;margin-bottom:8px"></div>
+                    <div class="skeleton" style="height:10px;width:80%"></div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    /* ==========================
+       INITIAL LOAD
+    ========================== */
+    loadProducts();
+    loadCategoryFilters(); // 👈 View All → ALL PRODUCTS
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const parentBox = document.getElementById('filter-shop-for');
+    const subBox = document.getElementById('filter-categories');
+    const grid = document.getElementById('full-category-grid');
+    const countEl = document.getElementById('product-count');
+    const clearBtn = document.querySelector('.clear-all');
+
+    let ALL_CATEGORIES = [];
+    let selectedCategories = [];
+    let selectedSubCategories = [];
+
+    /* ===============================
+       LOAD CATEGORIES
+    =============================== */
+    loadCategories();
+
+    async function loadCategories() {
+        const res = await fetch('https://retailadmin.ggconsultancy.services/api/categories');
+        const data = await res.json();
+
+        ALL_CATEGORIES = data.data || [];
+        parentBox.innerHTML = '';
+        subBox.innerHTML = '';
+
+        ALL_CATEGORIES.forEach(cat => {
+            parentBox.innerHTML += `
+                <li class="filter-option">
+                    <input type="checkbox"
+                           class="parent-category"
+                           value="${cat.id}">
+                    <label>${cat.name}</label>
+                </li>
+            `;
+        });
+    }
+
+    /* ===============================
+       PARENT CATEGORY CHANGE
+    =============================== */
+    document.addEventListener('change', (e) => {
+
+        /* ===== CATEGORY ===== */
+        if (e.target.classList.contains('parent-category')) {
+
+            const id = e.target.value;
+
+            if (e.target.checked) {
+                selectedCategories.push(id);
+            } else {
+                selectedCategories = selectedCategories.filter(x => x !== id);
+            }
+
+            renderSubCategories();
+            loadProducts();
+        }
+
+        /* ===== SUB CATEGORY ===== */
+        if (e.target.classList.contains('sub-category')) {
+
+            const id = e.target.value;
+
+            if (e.target.checked) {
+                selectedSubCategories.push(id);
+            } else {
+                selectedSubCategories = selectedSubCategories.filter(x => x !== id);
+            }
+
+            loadProducts();
+        }
+    });
+
+    /* ===============================
+       RENDER SUB CATEGORIES
+    =============================== */
+    function renderSubCategories() {
+        subBox.innerHTML = '';
+        selectedSubCategories = [];
+
+        const added = new Set();
+
+        ALL_CATEGORIES.forEach(cat => {
+            if (selectedCategories.includes(String(cat.id)) && cat.children) {
+
+                cat.children.forEach(sub => {
+                    if (!added.has(sub.id)) {
+                        added.add(sub.id);
+
+                        subBox.innerHTML += `
+                            <li class="filter-option">
+                                <input type="checkbox"
+                                       class="sub-category"
+                                       value="${sub.id}">
+                                <label>${sub.name}</label>
+                            </li>
+                        `;
+                    }
+                });
+            }
+        });
+    }
+
+    /* ===============================
+       LOAD PRODUCTS
+    =============================== */
+    async function loadProducts() {
+
+        grid.innerHTML = skeleton();
+        let products = [];
+
+        try {
+            for (let catId of selectedCategories) {
+
+                const res = await fetch(
+                    `https://retailadmin.ggconsultancy.services/api/categories/${catId}/products`
+                );
+                const data = await res.json();
+
+                if (data.data?.products) {
+                    products.push(...data.data.products);
+                }
+            }
+
+            /* SUB CATEGORY FILTER */
+            if (selectedSubCategories.length) {
+                products = products.filter(p =>
+                    selectedSubCategories.includes(String(p.sub_category_id))
+                );
+            }
+
+            /* REMOVE DUPLICATES */
+            const unique = {};
+            products.forEach(p => unique[p.id] = p);
+            products = Object.values(unique);
+
+            countEl.innerText = products.length;
+
+            grid.innerHTML = products.length
+                ? products.map(productCard).join('')
+                : `<p style="grid-column:1/-1;text-align:center;padding:40px;color:#999">
+                    No products found
+                  </p>`;
+
+        } catch (err) {
+            console.error(err);
+            grid.innerHTML = `<p style="grid-column:1/-1;text-align:center">Error</p>`;
+        }
+    }
+
+    /* ===============================
+       CLEAR ALL
+    =============================== */
+    clearBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        selectedCategories = [];
+        selectedSubCategories = [];
+
+        document.querySelectorAll(
+            '.parent-category,.sub-category'
+        ).forEach(cb => cb.checked = false);
+
+        subBox.innerHTML = '';
+        grid.innerHTML = '';
+        countEl.innerText = 0;
+    });
+
+    /* ===============================
+       PRODUCT CARD
+    =============================== */
+    function productCard(p) {
+        let img = p.image_url || '';
+        if (!img) img = 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=300';
+
+        return `
+            <div class="product-card" data-slug="${p.slug}">
+                <div class="p-img-wrap">
+                    <img src="${img}">
+                </div>
+                <div class="p-info">
+                    <div class="p-brand">${p.brand || 'RAPID RETAIL'}</div>
+                    <div class="p-name">${p.name}</div>
+                    <div class="p-price-row">
+                        <span class="p-price">₹${p.final_price || p.price || 0}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function skeleton() {
+        return Array(6).fill(0).map(() => `
+            <div class="product-card skeleton">
+                <div class="p-img-wrap skeleton"></div>
+                <div class="p-info"></div>
+            </div>
+        `).join('');
+    }
+});
+</script>
 </body>
 </html>
