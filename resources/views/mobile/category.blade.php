@@ -2,503 +2,284 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Category | Rapid Retails</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
+    <title>Category Products | Rapid Retails</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('mobile/category-styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        /* Mobile First Responsive Styles */
-        @media (max-width: 768px) {
-            .category-layout {
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 20px !important;
-                padding: 10px 0 !important;
-            }
-
-            /* Filter Sidebar - Mobile */
-            .filter-sidebar {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 85% !important;
-                height: 100vh;
-                background: white;
-                z-index: 10000;
-                overflow-y: auto;
-                padding: 20px 16px !important;
-                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-                transition: left 0.3s ease;
-            }
-
-            .filter-sidebar.active {
-                display: block !important;
-                left: 0;
-            }
-
-            .filter-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding-bottom: 15px;
-                border-bottom: 1px solid #eaeaec;
-                margin-bottom: 20px;
-                position: sticky;
-                top: 0;
-                background: white;
-                z-index: 10;
-            }
-
-            .filter-header h3 {
-                font-size: 16px;
-                font-weight: 700;
-                color: #282c3f;
-                margin: 0;
-            }
-
-            .clear-all {
-                font-size: 12px;
-                color: #ff3f6c;
-                text-decoration: none;
-                font-weight: 600;
-            }
-
-            .filter-section {
-                margin-bottom: 25px;
-            }
-
-            .filter-section-title {
-                font-size: 14px;
-                font-weight: 700;
-                color: #282c3f;
-                margin-bottom: 12px;
-                text-transform: uppercase;
-            }
-
-            .filter-options {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-            }
-
-            .filter-option {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                margin-bottom: 12px;
-                font-size: 13px;
-                color: #282c3f;
-            }
-
-            .filter-option input[type="checkbox"] {
-                width: 18px;
-                height: 18px;
-                accent-color: #ff3f6c;
-            }
-
-            /* Products Area */
-            .products-area {
-                width: 100% !important;
-                padding: 0 !important;
-            }
-
-            .products-header {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-                margin-bottom: 20px;
-                padding-bottom: 15px;
-                border-bottom: 1px solid #eaeaec;
-            }
-
-            .result-count {
-                font-size: 14px;
-                color: #696b79;
-            }
-
-            .result-count strong {
-                font-size: 16px;
-                color: #282c3f;
-            }
-
-            .sort-select {
-                width: 100%;
-                padding: 12px 30px 12px 12px;
-                border: 1px solid #eaeaec;
-                border-radius: 4px;
-                font-size: 13px;
-                font-weight: 500;
-                background: white;
-                cursor: pointer;
-                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23696b79' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-                background-repeat: no-repeat;
-                background-position: right 12px center;
-                background-size: 16px;
-                appearance: none;
-            }
-
-            /* Product Grid - 2 columns on mobile */
-            .product-grid {
-                display: grid !important;
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 12px !important;
-                margin-bottom: 30px;
-            }
-
-            .product-card {
-                background: white;
-                border: 1px solid #eaeaec;
-                border-radius: 8px;
-                overflow: hidden;
-                transition: all 0.3s;
-                cursor: pointer;
-            }
-
-            .p-img-wrap {
-                aspect-ratio: 3/4;
-                overflow: hidden;
-                background: #f5f5f6;
-                position: relative;
-            }
-
-            .p-img-wrap img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-
-            .ajio-offer-badge {
-                position: absolute;
-                top: 8px;
-                left: 8px;
-                background: #ff3f6c;
-                color: white;
-                font-size: 10px;
-                font-weight: 700;
-                padding: 3px 6px;
-                border-radius: 2px;
-                z-index: 2;
-            }
-
-            .p-info {
-                padding: 8px;
-            }
-
-            .p-brand {
-                font-size: 11px;
-                font-weight: 700;
-                color: #282c3f;
-                margin-bottom: 4px;
-                text-transform: uppercase;
-            }
-
-            .p-name {
-                font-size: 11px;
-                color: #696b79;
-                margin-bottom: 6px;
-                line-height: 1.3;
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-            }
-
-            .p-price-row {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                margin-bottom: 6px;
-            }
-
-            .p-price {
-                font-size: 13px;
-                font-weight: 700;
-                color: #282c3f;
-            }
-
-            .p-mrp {
-                font-size: 10px;
-                color: #696b79;
-                text-decoration: line-through;
-            }
-
-            .ajio-instant-discount {
-                font-size: 9px;
-                color: #2a7bbd;
-                background: #e6f3ff;
-                padding: 3px 6px;
-                border-radius: 2px;
-                display: inline-block;
-            }
-
-            /* Mobile Filter Button */
-            .mobile-filter-btn {
-                display: flex !important;
-                align-items: center;
-                justify-content: center;
-                gap: 8px;
-                padding: 12px;
-                background: white;
-                border: 1px solid #eaeaec;
-                border-radius: 4px;
-                font-size: 13px;
-                font-weight: 600;
-                color: #282c3f;
-                cursor: pointer;
-                margin-bottom: 15px;
-                width: 100%;
-            }
-
-            .mobile-filter-btn svg {
-                width: 16px;
-                height: 16px;
-            }
-
-            .filter-close-btn {
-                display: block;
-                background: #ff3f6c;
-                color: white;
-                border: none;
-                padding: 12px;
-                border-radius: 4px;
-                font-size: 14px;
-                font-weight: 600;
-                width: 100%;
-                margin-top: 20px;
-                cursor: pointer;
-            }
-        }
-        /* Fix for category page dropdown */
-@media (min-width: 769px) {
-    .category-menu {
-        position: absolute;
-        top: 100% !important; /* Force it to appear right below header */
-        left: 0;
-        width: 100%;
-        background: white;
-        z-index: 10001 !important; /* Higher z-index to appear above products */
-        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-    }
-    
-    /* Ensure header has proper positioning context */
-    .site-header {
-        position: relative;
-        z-index: 10000;
-    }
-    
-    /* Make sure products don't overlay the dropdown */
-    .page-content {
-        position: relative;
-        z-index: 1;
-    }
-    
-    /* When dropdown is open */
-    .category-menu.open {
-        display: block !important;
-        max-height: 70vh;
-        opacity: 1;
-        padding: 24px 40px;
-        overflow-y: auto;
-    }
-}
-
-        /* Small phones */
-        @media (max-width: 380px) {
-            .product-grid {
-                gap: 8px !important;
-            }
-
-            .p-brand {
-                font-size: 10px;
-            }
-
-            .p-name {
-                font-size: 10px;
-            }
-
-            .p-price {
-                font-size: 12px;
-            }
-
-            .p-mrp {
-                font-size: 9px;
-            }
-
-            .ajio-instant-discount {
-                font-size: 8px;
-                padding: 2px 4px;
-            }
-        }
-
-        /* Desktop styles */
-        @media (min-width: 769px) {
-            .mobile-filter-btn,
-            .filter-close-btn {
-                display: none !important;
-            }
-        }
-
-        /* Loading skeleton */
-        .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: skeleton-loading 1.5s infinite;
-        }
-
-        @keyframes skeleton-loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
+        /* Same responsive styles as all-categories page */
+        /* Copy the style section from all-categories page here */
     </style>
 </head>
 
-<body data-page="category-detail">
+<body data-page="category-detail" data-category-id="{{ $categoryId ?? '' }}">
 
-<header id="site-header"></header>
+<!-- Header -->
+<header class="site-header" id="site-header"></header>
 
 <main class="page-content">
     <div class="container">
 
-        <!-- BREADCRUMB -->
-        <div class="breadcrumb" id="breadcrumb">
-            <!-- JS will inject -->
-        </div>
+        <!-- Breadcrumb -->
+        <div class="breadcrumb" id="breadcrumb"></div>
 
-        <!-- Mobile Filter Button -->
-        <button class="mobile-filter-btn" id="mobileFilterBtn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="9" y1="3" x2="9" y2="21"></line>
-            </svg>
-            FILTER
-        </button>
-
+        <!-- Main Layout - WITH FILTER SIDEBAR -->
         <div class="category-layout">
 
-            <!-- LEFT FILTER -->
-            <aside class="filter-sidebar" id="filterSidebar">
-                <div class="filter-header">
-                    <h3>REFINE BY</h3>
-                    <a href="#" class="clear-all">Clear All</a>
-                </div>
+            <!-- Filter Sidebar - UPDATED WITH ALL SECTIONS -->
+<aside class="filter-sidebar" id="filter-sidebar">
+    <div class="filter-header">
+        <h3>REFINE BY</h3>
+        <a href="#" class="clear-all">Clear All</a>
+        <span class="close-filter" id="close-filter">×</span>
+    </div>
 
-                <div class="filter-section">
-                    <div class="filter-section-title">Sub Category</div>
-                    <ul id="sub-category-filter" class="filter-options">
-                        <!-- JS inject -->
-                    </ul>
-                </div>
+    <!-- CATEGORY SECTION -->
+    <div class="filter-section">
+        <div class="filter-section-title">
+            Category
+            <span class="toggle-icon">−</span>
+        </div>
+        <ul class="filter-options" id="filter-shop-for"></ul>
+    </div>
 
-                <button class="filter-close-btn" id="filterCloseBtn">APPLY FILTERS</button>
-            </aside>
+    <!-- SUB CATEGORY SECTION -->
+    <div class="filter-section">
+        <div class="filter-section-title">
+            Sub Category
+            <span class="toggle-icon">−</span>
+        </div>
+        <ul class="filter-options" id="filter-categories"></ul>
+        <button type="button" class="more-link">+ MORE</button>
+    </div>
 
-            <!-- PRODUCT LIST -->
-            <section class="products-area">
+ <div class="filter-section">
+    <div class="filter-section-title">
+        Brands
+        <span class="toggle-icon">−</span>
+    </div>
+    <div class="brands-header">
+        <button class="select-all-btn" onclick="document.querySelectorAll('.brand-filter').forEach(cb => cb.checked = true); applyAllFilters();">Select All</button>
+        <button class="clear-all-btn" onclick="document.querySelectorAll('.brand-filter').forEach(cb => cb.checked = false); applyAllFilters();">Clear All</button>
+    </div>
+    <ul class="filter-options brands-list" id="brands-list">
+        <!-- Dynamic brands will load here -->
+    </ul>
+</div>
 
+<!-- DISCOUNT SECTION - Add class -->
+<div class="filter-section">
+    <div class="filter-section-title">
+        Discount
+        <span class="toggle-icon">−</span>
+    </div>
+    <ul class="filter-options">
+        <li class="filter-option">
+            <input type="checkbox" class="discount-filter" value="10" onchange="applyAllFilters()"> 10% and above
+        </li>
+        <li class="filter-option">
+            <input type="checkbox" class="discount-filter" value="20" onchange="applyAllFilters()"> 20% and above
+        </li>
+        <!-- ... more ... -->
+    </ul>
+</div>
+<!-- PRICE SECTION -->
+<div class="filter-section">
+    <div class="filter-section-title">
+        Price
+        <span class="toggle-icon">−</span>
+    </div>
+    <div class="price-range">
+        <div class="price-presets">
+            <label class="filter-option">
+                <input type="radio" name="price" value="0-500" onchange="applyAllFilters()"> Below ₹500
+            </label>
+            <label class="filter-option">
+                <input type="radio" name="price" value="500-1000" onchange="applyAllFilters()"> ₹500 - ₹1000
+            </label>
+            <label class="filter-option">
+                <input type="radio" name="price" value="1000-1500" onchange="applyAllFilters()"> ₹1000 - ₹1500
+            </label>
+            <label class="filter-option">
+                <input type="radio" name="price" value="1500-2000" onchange="applyAllFilters()"> ₹1500 - ₹2000
+            </label>
+            <label class="filter-option">
+                <input type="radio" name="price" value="2000-2500" onchange="applyAllFilters()"> ₹2000 - ₹2500
+            </label>
+        </div>
+        <div class="custom-price">
+            <input type="number" id="min-price" placeholder="Min" onchange="applyAllFilters()">
+            <span>to</span>
+            <input type="number" id="max-price" placeholder="Max" onchange="applyAllFilters()">
+            <button onclick="applyAllFilters()">Apply</button>
+        </div>
+    </div>
+</div>
+
+<!-- COLORS SECTION -->
+<div class="filter-section">
+    <div class="filter-section-title">
+        Colors
+        <span class="toggle-icon">−</span>
+    </div>
+    <div class="colors-grid" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px;">
+        <span class="color-circle" data-color="red" style="display: inline-block; width: 30px; height: 30px; border-radius: 50%; background: #ff0000; cursor: pointer; border: 2px solid transparent;"></span>
+        <span class="color-circle" data-color="blue" style="display: inline-block; width: 30px; height: 30px; border-radius: 50%; background: #0000ff; cursor: pointer; border: 2px solid transparent;"></span>
+        <span class="color-circle" data-color="green" style="display: inline-block; width: 30px; height: 30px; border-radius: 50%; background: #00ff00; cursor: pointer; border: 2px solid transparent;"></span>
+        <span class="color-circle" data-color="black" style="display: inline-block; width: 30px; height: 30px; border-radius: 50%; background: #000000; cursor: pointer; border: 2px solid transparent;"></span>
+        <span class="color-circle" data-color="white" style="display: inline-block; width: 30px; height: 30px; border-radius: 50%; background: #ffffff; cursor: pointer; border: 2px solid #ddd;"></span>
+        <span class="color-circle" data-color="pink" style="display: inline-block; width: 30px; height: 30px; border-radius: 50%; background: #ffc0cb; cursor: pointer; border: 2px solid transparent;"></span>
+        <span class="color-circle" data-color="yellow" style="display: inline-block; width: 30px; height: 30px; border-radius: 50%; background: #ffff00; cursor: pointer; border: 2px solid transparent;"></span>
+    </div>
+</div>
+</aside>
+
+            <!-- Products Area -->
+            <div class="products-area">
+
+                <!-- Products Header -->
                 <div class="products-header">
                     <div class="result-count">
                         <strong id="product-count">0</strong> Items Found
                     </div>
 
-                    <select class="sort-select" id="sortSelect">
-                        <option value="relevance">Relevance</option>
-                        <option value="price-low">Price: Low to High</option>
-                        <option value="price-high">Price: High to Low</option>
-                    </select>
+                    <div class="products-actions">
+                        <button class="mobile-filter-btn" id="mobile-filter-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="9" y1="3" x2="9" y2="21"></line>
+                            </svg>
+                            FILTER
+                        </button>
+
+                        <select class="sort-select" id="sort-select">
+                            <option value="relevance">Relevance</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                        </select>
+                    </div>
                 </div>
 
-                <!-- PRODUCT GRID -->
-                <div id="category-products-grid" class="product-grid">
-                    <!-- JS inject -->
-                </div>
+                <!-- Products Grid -->
+                <div id="category-products-grid" class="product-grid"></div>
 
-            </section>
+            </div>
         </div>
     </div>
 </main>
 
-<footer id="site-footer"></footer>
-<nav id="mobile-bottom-nav"></nav>
+<!-- Footer -->
+<footer class="site-footer" id="site-footer"></footer>
+<nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
 
-<!-- Global Category Popup (shared header modal) -->
+<!-- Category Modal -->
 <div class="category-modal" id="category-modal">
     <div class="modal-box">
         <div class="modal-header">
             <h2>SHOP BY CATEGORY</h2>
             <span class="modal-close" id="close-category-modal">&times;</span>
         </div>
-        <div class="modal-body" id="modal-popup-body">
-            <!-- Categories will be loaded by JavaScript -->
-        </div>
+        <div class="modal-body" id="modal-popup-body"></div>
     </div>
 </div>
 
+<!-- Main Script -->
 <script src="{{ asset('mobile/script.js') }}"></script>
+<script src="{{ asset('mobile/filter-fix.js') }}"></script>
 
+<!-- Filter Toggle Script -->
 <script>
-document.addEventListener('DOMContentLoaded', async () => {
-    const categoryId = window.location.pathname.split('/').pop();
-    renderBreadcrumb({ category: 'Category' });
-
-    // Mobile filter toggle
-    const filterSidebar = document.getElementById('filterSidebar');
-    const mobileFilterBtn = document.getElementById('mobileFilterBtn');
-    const filterCloseBtn = document.getElementById('filterCloseBtn');
-
-    if (mobileFilterBtn && filterSidebar) {
-        mobileFilterBtn.addEventListener('click', () => {
+document.addEventListener('DOMContentLoaded', function() {
+    const filterBtn = document.getElementById('mobile-filter-btn');
+    const closeFilter = document.getElementById('close-filter');
+    const filterSidebar = document.getElementById('filter-sidebar');
+    
+    if (filterBtn && closeFilter && filterSidebar) {
+        filterBtn.addEventListener('click', function(e) {
+            e.preventDefault();
             filterSidebar.classList.add('active');
             document.body.style.overflow = 'hidden';
         });
-    }
-
-    if (filterCloseBtn && filterSidebar) {
-        filterCloseBtn.addEventListener('click', () => {
+        
+        closeFilter.addEventListener('click', function(e) {
+            e.preventDefault();
             filterSidebar.classList.remove('active');
             document.body.style.overflow = '';
         });
+        
+        filterSidebar.addEventListener('click', function(e) {
+            if (e.target === filterSidebar) {
+                filterSidebar.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
     }
+});
+</script>
 
-    // Close filter when clicking outside
-    filterSidebar?.addEventListener('click', (e) => {
-        if (e.target === filterSidebar) {
-            filterSidebar.classList.remove('active');
-            document.body.style.overflow = '';
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const categoryId = document.body.dataset.categoryId || window.location.pathname.split('/').pop();
+    
+    // Load current category for filter
+    const catRes = await window.app.callAPI(`https://retailadmin.ggconsultancy.services/api/categories/${categoryId}`);
+    
+    if (catRes.success && catRes.data) {
+        const category = catRes.data;
+        
+        // Show current category in filter (pre-selected)
+        const shopForEl = document.getElementById('filter-shop-for');
+        if (shopForEl) {
+            shopForEl.innerHTML = `
+                <li class="filter-option">
+                    <input type="checkbox" class="parent-category-filter" value="${category.id}" id="cat-${category.id}" checked>
+                    <label for="cat-${category.id}">${category.name}</label>
+                </li>
+            `;
         }
-    });
+        
+        // Load subcategories
+        const subCategoryEl = document.getElementById('filter-categories');
+        if (subCategoryEl && category.children && category.children.length > 0) {
+            subCategoryEl.innerHTML = category.children.map(sub => `
+                <li class="filter-option">
+                    <input type="checkbox" class="sub-category-filter" value="${sub.id}" id="sub-${sub.id}">
+                    <label for="sub-${sub.id}">${sub.name}</label>
+                </li>
+            `).join('');
+        }
+    }
 
     // Load products
     const grid = document.getElementById('category-products-grid');
     const countEl = document.getElementById('product-count');
     
-    // Show loading skeleton
-    grid.innerHTML = Array(4).fill(0).map(() => `
+    // Show loading
+    grid.innerHTML = Array(6).fill(0).map(() => `
         <div class="product-card skeleton">
             <div class="p-img-wrap skeleton"></div>
             <div class="p-info">
-                <div class="p-brand skeleton" style="height:12px; width:60%; margin-bottom:8px;"></div>
-                <div class="p-name skeleton" style="height:10px; width:80%; margin-bottom:6px;"></div>
-                <div class="p-price-row">
-                    <span class="p-price skeleton" style="height:14px; width:40%;"></span>
-                </div>
+                <div class="skeleton" style="height:12px;width:60%"></div>
+                <div class="skeleton" style="height:10px;width:80%"></div>
             </div>
         </div>
     `).join('');
 
-    const res = await window.app.callAPI(
-        `${APP_CONFIG.ENDPOINTS.ALL_PRODUCTS}?category_id=${categoryId}`
-    );
-
-    const products = res?.data?.products || res?.data || [];
+    const res = await window.app.callAPI(`https://retailadmin.ggconsultancy.services/api/categories/${categoryId}/products`);
+    
+    const products = res?.data?.products || [];
+    const categoryName = res?.data?.category?.name || 'Category';
+    
+    renderBreadcrumb({ category: categoryName });
     countEl.innerText = products.length;
 
     grid.innerHTML = products.length
         ? products.map(p => window.app.genProductCard(p)).join('')
-        : `<p style="grid-column:1/-1;text-align:center;color:#999;padding:40px;">
-            No products found in this category
-           </p>`;
+        : `<p style="grid-column:1/-1;text-align:center;color:#999;padding:40px;">No products found</p>`;
 
     // Sort functionality
-    const sortSelect = document.getElementById('sortSelect');
+    const sortSelect = document.getElementById('sort-select');
     if (sortSelect) {
         sortSelect.addEventListener('change', (e) => {
             const value = e.target.value;
@@ -513,6 +294,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             grid.innerHTML = sortedProducts.map(p => window.app.genProductCard(p)).join('');
         });
     }
+
+    // Subcategory filter
+    document.addEventListener('change', (e) => {
+        if (e.target.classList.contains('sub-category-filter')) {
+            const selectedSubs = Array.from(document.querySelectorAll('.sub-category-filter:checked'))
+                .map(cb => cb.value);
+            
+            if (selectedSubs.length === 0) {
+                grid.innerHTML = products.map(p => window.app.genProductCard(p)).join('');
+                countEl.innerText = products.length;
+            } else {
+                const filtered = products.filter(p => selectedSubs.includes(String(p.sub_category_id)));
+                grid.innerHTML = filtered.map(p => window.app.genProductCard(p)).join('');
+                countEl.innerText = filtered.length;
+            }
+        }
+    });
 });
 </script>
 

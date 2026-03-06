@@ -489,7 +489,7 @@ button:hover{
             Don't have an account? <a href="/register">Create Account</a>
         </div>
     </form>
- <script>
+<script>
 const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
 
 document.getElementById("loginForm").addEventListener("submit", async function(e) {
@@ -516,7 +516,11 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
 
-            window.location.href = "/dashboard";
+            const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/checkout/shipping';
+            sessionStorage.removeItem('redirect_after_login');
+            sessionStorage.removeItem('login_message');
+            
+            window.location.href = redirectUrl;
 
         } else {
 
@@ -537,8 +541,6 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
 
 });
 </script>
-
-
 
 </div>
 

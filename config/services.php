@@ -34,5 +34,8 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'razorpay' => [
+        'key' => env('RAZORPAY_KEY_ID'),
+    ],
 
 ];
