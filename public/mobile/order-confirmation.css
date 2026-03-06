@@ -1,0 +1,120 @@
+
+.confirmation-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.success-icon {
+    font-size: 80px;
+    color: #4CAF50;
+    margin: 20px 0;
+    animation: bounce 1s ease;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.order-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 10px;
+}
+
+.success-message {
+    font-size: 18px;
+    color: #666;
+    margin: 20px 0;
+    line-height: 1.6;
+}
+
+.continue-btn {
+    background: #ff3f6c;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    margin: 20px 0;
+}
+
+.continue-btn:hover {
+    background: #ff1f4c;
+}
+
+.order-details {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+}
+
+.loading-spinner::after {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-left: 10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #ff3f6c;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-message {
+    color: #f44336;
+    text-align: center;
+    padding: 20px;
+}
+
+@media (max-width: 480px) {
+    .confirmation-container {
+        padding: 15px;
+    }
+    
+    .order-number {
+        font-size: 20px;
+    }
+    
+    .continue-btn {
+        width: 100%;
+    }
+}

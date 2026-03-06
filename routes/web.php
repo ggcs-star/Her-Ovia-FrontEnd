@@ -46,7 +46,9 @@ Route::get('/dashboard', function () {
 });
 
 ;
-
+Route::get('/category/{id}', function() {
+    return view('mobile.all-categories');
+});
 Route::get('/categories', function () {
     return view('mobile.all-categories');
 });
@@ -54,18 +56,40 @@ Route::get('/categories', function () {
 Route::get('/category', function () {
     return view('mobile.category');
 });
-Route::get('/category/{id}', function ($id) {
-    return view('mobile.category', ['categoryId' => $id]);
-});
 
 Route::get('/products', function () {
+    return view('mobile.products');
+});
+
+Route::get('/all-products', function () {
     return view('mobile.all-products');
-});
+})->name('all.products');
 
-Route::get('/products/{slug}', function () {
-    return view('mobile.product-detail');
+Route::get('/product/{slug}', function ($slug) {
+    return view('mobile.product-detail', ['slug' => $slug]);
+})->name('product.detail');
+// web.php
+Route::get('/cart', function () {
+    return view('mobile.cart');
 });
-
+Route::get('/coupon-terms', function () {
+    return view('mobile.coupon-terms');
+})->name('coupon.terms');
+Route::get('/wishlist', function () {
+    return view('mobile.wishlist');
+});
+Route::get('/subcategory/{id}', function($id) {
+    return view('mobile.subcategory');
+});
+Route::get('/checkout/shipping', function () {
+    return view('mobile.checkout');
+});
+Route::get('/profile', function () {
+    return view('mobile.profile');
+});
+Route::get('/order-confirmation/{orderId}', function ($orderId) {
+    return view('mobile.order-confirmation', ['orderId' => $orderId]);
+});
 /*
 |--------------------------------------------------------------------------
 | Logout

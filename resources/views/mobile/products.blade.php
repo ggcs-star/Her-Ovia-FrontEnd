@@ -2,59 +2,1105 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Products | RAPID RETAILS</title>
-    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Products | RAPID RETAIL</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #fff; }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .back-btn {
+            font-size: 20px;
+            cursor: pointer;
+            color: #333;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+        .header-right {
+            display: flex;
+            gap: 16px;
+            font-size: 18px;
+        }
+        .header-right span { cursor: pointer; }
+        .header-left img {
+            height: 30px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .sub-strip {
+            padding: 12px 16px;
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fff;
+            scrollbar-width: none;
+            position: sticky;
+            top: 60px;
+            z-index: 99;
+        }
+        .sub-strip::-webkit-scrollbar { display: none; }
+        .sub-item {
+            min-width: 70px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .sub-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #f8f8f8;
+            margin: 0 auto 6px;
+            border: 2px solid transparent;
+        }
+        .sub-img img { width: 100%; height: 100%; object-fit: cover; }
+        .sub-item.active .sub-img { border-color: #ff3f6c; }
+        .sub-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: #333;
+        }
+        .sub-item.active .sub-name { color: #ff3f6c; }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            padding: 16px;
+            padding-bottom: 140px;
+        }
+        .card {
+            cursor: pointer;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #f0f0f0;
+        }
+        .img-box {
+            position: relative;
+            aspect-ratio: 3/4;
+            background: #f8f8f8;
+        }
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #ff4d6d;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .wishlist {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            border: none;
+        }
+        .wishlist.active { color: #ff3f6c; }
+        .info {
+            padding: 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .brand {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 2px;
+        }
+        .name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #000;
+            margin-bottom: 4px;
+        }
+        .rating {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .stars { color: #ffc107; }
+        .price {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .current {
+            font-size: 15px;
+            font-weight: 700;
+            color: #000;
+        }
+        .original {
+            font-size: 12px;
+            color: #999;
+            text-decoration: line-through;
+        }
+        .off {
+            font-size: 11px;
+            font-weight: 600;
+            color: #ff3f6c;
+        }
+
+        .action-bar {
+            position: fixed;
+            bottom: 70px;
+            left: 0;
+            right: 0;
+            display: flex;
+            gap: 12px;
+            padding: 12px 16px;
+            background: white;
+            border-top: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+            z-index: 99;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            background: white;
+            border-top: 1px solid #f0f0f0;
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            font-size: 11px;
+            color: #666;
+            cursor: pointer;
+        }
+        .nav-item.active { color: #ff3f6c; }
+        .nav-icon { font-size: 20px; }
+
+        .sort-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 10001;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .sort-popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .sort-popup-content {
+            background: #fff;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px 20px 0 0;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .sort-popup-overlay.active .sort-popup-content {
+            transform: translateY(0);
+        }
+        .sort-popup-header {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sort-popup-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #000;
+            margin: 0;
+        }
+        .sort-popup-close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+        }
+        .sort-popup-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .sort-option {
+            display: block;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            font-size: 15px;
+            color: #333;
+        }
+        .sort-option input {
+            margin-right: 12px;
+            accent-color: #ff3f6c;
+        }
+        .sort-popup-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .sort-apply-btn {
+            width: 100%;
+            padding: 14px;
+            background: #ff3f6c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        /* Filter Popup Styles */
+/* Filter Popup Styles */
+.filter-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 10001;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+.filter-popup-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+.filter-popup-content {
+    background: #fff;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 20px 20px 0 0;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+.filter-popup-overlay.active .filter-popup-content {
+    transform: translateY(0);
+}
+.filter-popup-header {
+    padding: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.filter-popup-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #000;
+    margin: 0;
+}
+.filter-popup-close {
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+    line-height: 1;
+}
+.filter-popup-body {
+    padding: 0;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    position: relative;
+    min-height: 300px;
+}
+
+/* Left Column - Filter Titles */
+.filter-titles-column {
+    width: 100%;
+    padding: 10px 0;
+    transition: all 0.3s ease;
+}
+.filter-titles-column.half-width {
+    width: 50%;
+    border-right: 1px solid #f0f0f0;
+}
+.filter-title-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+}
+.filter-title-item:hover {
+    background: #f8f8f8;
+}
+.filter-title-item .arrow-icon {
+    color: #ff3f6c;
+    font-size: 18px;
+}
+
+/* Right Column - Filter Options */
+.filter-options-column {
+    width: 50%;
+    padding: 10px 0;
+    background: #fff;
+    height: 100%;
+    overflow-y: auto;
+}
+.filter-options-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.back-arrow {
+    font-size: 24px;
+    cursor: pointer;
+    color: #ff3f6c;
+    font-weight: 600;
+}
+.options-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+}
+.filter-options-content {
+    padding: 10px 0;
+}
+.filter-checkbox {
+    display: block;
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+}
+.filter-checkbox input {
+    margin-right: 12px;
+    accent-color: #ff3f6c;
+}
+.filter-checkbox:hover {
+    background: #f8f8f8;
+}
+
+.filter-popup-footer {
+    padding: 16px 20px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    gap: 12px;
+}
+.reset-btn {
+    flex: 1;
+    padding: 14px;
+    background: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.apply-btn {
+    flex: 2;
+    padding: 14px;
+    background: #ff3f6c;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+        .filter-section {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .filter-section-title {
+            padding: 15px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #000;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .filter-section-title .toggle-icon {
+            font-size: 20px;
+            color: #ff3f6c;
+            font-weight: 600;
+        }
+        .filter-section-content {
+            padding: 5px 0 15px 0;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .filter-checkbox {
+            display: block;
+            padding: 8px 0;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+        }
+        .filter-checkbox input {
+            margin-right: 10px;
+            accent-color: #ff3f6c;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            grid-column: 1/-1;
+        }
+    </style>
 </head>
-<body data-page="all-products">
-    <header class="site-header" id="site-header"></header>
+<body data-page="products" data-subcategory-id="{{ request()->query('subcategory') }}" data-category-id="{{ request()->query('category') }}">
 
-    <main class="page-content">
-        <div class="container section-container">
-            <div class="listing-intro">
-                <h1>DISCOVER ALL</h1>
-                <p>The global destination for refined shopping.</p>
-            </div>
-            <div class="listing-main">
-                <aside class="sidebar-filters desktop-only">
-                    <div class="filter-section">
-                        <h4>CATEGORIES</h4>
-                        <div id="filter-categories" class="filter-list"></div>
-                    </div>
-                    <div class="filter-section">
-                        <h4>PRICE RANGE</h4>
-                        <label class="custom-checkbox"><input type="checkbox"> ₹0 - ₹5,000<span></span></label>
-                        <label class="custom-checkbox"><input type="checkbox"> ₹5,001 - ₹15,000<span></span></label>
-                        <label class="custom-checkbox"><input type="checkbox"> ₹15,001+<span></span></label>
-                    </div>
-                </aside>
-                <div class="listing-content">
-                    <div id="all-products-grid" class="product-grid"></div>
-                    <div class="pagination-footer">
-                        <button id="load-more" class="btn-load-more">LOAD MORE ITEMS</button>
-                    </div>
-                </div>
-            </div>
+<div class="header">
+    <div class="header-left">
+        <span class="back-btn" onclick="window.history.back()">←</span>
+        <img src="{{ asset('images/logo.jpg') }}" alt="RAPID RETAIL" style="height: 32px; width: auto;">
+        <h1>Products</h1>
+    </div>
+    <div class="header-right">
+        <span onclick="window.location.href='/search'">🔍</span>
+        <span onclick="window.location.href='/wishlist'">❤️</span>
+        <span onclick="window.location.href='/cart'">🛒</span>
+    </div>
+</div>
+
+<div class="sub-strip" id="subStrip"></div>
+
+<div class="products" id="productsGrid">
+    <div class="loading">Loading products...</div>
+</div>
+
+<div class="action-bar">
+    <button class="action-btn" onclick="showSortPopup()"><span>⇅</span> Sort</button>
+    <button class="action-btn" onclick="showFilterPopup()"><span>⚲</span> Filter</button>
+</div>
+
+<div class="bottom-nav">
+    <div class="nav-item" onclick="window.location.href='/'">
+        <span class="nav-icon">🏠</span>
+        <span>Home</span>
+    </div>
+    <div class="nav-item active" onclick="window.location.href='/categories'">
+        <span class="nav-icon">🔲</span>
+        <span>Categories</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='/profile'">
+        <span class="nav-icon">👤</span>
+        <span>Profile</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='/cart'">
+        <span class="nav-icon">🛒</span>
+        <span>Cart</span>
+    </div>
+</div>
+
+<!-- Sort Popup -->
+<div class="sort-popup-overlay" id="sortPopupOverlay" onclick="hideSortPopup()">
+    <div class="sort-popup-content" onclick="event.stopPropagation()">
+        <div class="sort-popup-header">
+            <h3>Sort By</h3>
+            <span class="sort-popup-close" onclick="hideSortPopup()">×</span>
         </div>
-    </main>
-
-    <footer class="site-footer" id="site-footer"></footer>
-    <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
-
-    <!-- Global Category Popup (shared header modal) -->
-    <div class="category-modal" id="category-modal">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h2>SHOP BY CATEGORY</h2>
-                <span class="modal-close" id="close-category-modal">&times;</span>
-            </div>
-            <div class="modal-body" id="modal-popup-body">
-                <!-- Categories will be loaded by JavaScript -->
-            </div>
+        <div class="sort-popup-body">
+            <label class="sort-option"><input type="radio" name="sort" value="popularity"> Popularity</label>
+            <label class="sort-option"><input type="radio" name="sort" value="newest"> Newest</label>
+            <label class="sort-option"><input type="radio" name="sort" value="price-low"> Price: Low to High</label>
+            <label class="sort-option"><input type="radio" name="sort" value="price-high"> Price: High to Low</label>
+            <label class="sort-option"><input type="radio" name="sort" value="rating"> Rating</label>
+            <label class="sort-option"><input type="radio" name="sort" value="discount"> Discount</label>
+        </div>
+        <div class="sort-popup-footer">
+            <button class="sort-apply-btn" onclick="applySort()">Apply</button>
         </div>
     </div>
+</div>
 
-    <script src="{{ asset('mobile/script.js') }}"></script>
+<!-- Filter Popup -->
+<div class="filter-popup-overlay" id="filterPopupOverlay" onclick="hideFilterPopup()">
+    <div class="filter-popup-content" onclick="event.stopPropagation()">
+        <div class="filter-popup-header">
+            <h3>Filters</h3>
+            <span class="filter-popup-close" onclick="hideFilterPopup()">×</span>
+        </div>
+        <div class="filter-popup-body">
+            <!-- Left Column - Filter Titles -->
+            <div class="filter-titles-column" id="filterTitlesColumn">
+                <div class="filter-title-item" onclick="showFilterOptions('category')">
+                    <span>CATEGORY</span>
+                    <span class="arrow-icon">›</span>
+                </div>
+                <div class="filter-title-item" onclick="showFilterOptions('price')">
+                    <span>PRICE</span>
+                    <span class="arrow-icon">›</span>
+                </div>
+                <div class="filter-title-item" onclick="showFilterOptions('brand')">
+                    <span>BRAND</span>
+                    <span class="arrow-icon">›</span>
+                </div>
+                <div class="filter-title-item" onclick="showFilterOptions('size')">
+                    <span>SIZE</span>
+                    <span class="arrow-icon">›</span>
+                </div>
+                <div class="filter-title-item" onclick="showFilterOptions('color')">
+                    <span>COLOR</span>
+                    <span class="arrow-icon">›</span>
+                </div>
+                <div class="filter-title-item" onclick="showFilterOptions('fabric')">
+                    <span>FABRIC</span>
+                    <span class="arrow-icon">›</span>
+                </div>
+                <div class="filter-title-item" onclick="showFilterOptions('occasion')">
+                    <span>OCCASION</span>
+                    <span class="arrow-icon">›</span>
+                </div>
+                <div class="filter-title-item" onclick="showFilterOptions('discount')">
+                    <span>DISCOUNT</span>
+                    <span class="arrow-icon">›</span>
+                </div>
+                <div class="filter-title-item" onclick="showFilterOptions('rating')">
+                    <span>RATING</span>
+                    <span class="arrow-icon">›</span>
+                </div>
+            </div>
+            
+            <!-- Right Column - Filter Options (Initially Hidden) -->
+            <div class="filter-options-column" id="filterOptionsColumn" style="display: none;">
+                <div class="filter-options-header">
+                    <span class="back-arrow" onclick="hideFilterOptions()">‹</span>
+                    <span class="options-title" id="currentFilterTitle">CATEGORY</span>
+                </div>
+                <div class="filter-options-content" id="filterOptionsContent"></div>
+            </div>
+        </div>
+        <div class="filter-popup-footer">
+            <button class="reset-btn" onclick="resetFilters()">Reset</button>
+            <button class="apply-btn" onclick="applyFilters()">Apply</button>
+        </div>
+    </div>
+</div>
+<script>
+(function() {
+    const subId = document.body.dataset.subcategoryId;
+    const catId = document.body.dataset.categoryId;
+    
+    let allSubs = [];
+    let currentSub = subId;
+    let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+    let currentProducts = [];
+    let originalProducts = [];
+
+    async function fetchData() {
+        try {
+            const res = await fetch('https://retailadmin.ggconsultancy.services/api/categories');
+            const data = await res.json();
+            
+            if (data.success) {
+                let mainCat;
+                if (catId) {
+                    mainCat = data.data.find(c => c.id == catId);
+                } else {
+                    mainCat = data.data.find(c => c.children?.some(child => child.id == subId));
+                }
+                
+                if (mainCat) {
+                    allSubs = mainCat.children || [];
+                    renderSubs();
+                    if (currentSub) fetchProducts(currentSub);
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function renderSubs() {
+        const strip = document.getElementById('subStrip');
+        if (!strip) return;
+        if (!allSubs.length) { strip.style.display = 'none'; return; }
+        
+        const fallback = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
+        
+        strip.innerHTML = allSubs.map(sub => `
+            <div class="sub-item ${sub.id == currentSub ? 'active' : ''}" onclick="changeSubcategory(${sub.id})">
+                <div class="sub-img"><img src="${sub.image_url || fallback}" onerror="this.src='${fallback}'"></div>
+                <div class="sub-name">${sub.name}</div>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('.sub-item').forEach((item, i) => item.dataset.subid = allSubs[i].id);
+    }
+
+    window.changeSubcategory = function(newSubId) {
+        currentSub = newSubId;
+        document.querySelectorAll('.sub-item').forEach(item => {
+            item.classList.toggle('active', item.dataset.subid == newSubId);
+        });
+        fetchProducts(newSubId);
+        const url = new URL(window.location);
+        url.searchParams.set('subcategory', newSubId);
+        window.history.pushState({}, '', url);
+    };
+
+    async function fetchProducts(subId) {
+        const grid = document.getElementById('productsGrid');
+        grid.innerHTML = '<div class="loading">Loading products...</div>';
+        
+        try {
+            const res = await fetch(`https://retailadmin.ggconsultancy.services/api/categories/${subId}/products`);
+            const data = await res.json();
+            
+            if (data.success && data.data.products) {
+                currentProducts = data.data.products;
+                originalProducts = [...data.data.products];
+                renderProducts(currentProducts);
+            } else {
+                grid.innerHTML = '<div class="loading">No products found</div>';
+            }
+        } catch (error) {
+            grid.innerHTML = '<div class="loading">Error loading products</div>';
+        }
+    }
+
+    function renderProducts(products) {
+        const grid = document.getElementById('productsGrid');
+        if (!grid) return;
+        if (!products.length) { grid.innerHTML = '<div class="loading">No products found</div>'; return; }
+
+        const fallback = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
+
+        grid.innerHTML = products.map(p => {
+            const price = parseFloat(p.final_price || p.price || 0);
+            const mrp = parseFloat(p.price || 0);
+            const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
+            const rating = 4.3;
+            const full = Math.floor(rating);
+            const half = (rating % 1) >= 0.3;
+            let stars = '';
+            for (let i = 0; i < full; i++) stars += '★';
+            if (half) stars += '½';
+            for (let i = stars.length; i < 5; i++) stars += '☆';
+            
+            const inWish = wishlist.some(item => item.id == p.id);
+            const isBest = discount > 20;
+            
+            return `
+                <div class="card">
+                    <div class="img-box" onclick="window.location.href='/product/${p.slug}'">
+                        <img src="${p.image_url || fallback}" onerror="this.src='${fallback}'">
+                        ${isBest ? '<span class="badge">Best Seller</span>' : ''}
+                        <button class="wishlist ${inWish ? 'active' : ''}" 
+                                onclick="event.stopPropagation(); toggleWish(this, ${JSON.stringify({
+                                    id: p.id, name: p.name, price: price,
+                                    image: p.image_url, brand: p.brand, slug: p.slug
+                                }).replace(/"/g, '&quot;')})">
+                            ${inWish ? '❤️' : '♡'}
+                        </button>
+                    </div>
+                    <div class="info" onclick="window.location.href='/product/${p.slug}'">
+                        <div class="brand">${p.brand || 'RAPID RETAIL'}</div>
+                        <div class="name">${p.name}</div>
+                        <div class="rating"><span class="stars">${stars}</span> | ${Math.floor(Math.random() * 50) + 10}</div>
+                        <div class="price">
+                            <span class="current">₹${price.toLocaleString('en-IN')}</span>
+                            ${mrp > price ? `<span class="original">₹${mrp.toLocaleString('en-IN')}</span>` : ''}
+                            ${discount > 0 ? `<span class="off">${discount}% Off</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    window.toggleWish = function(btn, product) {
+        event.stopPropagation();
+        const exists = wishlist.some(item => item.id == product.id);
+        if (exists) {
+            wishlist = wishlist.filter(item => item.id != product.id);
+            btn.innerHTML = '♡';
+            btn.classList.remove('active');
+        } else {
+            wishlist.push(product);
+            btn.innerHTML = '❤️';
+            btn.classList.add('active');
+        }
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    };
+
+    window.showSortPopup = function() {
+        document.getElementById('sortPopupOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.hideSortPopup = function() {
+        document.getElementById('sortPopupOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    };
+
+    window.applySort = function() {
+        const selected = document.querySelector('input[name="sort"]:checked');
+        if (!selected) { alert('Please select a sort option'); return; }
+        
+        const sortBy = selected.value;
+        let sorted = [...currentProducts];
+        
+        switch(sortBy) {
+            case 'price-low':
+                sorted.sort((a, b) => (a.final_price || a.price || 0) - (b.final_price || b.price || 0));
+                break;
+            case 'price-high':
+                sorted.sort((a, b) => (b.final_price || b.price || 0) - (a.final_price || a.price || 0));
+                break;
+            case 'newest':
+                sorted.sort((a, b) => (b.id || 0) - (a.id || 0));
+                break;
+            default:
+                break;
+        }
+        
+        renderProducts(sorted);
+        hideSortPopup();
+    };
+
+    // Show filter popup
+    window.showFilterPopup = function() {
+        document.getElementById('filterPopupOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        hideFilterOptions();
+    };
+
+    // Hide filter popup
+    window.hideFilterPopup = function() {
+        document.getElementById('filterPopupOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    };
+
+    // Show filter options for selected category
+    window.showFilterOptions = function(filterType) {
+        const titlesColumn = document.querySelector('.filter-titles-column');
+        const optionsColumn = document.getElementById('filterOptionsColumn');
+        const optionsContent = document.getElementById('filterOptionsContent');
+        const titleElement = document.querySelector('.options-title');
+        
+        let displayTitle = filterType.toUpperCase();
+        if (filterType === 'category') {
+            displayTitle = 'SUBCATEGORIES';
+        }
+        titleElement.textContent = displayTitle;
+        
+        optionsContent.innerHTML = '<div style="padding: 20px; color: #999;">Loading...</div>';
+        loadFilterOptions(filterType, optionsContent);
+        
+        titlesColumn.classList.add('half-width');
+        optionsColumn.style.display = 'block';
+    };
+
+    // Hide filter options
+    window.hideFilterOptions = function() {
+        const titlesColumn = document.querySelector('.filter-titles-column');
+        const optionsColumn = document.getElementById('filterOptionsColumn');
+        
+        titlesColumn.classList.remove('half-width');
+        optionsColumn.style.display = 'none';
+    };
+
+    // Load filter options dynamically
+    async function loadFilterOptions(filterType, container) {
+        let options = [];
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryId = urlParams.get('category');
+        const subcategoryId = urlParams.get('subcategory');
+        
+        switch(filterType) {
+            case 'category':
+                try {
+                    const res = await fetch('https://retailadmin.ggconsultancy.services/api/categories');
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        let targetCategory = null;
+                        
+                        if (categoryId) {
+                            targetCategory = data.data.find(c => c.id == categoryId);
+                        } else if (subcategoryId) {
+                            targetCategory = data.data.find(c => 
+                                c.children?.some(child => child.id == subcategoryId)
+                            );
+                        }
+                        
+                        if (targetCategory && targetCategory.children && targetCategory.children.length > 0) {
+                            options = targetCategory.children.map(child => ({ 
+                                value: child.id, 
+                                label: child.name 
+                            }));
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading categories:', error);
+                }
+                break;
+                
+            case 'price':
+                options = [
+                    { value: '0-500', label: 'Below ₹500' },
+                    { value: '500-1000', label: '₹500 - ₹1000' },
+                    { value: '1000-2000', label: '₹1000 - ₹2000' },
+                    { value: '2000-3000', label: '₹2000 - ₹3000' },
+                    { value: '3000-5000', label: '₹3000 - ₹5000' },
+                    { value: '5000-999999', label: 'Above ₹5000' }
+                ];
+                break;
+                
+            case 'brand':
+                try {
+                    const targetId = subcategoryId || categoryId;
+                    if (targetId) {
+                        const res = await fetch(`https://retailadmin.ggconsultancy.services/api/categories/${targetId}/products`);
+                        const data = await res.json();
+                        
+                        if (data.success && data.data.products) {
+                            const brands = new Set();
+                            data.data.products.forEach(p => {
+                                if (p.brand) brands.add(p.brand);
+                            });
+                            options = Array.from(brands).map(b => ({ value: b, label: b }));
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading brands:', error);
+                }
+                break;
+                
+            case 'discount':
+                options = ['10%', '20%', '30%', '40%', '50%', '60%', '70%'].map(d => ({ 
+                    value: d, 
+                    label: `${d} & above` 
+                }));
+                break;
+                
+            case 'size':
+                options = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'].map(s => ({ value: s, label: s }));
+                break;
+                
+            case 'color':
+                options = ['Red', 'Blue', 'Green', 'Black', 'White', 'Pink', 'Yellow', 'Purple'].map(c => ({ value: c, label: c }));
+                break;
+                
+            case 'fabric':
+                options = ['Cotton', 'Polyester', 'Linen', 'Denim', 'Silk', 'Wool', 'Nylon'].map(f => ({ value: f, label: f }));
+                break;
+                
+            case 'occasion':
+                options = ['Casual', 'Formal', 'Party', 'Wedding', 'Sports', 'Travel'].map(o => ({ value: o, label: o }));
+                break;
+                
+            case 'rating':
+                options = ['4★', '3★', '2★', '1★'].map(r => ({ 
+                    value: r, 
+                    label: `${r} & above` 
+                }));
+                break;
+        }
+        
+        if (options.length > 0) {
+            container.innerHTML = options.map(opt => `
+                <label class="filter-checkbox">
+                    <input type="checkbox" class="filter-${filterType}" value="${opt.value}"> ${opt.label}
+                </label>
+            `).join('');
+        } else {
+            container.innerHTML = '<div style="padding: 20px; color: #999;">No options available</div>';
+        }
+    }
+
+    // Apply filters - FINAL VERSION
+    window.applyFilters = function() {
+        const selected = {
+            category: [],
+            price: [],
+            brand: [],
+            size: [],
+            color: [],
+            fabric: [],
+            occasion: [],
+            discount: [],
+            rating: []
+        };
+        
+        document.querySelectorAll('.filter-checkbox input:checked').forEach(cb => {
+            const classes = Array.from(cb.classList);
+            classes.forEach(cls => {
+                if (cls.startsWith('filter-')) {
+                    const filterType = cls.replace('filter-', '');
+                    if (selected[filterType]) {
+                        selected[filterType].push(cb.value);
+                    }
+                }
+            });
+        });
+        
+        console.log('Selected filters:', selected);
+        
+        // Handle category filter first
+        if (selected.category.length > 0) {
+            const firstCategory = selected.category[0];
+            if (firstCategory) {
+                window.changeSubcategory(firstCategory);
+                setTimeout(() => {
+                    applyOtherFilters(selected);
+                }, 500);
+            }
+        } else {
+            applyOtherFilters(selected);
+        }
+        
+        hideFilterPopup();
+    };
+
+    function applyOtherFilters(selected) {
+        let filtered = [...currentProducts];
+        let filterApplied = false;
+        
+        // Price filter
+        if (selected.price.length > 0) {
+            filterApplied = true;
+            filtered = filtered.filter(p => {
+                const price = parseFloat(p.final_price || p.price || 0);
+                return selected.price.some(range => {
+                    const [min, max] = range.split('-').map(Number);
+                    return price >= min && price <= max;
+                });
+            });
+        }
+        
+        // Brand filter
+        if (selected.brand.length > 0) {
+            filterApplied = true;
+            filtered = filtered.filter(p => selected.brand.includes(p.brand));
+        }
+        
+        // Discount filter
+        if (selected.discount.length > 0) {
+            filterApplied = true;
+            filtered = filtered.filter(p => {
+                if (p.price && p.final_price) {
+                    const original = parseFloat(p.price);
+                    const final = parseFloat(p.final_price);
+                    if (original > final) {
+                        const discount = Math.round(((original - final) / original) * 100);
+                        return selected.discount.some(d => {
+                            const discountVal = parseInt(d.replace('%', ''));
+                            return discount >= discountVal;
+                        });
+                    }
+                }
+                return false;
+            });
+        }
+        
+        if (filterApplied) {
+            if (filtered.length > 0) {
+                renderProducts(filtered);
+            } else {
+                document.getElementById('productsGrid').innerHTML = '<div class="loading" style="grid-column:1/-1; padding:40px; text-align:center; color:#999;">No products match your filters</div>';
+            }
+        }
+    }
+
+    // Reset filters
+    window.resetFilters = function() {
+        document.querySelectorAll('.filter-checkbox input').forEach(cb => cb.checked = false);
+        
+        if (currentSub) {
+            fetchProducts(currentSub);
+        } else {
+            const urlParams = new URLSearchParams(window.location.search);
+            const subId = urlParams.get('subcategory');
+            if (subId) {
+                fetchProducts(subId);
+            }
+        }
+    };
+
+    // Attach to filter button
+    document.querySelector('.action-btn:last-child').onclick = showFilterPopup;
+    
+    fetchData();
+})();
+</script>
 </body>
 </html>
