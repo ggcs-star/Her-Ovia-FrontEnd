@@ -10,56 +10,41 @@
 </head>
 <body class="cart-page" data-page="cart">
 
-<!-- Common Header -->
 <header class="site-header" id="site-header"></header>
 
-<!-- Safety Alert Banner -->
 <div class="safety-alert">
     <i>🔒</i> A gentle reminder to stay alert against prevalent fraudulent practices. RAPID RETAIL will never ask for OTPs, payments via unofficial links, or personal details for any contests or promotions.
 </div>
 
-<!-- Free Gifts Banner -->
 <div class="gifts-banner">
     🎁 You're Getting Free Gifts Up to ₹1800! 🎁
 </div>
 
-<!-- Main Cart Content -->
 <main class="cart-page-content">
     <div class="cart-container">
-        <!-- LEFT SECTION - Cart Items -->
         <section class="cart-left">
-            <div class="address-section">
-                <div class="address-info">
-                    <p class="address-text">Flat 202, Shree Residency, Near Ganesh Mall, Satellite Road, Ahmedabad, Gujarat 380015 India</p>
-                    <a href="#" class="change-address">Change</a>
-                </div>
-            </div>
+
             <h2>My Bag <span id="cart-count">0</span></h2>
             <div id="cart-items" class="cart-items-container"></div>
         </section>
 
-        <!-- RIGHT SECTION - Order Details -->
         <aside class="cart-right">
-            <!-- ===== COUPON SECTION ===== -->
             <div class="coupon-section">
                 <div class="coupon-header-row">
                     <h4>Apply Coupon</h4>
                     <a href="#" class="view-coupons-link">View Coupons</a>
                 </div>
                 
-                <!-- Manual Coupon Entry -->
                 <div class="coupon-box">
                     <input type="text" id="coupon-code-input" placeholder="Enter Coupon Code" value="">
                     <button id="apply-coupon-btn" class="apply-coupon">APPLY</button>
                 </div>
                 
-                <!-- Applied Coupon Tag (hidden by default) -->
                 <div class="applied-coupon" style="display: none;">
                     <span class="coupon-tag" id="applied-coupon-code"></span>
                     <button id="remove-coupon-btn" class="remove-coupon">✕</button>
                 </div>
 
-                <!-- Applicable Coupons List -->
                 <div class="applicable-coupons">
                     <h5>Applicable Coupons</h5>
                     <div id="coupons-list" class="coupons-list">
@@ -68,7 +53,6 @@
                 </div>
             </div>
 
-            <!-- Order Summary Card -->
             <div class="order-summary-card">
                 <h3>Order Summary (<span id="item-count">0</span> Items)</h3>
                 
@@ -82,7 +66,6 @@
                     <span class="value" id="total-discount">-₹0.00</span>
                 </div>
 
-                <!-- ✅ Coupon Discount Row (hidden by default) -->
                 <div class="summary-row coupon-discount" style="display: none;">
                     <span class="label">Coupon Discount</span>
                     <span class="value" id="coupon-discount">-₹0.00</span>
@@ -94,14 +77,13 @@
                 </div>
             </div>
 
-            <!-- Savings Message -->
             <div class="savings-message" style="display: none;">
                 <span>🎉</span> Yay! Your total discount is <span id="savings-amount">₹0</span>
             </div>
         </aside>
     </div>
 </main>
-<!-- Sticky Bottom Bar -->
+
 <div class="sticky-bottom-bar">
     <div class="bottom-bar-container">
         <div class="total-display">
@@ -111,13 +93,12 @@
     </div>
 </div>
 
-<!-- Common Footer -->
 <footer class="site-footer" id="site-footer"></footer>
 
-<!-- Mobile Bottom Navigation -->
+
 <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
 
-<!-- Scripts -->
+
 <script src="{{ asset('mobile/script.js') }}"></script>
 <script src="{{ asset('mobile/cart.js') }}"></script>
 <script src="{{ asset('mobile/wishlist.js') }}"></script>

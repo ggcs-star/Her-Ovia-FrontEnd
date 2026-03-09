@@ -6,20 +6,31 @@
     box-sizing: border-box;
 }
 
+:root {
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 body {
     font-family: 'Inter', sans-serif;
     background: #f5f5f5;
     color: #333;
+    padding-top: var(--safe-area-inset-top);
+    padding-bottom: calc(80px + var(--safe-area-inset-bottom));
+    min-height: 100vh;
 }
 
-/* Header Styles */
 .site-header {
     background: white;
     padding: 15px 20px;
+    padding-top: max(15px, var(--safe-area-inset-top));
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     position: sticky;
     top: 0;
     z-index: 100;
+    width: 100%;
 }
 
 .header-container {
@@ -81,10 +92,12 @@ body {
     text-align: center;
 }
 
-/* Profile Content */
 .profile-content {
     padding: 20px;
-    min-height: calc(100vh - 180px);
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+    padding-bottom: calc(20px + var(--safe-area-inset-bottom));
+    min-height: calc(100vh - 200px);
 }
 
 .profile-container {
@@ -92,7 +105,6 @@ body {
     margin: 0 auto;
 }
 
-/* Profile Header */
 .profile-header {
     background: white;
     border-radius: 16px;
@@ -150,6 +162,28 @@ body {
     border: 2px solid white;
 }
 
+.remove-avatar-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #ff3f6c;
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid white;
+    transition: background 0.3s;
+}
+
+.remove-avatar-btn:hover {
+    background: #d6305c;
+}
+
 .profile-info {
     flex: 1;
 }
@@ -183,7 +217,6 @@ body {
     cursor: pointer;
 }
 
-/* Profile Stats */
 .profile-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -218,7 +251,6 @@ body {
     color: #666;
 }
 
-/* Profile Menu Grid */
 .profile-menu {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -240,8 +272,6 @@ body {
     font-weight: 600;
 }
 
-/* Add these styles to your profile.css */
-
 .menu-item {
     display: flex;
     align-items: center;
@@ -260,7 +290,7 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding-right: 30px;  
+    padding-right: 30px;
 }
 
 .menu-arrow {
@@ -269,6 +299,29 @@ body {
     color: #999;
     font-size: 20px;
     font-weight: 300;
+}
+
+.menu-item:hover {
+    background: #f9f9f9;
+}
+
+.menu-item svg {
+    margin-right: 15px;
+    color: #666;
+}
+
+.menu-item span {
+    flex: 1;
+    font-size: 14px;
+}
+
+.badge-promo {
+    background: #ff3f6c;
+    color: white;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    margin-left: 10px;
 }
 
 .promo-banner {
@@ -320,62 +373,6 @@ body {
     font-weight: 600;
     backdrop-filter: blur(5px);
 }
-.menu-item:hover {
-    background: #f9f9f9;
-}
-
-.menu-item svg {
-    margin-right: 15px;
-    color: #666;
-}
-
-.menu-item span {
-    flex: 1;
-    font-size: 14px;
-}
-
-.menu-arrow {
-    color: #999;
-    font-size: 20px;
-}
-
-.badge-promo {
-    background: #ff3f6c;
-    color: white;
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 12px;
-    margin-left: 10px;
-}
-.promo-banner {
-    grid-column: 1 / -1;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 30px;
-    border-radius: 16px;
-    margin: 20px 0;
-    text-align: center;
-}
-
-.promo-banner h4 {
-    font-size: 24px;
-    margin-bottom: 10px;
-}
-
-.promo-banner p {
-    font-size: 16px;
-    opacity: 0.9;
-    margin-bottom: 15px;
-}
-
-.know-more {
-    color: white;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 16px;
-    border-bottom: 2px solid white;
-    padding-bottom: 2px;
-}
 
 .version-info {
     text-align: center;
@@ -386,7 +383,7 @@ body {
 
 .toast-message {
     position: fixed;
-    bottom: 100px;
+    bottom: calc(100px + var(--safe-area-inset-bottom));
     left: 50%;
     transform: translateX(-50%);
     padding: 12px 24px;
@@ -428,6 +425,44 @@ body {
     100% { transform: rotate(360deg); }
 }
 
+.mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 10px 0;
+    padding-bottom: max(10px, var(--safe-area-inset-bottom));
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    z-index: 1000;
+    display: flex;
+    height: calc(70px + var(--safe-area-inset-bottom));
+}
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #999;
+    font-size: 12px;
+    min-height: 48px;
+    padding: 4px 0;
+}
+
+.nav-item.active {
+    color: #ff3f6c;
+}
+
+.nav-item svg {
+    margin-bottom: 2px;
+    width: 22px;
+    height: 22px;
+}
 
 @media (max-width: 768px) {
     .profile-header {
@@ -454,32 +489,124 @@ body {
     
     .mobile-bottom-nav {
         display: flex;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: white;
-        padding: 10px 0;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-        z-index: 100;
+    }
+    
+    body {
+        padding-bottom: calc(70px + var(--safe-area-inset-bottom));
+    }
+}
+
+@media (max-width: 480px) {
+    .site-header {
+        padding: 10px 12px;
+    }
+    
+    .logo-text {
+        font-size: 18px;
+    }
+    
+    .header-icons {
+        gap: 10px;
+    }
+    
+    .icon-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .profile-content {
+        padding: 15px;
+        padding-bottom: calc(15px + var(--safe-area-inset-bottom));
+    }
+    
+    .profile-header {
+        padding: 15px;
+    }
+    
+    .profile-name {
+        font-size: 22px;
+    }
+    
+    .stat-value {
+        font-size: 20px;
+    }
+    
+    .mobile-bottom-nav {
+        height: calc(65px + var(--safe-area-inset-bottom));
     }
     
     .nav-item {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-decoration: none;
-        color: #999;
-        font-size: 12px;
-    }
-    
-    .nav-item.active {
-        color: #ff3f6c;
+        font-size: 11px;
     }
     
     .nav-item svg {
-        margin-bottom: 5px;
+        width: 20px;
+        height: 20px;
+    }
+}
+
+@media (max-width: 360px) {
+    .site-header {
+        padding: 8px 10px;
+    }
+    
+    .logo-text {
+        font-size: 16px;
+    }
+    
+    .header-icons {
+        gap: 8px;
+    }
+    
+    .icon-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .profile-header {
+        padding: 12px;
+    }
+    
+    .profile-name {
+        font-size: 20px;
+    }
+    
+    .profile-stats {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .mobile-bottom-nav {
+        height: calc(60px + var(--safe-area-inset-bottom));
+    }
+    
+    .nav-item {
+        font-size: 10px;
+    }
+    
+    .nav-item svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+@supports (padding: max(0px)) {
+    .site-header {
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+    }
+    
+    .profile-content {
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+    }
+    
+    .toast-message {
+        left: max(20px, env(safe-area-inset-left));
+        right: max(20px, env(safe-area-inset-right));
+        transform: none;
+        width: auto;
+        max-width: 90%;
     }
 }
 
@@ -491,25 +618,8 @@ body {
     .profile-content {
         padding-bottom: 40px;
     }
-}
-.remove-avatar-btn {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: #ff3f6c;
-    color: white;
-    border: none;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: 2px solid white;
-    transition: background 0.3s;
-}
-
-.remove-avatar-btn:hover {
-    background: #d6305c;
+    
+    body {
+        padding-bottom: 0;
+    }
 }

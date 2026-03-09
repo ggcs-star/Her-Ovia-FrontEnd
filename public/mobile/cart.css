@@ -1633,3 +1633,330 @@ body.cart-page {
         font-size: 16px;
     }
 }
+/* Cart Header with Back Button */
+.site-header .container {
+    width: 100%;
+}
+
+.cart-header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    background: white;
+    border-bottom: 1px solid var(--border-color);
+    width: 100%;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #333;
+    padding: 0;
+    transition: background 0.2s;
+}
+
+.back-btn:hover {
+    background: #f5f5f5;
+}
+
+.back-btn:active {
+    background: #e8e8e8;
+}
+
+.cart-header-container h1 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-dark);
+}
+
+.header-placeholder {
+    width: 40px;
+    height: 40px;
+    visibility: hidden;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .back-btn {
+        font-size: 22px;
+        width: 36px;
+        height: 36px;
+    }
+    
+    .cart-header-container h1 {
+        font-size: 16px;
+    }
+}
+/* Bank Offer Popup */
+.bank-offer-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.bank-offer-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+.bank-offer-content {
+    position: relative;
+    background: white;
+    width: 100%;
+    max-width: 340px;
+    border-radius: 28px;
+    padding: 32px 24px;
+    text-align: center;
+    animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    z-index: 1000001;
+}
+
+.bank-offer-icon {
+    font-size: 60px;
+    margin-bottom: 16px;
+    animation: bounce 0.5s ease;
+}
+
+.bank-offer-content h3 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #ff3f6c;
+    margin: 0 0 8px 0;
+}
+
+.bank-offer-code {
+    background: linear-gradient(135deg, #ff3f6c, #ff6b8b);
+    color: white;
+    font-size: 20px;
+    font-weight: 800;
+    padding: 8px 20px;
+    border-radius: 40px;
+    display: inline-block;
+    margin: 16px 0 12px;
+    letter-spacing: 1px;
+}
+
+.bank-offer-message {
+    font-size: 15px;
+    color: #666;
+    margin: 12px 0;
+    line-height: 1.5;
+}
+
+.bank-offer-details {
+    background: #f8f8f8;
+    border-radius: 16px;
+    padding: 16px;
+    margin: 20px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bank-offer-save {
+    font-size: 16px;
+    font-weight: 700;
+    color: #27ae60;
+}
+
+.bank-offer-min {
+    font-size: 14px;
+    color: #666;
+}
+
+.bank-offer-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.bank-offer-checkout-btn {
+    flex: 2;
+    background: linear-gradient(135deg, #ff3f6c, #ff6b8b);
+    color: white;
+    border: none;
+    padding: 14px 0;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.bank-offer-checkout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 63, 108, 0.4);
+}
+
+.bank-offer-close-btn {
+    flex: 1;
+    background: #f5f5f5;
+    color: #666;
+    border: none;
+    padding: 14px 0;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.bank-offer-close-btn:hover {
+    background: #e8e8e8;
+}
+
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.6) translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+.empty-cart-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.empty-cart-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+.empty-cart-popup-content {
+    position: relative;
+    background: white;
+    width: 100%;
+    max-width: 320px;
+    border-radius: 24px;
+    padding: 30px 20px;
+    text-align: center;
+    animation: popIn 0.4s ease;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    z-index: 1000001;
+}
+
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.empty-cart-popup-icon {
+    font-size: 60px;
+    margin-bottom: 15px;
+    animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.empty-cart-popup-content h3 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #282c3f;
+    margin-bottom: 10px;
+}
+
+.empty-cart-popup-content p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.empty-cart-popup-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.empty-cart-shop-btn {
+    flex: 2;
+    background: #ff3f6c;
+    color: white;
+    border: none;
+    padding: 14px 0;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.empty-cart-shop-btn:hover {
+    background: #e6395e;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255,63,108,0.3);
+}
+
+.empty-cart-close-btn {
+    flex: 1;
+    background: #f5f5f5;
+    color: #666;
+    border: none;
+    padding: 14px 0;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.empty-cart-close-btn:hover {
+    background: #e8e8e8;
+}
+.mobile-bottom-nav {
+    display: none !important;
+}

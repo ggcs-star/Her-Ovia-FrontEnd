@@ -11,17 +11,22 @@ body {
     color: #000;
 }
 
-/* Header */
+/* Header - RESPONSIVE FIX */
 .pdp-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 12px 16px;
+    padding-top: max(12px, env(safe-area-inset-top, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
     background: #fff;
     border-bottom: 1px solid #f0f0f0;
     position: sticky;
     top: 0;
     z-index: 100;
+    width: 100%;
+    box-sizing: border-box;
 }
 .pdp-header-left {
     display: flex;
@@ -33,6 +38,15 @@ body {
     cursor: pointer;
     color: #000;
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+.pdp-header-left .back-btn:hover {
+    background: #f5f5f5;
 }
 .pdp-header-right {
     display: flex;
@@ -44,6 +58,15 @@ body {
     font-size: 20px;
     cursor: pointer;
     color: #333;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+.pdp-header-right button:hover {
+    background: #f5f5f5;
 }
 
 /* Gallery */
@@ -232,7 +255,6 @@ body {
     margin-left: 4px;
 }
 
-/* Mobile ke liye */
 @media (max-width: 480px) {
     .simple-color-grid {
         grid-template-columns: repeat(1, 1fr);
@@ -1292,4 +1314,68 @@ body {
 @keyframes slideUp {
     from { transform: translateY(100%); }
     to { transform: translateY(0); }
+}
+
+/* Mobile Responsive for Header */
+@media (max-width: 768px) {
+    .pdp-header {
+        padding: 10px 12px;
+    }
+    .pdp-header-left .back-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+    }
+    .pdp-header-right button {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .pdp-header {
+        padding: 8px 10px;
+    }
+    .pdp-header-left {
+        gap: 12px;
+    }
+    .pdp-header-left .back-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+    }
+    .pdp-header-right {
+        gap: 12px;
+    }
+    .pdp-header-right button {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 360px) {
+    .pdp-header {
+        padding: 6px 8px;
+    }
+    .pdp-header-left .back-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+    }
+    .pdp-header-right button {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+}
+
+/* Safe area support */
+@supports (padding: max(0px)) {
+    .pdp-header {
+        padding-top: max(12px, env(safe-area-inset-top, 0px));
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
 }

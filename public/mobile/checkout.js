@@ -112,7 +112,7 @@ function loadCheckoutSummary() {
         couponCode
     });
     
-    // ✅ Direct localStorage se render karo (API ke bina)
+    
     renderCheckoutSummary({
         cart: {
             subtotal: totalMrp,
@@ -123,7 +123,6 @@ function loadCheckoutSummary() {
         }
     });
     
-    // API call optional hai - agar chaho to background me kar lo
     fetch(`${API_BASE_URL}/checkout/summary`, {
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -507,46 +506,100 @@ function selectAddress(addressId) {
 }
 
 function placeOrder() {
+    console.log('1. placeOrder function called');
+    
     const shippingAddress = document.querySelector(
         'input[name="shipping_address"]:checked'
     )?.value;
+
+    console.log('2. Selected address:', shippingAddress);
 
     if (!shippingAddress) {
         showToast('Please select a delivery address', 'error');
         return;
     }
 
-    fetch(`${API_BASE_URL}/checkout/place-order`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-            shipping_address_id: Number(shippingAddress),
-            billing_address_id: Number(shippingAddress),
-            payment_method_id: 1,
-            coupon_code: localStorage.getItem('applied_coupon') || null
-        })
-    })
-    .then(res => res.json())
-    .then(response => {
-        if (response.success) {
-            localStorage.removeItem('cart');
-            localStorage.removeItem('cart_synced');
-            localStorage.removeItem('applied_coupon');
-            localStorage.removeItem('coupon_discount');
-
-            showToast('Order placed successfully', 'success');
-            setTimeout(() => {
-                window.location.href = `/order-confirmation/${response.data.order.id}`;
-            }, 1200);
-        } else {
-            showToast(response.message || 'Could not place order', 'error');
+    syncCartWithDatabase(true).then(synced => {
+        if (!synced) {
+            showToast('Could not sync cart. Please try again.', 'error');
+            return;
         }
-    })
-    .catch(() => showToast('Network error. Please try again.', 'error'));
+        
+        console.log('Cart synced successfully, now placing order');
+        
+        const placeOrderBtn = document.querySelector('.place-order-btn');
+        if (placeOrderBtn) {
+            placeOrderBtn.disabled = true;
+            placeOrderBtn.innerText = 'Placing Order...';
+        }
+
+        fetch(`${API_BASE_URL}/checkout/place-order`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                shipping_address_id: Number(shippingAddress),
+                billing_address_id: Number(shippingAddress),
+                payment_method_id: 1,
+                coupon_code: localStorage.getItem('applied_coupon') || null
+            })
+        })
+        .then(res => res.json())
+        .then(response => {
+            console.log('API Response:', response);
+            
+            if (response.success) {
+                const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+                const orderData = {
+                    id: response.data.order.id,
+                    total: response.data.order.total,
+                    payment_status: response.data.order.payment_status || 'Paid',
+                    created_at: new Date().toISOString(),
+                    items: cartItems.map(item => ({
+                        product_name: item.name,
+                        price: item.price,
+                        quantity: item.quantity,
+                        image: item.image
+                    }))
+                };
+                
+                const recentOrders = JSON.parse(localStorage.getItem('recent_orders') || '[]');
+                recentOrders.unshift(orderData);
+                if (recentOrders.length > 10) recentOrders.pop();
+                localStorage.setItem('recent_orders', JSON.stringify(recentOrders));
+                localStorage.setItem('last_order', JSON.stringify(orderData));
+                localStorage.removeItem('cart');
+                localStorage.removeItem('cart_synced');
+                localStorage.removeItem('applied_coupon');
+                localStorage.removeItem('coupon_discount');
+
+                showToast('Order placed successfully', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = `/order-confirmation/${response.data.order.id}`;
+                }, 1200);
+            } else {
+                PAYMENT_IN_PROGRESS = false;
+                if (placeOrderBtn) {
+                    placeOrderBtn.disabled = false;
+                    placeOrderBtn.innerText = 'PLACE ORDER';
+                }
+                showToast(response.message || 'Could not place order', 'error');
+            }
+        })
+        .catch(err => {
+            PAYMENT_IN_PROGRESS = false;
+            if (placeOrderBtn) {
+                placeOrderBtn.disabled = false;
+                placeOrderBtn.innerText = 'PLACE ORDER';
+            }
+            console.error('Order error:', err);
+            showToast('Network error. Please try again.', 'error');
+        });
+    });
 }
 
 function getSelectedPaymentMethod() {
@@ -675,6 +728,28 @@ function verifyRazorpayPayment(response) {
     .then(res => {
         if (res.success) {
             PAYMENT_COMPLETED = true;
+
+            // ✅ ORDER SAVE KARO
+            const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+            
+            const orderData = {
+                id: res.data.order_id,
+                total: res.data.amount,
+                payment_status: 'Paid',
+                created_at: new Date().toISOString(),
+                items: cartItems.map(item => ({
+                    product_name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    image: item.image
+                }))
+            };
+            
+            const recentOrders = JSON.parse(localStorage.getItem('recent_orders') || '[]');
+            recentOrders.unshift(orderData);
+            if (recentOrders.length > 10) recentOrders.pop();
+            localStorage.setItem('recent_orders', JSON.stringify(recentOrders));
+            localStorage.setItem('last_order', JSON.stringify(orderData));
 
             localStorage.removeItem('cart');
             localStorage.removeItem('cart_synced');

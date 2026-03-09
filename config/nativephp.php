@@ -299,7 +299,8 @@ return [
     */
 
     'permissions' => [
-        //
+        'camera',
+        'storage',
     ],
 
     /*

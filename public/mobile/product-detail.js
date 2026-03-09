@@ -32,59 +32,76 @@
     }
     
     function showConfirmation(productName) {
-        const existingConfirmation = document.querySelector('.add-confirmation');
+        const existingConfirmation = document.querySelector('.add-confirmation, .cart-confirmation-popup');
         if (existingConfirmation) existingConfirmation.remove();
         
-        const confirmationHTML = `
-            <div class="add-confirmation" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 10002; text-align: center; min-width: 280px;">
-                <div style="font-size: 40px; margin-bottom: 10px;">✅</div>
-                <strong style="display: block; font-size: 18px; margin-bottom: 5px;">Added to bag!</strong>
-                <p style="color: #666; margin-bottom: 20px;">${productName}</p>
-                <div style="display: flex; gap: 10px;">
-                    <a href="/cart" style="flex: 1; padding: 12px; background: #ff3f6c; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">VIEW BAG</a>
-                    <button onclick="this.closest('.add-confirmation').remove()" style="flex: 1; padding: 12px; background: #f5f5f5; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">CONTINUE</button>
+        const popup = document.createElement('div');
+        popup.className = 'cart-confirmation-popup';
+        popup.innerHTML = `
+            <div class="cart-confirmation-overlay" onclick="closeCartConfirmation()"></div>
+            <div class="cart-confirmation-content">
+                <div class="cart-confirmation-icon">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ff3f6c" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-linecap="round"/>
+                        <polyline points="22 4 12 14.01 9 11.01" stroke-linecap="round"/>
+                    </svg>
                 </div>
-                <button onclick="this.closest('.add-confirmation').remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 20px; cursor: pointer;">×</button>
+                <h3 class="cart-confirmation-title">Added to Bag!</h3>
+                <p class="cart-confirmation-product">${productName}</p>
+                <div class="cart-confirmation-actions">
+                    <button class="cart-confirmation-viewbag" onclick="window.location.href='/cart'">VIEW BAG</button>
+                    <button class="cart-confirmation-continue" onclick="closeCartConfirmation()">CONTINUE SHOPPING</button>
+                </div>
+                <button class="cart-confirmation-close" onclick="closeCartConfirmation()">✕</button>
             </div>
         `;
         
-        document.body.insertAdjacentHTML('beforeend', confirmationHTML);
+        document.body.appendChild(popup);
+        document.body.style.overflow = 'hidden';
         
         setTimeout(() => {
-            const conf = document.querySelector('.add-confirmation');
-            if (conf) conf.remove();
-        }, 5000);
+            const popupElement = document.querySelector('.cart-confirmation-popup');
+            if (popupElement) {
+                popupElement.classList.add('fade-out');
+                setTimeout(() => {
+                    closeCartConfirmation();
+                }, 300);
+            }
+        }, 3000);
     }
+
+    window.closeCartConfirmation = function() {
+        const popup = document.querySelector('.cart-confirmation-popup');
+        if (popup) {
+            popup.remove();
+            document.body.style.overflow = '';
+        }
+    };
     
     window.addToBag = function(product) {
     console.log('🛒 addToBag called with product:', product);
     
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-    // ✅ ACTIVE VARIANT JO PRODUCT PAGE PAR SELECTED HAI
     let selectedVariant = null;
     
     if (product.variants && product.variants.length > 0) {
-        // Pehle active button check karo
         const activeBtn = document.querySelector('.variant-btn.active');
         if (activeBtn) {
             selectedVariant = product.variants.find(v => v.id == activeBtn.dataset.variantId);
         }
         
-        // Agar active nahi mila to first variant lo
         if (!selectedVariant) {
             selectedVariant = product.variants[0];
         }
     }
 
-    // ✅ EXACT PRICES FROM VARIANT
     const finalPrice = selectedVariant ? parseFloat(selectedVariant.final_price) : (parseFloat(product.final_price) || 0);
     const originalPrice = selectedVariant ? parseFloat(selectedVariant.price) : (parseFloat(product.price) || 0);
     const variantType = selectedVariant?.variant_type || 'Size';
     const variantValue = selectedVariant?.variant_value || 'S';
     const variantId = selectedVariant?.id || null;
     
-    // ✅ ALL VARIANTS FOR DROPDOWN
     const availableVariants = product.variants ? product.variants.map(v => ({
         id: v.id,
         value: v.variant_value,
@@ -92,9 +109,11 @@
         originalPrice: parseFloat(v.price) || 0
     })) : [];
 
-    // ✅ IMAGE - GALLERY SE LO
     let imageUrl = '';
-    if (product.gallery_images && product.gallery_images.length > 0) {
+    const mainImage = document.getElementById('mainImage');
+    if (mainImage) {
+        imageUrl = mainImage.src;
+    } else if (product.gallery_images && product.gallery_images.length > 0) {
         imageUrl = product.gallery_images[0];
     } else if (product.image_url) {
         imageUrl = product.image_url;
@@ -102,14 +121,13 @@
         imageUrl = 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c';
     }
 
-    // ✅ FINAL CART ITEM - EXACT DATA FROM PRODUCT PAGE
     const cartItem = {
         id: product.id,
         name: product.name,
-        brand: product.brand || '',           // Brand from product
-        price: finalPrice,                      // 780.00
-        mrp: originalPrice,                     // 800.00
-        originalPrice: originalPrice,            // 800.00
+        brand: product.brand || '',
+        price: finalPrice,
+        mrp: originalPrice,
+        originalPrice: originalPrice,
         image: imageUrl,
         slug: product.slug,
         variantType: variantType,
@@ -124,7 +142,6 @@
 
     console.log('📦 Final cart item:', cartItem);
 
-    // Check if same variant already exists
     const existingIndex = cart.findIndex(
         i => i.id === cartItem.id && i.variantValue === cartItem.variantValue
     );
@@ -139,7 +156,6 @@
     updateCartBadge();
     showConfirmation(product.name);
     
-    // Cart page par redirect
     setTimeout(() => {
         window.location.href = '/cart';
     }, 500);
@@ -174,7 +190,6 @@
         return;
     }
     
-    // ✅ Product object with all data
     const product = {
         id: currentProduct?.id,
         name: currentProduct?.name,
@@ -190,14 +205,12 @@
     
     window.addToBag(product);
 }
-    
-    // ✅ Back function with session storage
+        
     window.goBack = function() {
-        // Store that we're coming from product page
+        
         sessionStorage.setItem('fromProductPage', 'true');
         sessionStorage.setItem('returnToProduct', 'false');
         
-        // Go back
         window.history.back();
     };
     
@@ -245,6 +258,14 @@
         if (imageUrl) {
             const mainImage = document.getElementById('mainImage');
             mainImage.src = imageUrl;
+            
+            currentImages = [imageUrl];
+            currentImageIndex = 0;
+            
+            const counter = document.getElementById('currentImage');
+            if (counter) {
+                counter.textContent = `1/1`;
+            }
         }
         
         const variant = allSizes.find(v => v.color === colorCode);
@@ -268,7 +289,22 @@
                 }
             });
         }
-    };
+        
+        if (imageTimer) {
+            clearInterval(imageTimer);
+            imageTimer = null;
+        }
+    }
+
+    window.selectScrollColor = function(colorCode, imageUrl, colorName) {
+        document.querySelectorAll('.pdp-color-circle').forEach((circle, index) => {
+            const style = circle.getAttribute('style') || '';
+            if (style.includes(colorCode)) {
+                selectColor(circle, colorCode, imageUrl, colorName);
+            }
+        });
+        closeColorScrollPopup();
+    }
     
     window.selectVariant = function(btn, price, variantId, variantType) {
         document.querySelectorAll('.pdp-size-btn:not(.disabled)').forEach(b => b.classList.remove('active'));
@@ -337,44 +373,57 @@
     };
     
     window.showColorPopup = function() {
-        const existingPopup = document.querySelector('.color-scroll-popup');
-        if (existingPopup) existingPopup.remove();
+    const existingPopup = document.querySelector('.color-scroll-popup');
+    if (existingPopup) existingPopup.remove();
+    
+    const popup = document.createElement('div');
+    popup.className = 'color-scroll-popup';
+    
+    let colorsHtml = '<div class="color-scroll-container">';
+    
+    allColors.forEach((c, index) => {
+        let colorImage = c.image || currentImages[0];
         
-        const popup = document.createElement('div');
-        popup.className = 'color-scroll-popup';
+        const colorKeyword = (c.name || '').toLowerCase();
+        for (let i = 0; i < currentImages.length; i++) {
+            const img = currentImages[i].toLowerCase();
+            if (img.includes(colorKeyword)) {
+                colorImage = currentImages[i];
+                break;
+            }
+        }
         
-        let colorsHtml = '<div class="color-scroll-container">';
-        allColors.forEach(c => {
-            const variantForColor = allSizes.find(s => s.color === c.color);
-            const variantImage = variantForColor?.image || c.image || currentImages[0];
-            const isSelected = selectedColor === c.name;
-            
-            colorsHtml += `
-                <div class="color-scroll-item ${isSelected ? 'selected' : ''}" onclick="selectScrollColor('${c.color}', '${variantImage}', '${c.name}')">
-                    <div class="color-scroll-image">
-                        <img src="${variantImage}" onerror="this.src='https://via.placeholder.com/80x100?text=No+Image'">
-                    </div>
-                    <div class="color-scroll-info">
-                        <span class="color-scroll-dot" style="background: ${c.color}; ${c.color.toLowerCase() === '#ffffff' ? 'border:1px solid #ddd' : ''}"></span>
-                        <span class="color-scroll-name">${c.name}</span>
-                        ${isSelected ? '<span class="color-scroll-check">✓</span>' : ''}
-                    </div>
+        const isSelected = selectedColor === c.name;
+        
+        colorsHtml += `
+            <div class="color-scroll-item ${isSelected ? 'selected' : ''}" 
+                 onclick="selectScrollColor('${c.color}', '${colorImage}', '${c.name}')">
+                <div class="color-scroll-image">
+                    <img src="${colorImage}" 
+                         onerror="this.src='https://via.placeholder.com/80x100?text=No+Image'">
                 </div>
-            `;
-        });
-        colorsHtml += '</div>';
-        
-        popup.innerHTML = `
-            <div class="color-scroll-header">
-                <span>Select Color</span>
-                <button class="color-scroll-close" onclick="closeColorScrollPopup()">✕</button>
+                <div class="color-scroll-info">
+                    <span class="color-scroll-dot" style="background: ${c.color}; ${c.color.toLowerCase() === '#ffffff' ? 'border:1px solid #ddd' : ''}"></span>
+                    <span class="color-scroll-name">${c.name}</span>
+                    ${isSelected ? '<span class="color-scroll-check">✓</span>' : ''}
+                </div>
             </div>
-            ${colorsHtml}
         `;
-        
-        document.body.appendChild(popup);
-        document.body.style.overflow = 'hidden';
-    };
+    });
+    
+    colorsHtml += '</div>';
+    
+    popup.innerHTML = `
+        <div class="color-scroll-header">
+            <span>Select Color</span>
+            <button class="color-scroll-close" onclick="closeColorScrollPopup()">✕</button>
+        </div>
+        ${colorsHtml}
+    `;
+    
+    document.body.appendChild(popup);
+    document.body.style.overflow = 'hidden';
+}
     
     window.selectScrollColor = function(colorCode, imageUrl, colorName) {
         document.querySelectorAll('.pdp-color-circle').forEach((circle, index) => {
@@ -384,7 +433,7 @@
             }
         });
         closeColorScrollPopup();
-    };
+    }
     
     window.closeColorScrollPopup = function() {
         const popup = document.querySelector('.color-scroll-popup');
@@ -616,10 +665,8 @@
         const container = document.getElementById('offersContainer');
         if (!container) return;
         
-        // Current price nikaalo
         const currentPrice = parseFloat(selectedVariant?.final_price || displayPrice || 0);
         
-        // Applicable coupons filter karo
         const applicableCoupons = allCoupons.filter(coupon => {
             const minAmount = parseFloat(coupon.min_order_amount || 0);
             return currentPrice >= minAmount;
@@ -713,7 +760,7 @@
             const res = await fetch('https://retailadmin.ggconsultancy.services/api/coupons');
             const data = await res.json();
             if (data.success && data.data) {
-                allCoupons = data.data; // Pehle saare coupons store karo
+                allCoupons = data.data; 
             }
         } catch (error) {
             console.error('Error fetching coupons:', error);
@@ -1278,9 +1325,46 @@
     }
     
     window.buyNow = function() {
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        if (!token || !user.id) {
+            sessionStorage.setItem('redirect_after_login', '/checkout/shipping');
+            sessionStorage.setItem('login_message', 'Please login to continue checkout');
+            window.location.href = '/login';
+            return;
+        }
+        
+        if (!selectedSize && allSizes.length > 0) {
+            const sizeError = document.querySelector('.pdp-size-error');
+            if (sizeError) {
+                sizeError.style.display = 'block';
+            } else {
+                const sizeSection = document.querySelector('.pdp-size');
+                if (sizeSection) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'pdp-size-error';
+                    errorDiv.style.cssText = 'color: #ff3f6c; font-size: 13px; margin-top: 8px; display: block;';
+                    errorDiv.textContent = 'Please select a size';
+                    sizeSection.appendChild(errorDiv);
+                    
+                    setTimeout(() => {
+                        errorDiv.style.display = 'none';
+                    }, 3000);
+                }
+            }
+            
+            document.querySelector('.pdp-size-options')?.classList.add('size-error-shake');
+            setTimeout(() => {
+                document.querySelector('.pdp-size-options')?.classList.remove('size-error-shake');
+            }, 500);
+            
+            return;
+        }
+        
         addToCartFromProduct();
         setTimeout(() => {
-            window.location.href = '/checkout';
+            window.location.href = '/checkout/shipping';
         }, 500);
     };
     

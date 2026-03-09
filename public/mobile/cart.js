@@ -34,7 +34,9 @@ function loadCart() {
         }
     }, 100);
 }
-
+window.goBack = function() {
+    window.history.back();
+};
 async function fetchBrandsForCartItems(cart) {
     if (!cart || cart.length === 0) return cart;
     
@@ -80,14 +82,26 @@ function renderCart(items) {
     
     const container = document.getElementById('cart-items');
     const countEl = document.getElementById('cart-count');
+    const couponSection = document.querySelector('.coupon-section');
+    const orderSummary = document.querySelector('.order-summary-card');
+    const stickyBar = document.querySelector('.sticky-bottom-bar');
+    
     if (!container) return;
 
     if (items.length === 0) {
         container.innerHTML = getEmptyCartHTML();
         updatePriceDetails([]);
         if (countEl) countEl.innerText = '0';
+        
+        if (couponSection) couponSection.style.display = 'none';
+        if (orderSummary) orderSummary.style.display = 'none';
+        if (stickyBar) stickyBar.style.display = 'none';
+        
         return;
     }
+    if (couponSection) couponSection.style.display = 'block';
+    if (orderSummary) orderSummary.style.display = 'block';
+    if (stickyBar) stickyBar.style.display = 'flex';
 
     const fixedItems = items.map(item => {
         item.price = parseFloat(item.price) || 0;
@@ -640,11 +654,16 @@ function applyCoupon(couponCode = null) {
     const code = couponCode || document.getElementById('coupon-code-input')?.value;
     
     if (!code) {
-        alert('Please enter a coupon code');
+        showToast('Please enter a coupon code', 'error');
+        return;
+    }
+    const selectedCoupon = window.allCoupons?.find(c => c.code === code);
+    if (selectedCoupon?.coupon_type === 'BANK') {
+        showBankOfferPopup(selectedCoupon);
         return;
     }
     
-    const cartTotal = parseFloat(document.getElementById('total-mrp')?.innerText.replace('₹', '') || 0);
+    const cartTotal = parseFloat(document.getElementById('final-total')?.innerText.replace('₹', '') || 0);
     
     fetch('https://retailadmin.ggconsultancy.services/api/coupons/apply', {
         method: 'POST',
@@ -668,15 +687,50 @@ function applyCoupon(couponCode = null) {
             
             showCouponSuccessPopup(response.data.coupon_code, response.data.discount);
         } else {
-            alert(response.message || 'Failed to apply coupon');
+            showToast(response.message || 'Failed to apply coupon', 'error');
         }
     })
     .catch(err => {
         console.error('Error:', err);
-        alert('Error applying coupon');
+        showToast('Error applying coupon', 'error');
     });
 }
+function showBankOfferPopup(couponCode) {
+    const coupon = window.allCoupons?.find(c => c.code === couponCode);
+    if (!coupon) return;
+    
+    const popup = document.createElement('div');
+    popup.className = 'bank-offer-popup';
+    popup.innerHTML = `
+        <div class="bank-offer-overlay" onclick="closeBankOfferPopup()"></div>
+        <div class="bank-offer-content">
+            <div class="bank-offer-icon">🏦</div>
+            <h3>Bank Offer</h3>
+            <div class="bank-offer-code">${coupon.code}</div>
+            <p class="bank-offer-message">This offer can only be applied during checkout with online payment</p>
+            <div class="bank-offer-details">
+                <div class="bank-offer-save">Save: ₹${parseFloat(coupon.value).toFixed(2)}</div>
+                <div class="bank-offer-min">Min. Purchase: ₹${coupon.min_order_amount || 1000}</div>
+            </div>
+            <div class="bank-offer-buttons">
+                <button class="bank-offer-checkout-btn" onclick="window.location.href='/checkout/shipping'">Proceed to Checkout</button>
+                <button class="bank-offer-close-btn" onclick="closeBankOfferPopup()">Later</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(popup);
+}
 
+function closeBankOfferPopup() {
+    const popup = document.querySelector('.bank-offer-popup');
+    if (popup) {
+        popup.remove();
+    }
+}
+
+function goToCheckout() {
+    window.location.href = '/checkout/shipping';
+}
 function showCouponSuccessPopup(code, discount) {
     const popup = document.createElement('div');
     popup.className = 'coupon-success-popup';
@@ -733,16 +787,27 @@ function renderCouponsList(coupons) {
     const couponsList = document.getElementById('coupons-list');
     if (!couponsList) return;
     
-    const totalMrpEl = document.getElementById('total-mrp');
-    const cartTotal = parseFloat(totalMrpEl?.innerText.replace('₹', '') || 0);
+    const finalTotalEl = document.getElementById('final-total');
+    const cartTotal = parseFloat(finalTotalEl?.innerText.replace('₹', '') || 0);
     
     if (cartTotal === 0) {
         couponsList.innerHTML = '<div class="no-coupons">Add items to see applicable coupons</div>';
         return;
     }
     
-    const bankOffers = coupons.filter(coupon => coupon.coupon_type === 'BANK');
-    const normalCoupons = coupons.filter(coupon => coupon.coupon_type !== 'BANK');
+    // ✅ SIRF APPLICABLE COUPONS FILTER KARO
+    const applicableCoupons = coupons.filter(coupon => {
+        const minOrder = coupon.min_order_amount ? parseFloat(coupon.min_order_amount) : 0;
+        return cartTotal >= minOrder;
+    });
+    
+    if (applicableCoupons.length === 0) {
+        couponsList.innerHTML = '<div class="no-coupons">No applicable coupons for this order</div>';
+        return;
+    }
+    
+    const bankOffers = applicableCoupons.filter(coupon => coupon.coupon_type === 'BANK');
+    const normalCoupons = applicableCoupons.filter(coupon => coupon.coupon_type !== 'BANK');
     
     let html = '';
     
@@ -783,6 +848,13 @@ function getCouponCardHTML(coupon, cartTotal) {
     const badgeClass = isBank ? 'bank-badge' : 'normal-badge';
     const badgeText = isBank ? '🏦 Bank Offer' : '🎫 Special Offer';
     
+    let applyButton;
+    if (isBank) {
+        applyButton = `<button class="coupon-apply-btn bank-offer-btn" onclick="showBankOfferPopup('${coupon.code}'); event.stopPropagation();">Apply at Checkout</button>`;
+    } else {
+        applyButton = `<button class="coupon-apply-btn" onclick="applyCoupon('${coupon.code}'); event.stopPropagation();">Apply</button>`;
+    }
+    
     return `
         <div class="coupon-card ${cardClass}" data-code="${coupon.code}">
             <div class="coupon-header">
@@ -793,7 +865,7 @@ function getCouponCardHTML(coupon, cartTotal) {
             <div class="coupon-savings">💰 You save: ₹${savings.toFixed(2)}</div>
             ${minOrder > 0 ? `<div class="coupon-min">Min. purchase: ₹${minOrder}</div>` : ''}
             <div class="coupon-footer">
-                <button class="coupon-apply-btn" onclick="applyCoupon('${coupon.code}'); event.stopPropagation();">Apply</button>
+                ${applyButton}
                 <button class="coupon-tnc-btn" onclick="showCouponTerms('${coupon.code}'); event.stopPropagation();">View T & C</button>
             </div>
         </div>
@@ -918,7 +990,7 @@ function proceedToCheckout() {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
 
     if (cart.length === 0) {
-        alert('Your cart is empty!');
+        showEmptyCartPopup();
         return;
     }
 
@@ -934,6 +1006,30 @@ function proceedToCheckout() {
     window.location.href = '/checkout/shipping';
 }
 
+function showEmptyCartPopup() {
+    const popup = document.createElement('div');
+    popup.className = 'empty-cart-popup';
+    popup.innerHTML = `
+        <div class="empty-cart-overlay" onclick="closeEmptyCartPopup()"></div>
+        <div class="empty-cart-popup-content">
+            <div class="empty-cart-popup-icon">🛒</div>
+            <h3>Your cart is empty!</h3>
+            <p>Looks like you haven't added anything to your bag yet</p>
+            <div class="empty-cart-popup-buttons">
+                <button class="empty-cart-shop-btn" onclick="window.location.href='/'">SHOP NOW</button>
+                <button class="empty-cart-close-btn" onclick="closeEmptyCartPopup()">CLOSE</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(popup);
+}
+
+function closeEmptyCartPopup() {
+    const popup = document.querySelector('.empty-cart-popup');
+    if (popup) {
+        popup.remove();
+    }
+}
 function handleLoginSuccess(userData, token) {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));

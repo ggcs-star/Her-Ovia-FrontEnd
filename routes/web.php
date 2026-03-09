@@ -30,7 +30,10 @@ Route::get('/login', function () {
 Route::get('/register', fn () => view('mobile.auth.register'));
 
 Route::get('/verify-otp', fn () => view('mobile.auth.verify'));
-
+Route::get('/forgot-password', fn () => view('mobile.auth.forgot-password'));
+Route::get('/reset-password', function () {
+    return view('mobile.auth.reset-password');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -78,6 +81,9 @@ Route::get('/coupon-terms', function () {
 Route::get('/wishlist', function () {
     return view('mobile.wishlist');
 });
+Route::get('/orders', function () {
+    return view('mobile.orders');
+})->name('orders');
 Route::get('/subcategory/{id}', function($id) {
     return view('mobile.subcategory');
 });
@@ -90,6 +96,9 @@ Route::get('/profile', function () {
 Route::get('/order-confirmation/{orderId}', function ($orderId) {
     return view('mobile.order-confirmation', ['orderId' => $orderId]);
 });
+Route::get('/trends', function () {
+    return view('mobile.trends');
+})->name('trends');
 /*
 |--------------------------------------------------------------------------
 | Logout
