@@ -43,7 +43,7 @@
                     <tr><td>XXL</td><td>42</td><td>34</td><td>44</td><td>46</td></tr>
                 </tbody>
             </table>
-            <div class="pdp-measure-link" onclick="alert('How to Measure guide coming soon!')">How to Measure ›</div>
+            <!-- <div class="pdp-measure-link" onclick="alert('How to Measure guide coming soon!')">How to Measure ›</div> -->
         </div>
     </div>
 </div>

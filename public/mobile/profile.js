@@ -209,7 +209,7 @@ function renderProfile(user) {
                     <span>My Orders</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/returns'">
+                <div class="menu-item" onclick="return false;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                         <circle cx="12" cy="12" r="3"/>
@@ -221,39 +221,39 @@ function renderProfile(user) {
             
             <div class="menu-card">
                 <h3>Customer Care</h3>
-                <div class="menu-item" onclick="window.location.href='/help/how-to-return'">
+                <div class="menu-item" onclick="return false;">
                     <span>How To Return</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/help/redeem-coupon'">
+                <div class="menu-item" onclick="return false;">
                     <span>How Do I Redeem My Coupon?</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/help/terms'">
+                <div class="menu-item" onclick="return false;">
                     <span>Terms & Conditions</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/help/promotions'">
+                <div class="menu-item" onclick="return false;">
                     <span>Promotions Terms & Conditions</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/help/returns-policy'">
+                <div class="menu-item" onclick="return false;">
                     <span>Returns & Refunds Policy</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/help/privacy'">
+                <div class="menu-item" onclick="return false;">
                     <span>We Respect Your Privacy</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/help/fees'">
+                <div class="menu-item" onclick="return false;">
                     <span>Fees & Payments</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/help/about'">
+                <div class="menu-item" onclick="return false;">
                     <span>Who We Are</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/help/careers'">
+                <div class="menu-item" onclick="return false;">
                     <span>Join Our Team</span>
                     <span class="menu-arrow">›</span>
                 </div>
@@ -261,7 +261,7 @@ function renderProfile(user) {
             
             <div class="menu-card">
                 <h3>Wallet & Rewards</h3>
-                <div class="menu-item" onclick="window.location.href='/invite'">
+                <div class="menu-item" onclick="return false;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                         <circle cx="9" cy="7" r="4"/>
@@ -272,7 +272,7 @@ function renderProfile(user) {
                     <span class="badge-promo">₹100 SuperCash</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/gift-cards'">
+                <div class="menu-item" onclick="return false;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <rect x="2" y="4" width="20" height="16" rx="2"/>
                         <path d="M12 8v8"/>
@@ -281,16 +281,16 @@ function renderProfile(user) {
                     <span>Add Gift Card</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/wallet'">
+                <div class="menu-item" onclick="return false;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <rect x="2" y="6" width="20" height="14" rx="2" ry="2"/>
                         <circle cx="16" cy="14" r="2"/>
                         <path d="M22 10h-4a4 4 0 0 0-8 0H2"/>
                     </svg>
-                    <span>AJIO Wallet</span>
+                    <span>Rapid Wallet</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/cards'">
+                <div class="menu-item" onclick="return false;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
                         <line x1="1" y1="10" x2="23" y2="10"/>
@@ -298,7 +298,7 @@ function renderProfile(user) {
                     <span>Saved Cards</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/rewards'">
+                <div class="menu-item" onclick="return false;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <circle cx="12" cy="8" r="7"/>
                         <polyline points="8 21 12 17 16 21"/>
@@ -306,7 +306,7 @@ function renderProfile(user) {
                     <span>My Rewards</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/addresses'">
+                <div class="menu-item" onclick="return false;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                         <circle cx="12" cy="10" r="3"/>
@@ -314,7 +314,7 @@ function renderProfile(user) {
                     <span>Address</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/notifications'">
+                <div class="menu-item" onclick="return false;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -346,7 +346,6 @@ function renderProfile(user) {
     
     container.innerHTML = html;
 }
-
 function triggerImageUpload() {
     document.getElementById('avatarUpload')?.click();
 }

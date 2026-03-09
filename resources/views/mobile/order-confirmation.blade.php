@@ -26,7 +26,10 @@
             <div class="loading-spinner">Loading order details...</div>
         </div>
         
-        <a href="/" class="continue-btn">Continue Shopping</a>
+        <div class="action-buttons">
+            <a href="/" class="continue-btn">Continue Shopping</a>
+            <a href="/orders" class="view-orders-btn">View My Orders</a>
+        </div>
     </div>
 
     <script>

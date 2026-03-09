@@ -187,6 +187,7 @@
     <div class="right">
         <h2>Verify OTP</h2>
         <div class="subtitle">Enter the 6-digit verification code.</div>
+        <div id="alertContainer"></div>
 
         @if(session('error'))
             <div class="alert alert-error">
@@ -230,31 +231,59 @@
 <script>
 const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
 
-document.addEventListener("DOMContentLoaded", function () {
+function showAlert(message, type) {
+    const alertContainer = document.getElementById('alertContainer');
+    if (!alertContainer) return;
+    
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.textContent = message;
+    alertContainer.innerHTML = '';
+    alertContainer.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
 
+document.addEventListener("DOMContentLoaded", function () {
     const otpForm = document.getElementById("otpForm");
     const resendBtn = document.getElementById("resendOtp");
+    
+    // Add alert container if not exists
+    const form = document.querySelector('.right');
+    if (!document.getElementById('alertContainer')) {
+        const alertDiv = document.createElement('div');
+        alertDiv.id = 'alertContainer';
+        form.insertBefore(alertDiv, form.firstChild);
+    }
+    
+    const email = localStorage.getItem("verify_email") || localStorage.getItem("reset_email");
+    
+    if (!email) {
+        showAlert("Email not found. Please try again.", "error");
+        setTimeout(() => {
+            window.location.href = "/login";
+        }, 2000);
+        return;
+    }
 
-    // OTP VERIFY
     otpForm.addEventListener("submit", async function (e) {
         e.preventDefault();
 
         const otp = document.querySelector("input[name='otp']").value.trim();
-        const email = localStorage.getItem("verify_email");
-
-        if (!email) {
-            alert("Email not found. Please register again.");
-            window.location.href = "/register";
-            return;
-        }
 
         if (otp.length !== 6) {
-            alert("Please enter a valid 6-digit OTP.");
+            showAlert("Please enter a valid 6-digit OTP.", "error");
             return;
         }
 
         try {
-            const response = await fetch(BASE_URL + "/user/verify-email-otp", {
+            const apiEndpoint = localStorage.getItem("reset_email")
+                ? BASE_URL + "/user/verify-reset-otp"
+                : BASE_URL + "/user/verify-email-otp";
+
+            const response = await fetch(apiEndpoint, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -266,33 +295,48 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = await response.json();
             console.log("Verify Response:", data);
 
-            if (response.ok) {
-                alert("Email verified successfully!");
-                localStorage.removeItem("verify_email");
-                window.location.href = "/login";
+            if (response.ok && data.success) {
+                showAlert("Verified successfully!", "success");
+                
+                if (localStorage.getItem("reset_email")) {
+                    localStorage.setItem("reset_verified", "true");
+                    localStorage.setItem("reset_otp", otp);
+                    setTimeout(() => {
+                        window.location.href = "/reset-password";
+                    }, 1500);
+                    
+                } else {
+                    localStorage.removeItem("verify_email");
+                    setTimeout(() => {
+                        window.location.href = "/login";
+                    }, 1500);
+                }
             } else {
-                alert(data.message || "Invalid OTP");
+                showAlert(data.message || "Invalid OTP", "error");
             }
 
         } catch (error) {
             console.error("OTP error:", error);
-            alert("Server error. Please try again.");
+            showAlert("Server error. Please try again.", "error");
         }
     });
 
-    // RESEND OTP
     resendBtn.addEventListener("click", async function (e) {
         e.preventDefault();
 
-        const email = localStorage.getItem("verify_email");
+        const email = localStorage.getItem("verify_email") || localStorage.getItem("reset_email");
 
         if (!email) {
-            alert("Email not found.");
+            showAlert("Email not found.", "error");
             return;
         }
 
         try {
-            const response = await fetch(BASE_URL + "/user/resend-email-otp", {
+            const resendEndpoint = localStorage.getItem("reset_email")
+                ? BASE_URL + "/user/forgot-password"
+                : BASE_URL + "/user/resend-email-otp";
+
+            const response = await fetch(resendEndpoint, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -305,17 +349,16 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Resend Response:", data);
 
             if (response.ok) {
-                alert("OTP resent successfully!");
+                showAlert("OTP resent successfully! Check your email.", "success");
             } else {
-                alert(data.message || "Failed to resend OTP.");
+                showAlert(data.message || "Failed to resend OTP.", "error");
             }
 
         } catch (error) {
             console.error("Resend OTP error:", error);
-            alert("Server error while resending OTP.");
+            showAlert("Server error while resending OTP.", "error");
         }
     });
-
 });
 </script>
 

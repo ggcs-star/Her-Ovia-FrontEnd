@@ -293,6 +293,22 @@ button:hover{
         margin-top:25px;
         font-size:15px;
     }
+    .alert{
+        padding:12px 14px;
+        border-radius:8px;
+        margin-bottom:20px;
+        font-size:14px;
+    }
+
+    .alert-error{
+        background:#fee2e2;
+        color:#b91c1c;
+    }
+
+    .alert-success{
+        background:#dcfce7;
+        color:#166534;
+    }
 }
 
 /* Small Mobile Devices */
@@ -519,15 +535,49 @@ input, button{
 <script>
 const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
 
-document.addEventListener("DOMContentLoaded", function () {
+function showAlert(message, type) {
+    const existingAlert = document.querySelector('.alert');
+    if (existingAlert) existingAlert.remove();
+    
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.textContent = message;
+    
+    const form = document.getElementById('registerForm');
+    form.parentNode.insertBefore(alertDiv, form);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
 
+document.addEventListener("DOMContentLoaded", function () {
     const formElement = document.getElementById("registerForm");
 
     formElement.addEventListener("submit", async function (e) {
         e.preventDefault();
 
-        try {
+        const name = document.querySelector("input[name='name']").value.trim();
+        const email = document.querySelector("input[name='email']").value.trim();
+        const password = document.querySelector("input[name='password']").value;
+        const passwordConfirmation = document.querySelector("input[name='password_confirmation']").value;
 
+        if (!name || !email || !password || !passwordConfirmation) {
+            showAlert("Please fill in all fields", 'error');
+            return;
+        }
+
+        if (password !== passwordConfirmation) {
+            showAlert("Passwords do not match", 'error');
+            return;
+        }
+
+        if (password.length < 8) {
+            showAlert("Password must be at least 8 characters", 'error');
+            return;
+        }
+
+        try {
             const response = await fetch(BASE_URL + "/user/register", {
                 method: "POST",
                 headers: {
@@ -535,34 +585,31 @@ document.addEventListener("DOMContentLoaded", function () {
                     "Accept": "application/json"
                 },
                 body: JSON.stringify({
-                    name: document.querySelector("input[name='name']").value.trim(),
-                    email: document.querySelector("input[name='email']").value.trim(),
-                    password: document.querySelector("input[name='password']").value,
-                    password_confirmation: document.querySelector("input[name='password_confirmation']").value
+                    name,
+                    email,
+                    password,
+                    password_confirmation: passwordConfirmation
                 })
             });
 
             const data = await response.json();
             console.log("API Response:", data);
-if (response.ok) {
 
-    localStorage.setItem("verify_email",
-        document.querySelector("input[name='email']").value.trim()
-    );
-
-    window.location.href = "/verify-otp";
-
-} else {
-    alert(data.message || "Registration failed");
-}
-
+            if (response.ok) {
+                localStorage.setItem("verify_email", email);
+                showAlert("Registration successful! Redirecting to verification...", 'success');
+                setTimeout(() => {
+                    window.location.href = "/verify-otp";
+                }, 1500);
+            } else {
+                showAlert(data.message || "Registration failed", 'error');
+            }
 
         } catch (error) {
             console.error("Register error:", error);
-            alert("Server error. Please try again.");
+            showAlert("Server error. Please try again.", 'error');
         }
     });
-
 });
 </script>
 </div>

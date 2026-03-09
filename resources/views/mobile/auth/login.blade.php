@@ -219,12 +219,11 @@ button:hover{
         margin:0;
     }
 
-    /* Overlay fix */
     .left::before{
         background:linear-gradient(
             135deg,
             rgba(0,0,0,0.6),
-            rgba(37,99,235,0.6)
+            rgba(255,63,108,0.6)  /* Blue (#2563eb) → Pink (#ff3f6c) */
         );
     }
 
@@ -288,7 +287,8 @@ button:hover{
     }
 
     input:focus{
-        background:#ffffff;
+        border-color:#ff3f6c;
+        box-shadow:0 0 0 3px rgba(255,63,108,0.15);
     }
 
     button{
@@ -296,6 +296,11 @@ button:hover{
         font-size:16px;
         border-radius:12px;
         margin-top:20px;
+        background:#ff3f6c;
+
+    }
+    button:hover{
+        background:#e6395e;
     }
 
     .links{
@@ -306,6 +311,10 @@ button:hover{
         margin-top:25px;
         font-size:15px;
     }
+    .links a, .register a{
+    color:#ff3f6c;
+}
+
 }
 
 /* Small Mobile Devices */
@@ -427,6 +436,15 @@ button:hover{
         padding:8px 12px;
     }
 }
+@media(max-width:768px){
+    .left::before{
+        background:linear-gradient(
+            135deg,
+            rgba(0,0,0,0.6),
+            rgba(255,63,108,0.6)
+        );
+    }
+}
 </style>
 </head>
 <body>
@@ -480,7 +498,7 @@ button:hover{
         </div>
 
         <div class="links">
-            <a href="#">Forgot password?</a>
+            <a href="/forgot-password">Forgot password?</a>
         </div>
 
         <button type="submit">Login</button>
@@ -491,6 +509,22 @@ button:hover{
     </form>
 <script>
 const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
+
+function showAlert(message, type) {
+    const existingAlert = document.querySelector('.alert');
+    if (existingAlert) existingAlert.remove();
+    
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.textContent = message;
+    
+    const form = document.getElementById('loginForm');
+    form.parentNode.insertBefore(alertDiv, form);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
 
 document.getElementById("loginForm").addEventListener("submit", async function(e) {
     e.preventDefault();
@@ -530,14 +564,14 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
                 window.location.href = "/verify-otp";
 
             } else {
-                alert(data.message || "Login failed");
+                showAlert(data.message || "Login failed", 'error');  
             }
-        }
+            }
 
-    } catch (error) {
-        console.error("Login error:", error);
-        alert("Server error. Please try again.");
-    }
+            } catch (error) {
+                console.error("Login error:", error);
+                showAlert("Server error. Please try again.", 'error'); 
+            }
 
 });
 </script>

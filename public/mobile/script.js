@@ -32,45 +32,98 @@ class RapidRetailsEngine {
         const header = document.getElementById('site-header');
         if (!header) return;
 
+        // Check current page
+        const isCartPage = document.body.classList.contains('cart-page');
+        const isCheckoutPage = document.body.classList.contains('checkout-page');
+        const isProfilePage = document.body.classList.contains('profile-page');
+        const isOrdersPage = document.body.classList.contains('orders-page');
+        const showBackButton = isCartPage || isCheckoutPage || isProfilePage || isOrdersPage;
+        
         header.innerHTML = `
             <div class="container">
                 <div class="header-container">
-                    <div class="mobile-search-figma">
-                        <span class="search-icon-figma">🔍</span>
-                        <input type="text" placeholder="Search for Category, Product ...">
+                    ${showBackButton ? '<button class="back-btn-header" onclick="goBack()">←</button>' : ''}
+                    <div class="logo-search-container">
+                        <div class="header-logo">
+                            <a href="/">
+                                <img src="/images/logo.jpg" alt="RAPID RETAIL" class="site-logo" 
+                                    onerror="this.src='https://via.placeholder.com/100x35?text=RAPID'">
+                            </a>
+                        </div>
+                        <div class="search-wrapper">
+                            <input type="text" placeholder="Search for Category, Product ...">
+                            <span class="search-icon">🔍</span>
+                        </div>
                     </div>
-                    <div class="header-icons-figma">
-                        <button class="header-icon-btn">❤️</button>
+                    <div class="header-icons">
+                        <button class="header-icon-btn" onclick="window.location.href='/wishlist'">❤️</button>
                         <button class="header-icon-btn">🔔</button>
                     </div>
                 </div>
             </div>
         `;
     }
-
     renderBottomNav() {
-        const nav = document.getElementById('mobile-bottom-nav');
-        if (!nav) return;
+    const nav = document.getElementById('mobile-bottom-nav');
+    if (!nav) return;
 
-        nav.innerHTML = `
-            <a href="/" class="nav-item-figma ${this.page === 'landing' ? 'active' : ''}">
-                <div class="nav-icon-box">🏠</div>
-                <span>Home</span>
-            </a>
-            <a href="/categories" class="nav-item-figma ${this.page === 'all-categories' ? 'active' : ''}">
-                <div class="nav-icon-box">🔲</div>
-                <span>Categories</span>
-            </a>
-            <a href="/profile" class="nav-item-figma">
-                <div class="nav-icon-box">👤</div>
-                <span>Profile</span>
-            </a>
-            <a href="/cart" class="nav-item-figma">
-                <div class="nav-icon-box">🛒</div>
-                <span>Cart</span>
-            </a>
-        `;
-    }
+    nav.innerHTML = `
+        <a href="/" class="nav-item-figma ${this.page === 'landing' ? 'active' : ''}">
+            <div class="nav-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <span>Home</span>
+        </a>
+         <a href="/trends" class="nav-item-figma ${this.page === 'trends' ? 'active' : ''}">
+            <div class="nav-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+                    <line x1="7" y1="2" x2="7" y2="22"/>
+                    <line x1="17" y1="2" x2="17" y2="22"/>
+                    <line x1="2" y1="12" x2="22" y2="12"/>
+                    <line x1="2" y1="7" x2="7" y2="7"/>
+                    <line x1="2" y1="17" x2="7" y2="17"/>
+                    <line x1="17" y1="17" x2="22" y2="17"/>
+                    <line x1="17" y1="7" x2="22" y2="7"/>
+                </svg>
+            </div>
+            <span>Trends</span>
+        </a>
+        <a href="/categories" class="nav-item-figma ${this.page === 'all-categories' ? 'active' : ''}">
+            <div class="nav-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <rect x="13" y="3" width="8" height="8" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <rect x="3" y="13" width="8" height="8" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <rect x="13" y="13" width="8" height="8" rx="2" stroke="currentColor" stroke-width="2"/>
+                </svg>
+            </div>
+            <span>Categories</span>
+        </a>
+        <a href="/profile" class="nav-item-figma ${this.page === 'profile' ? 'active' : ''}">
+            <div class="nav-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                </svg>
+            </div>
+            <span>Profile</span>
+        </a>
+        <a href="/cart" class="nav-item-figma ${this.page === 'cart' ? 'active' : ''}">
+            <div class="nav-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1H5L7.68 14.39C7.77144 14.8504 8.02191 15.264 8.38755 15.5583C8.75318 15.8526 9.2107 16.009 9.68 16H19.4C19.8693 16.009 20.3268 15.8526 20.6925 15.5583C21.0581 15.264 21.3086 14.8504 21.4 14.39L23 6H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="9" cy="21" r="1.5" fill="currentColor"/>
+                    <circle cx="20" cy="21" r="1.5" fill="currentColor"/>
+                </svg>
+            </div>
+            <span>Cart</span>
+        </a>
+    `;
+}
 
     async initLanding() {
         const [catsRes, bannersRes, topSellingRes] = await Promise.all([
@@ -176,11 +229,11 @@ async renderPromotionalBanners() {
     const container1 = document.getElementById('mid-banner-1-container');
     const container2 = document.getElementById('mid-banner-2-container');
 
-    console.log("Mid Banners:", banners); // Debug: [HOLI OFFER, ...]
+    console.log("Mid Banners:", banners); 
 
-    // Agar mid banners hain to dikhao
+    
     if (banners.length > 0 && container1) {
-        const b = banners[0]; // Pehla mid banner - HOLI OFFER
+        const b = banners[0]; 
         container1.innerHTML = `
             <div class="spring-bloom-banner" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px;">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -387,10 +440,9 @@ setupAutoScroll(container) {
     
     const slider = container;
     let isPaused = false;
-    const scrollSpeed = 0.8;
+    const scrollSpeed = 1;
     const intervalTime = 30;
     
-    // Mouse events
     slider.addEventListener('mouseenter', () => { 
         isPaused = true; 
         slider.classList.remove('scrolling');
@@ -400,7 +452,6 @@ setupAutoScroll(container) {
         isPaused = false; 
     });
     
-    // Touch events
     slider.addEventListener('touchstart', () => { 
         isPaused = true; 
         slider.classList.remove('scrolling');
@@ -410,7 +461,6 @@ setupAutoScroll(container) {
         isPaused = false; 
     });
     
-    // Scroll event for border effect
     slider.addEventListener('scroll', () => {
         slider.classList.add('scrolling');
         
@@ -421,9 +471,15 @@ setupAutoScroll(container) {
         this.scrollTimeout = setTimeout(() => {
             slider.classList.remove('scrolling');
         }, 500);
+        
+        const maxScroll = slider.scrollWidth - slider.clientWidth;
+        if (slider.scrollLeft >= maxScroll - 5) {
+            setTimeout(() => {
+                slider.scrollTo({ left: 0, behavior: 'smooth' });
+            }, 100);
+        }
     });
     
-    // Auto-scroll
     this.autoScrollTimer = setInterval(() => {
         if (isPaused) return;
         
@@ -571,33 +627,60 @@ async renderBrandsGrid() {
 }
 
     async renderDynamicCategorySections() {
-        const container = document.getElementById('dynamic-category-sections');
-        if (!container || !this.allCategories.length) return;
+    const container = document.getElementById('dynamic-category-sections');
+    if (!container || !this.allCategories.length) return;
 
-        for (let i = 0; i < Math.min(this.allCategories.length, 5); i++) {
-            const cat = this.allCategories[i];
-            const res = await fetch(APP_CONFIG.ENDPOINTS.CATEGORY_PRODUCTS(cat.id)).then(r => r.json());
+    container.innerHTML = '';
+    
+    let subcategoriesShown = 0;
+    const MAX_SUBCATEGORIES = 4;
+    const MAX_PRODUCTS = 5;
+
+    // Saari categories loop karo
+    for (let i = 0; i < this.allCategories.length && subcategoriesShown < MAX_SUBCATEGORIES; i++) {
+        const category = this.allCategories[i];
+        
+        // Agar category ke paas subcategories hain
+        if (category.children && category.children.length > 0) {
             
-            if (res.success && res.data && res.data.products && res.data.products.length > 0) {
-                const products = res.data.products;
-                const isCircular = i % 2 === 0;
+            // Har subcategory ke liye loop
+            for (let j = 0; j < category.children.length && subcategoriesShown < MAX_SUBCATEGORIES; j++) {
+                const subcategory = category.children[j];
                 
-                const sectionHtml = `
-                    <section class="section-container">
-                        <div class="container">
-                            <div class="section-header centered">
-                                <h2 class="section-title">${cat.name}</h2>
-                            </div>
-                            <div class="${isCircular ? 'circular-product-grid' : 'product-grid-figma'}">
-                                ${products.slice(0, 6).map(p => isCircular ? this.genCircularItem(p) : this.genProductCard(p)).join('')}
-                            </div>
-                        </div>
-                    </section>
-                `;
-                container.innerHTML += sectionHtml;
+                try {
+                    // Subcategory ke products fetch karo
+                    const res = await fetch(APP_CONFIG.ENDPOINTS.CATEGORY_PRODUCTS(subcategory.id));
+                    const data = await res.json();
+                    
+                    if (data.success && data.data && data.data.products && data.data.products.length > 0) {
+                        // Sirf 5 products lo
+                        const products = data.data.products.slice(0, MAX_PRODUCTS);
+                        
+                        const sectionHtml = `
+                            <section class="section-container">
+                                <div class="container">
+                                    <div class="section-header">
+                                        <h2 class="section-title">${subcategory.name}</h2>
+                                        <a href="/products?subcategory=${subcategory.id}" class="view-all-link">View All →</a>
+                                    </div>
+                                    <div class="horizontal-scroll">
+                                        ${products.map(p => this.genProductCard(p)).join('')}
+                                    </div>
+                                </div>
+                            </section>
+                        `;
+                        container.innerHTML += sectionHtml;
+                        subcategoriesShown++;
+                    }
+                } catch (error) {
+                    console.error('Error fetching subcategory products:', error);
+                }
             }
         }
     }
+    
+    console.log(`✅ Displayed ${subcategoriesShown} subcategories with ${MAX_PRODUCTS} products each`);
+}
 
     genCircularItem(p) {
         return `
@@ -612,28 +695,28 @@ async renderBrandsGrid() {
     }
 
     genProductCard(p) {
-        return `
-            <div class="product-card-figma" onclick="window.location.href='/product/${p.slug}'">
-                <div class="p-img-figma">
-                    <img src="${this.resolveImage(p.image_url)}">
-                    <div class="p-rating-figma">⭐ ${p.rating || '4.5'}</div>
-                </div>
-                <div class="p-info-figma">
-                    <h4>${p.name}</h4>
-                    <div class="p-price-figma">
-                        <span class="current">₹${p.final_price || p.price}</span>
-                        ${p.mrp ? `<span class="old">₹${p.mrp}</span>` : ''}
-                    </div>
+    return `
+        <div class="product-card-horizontal" onclick="window.location.href='/product/${p.slug}'">
+            <div class="product-image-wrapper">
+                <img src="${this.resolveImage(p.image_url)}" alt="${p.name}">
+                <div class="product-rating">⭐ ${p.rating || '4.5'}</div>
+            </div>
+            <div class="product-info">
+                <h4>${p.name}</h4>
+                <div class="product-price">
+                    <span class="current">₹${p.final_price || p.price}</span>
+                    ${p.mrp ? `<span class="old">₹${p.mrp}</span>` : ''}
                 </div>
             </div>
-        `;
-    }
+        </div>
+    `;
+}
 
     resolveImage(path) {
     if (!path) return APP_CONFIG.FALLBACK_IMAGE;
-    if (path.startsWith('http')) return path;  // Already full URL
+    if (path.startsWith('http')) return path;  
     
-    // Agar S3_BASE_URL se start nahi hota to add karo
+    
     if (!path.includes('amazonaws.com')) {
         return S3_BASE_URL + path;
     }
@@ -646,6 +729,34 @@ async renderBrandsGrid() {
     async initCategoryDetail() {}
     async initProductDetail() {}
 }
+
+window.goBack = function() {
+    const currentPath = window.location.pathname;
+    const token = localStorage.getItem('token');
+    
+    if (currentPath === '/cart') {
+        window.location.href = '/';
+    }
+    else if (currentPath.includes('/checkout')) {
+        window.location.href = '/cart';
+    }
+    else if (currentPath === '/profile' || currentPath.includes('/profile')) {
+        window.location.href = '/';
+    }
+    else if (currentPath === '/orders' || currentPath.includes('/orders')) {
+        window.location.href = '/profile';
+    }
+    else if (currentPath === '/login' || currentPath === '/register') {
+        if (token) {
+            window.location.href = '/';
+        } else {
+            window.history.back();
+        }
+    }
+    else {
+        window.history.back();
+    }
+};
 
 window.app = new RapidRetailsEngine();
 document.addEventListener('DOMContentLoaded', () => window.app.init());
