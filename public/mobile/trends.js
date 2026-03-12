@@ -1,194 +1,417 @@
 const API_BASE_URL = 'https://retailadmin.ggconsultancy.services/api';
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", () => {
     loadTrendingReels();
-    setupScrollObserver();
 });
 
-function loadTrendingReels() {
-    const container = document.getElementById('trendsContainer');
-    if (!container) return;
 
-    fetch(`${API_BASE_URL}/reels`, {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
-    })
+/* LOAD REELS */
+
+function loadTrendingReels(){
+
+    const container = document.getElementById("trendsContainer");
+    if(!container) return;
+
+    container.innerHTML = '<div class="loading">Loading reels...</div>';
+
+    fetch(API_BASE_URL + "/reels")
     .then(res => res.json())
-    .then(response => {
-        if (response.status && response.data && response.data.length > 0) {
-            renderReels(response.data);
-        } else {
-            showFallbackReels();
+    .then(res => {
+
+        if(!res || !res.data){
+            showError();
+            return;
         }
+
+        renderReels(res.data);
+
     })
-    .catch(() => {
-        showFallbackReels();
-    });
+    .catch(showError);
+
 }
 
-function renderReels(reels) {
-    const container = document.getElementById('trendsContainer');
-    if (!container) return;
 
-    let html = '';
-    reels.forEach((reel, index) => {
-        const mediaUrl = reel.video || reel.image_url || 'https://images.unsplash.com/photo-1515408320194-59643816c5db?w=600&auto=format';
-        const productLink = reel.product?.slug ? `/product/${reel.product.slug}` : '#';
-        
-        // Check if it's a video or image
-        const isVideo = mediaUrl.match(/\.(mp4|webm|ogg|mov)$/i);
-        
+
+/* RENDER REELS */
+
+function renderReels(reels){
+
+    const container = document.getElementById("trendsContainer");
+    let html = "";
+
+    reels.forEach((reel,index)=>{
+
+        const media = reel.video;
+        const product = reel.product || {};
+
         html += `
-            <div class="reel-card" data-index="${index}" onclick="window.location.href='${productLink}'">
-                <div class="reel-progress">
-                    <div class="reel-progress-bar" id="progress-${index}"></div>
-                </div>
-                
-                <div class="reel-media">
-                    ${isVideo ? 
-                        `<video loop muted playsinline autoplay preload="metadata" id="video-${index}">
-                            <source src="${mediaUrl}" type="video/mp4">
-                        </video>` : 
-                        `<img src="${mediaUrl}" alt="${reel.product?.name || 'Trending reel'}" style="width:100%; height:100%; object-fit:cover;">`
-                        }
-                </div>
-                
-                <div class="reel-overlay">
-                    <h2 class="reel-title">${reel.product?.name || reel.title || 'Trending Now'}</h2>
-                    <p class="reel-description">${reel.description || reel.subtitle || 'Check this out!'}</p>
-                </div>
-                
-                <div class="reel-actions" onclick="event.stopPropagation()">
-                    <button class="reel-action-btn" onclick="handleLike(${reel.id})">❤️</button>
-                    <button class="reel-action-btn" onclick="handleComment(${reel.id})">💬</button>
-                    <button class="reel-action-btn" onclick="handleShare(${reel.id})">↗️</button>
-                </div>
-            </div>
-        `;
+<div class="reel-card">
+
+    <div class="reel-video">
+        <video
+            src="${media}"
+            muted
+            loop
+            playsinline
+            preload="metadata"
+            class="reel-video-player"
+            data-id="${reel.id}"
+            id="video-${index}">
+        </video>
+    </div>
+
+    <div class="reel-gradient"></div>
+
+    <div class="reel-info">
+
+        <div class="reel-product">
+
+            <h3>${product.name ?? "Trending Product"}</h3>
+
+            <p id="desc-${index}" class="reel-desc">
+                ${reel.description ?? ""}
+            </p>
+
+            <span class="reel-more" onclick="toggleDesc(${index})">
+                More
+            </span>
+
+            <a href="/product/${product.slug ?? ""}" class="reel-buy">
+                Buy at ₹${product.price ?? "999"}
+            </a>
+
+        </div>
+
+    </div>
+
+<div class="reel-actions">
+
+<div class="reel-action-item">
+
+<button class="reel-icon-btn like-btn" id="like-${reel.id}">
+<i class="bi bi-heart"></i>
+</button>
+
+<span class="reel-count" id="like-count-${reel.id}">
+${reel.likes ?? 0}
+</span>
+
+</div>
+
+<div class="reel-action-item">
+
+<button class="reel-icon-btn share-btn" data-id="${reel.id}">
+<i class="bi bi-send"></i>
+</button>
+
+<span class="reel-count" id="share-count-${reel.id}">
+${reel.shares ?? 0}
+</span>
+
+</div>
+
+</div>
+
+<div class="reel-progress">
+<div class="reel-progress-bar" id="progress-${index}"></div>
+</div>
+
+</div>
+`;
     });
 
     container.innerHTML = html;
-    setupVideoAutoplay();
+
+    initLikeButtons();
+    initShareButtons();
+    checkDescriptions();
+    setupObserver();
+    enableDoubleTap();
 }
 
-function showFallbackReels() {
-    const fallbackReels = [
-        {
-            id: 1,
-            product: {
-                name: "Women's Cotton T-Shirt",
-                slug: "womens-cotton-t-shirt"
-            },
-            video: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&auto=format"
-        },
-        {
-            id: 2,
-            product: {
-                name: "Smartphone Pro",
-                slug: "smartphone-pro"
-            },
-            video: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format"
-        }
-    ];
-    renderReels(fallbackReels);
-}
 
-function setupVideoAutoplay() {
-    const observer = new IntersectionObserver((entries) => {
+
+/* AUTOPLAY */
+
+function setupObserver(){
+
+    const videos = document.querySelectorAll(".reel-video-player");
+
+    const observer = new IntersectionObserver(entries => {
+
         entries.forEach(entry => {
-            const card = entry.target;
-            const video = card.querySelector('video');
-            const progressBar = card.querySelector('.reel-progress-bar');
-            
-            if (entry.isIntersecting) {
-                if (video) {
-                    video.play();
-                    startProgress(video, progressBar);
-                }
-                card.classList.add('active');
-            } else {
-                if (video) {
-                    video.pause();
-                    video.currentTime = 0;
-                }
-                if (progressBar) {
-                    progressBar.style.width = '0%';
-                }
-                card.classList.remove('active');
-            }
-        });
-    }, { threshold: 0.8 });
 
-    document.querySelectorAll('.reel-card').forEach(card => {
-        observer.observe(card);
-    });
+            const video = entry.target;
+
+            if(entry.isIntersecting){
+
+                video.play().catch(()=>{});
+
+                const reelId = video.dataset.id;
+
+                increaseView(reelId);
+                animateProgress(video);
+
+            }else{
+
+                video.pause();
+
+            }
+
+        });
+
+    },{ threshold:0.75 });
+
+    videos.forEach(video => observer.observe(video));
+
 }
 
-function startProgress(video, progressBar) {
-    if (!video || !progressBar) return;
-    
-    const updateProgress = () => {
-        const progress = (video.currentTime / video.duration) * 100;
-        progressBar.style.width = `${progress}%`;
-        
-        if (video.currentTime < video.duration) {
-            requestAnimationFrame(updateProgress);
+
+
+/* VIEW COUNT */
+
+function increaseView(id){
+
+    fetch(API_BASE_URL + "/reels/" + id + "/view",{
+        method:"POST"
+    }).catch(()=>{});
+
+}
+
+
+
+/* PROGRESS BAR */
+
+function animateProgress(video){
+
+    const index = video.id.split("-")[1];
+    const bar = document.getElementById("progress-" + index);
+
+    function update(){
+
+        if(!video.duration) return;
+
+        const percent = (video.currentTime / video.duration) * 100;
+
+        if(bar){
+            bar.style.width = percent + "%";
         }
-    };
-    
-    video.addEventListener('loadedmetadata', () => {
-        requestAnimationFrame(updateProgress);
-    });
-}
 
-function setupScrollObserver() {
-    const content = document.querySelector('.trends-content');
-    if (!content) return;
-
-    content.addEventListener('scroll', () => {
-        const cards = document.querySelectorAll('.reel-card');
-        const scrollTop = content.scrollTop;
-        const cardHeight = cards[0]?.offsetHeight || 0;
-        const activeIndex = Math.round(scrollTop / cardHeight);
-        
-        cards.forEach((card, index) => {
-            if (index === activeIndex) {
-                card.classList.add('active');
-            } else {
-                card.classList.remove('active');
-            }
-        });
-    });
-}
-
-function handleLike(reelId) {
-    showToast('❤️ Liked!', 'success');
-}
-
-function handleComment(reelId) {
-    showToast('💬 Comments coming soon!', 'info');
-}
-
-function handleShare(reelId) {
-    if (navigator.share) {
-        navigator.share({
-            title: 'Check this out!',
-            url: window.location.href
-        });
-    } else {
-        showToast('Link copied!', 'success');
+        requestAnimationFrame(update);
     }
+
+    requestAnimationFrame(update);
+
 }
 
-function showToast(message, type) {
-    const toast = document.createElement('div');
-    toast.className = `toast-message ${type}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.remove();
-    }, 2000);
+
+
+/* DESCRIPTION */
+
+function checkDescriptions(){
+
+    document.querySelectorAll(".reel-desc").forEach(desc => {
+
+        const moreBtn = desc.nextElementSibling;
+
+        if(desc.scrollHeight > desc.clientHeight){
+            moreBtn.style.display = "inline-block";
+        }else{
+            moreBtn.style.display = "none";
+        }
+
+    });
+
+}
+
+function toggleDesc(index){
+
+    const desc = document.getElementById("desc-" + index);
+    const btn = desc.nextElementSibling;
+
+    if(desc.classList.contains("expanded")){
+        desc.classList.remove("expanded");
+        btn.innerText = "More";
+    }else{
+        desc.classList.add("expanded");
+        btn.innerText = "Less";
+    }
+
+}
+
+
+
+/* LIKE SYSTEM */
+
+function initLikeButtons(){
+
+    document.querySelectorAll(".like-btn").forEach(btn=>{
+
+        btn.addEventListener("click",function(){
+
+            const id = btn.id.replace("like-","");
+            likeReel(id,btn);
+
+        });
+
+    });
+
+}
+
+function likeReel(id,btn){
+
+fetch(API_BASE_URL + "/reels/" + id + "/like",{
+method:"POST"
+})
+.then(res=>res.json())
+.then(res=>{
+
+const icon = btn.querySelector("i");
+const count = document.getElementById("like-count-"+id);
+
+if(res.liked){
+
+btn.classList.add("liked");
+icon.classList.remove("bi-heart");
+icon.classList.add("bi-heart-fill");
+
+}else{
+
+btn.classList.remove("liked");
+icon.classList.remove("bi-heart-fill");
+icon.classList.add("bi-heart");
+
+}
+
+if(count){
+count.innerText = res.likes;
+}
+
+})
+.catch(()=>{});
+
+}
+
+
+
+/* DOUBLE TAP LIKE */
+function enableDoubleTap(){
+
+let lastTap = 0;
+
+document.querySelectorAll(".reel-video-player").forEach(video=>{
+
+video.addEventListener("touchend",function(e){
+
+const currentTime = new Date().getTime();
+const tapLength = currentTime - lastTap;
+
+if(tapLength < 300 && tapLength > 0){
+
+const reelId = video.dataset.id;
+
+const btn = document.getElementById("like-"+reelId);
+
+if(btn && !btn.classList.contains("liked")){
+
+showGlobalHeart();
+likeReel(reelId,btn);
+
+}
+
+e.preventDefault();
+
+}
+
+lastTap = currentTime;
+
+});
+
+});
+
+}
+
+
+
+/* HEART ANIMATION */
+
+function showGlobalHeart(){
+
+    const heart = document.getElementById("global-like-heart");
+
+    if(!heart) return;
+
+    heart.classList.add("show");
+
+    setTimeout(()=>{
+        heart.classList.remove("show");
+    },700);
+
+}
+
+
+
+/* SHARE */
+
+function initShareButtons(){
+
+    document.querySelectorAll(".share-btn").forEach(btn=>{
+
+        btn.addEventListener("click",function(){
+
+            const id = btn.dataset.id;
+            shareReel(id);
+
+        });
+
+    });
+
+}
+
+function shareReel(id){
+
+const reelUrl = window.location.origin + "/reel/" + id;
+const message = "🔥 Check this reel\n" + reelUrl;
+
+fetch(API_BASE_URL + "/reels/" + id + "/share",{method:"POST"})
+.then(res=>res.json())
+.then(res=>{
+
+const count = document.getElementById("share-count-"+id);
+
+if(count){
+count.innerText = res.shares;
+}
+
+});
+
+if(navigator.share){
+
+navigator.share({
+title:"Trending Product",
+text:message,
+url:reelUrl
+}).catch(()=>{});
+
+}else{
+
+const whatsapp = "https://wa.me/?text=" + encodeURIComponent(message);
+window.open(whatsapp,"_blank");
+
+}
+
+}
+
+
+
+/* ERROR */
+
+function showError(){
+
+    const container = document.getElementById("trendsContainer");
+
+    if(container){
+        container.innerHTML = '<div class="error">Failed to load reels</div>';
+    }
+
 }
