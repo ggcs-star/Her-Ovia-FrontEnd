@@ -523,6 +523,7 @@ function addWishlistStyles() {
         
         addStyles();
         checkLoginRedirect();
+        setupBackButton();
         
         if (document.body.classList.contains('product-detail-page')) {
             console.log('Product page detected');
@@ -550,3 +551,4 @@ function addWishlistStyles() {
         init();
     }
 })();
+

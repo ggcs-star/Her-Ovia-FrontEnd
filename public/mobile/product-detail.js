@@ -493,52 +493,52 @@
     };
     
     window.toggleWishlist = function(button) {
-    event.stopPropagation();
-    button.classList.toggle('active');
-    
-    // 🔥 JO IMAGE SCREEN PE DIKH RAHI HAI WAHI LO
-    const mainImage = document.getElementById('mainImage');
-    let imageUrl = '';
-    
-    // Pehle mainImage se lo
-    if (mainImage && mainImage.src && mainImage.src !== '') {
-        imageUrl = mainImage.src;
-        console.log('Taking image from mainImage:', imageUrl);
-    }
-    // Agar mainImage nahi to gallery se lo
-    else if (currentProduct?.gallery_images?.length > 0) {
-        imageUrl = currentProduct.gallery_images[0];
-        console.log('Taking image from gallery:', imageUrl);
-    }
-    // Last option product image
-    else if (currentProduct?.image_url) {
-        imageUrl = currentProduct.image_url;
-        console.log('Taking image from product:', imageUrl);
-    }
-    
-    const productData = {
-        id: currentProduct?.id,
-        name: currentProduct?.name,
-        price: parseFloat(currentProduct?.final_price || currentProduct?.price || 0),
-        image: imageUrl,
-        brand: currentProduct?.brand,
-        slug: currentProduct?.slug
-    };
-    
-    console.log('Saving to wishlist:', productData);
-    
-    if (button.classList.contains('active')) {
-        if (!wishlist.some(item => item.id == productData.id)) {
-            wishlist.push(productData);
-            showWishlistToast('❤️ Added to wishlist');
+        event.stopPropagation();
+        button.classList.toggle('active');
+
+        const mainImage = document.getElementById('mainImage');
+        let imageUrl = '';
+
+        if (mainImage && mainImage.src && mainImage.src !== '') {
+            imageUrl = mainImage.src;
+        } else if (window.currentProduct?.gallery_images?.length > 0) {
+            imageUrl = window.currentProduct.gallery_images[0];
+        } else if (window.currentProduct?.image_url) {
+            imageUrl = window.currentProduct.image_url;
         }
-    } else {
-        wishlist = wishlist.filter(item => item.id != productData.id);
-        showWishlistToast('💔 Removed from wishlist');
-    }
-    
-    localStorage.setItem('wishlist', JSON.stringify(wishlist));
-}
+
+        let productPrice = 0;
+        const priceEl = document.getElementById('currentPrice');
+
+        if (priceEl) {
+            productPrice = parseFloat(
+                priceEl.textContent.replace('₹','').replace(/,/g,'')
+            );
+        }
+
+        const productData = {
+            id: window.currentProduct?.id,
+            name: window.currentProduct?.name,
+            price: productPrice,
+            image: imageUrl,
+            brand: window.currentProduct?.brand,
+            slug: window.currentProduct?.slug
+        };
+
+        let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+        if (button.classList.contains('active')) {
+            if (!wishlist.some(item => item.id == productData.id)) {
+                wishlist.push(productData);
+                showWishlistToast('❤️ Added to wishlist');
+            }
+        } else {
+            wishlist = wishlist.filter(item => item.id != productData.id);
+            showWishlistToast('💔 Removed from wishlist');
+        }
+
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    };
     
     function showWishlistToast(message) {
         const toast = document.createElement('div');
@@ -590,39 +590,151 @@
         }
     };
     
-    window.showOfferTerms = function(code) {
-        const offer = allCoupons.find(c => c.code === code);
-        if (offer) {
-            alert(`${offer.code} Terms & Conditions:\n${offer.terms || 'Valid on minimum order of ₹999. Cannot be combined with other offers.'}`);
-        } else {
-            alert(`${code} Terms & Conditions:\nValid on minimum order of ₹999. Cannot be combined with other offers.`);
-        }
-    };
+   window.showOfferTerms = function(code) {
+    event.stopPropagation(); // Popup band na ho
+    sessionStorage.setItem('view_coupon_code', code);
+    window.location.href = '/coupon-terms';
+};
     
     window.toggleAllOffers = function() {
         showAllOffersPopup();
     };
-    window.showAllOffersPopup = function() {
-
-        const bankOffers = allCoupons.filter(offer => offer.coupon_type === 'BANK');
-        const normalOffers = allCoupons.filter(offer => offer.coupon_type !== 'BANK');
-        
-        const popup = document.createElement('div');
-        popup.className = 'offers-popup';
-        
-        let offersHtml = '<div class="offers-popup-content">';
-        
-        if (bankOffers.length > 0) {
-            offersHtml += `
-                <div class="offers-section">
-                    <div class="offers-section-title">
-                        <span class="offers-section-icon">🏦</span>
-                        <span>Bank Offers</span>
-                    </div>
-            `;
+//     window.showAllOffersPopup = function() {
+//     const bankOffers = allCoupons.filter(offer => offer.coupon_type === 'BANK');
+//     const normalOffers = allCoupons.filter(offer => offer.coupon_type !== 'BANK');
+    
+//     const popup = document.createElement('div');
+//     popup.className = 'offers-popup';
+    
+//     popup.innerHTML = `
+//         <div class="offers-popup-header">
+//             <h3>All Offers <span class="offers-count">${allCoupons.length}</span></h3>
+//             <button class="offers-popup-close" onclick="closeOffersPopup()">✕</button>
+//         </div>
+//         <div class="offers-popup-content">
+//             ${bankOffers.length > 0 ? `
+//                 <div class="offers-section">
+//                     <div class="offers-section-title">
+//                         <span class="offers-section-icon">🏦</span>
+//                         <span>Bank Offers</span>
+//                     </div>
+//                     ${bankOffers.map(offer => `
+//                         <div class="offers-popup-item bank-offer">
+//                             <div class="offers-popup-header-row">
+//                                 <span class="offers-popup-badge">🏦 Bank Offer</span>
+//                                 <span class="offers-popup-code">${offer.code}</span>
+//                             </div>
+//                             <div class="offers-popup-desc">${offer.description || offer.name || `Get ${offer.value}${offer.discount_type === 'PERCENT' ? '%' : '₹'} off`}</div>
+//                             <div class="offers-popup-footer">
+//                                 <span class="offers-popup-min">Min. ₹${offer.min_order_amount || 999}</span>
+//                                 <span class="offers-popup-tnc" onclick="showOfferTerms('${offer.code}')">View T & C</span>
+//                             </div>
+//                         </div>
+//                     `).join('')}
+//                 </div>
+//             ` : ''}
             
+//             ${normalOffers.length > 0 ? `
+//                 <div class="offers-section">
+//                     <div class="offers-section-title">
+//                         <span class="offers-section-icon">🎫</span>
+//                         <span>Coupons & Offers</span>
+//                     </div>
+//                     ${normalOffers.map(offer => `
+//                         <div class="offers-popup-item normal-offer">
+//                             <div class="offers-popup-header-row">
+//                                 <span class="offers-popup-badge">🎫 Special Offer</span>
+//                                 <span class="offers-popup-code">${offer.code}</span>
+//                             </div>
+//                             <div class="offers-popup-desc">${offer.description || offer.name || `Get ${offer.value}${offer.discount_type === 'PERCENT' ? '%' : '₹'} off`}</div>
+//                             <div class="offers-popup-footer">
+//                                 <span class="offers-popup-min">Min. ₹${offer.min_order_amount || 499}</span>
+//                                 <span class="offers-popup-tnc" onclick="showOfferTerms('${offer.code}')">View T & C</span>
+//                             </div>
+//                         </div>
+//                     `).join('')}
+//                 </div>
+//             ` : ''}
+            
+//             ${bankOffers.length === 0 && normalOffers.length === 0 ? `
+//                 <div class="offers-empty">
+//                     <div class="offers-empty-icon">🎫</div>
+//                     <div>No offers available</div>
+//                 </div>
+//             ` : ''}
+//         </div>
+//     `;
+    
+//     document.body.appendChild(popup);
+//     document.body.style.overflow = 'hidden';
+// };
+    
+    window.showAllOffersPopup = function() {
+    const bankOffers = allCoupons.filter(offer => offer.coupon_type === 'BANK');
+    const normalOffers = allCoupons.filter(offer => offer.coupon_type !== 'BANK');
+    
+    const popup = document.createElement('div');
+    popup.className = 'offers-popup';
+    
+    popup.innerHTML = `
+        <div class="offers-popup-header">
+            <h3>All Offers <span class="offers-count">${allCoupons.length}</span></h3>
+            <button class="offers-popup-close" onclick="closeOffersPopup()">✕</button>
+        </div>
+        
+        <div class="offers-tabs">
+            <button class="offers-tab bank-tab active" onclick="switchOfferTab('bank')">Bank Offers (${bankOffers.length})</button>
+            <button class="offers-tab normal-tab" onclick="switchOfferTab('normal')">Coupons (${normalOffers.length})</button>
+        </div>
+        
+        <div class="offers-popup-content" id="offersContent">
+            <!-- Dynamic content will be loaded by JavaScript -->
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+    document.body.style.overflow = 'hidden';
+    
+    // Show bank offers by default
+    renderOfferItems('bank');
+}
+
+// Add these two new functions after showAllOffersPopup
+window.switchOfferTab = function(type) {
+    const bankTab = document.querySelector('.offers-tab.bank-tab');
+    const normalTab = document.querySelector('.offers-tab.normal-tab');
+    
+    if (type === 'bank') {
+        bankTab.classList.add('active');
+        normalTab.classList.remove('active');
+    } else {
+        normalTab.classList.add('active');
+        bankTab.classList.remove('active');
+    }
+    
+    renderOfferItems(type);
+}
+
+function renderOfferItems(type) {
+    const content = document.getElementById('offersContent');
+    if (!content) return;
+    
+    const bankOffers = allCoupons.filter(offer => offer.coupon_type === 'BANK');
+    const normalOffers = allCoupons.filter(offer => offer.coupon_type !== 'BANK');
+    
+    let html = '';
+    
+    if (type === 'bank') {
+        if (bankOffers.length === 0) {
+            html = `
+                <div class="offers-empty">
+                    <div class="offers-empty-icon">🏦</div>
+                    <div>No bank offers available</div>
+                </div>
+            `;
+        } else {
             bankOffers.forEach(offer => {
-                offersHtml += `
+                html += `
                     <div class="offers-popup-item bank-offer">
                         <div class="offers-popup-header-row">
                             <span class="offers-popup-badge">🏦 Bank Offer</span>
@@ -631,26 +743,22 @@
                         <div class="offers-popup-desc">${offer.description || offer.name || `Get ${offer.value}${offer.discount_type === 'PERCENT' ? '%' : '₹'} off`}</div>
                         <div class="offers-popup-footer">
                             <span class="offers-popup-min">Min. ₹${offer.min_order_amount || 999}</span>
-                            <span class="offers-popup-tnc" onclick="showOfferTerms('${offer.code}')">View T & C</span>
-                        </div>
+                            <span class="offers-popup-tnc" onclick="showOfferTerms('${offer.code}')">View T & C</span>                        </div>
                     </div>
                 `;
             });
-            
-            offersHtml += '</div>';
         }
-        
-        if (normalOffers.length > 0) {
-            offersHtml += `
-                <div class="offers-section">
-                    <div class="offers-section-title">
-                        <span class="offers-section-icon">🎫</span>
-                        <span>Coupons & Offers</span>
-                    </div>
+    } else {
+        if (normalOffers.length === 0) {
+            html = `
+                <div class="offers-empty">
+                    <div class="offers-empty-icon">🎫</div>
+                    <div>No coupons available</div>
+                </div>
             `;
-            
+        } else {
             normalOffers.forEach(offer => {
-                offersHtml += `
+                html += `
                     <div class="offers-popup-item normal-offer">
                         <div class="offers-popup-header-row">
                             <span class="offers-popup-badge">🎫 Special Offer</span>
@@ -664,23 +772,11 @@
                     </div>
                 `;
             });
-            
-            offersHtml += '</div>';
         }
-        
-        offersHtml += '</div>';
-        
-        popup.innerHTML = `
-            <div class="offers-popup-header">
-                <h3>All Offers <span class="offers-count">${allCoupons.length}</span></h3>
-                <button class="offers-popup-close" onclick="closeOffersPopup()">✕</button>
-            </div>
-            ${offersHtml}
-        `;
-        
-        document.body.appendChild(popup);
-        document.body.style.overflow = 'hidden';
-    };
+    }
+    
+    content.innerHTML = html;
+}
     window.closeOffersPopup = function() {
         const popup = document.querySelector('.offers-popup');
         if (popup) {
@@ -791,6 +887,7 @@
             
             if (data.success && data.data) {
                 currentProduct = data.data;
+                 window.currentProduct = data.data;
                 await fetchBrandFromCategory();
                 await Promise.all([
                     fetchCoupons(),
@@ -1143,7 +1240,11 @@
                 </div>
                 <div class="pdp-header-right">
                     <button onclick="window.location.href='/search'">🔍</button>
-                    <button onclick="window.location.href='/wishlist'">❤️</button>
+                     <button class="header-icon-btn" onclick="window.location.href='/wishlist'" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                    </button>
                     <button onclick="window.location.href='/cart'">🛒</button>
                 </div>
             </div>

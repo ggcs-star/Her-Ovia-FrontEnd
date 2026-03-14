@@ -261,129 +261,142 @@ body.cart-page{
     background: #fafafa;
 }
 
-/* Coupon Section */
+/* ===== COUPON STICKERS - CART PAGE ===== */
 .coupon-section {
     background: white;
     padding: 15px;
-    border-radius: 4px;
+    border-radius: 8px;
     margin-bottom: 15px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #f0f0f0;
 }
 
 .coupon-header-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
 .coupon-header-row h4 {
-    margin: 0;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
-    text-transform: uppercase;
-    color: var(--text-muted);
+    color: #282c3f;
+    margin: 0;
 }
 
 .view-coupons-link {
-    color: var(--primary-pink);
+    color: #ff3f6c;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
     text-decoration: none;
-}
-
-.coupon-box {
-    display: flex;
-    gap: 10px;
-}
-
-.coupon-box input {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid #d4d5d9;
-    border-radius: 4px;
-    font-size: 13px;
-    outline: none;
-}
-
-.apply-coupon {
-    background: white;
-    color: var(--primary-pink);
-    border: 1px solid var(--primary-pink);
-    padding: 0 20px;
-    border-radius: 4px;
-    font-weight: 700;
-    font-size: 12px;
     cursor: pointer;
-}
-
-.applied-coupon {
-    background: #f5f5f6;
-    padding: 10px 15px;
-    border-radius: 4px;
-    margin-top: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.coupon-tag {
-    font-weight: 700;
-    color: var(--text-dark);
-    font-size: 13px;
-}
-
-.remove-coupon {
-    background: none;
-    border: none;
-    color: var(--primary-pink);
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 16px;
+    padding: 4px 12px;
+    border: 1px solid #ff3f6c;
+    border-radius: 20px;
 }
 
 .applicable-coupons {
-    margin-top: 15px;
+    margin-top: 10px;
+    max-height: 400px;
+    overflow-y: auto;
 }
 
-.applicable-coupons h5 {
-    margin: 0 0 10px 0;
-    font-size: 11px;
-    text-transform: uppercase;
-    color: var(--text-muted);
+.coupon-section-divider {
+    margin: 16px 0 8px 0;
 }
 
-.coupons-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.coupon-card {
-    border: 1px dashed #d4d5d9;
-    border-radius: 4px;
-    padding: 12px;
-    cursor: pointer;
-}
-
-.coupon-code {
-    font-weight: 700;
-    color: var(--text-dark);
+.section-badge {
     font-size: 13px;
-    display: block;
-    margin-bottom: 4px;
-}
-
-.coupon-desc {
-    font-size: 11px;
-    color: var(--text-muted);
-}
-
-.coupon-savings {
-    font-size: 11px;
-    color: var(--success-green);
     font-weight: 700;
-    margin-top: 4px;
+    color: #282c3f;
+    background: #f5f5f5;
+    padding: 4px 12px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.coupon-stickers-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0 16px;
+}
+
+.coupon-sticker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid transparent;
+}
+
+.coupon-sticker.bank-sticker {
+    background: linear-gradient(135deg, #fff0f3, #ffffff);
+    border-color: #ff3f6c;
+    color: #ff3f6c;
+}
+
+.coupon-sticker.normal-sticker {
+    background: linear-gradient(135deg, #f0f9f0, #ffffff);
+    border-color: #27ae60;
+    color: #27ae60;
+}
+
+.coupon-sticker:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.coupon-sticker-badge {
+    font-size: 14px;
+}
+
+.coupon-sticker-code {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.coupon-sticker-value {
+    background: currentColor;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    opacity: 0.9;
+}
+
+.bank-sticker .coupon-sticker-value {
+    background: #ff3f6c;
+}
+
+.normal-sticker .coupon-sticker-value {
+    background: #27ae60;
+}
+
+.no-coupons {
+    text-align: center;
+    padding: 30px;
+    color: #999;
+    font-size: 13px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+/* Hide old coupon cards */
+.coupon-card {
+    display: none;
+}
+
+/* ✅ SHOW ONLY STICKERS */
+.coupon-sticker {
+    display: inline-flex;
 }
 
 /* Order Summary */
@@ -1513,7 +1526,115 @@ body.cart-page{
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
     z-index: 1000001;
 }
+/* ===== COUPON TABS ===== */
+.coupon-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 12px;
+}
 
+.coupon-tab {
+    flex: 1;
+    padding: 8px 0;
+    background: #f5f5f5;
+    border: none;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.coupon-tab.active {
+    background: #ff3f6c;
+    color: white;
+}
+
+.coupon-tab-content {
+    display: none;
+}
+
+.coupon-tab-content.active {
+    display: block;
+}
+
+.coupon-stickers-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0 16px;
+}
+
+.coupon-sticker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid transparent;
+}
+
+.coupon-sticker.bank-sticker {
+    background: linear-gradient(135deg, #fff0f3, #ffffff);
+    border-color: #ff3f6c;
+    color: #ff3f6c;
+}
+
+.coupon-sticker.normal-sticker {
+    background: linear-gradient(135deg, #f0f9f0, #ffffff);
+    border-color: #27ae60;
+    color: #27ae60;
+}
+
+.coupon-sticker:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.coupon-sticker-badge {
+    font-size: 14px;
+}
+
+.coupon-sticker-code {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.coupon-sticker-value {
+    background: currentColor;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    opacity: 0.9;
+}
+
+.bank-sticker .coupon-sticker-value {
+    background: #ff3f6c;
+}
+
+.normal-sticker .coupon-sticker-value {
+    background: #27ae60;
+}
+
+.no-coupons-small {
+    text-align: center;
+    padding: 20px;
+    color: #999;
+    font-size: 12px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    width: 100%;
+}
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
