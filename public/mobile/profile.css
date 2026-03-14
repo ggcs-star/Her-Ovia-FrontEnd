@@ -78,6 +78,9 @@ body {
     cursor: pointer;
     padding: 5px;
 }
+.edit-profile-btn.centered {
+    margin: 0 auto;
+}
 
 .badge {
     position: absolute;
@@ -116,7 +119,44 @@ body {
     gap: 30px;
     flex-wrap: wrap;
 }
+.profile-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
 
+.edit-profile-btn {
+    background: none;
+    border: 1px solid #ff3f6c;
+    color: #ff3f6c;
+    padding: 8px 25px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.remove-image-btn {
+    background: #ff3f6c;
+    border: none;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.remove-image-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.remove-image-btn:hover {
+    background: #d6305c;
+}
 .profile-avatar {
     position: relative;
     width: 100px;
@@ -160,30 +200,16 @@ body {
     justify-content: center;
     cursor: pointer;
     border: 2px solid white;
-}
-
-.remove-avatar-btn {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: #ff3f6c;
-    color: white;
-    border: none;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: 2px solid white;
-    transition: background 0.3s;
+    z-index: 2;
 }
 
 .remove-avatar-btn:hover {
     background: #d6305c;
 }
 
+.edit-avatar-btn:hover {
+    background: #d6305c;
+}
 .profile-info {
     flex: 1;
 }
@@ -473,6 +499,10 @@ body {
     
     .profile-info {
         text-align: center;
+    }
+    
+    .profile-actions {
+        justify-content: center;
     }
     
     .profile-stats {

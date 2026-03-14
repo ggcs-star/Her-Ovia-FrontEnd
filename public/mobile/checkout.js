@@ -2,64 +2,6 @@ const API_BASE_URL = 'https://retailadmin.ggconsultancy.services/api';
 let PAYMENT_IN_PROGRESS = false;
 let PAYMENT_COMPLETED = false;
 
-async function syncCartWithDatabase(force = false) {
-    const token = localStorage.getItem('token');
-    if (!token) return false;
-
-    if (!force && localStorage.getItem('cart_synced') === '1') {
-        console.log('Cart already synced, skipping');
-        return true;
-    }
-
-    const localCart = JSON.parse(localStorage.getItem('cart')) || [];
-    if (localCart.length === 0) return true;
-
-    const items = [];
-
-    for (const item of localCart) {
-        if (!item.variantId) {
-            showToast('Please select product size before checkout', 'error');
-            return false;
-        }
-
-        items.push({
-            product_id: Number(item.id),
-            variant_id: Number(item.variantId),
-            quantity: Number(item.quantity) || 1
-        });
-    }
-
-    console.log('Syncing items to DB:', items);
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/cart/add`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ items })
-        });
-
-        const data = await response.json();
-        console.log('Cart sync response:', data);
-
-        if (data.success) {
-            localStorage.setItem('cart_synced', '1');
-            return true;
-        }
-
-        showToast(data.message || 'Could not add to cart. Please try again.', 'error');
-        return false;
-
-    } catch (error) {
-        console.error('Cart sync error:', error);
-        showToast('Network error. Please check your connection.', 'error');
-        return false;
-    }
-}
-
 document.addEventListener('DOMContentLoaded', function () {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -77,10 +19,69 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.href = '/';
         return;
     }
-
-    loadCheckoutSummary();
-    loadUserAddresses();
+    
+    syncCartWithServer().then(() => {
+        loadCheckoutSummary();
+        loadUserAddresses();
+    });
 });
+
+async function syncCartWithServer() {
+
+    const token = localStorage.getItem('token');
+    const localCart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    try {
+
+        // 1️⃣ server cart fetch
+        const res = await fetch(`${API_BASE_URL}/cart`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        const data = await res.json();
+        const serverItems = data?.data?.items || [];
+
+        // 2️⃣ server cart clear (remove each item)
+        for (const item of serverItems) {
+            await fetch(`${API_BASE_URL}/cart/remove/${item.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
+        }
+
+        // 3️⃣ add fresh local cart
+        if (localCart.length > 0) {
+
+            const items = localCart.map(item => ({
+                product_id: Number(item.id),
+                variant_id: Number(item.variantId),
+                quantity: Number(item.quantity) || 1
+            }));
+
+            await fetch(`${API_BASE_URL}/cart/add`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ items })
+            });
+        }
+
+        return true;
+
+    } catch (error) {
+        console.warn('Cart sync failed', error);
+        return true;
+    }
+}
 
 function loadCheckoutSummary() {
     const summaryContainer = document.getElementById('checkout-summary');
@@ -88,42 +89,13 @@ function loadCheckoutSummary() {
     
     summaryContainer.innerHTML = '<div class="loading-spinner">Loading summary...</div>';
     
-    // ✅ LocalStorage se data calculate karo
-    const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
-    let totalMrp = 0;
-    let totalProductDiscount = 0;
+    let url = `${API_BASE_URL}/checkout/summary`;
+    const couponCode = localStorage.getItem('applied_coupon');
+    if (couponCode) {
+        url += `?coupon_code=${encodeURIComponent(couponCode)}`;
+    }
     
-    cartItems.forEach(item => {
-        const mrp = parseFloat(item.mrp) || parseFloat(item.originalPrice) || parseFloat(item.price) || 0;
-        const price = parseFloat(item.price) || 0;
-        const qty = parseInt(item.quantity) || 1;
-        
-        totalMrp += mrp * qty;
-        totalProductDiscount += (mrp - price) * qty;
-    });
-    
-    const couponDiscount = parseFloat(localStorage.getItem('coupon_discount')) || 0;
-    const couponCode = localStorage.getItem('applied_coupon') || '';
-    
-    console.log('Checkout Summary:', {
-        totalMrp,
-        totalProductDiscount,
-        couponDiscount,
-        couponCode
-    });
-    
-    
-    renderCheckoutSummary({
-        cart: {
-            subtotal: totalMrp,
-            discount: totalProductDiscount,
-            coupon_discount: couponDiscount,
-            coupon_code: couponCode,
-            total: totalMrp - totalProductDiscount - couponDiscount
-        }
-    });
-    
-    fetch(`${API_BASE_URL}/checkout/summary`, {
+    fetch(url, {
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Accept': 'application/json'
@@ -132,158 +104,107 @@ function loadCheckoutSummary() {
     .then(res => res.json())
     .then(response => {
         if (response.success) {
-            // Update with API data if needed
+            renderCheckoutSummary(response.data.cart);
         }
     })
-    .catch(() => {});
-}
-
-function renderFallbackSummary(subtotal) {
-    const summaryContainer = document.getElementById('checkout-summary');
-    if (!summaryContainer) return;
-    
-    const couponDiscount = parseFloat(localStorage.getItem('coupon_discount')) || 0;
-    const couponCode = localStorage.getItem('applied_coupon') || '';
-    
-    const deliveryFee = 50;
-    const platformFee = 29;
-    const total = subtotal - couponDiscount + deliveryFee + platformFee;
-    
-    let html = `
-        <div class="order-details">
-            <div class="detail-row">
-                <span>Bag total</span>
-                <span>₹${subtotal.toFixed(2)}</span>
-            </div>
-    `;
-    
-    if (couponDiscount > 0) {
-        html += `
-            <div class="detail-row coupon-discount">
-                <span>Coupon discount (${couponCode})</span>
-                <span>-₹${couponDiscount.toFixed(2)}</span>
-            </div>
-        `;
-    }
-    
-    html += `
-        <div class="fee-details">
-            <div class="detail-row">
-                <span>Convenience Fee</span>
-                <span></span>
-            </div>
-            <div class="detail-row sub-item">
-                <span>Delivery Fee</span>
-                <span>₹${deliveryFee.toFixed(2)}</span>
-            </div>
-            <div class="detail-row sub-item">
-                <span>Platform Fee</span>
-                <span>₹${platformFee.toFixed(2)}</span>
-            </div>
-        </div>
-        <div class="detail-row total">
-            <span>Order Total</span>
-            <span>₹${total.toFixed(2)}</span>
-        </div>
-    `;
-    
-    summaryContainer.innerHTML = html;
-}
-
-function renderCheckoutSummary(data) {
-    const summaryContainer = document.getElementById('checkout-summary');
-    if (!summaryContainer) return;
-
-    const cart = data.cart || {};
-
-    // ✅ LocalStorage se values lo
-    const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
-    let totalMrp = 0;
-    let totalProductDiscount = 0;
-    
-    cartItems.forEach(item => {
-        const mrp = parseFloat(item.mrp) || parseFloat(item.originalPrice) || parseFloat(item.price) || 0;
-        const price = parseFloat(item.price) || 0;
-        const qty = parseInt(item.quantity) || 1;
-        
-        totalMrp += mrp * qty;
-        totalProductDiscount += (mrp - price) * qty;
+    .catch(error => {
+        console.error('Error:', error);
     });
-    
-    const couponDiscount = parseFloat(localStorage.getItem('coupon_discount')) || 0;
-    const couponCode = localStorage.getItem('applied_coupon') || '';
-    
-    // ✅ Calculate final total
-    const deliveryFee = 50;
-    const platformFee = 29;
-    const orderTotal = totalMrp - totalProductDiscount - couponDiscount;
-    const finalTotal = orderTotal + deliveryFee + platformFee;
+}
 
-    const itemCount = cartItems.length;
+function renderCheckoutSummary(cart) {
+    const summaryContainer = document.getElementById('checkout-summary');
+    if (!summaryContainer) return;
+
+    const subtotal = parseFloat(cart.subtotal) || 0;
+    const tax = parseFloat(cart.tax) || 0;
+    const shipping = parseFloat(cart.shipping) || 0;
+    const discount = parseFloat(cart.discount) || 0;
+    const platformFee = parseFloat(cart.platform_fee) || 0;
+    const total = parseFloat(cart.total) || 0;
+    const itemsCount = cart.items_count || 0;
 
     let html = `
         <div class="order-details">
-            <h3 class="price-details-title">Price Details (${itemCount} Items)</h3>
+            <h3 class="price-details-title">Price Details (${itemsCount} Items)</h3>
 
             <div class="detail-row">
                 <span>Product Price</span>
-                <span>₹${totalMrp.toFixed(2)}</span>
+                <span>₹${subtotal.toFixed(2)}</span>
             </div>
     `;
 
-    if (totalProductDiscount > 0) {
+    if (discount > 0) {
         html += `
             <div class="detail-row discount">
                 <span>Product Discounts</span>
-                <span>-₹${totalProductDiscount.toFixed(2)}</span>
+                <span>-₹${discount.toFixed(2)}</span>
             </div>
         `;
     }
 
-    if (couponDiscount > 0) {
-        html += `
-            <div class="detail-row coupon-discount">
-                <span>Coupon Discount (${couponCode})</span>
-                <span>-₹${couponDiscount.toFixed(2)}</span>
-            </div>
-        `;
-    }
+    html += `
+        <div class="detail-row">
+            <span>Tax (GST)</span>
+            <span>₹${tax.toFixed(2)}</span>
+        </div>
+    `;
 
+    const orderTotal = subtotal - discount;
     html += `
         <div class="detail-row order-total">
             <span>Order Total</span>
             <span>₹${orderTotal.toFixed(2)}</span>
         </div>
-        
-        <div class="fee-details">
+    `;
+
+    html += `<div class="fee-details">`;
+    
+    if (shipping > 0) {
+        html += `
             <div class="detail-row">
                 <span>Delivery Fee</span>
-                <span>₹${deliveryFee.toFixed(2)}</span>
+                <span>₹${shipping.toFixed(2)}</span>
             </div>
+        `;
+    } else {
+        html += `
+            <div class="detail-row">
+                <span>Delivery Fee</span>
+                <span class="free">FREE</span>
+            </div>
+        `;
+    }
+    
+    if (platformFee > 0) {
+        html += `
             <div class="detail-row">
                 <span>Platform Fee</span>
                 <span>₹${platformFee.toFixed(2)}</span>
             </div>
-        </div>
-        
+        `;
+    }
+    
+    html += `</div>`;
+
+    html += `
         <div class="detail-row final-total">
             <span>Final Total</span>
-            <span>₹${finalTotal.toFixed(2)}</span>
+            <span>₹${total.toFixed(2)}</span>
         </div>
     `;
 
-    const totalDiscount = totalProductDiscount + couponDiscount;
-    if (totalDiscount > 0) {
+    if (discount > 0) {
         html += `
             <div class="total-savings">
-                <span>🎉 Yay! Your total discount is ₹${totalDiscount.toFixed(2)}</span>
+                <span>🎉 Yay! Your total discount is ₹${discount.toFixed(2)}</span>
             </div>
         `;
     }
 
     summaryContainer.innerHTML = html;
+    summaryContainer.dataset.total = total;
 }
-
 function loadUserAddresses() {
     const addressContainer = document.getElementById('shipping-addresses');
     if (!addressContainer) return;
@@ -506,99 +427,94 @@ function selectAddress(addressId) {
 }
 
 function placeOrder() {
-    console.log('1. placeOrder function called');
-    
     const shippingAddress = document.querySelector(
         'input[name="shipping_address"]:checked'
     )?.value;
-
-    console.log('2. Selected address:', shippingAddress);
 
     if (!shippingAddress) {
         showToast('Please select a delivery address', 'error');
         return;
     }
 
-    syncCartWithDatabase(true).then(synced => {
-        if (!synced) {
-            showToast('Could not sync cart. Please try again.', 'error');
-            return;
-        }
-        
-        console.log('Cart synced successfully, now placing order');
-        
-        const placeOrderBtn = document.querySelector('.place-order-btn');
-        if (placeOrderBtn) {
-            placeOrderBtn.disabled = true;
-            placeOrderBtn.innerText = 'Placing Order...';
-        }
+    const placeOrderBtn = document.querySelector('.place-order-btn');
+    if (placeOrderBtn) {
+        placeOrderBtn.disabled = true;
+        placeOrderBtn.innerText = 'Placing Order...';
+    }
 
-        fetch(`${API_BASE_URL}/checkout/place-order`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                shipping_address_id: Number(shippingAddress),
-                billing_address_id: Number(shippingAddress),
-                payment_method_id: 1,
-                coupon_code: localStorage.getItem('applied_coupon') || null
-            })
+    const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+
+    fetch(`${API_BASE_URL}/checkout/place-order`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            shipping_address_id: Number(shippingAddress),
+            billing_address_id: Number(shippingAddress),
+            payment_method_id: 1,
+            coupon_code: localStorage.getItem('applied_coupon') || null,
+            items: cartItems.map(item => ({
+                product_id: item.id,
+                variant_id: item.variantId,
+                quantity: item.quantity,
+                price: item.price,
+                image: item.image,
+                variant_id: item.variantId
+            }))
         })
-        .then(res => res.json())
-        .then(response => {
-            console.log('API Response:', response);
+    })
+    .then(res => res.json())
+    .then(response => {
+        if (response.success) {
+            const orderData = {
+                id: response.data.order.id,
+                total: response.data.order.total,
+                payment_status: response.data.order.payment_status || 'Paid',
+                created_at: new Date().toISOString(),
+                items: cartItems.map(item => ({
+                    product_name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    image: item.image,
+                    product_id: item.id,
+                    variant_id: item.variantId
+                }))
+            };
             
-            if (response.success) {
-                const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
-                const orderData = {
-                    id: response.data.order.id,
-                    total: response.data.order.total,
-                    payment_status: response.data.order.payment_status || 'Paid',
-                    created_at: new Date().toISOString(),
-                    items: cartItems.map(item => ({
-                        product_name: item.name,
-                        price: item.price,
-                        quantity: item.quantity,
-                        image: item.image
-                    }))
-                };
-                
-                const recentOrders = JSON.parse(localStorage.getItem('recent_orders') || '[]');
-                recentOrders.unshift(orderData);
-                if (recentOrders.length > 10) recentOrders.pop();
-                localStorage.setItem('recent_orders', JSON.stringify(recentOrders));
-                localStorage.setItem('last_order', JSON.stringify(orderData));
-                localStorage.removeItem('cart');
-                localStorage.removeItem('cart_synced');
-                localStorage.removeItem('applied_coupon');
-                localStorage.removeItem('coupon_discount');
+            const recentOrders = JSON.parse(localStorage.getItem('recent_orders') || '[]');
+            recentOrders.unshift(orderData);
+            if (recentOrders.length > 10) recentOrders.pop();
+            localStorage.setItem('recent_orders', JSON.stringify(recentOrders));
+            localStorage.setItem('last_order', JSON.stringify(orderData));
+            localStorage.removeItem('cart');
+            localStorage.removeItem('cart_synced');
+            localStorage.removeItem('applied_coupon');
+            localStorage.removeItem('coupon_discount');
 
-                showToast('Order placed successfully', 'success');
-                
-                setTimeout(() => {
-                    window.location.href = `/order-confirmation/${response.data.order.id}`;
-                }, 1200);
-            } else {
-                PAYMENT_IN_PROGRESS = false;
-                if (placeOrderBtn) {
-                    placeOrderBtn.disabled = false;
-                    placeOrderBtn.innerText = 'PLACE ORDER';
-                }
-                showToast(response.message || 'Could not place order', 'error');
-            }
-        })
-        .catch(err => {
+            showToast('Order placed successfully', 'success');
+            
+            setTimeout(() => {
+                window.location.href = `/order-confirmation/${response.data.order.id}`;
+            }, 1200);
+        } else {
             PAYMENT_IN_PROGRESS = false;
             if (placeOrderBtn) {
                 placeOrderBtn.disabled = false;
                 placeOrderBtn.innerText = 'PLACE ORDER';
             }
-            console.error('Order error:', err);
-            showToast('Network error. Please try again.', 'error');
-        });
+            showToast(response.message || 'Could not place order', 'error');
+        }
+    })
+    .catch(err => {
+        PAYMENT_IN_PROGRESS = false;
+        if (placeOrderBtn) {
+            placeOrderBtn.disabled = false;
+            placeOrderBtn.innerText = 'PLACE ORDER';
+        }
+        showToast('Network error. Please try again.', 'error');
     });
 }
 
@@ -649,12 +565,6 @@ async function startRazorpayPayment() {
 
     if (!shippingAddress) {
         showToast('Please select a delivery address', 'error');
-        return;
-    }
-
-    const synced = await syncCartWithDatabase(true);
-    if (!synced) {
-        showToast('Could not sync cart. Please try again.', 'error');
         return;
     }
 
@@ -729,7 +639,6 @@ function verifyRazorpayPayment(response) {
         if (res.success) {
             PAYMENT_COMPLETED = true;
 
-            // ✅ ORDER SAVE KARO
             const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
             
             const orderData = {
@@ -741,7 +650,8 @@ function verifyRazorpayPayment(response) {
                     product_name: item.name,
                     price: item.price,
                     quantity: item.quantity,
-                    image: item.image
+                    image: item.image,
+                    product_id: item.id   
                 }))
             };
             
@@ -781,4 +691,25 @@ function showToast(message, type) {
     setTimeout(() => {
         toast.remove();
     }, 3000);
+}
+
+function applyCoupon() {
+    const input = document.getElementById('coupon-code-input');
+    const code = input?.value.trim().toUpperCase();
+    
+    if (!code) {
+        showToast('Please enter a coupon code', 'error');
+        return;
+    }
+    
+    localStorage.setItem('applied_coupon', code);
+    loadCheckoutSummary();
+    input.value = '';
+}
+
+function removeCoupon() {
+    localStorage.removeItem('applied_coupon');
+    localStorage.removeItem('coupon_discount');
+    loadCheckoutSummary();
+    showToast('Coupon removed', 'info');
 }

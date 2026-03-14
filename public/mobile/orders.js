@@ -1,50 +1,41 @@
 const API_BASE_URL = 'https://retailadmin.ggconsultancy.services/api';
+const token = localStorage.getItem('token');
 
 document.addEventListener('DOMContentLoaded', function() {
-    const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
     if (!token || !user.id) {
         sessionStorage.setItem('redirect_after_login', '/orders');
         window.location.href = '/user/login';
         return;
     }
-    
-    loadOrders();
+    loadAllOrders();
 });
 
-function loadOrders() {
+async function loadAllOrders() {
     const container = document.getElementById('orders-list');
     if (!container) return;
     
-    const recentOrders = JSON.parse(localStorage.getItem('recent_orders') || '[]');
-    
-    fetch(`${API_BASE_URL}/orders`, {
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Accept': 'application/json'
-        }
-    })
-    .then(res => res.json())
-    .then(response => {
-        if (response.success && response.data && response.data.length > 0) {
-            renderOrders(response.data);
-            localStorage.setItem('recent_orders', JSON.stringify(response.data.slice(0, 10)));
-        } else if (recentOrders.length > 0) {
-            renderOrders(recentOrders);
-            showToast('Showing saved orders', 'info');
+    try {
+        const response = await fetch(`${API_BASE_URL}/orders?per_page=100`, {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Accept": "application/json"
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.data) {
+            renderOrders(data.data.data);
         } else {
             showEmptyState();
         }
-    })
-    .catch(() => {
-        if (recentOrders.length > 0) {
-            renderOrders(recentOrders);
-            showToast('Showing saved orders', 'info');
-        } else {
-            showEmptyState();
-        }
-    });
+        
+    } catch (error) {
+        console.error("Error:", error);
+        showEmptyState();
+    }
 }
 
 function renderOrders(orders) {
@@ -56,9 +47,18 @@ function renderOrders(orders) {
         return;
     }
     
+    // 🔥 RECENT ORDERS SE IMAGES KA MAP
+    const recentOrders = JSON.parse(localStorage.getItem('recent_orders') || '[]');
+    const recentOrderImages = {};
+    recentOrders.forEach(order => {
+        order.items.forEach(item => {
+            recentOrderImages[item.product_id + '_' + item.variant_id] = item.image;
+        });
+    });
+    
     let html = '';
     orders.forEach(order => {
-        const date = new Date(order.created_at || order.date || Date.now()).toLocaleDateString('en-IN', {
+        const date = new Date(order.created_at).toLocaleDateString('en-IN', {
             day: 'numeric',
             month: 'short',
             year: 'numeric'
@@ -72,6 +72,18 @@ function renderOrders(orders) {
         const itemCount = items.length;
         const moreItems = itemCount - 1;
         
+        let key = firstItem.product_id + '_' + firstItem.variant_id;
+        let image = recentOrderImages[key] || firstItem.image || '';
+        
+        if (image && !image.startsWith('http') && image.includes('amazonaws.com')) {
+            // Already full URL
+        } else if (image && !image.startsWith('http')) {
+            image = `https://inventorydata-s3-bucket.s3.amazonaws.com/${image}`;
+        }
+        
+        const price = firstItem.price ? parseFloat(firstItem.price) : 0;
+        const itemQuantity = firstItem.quantity ? parseInt(firstItem.quantity) : 1;
+        
         html += `
             <div class="order-card" onclick="viewOrderDetails('${order.id}')">
                 <div class="order-header">
@@ -84,25 +96,18 @@ function renderOrders(orders) {
                 </div>
                 
                 <div class="order-item-preview">
-                    <img src="${firstItem.image || 'https://via.placeholder.com/60'}" 
-                         alt="${firstItem.product_name || 'Product'}"
-                         onerror="this.src='https://via.placeholder.com/60'">
+                    ${image ? `<img src="${image}" alt="${firstItem.product_name}" style="width:80px;height:80px;object-fit:cover;">` : '<div style="width:80px;height:80px;background:#f0f0f0;"></div>'}
                     <div class="preview-details">
-                        <div class="preview-name">${firstItem.product_name || firstItem.name || 'Product'}</div>
-                        <div class="preview-price">₹${(firstItem.price || 0).toFixed(2)} x ${firstItem.quantity || 1}</div>
-                        ${moreItems > 0 ? `<div class="more-items">+${moreItems} more item${moreItems > 1 ? 's' : ''}</div>` : ''}
+                        <div class="preview-name">${firstItem.product_name}</div>
+                        <div class="preview-price">₹${price.toFixed(2)} x ${itemQuantity}</div>
+                        ${moreItems > 0 ? `<div class="more-items">+${moreItems} more</div>` : ''}
                     </div>
                 </div>
                 
                 <div class="order-footer">
                     <div class="order-total">
                         <span>Total:</span>
-                        <span class="total-amount">₹${(
-                            order.total || 
-                            order.total_amount || 
-                            order.grand_total || 
-                            items.reduce((sum,i)=>sum + (i.price * (i.quantity || 1)),0)
-                        ).toFixed(2)}</span>
+                        <span class="total-amount">₹${parseFloat(order.total).toFixed(2)}</span>
                     </div>
                     <button class="view-details-btn">View Details →</button>
                 </div>
@@ -129,18 +134,4 @@ function showEmptyState() {
 
 function viewOrderDetails(orderId) {
     window.location.href = `/order-confirmation/${orderId}`;
-}
-
-function showToast(message, type) {
-    const existingToast = document.querySelector('.toast-message');
-    if (existingToast) existingToast.remove();
-    
-    const toast = document.createElement('div');
-    toast.className = `toast-message ${type}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
 }

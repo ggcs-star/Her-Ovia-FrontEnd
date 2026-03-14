@@ -8,35 +8,42 @@ document.addEventListener('DOMContentLoaded', function() {
         const popupDiscount = sessionStorage.getItem('popup_discount');
         
         if (showPopup === 'true' && popupCode && popupDiscount) {
-          
             setTimeout(() => {
                 showCouponSuccessPopup(popupCode, parseFloat(popupDiscount));
-                
-               
                 sessionStorage.removeItem('show_coupon_popup');
                 sessionStorage.removeItem('popup_code');
                 sessionStorage.removeItem('popup_discount');
             }, 1000);
         }
     }
-    updateCartCountBadge();
-});
-function loadCart() {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
     
+    updateCartCountBadge();
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        console.log('Guest user - cart in localStorage');
+    }
+});
+
+function loadCart() {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    console.log('📦 Cart from localStorage:', cart.length);
+
     fetchBrandsForCartItems(cart).then(updatedCart => {
         renderCart(updatedCart);
     });
-    
+
     setTimeout(() => {
         if (typeof loadAvailableCoupons === 'function') {
             loadAvailableCoupons();
         }
     }, 100);
 }
+
 window.goBack = function() {
     window.history.back();
 };
+
 async function fetchBrandsForCartItems(cart) {
     if (!cart || cart.length === 0) return cart;
     
@@ -170,27 +177,6 @@ function getCartItemHTML(item, index, qty, price, itemTotal) {
     deliveryDate.setDate(deliveryDate.getDate() + 5);
     const formattedDate = deliveryDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 
-    let variantHtml = '';
-    if (availableVariants && availableVariants.length > 0) {
-        if (availableVariants.length > 1) {
-            variantHtml = `
-                <select class="variant-select" onchange="changeVariant(${index}, '${variantType}', this.value)">
-                    ${availableVariants.map(v => {
-                        const selected = (v.value === variantValue) ? 'selected' : '';
-                        return `<option value="${v.value}" 
-                                data-price="${v.price || finalPrice}"
-                                data-original="${v.originalPrice || mrp}"
-                                ${selected}>${v.value}</option>`;
-                    }).join('')}
-                </select>
-            `;
-        } else {
-            variantHtml = `<span class="variant-value">${variantValue}</span>`;
-        }
-    } else {
-        variantHtml = `<span class="variant-value">${variantValue || 'S'}</span>`;
-    }
-
     return `
         <div class="cart-item" data-index="${index}" data-product-id="${item.id}">
             <div class="cart-item-main">
@@ -250,11 +236,12 @@ function getCartItemHTML(item, index, qty, price, itemTotal) {
         </div>
     `;
 }
+
 function openSizePopup(index, variantType, currentValue) {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
     if (!cart[index]) return;
     
-    // ✅ Checkout button hide karo
     const checkoutBar = document.querySelector('.sticky-bottom-bar');
     if (checkoutBar) checkoutBar.style.display = 'none';
     
@@ -285,6 +272,7 @@ function openSizePopup(index, variantType, currentValue) {
 
 function selectSizeFromPopup(index, value, price, originalPrice) {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
     if (!cart[index]) return;
     
     cart[index].variantValue = value;
@@ -295,15 +283,16 @@ function selectSizeFromPopup(index, value, price, originalPrice) {
     }
     
     localStorage.setItem('cart', JSON.stringify(cart));
+    
     closePopup();
     loadCart();
 }
 
 function openQtyPopup(index, currentQty) {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
     if (!cart[index]) return;
     
-    // ✅ Checkout button hide karo
     const checkoutBar = document.querySelector('.sticky-bottom-bar');
     if (checkoutBar) checkoutBar.style.display = 'none';
     
@@ -334,14 +323,15 @@ function updateQtyFromPopup(index, newQty) {
     if (newQty < 1) return;
     
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
     if (!cart[index]) return;
     
     cart[index].quantity = newQty;
+    
     localStorage.setItem('cart', JSON.stringify(cart));
     
     document.getElementById(`popup-qty-${index}`).innerText = newQty;
     
-    // Update buttons state
     const minusBtn = document.querySelector(`.popup-qty-controls button:first-child`);
     if (minusBtn) {
         if (newQty <= 1) {
@@ -351,16 +341,18 @@ function updateQtyFromPopup(index, newQty) {
         }
     }
     
-    // Update cart without closing popup
     loadCart();
 }
 
 function selectQtyFromPopup(index, qty) {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
     if (!cart[index]) return;
     
     cart[index].quantity = qty;
+    
     localStorage.setItem('cart', JSON.stringify(cart));
+    
     closePopup();
     loadCart();
 }
@@ -373,12 +365,16 @@ function closePopup() {
     const checkoutBar = document.querySelector('.sticky-bottom-bar');
     if (checkoutBar) checkoutBar.style.display = 'flex';
 }
+
 function changeQtyDropdown(index, newQty) {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
     if (!cart[index]) return;
     
     cart[index].quantity = parseInt(newQty);
+    
     localStorage.setItem('cart', JSON.stringify(cart));
+    
     loadCart();
     updateCartCountBadge();
 }
@@ -403,7 +399,6 @@ function updatePriceDetails(items) {
         totalProductDiscount += itemDiscount;
     });
     
-    // ✅ NO SHIPPING
     const finalTotal = totalFinalPrice;
     
     const itemCountEl = document.getElementById('item-count');
@@ -418,7 +413,7 @@ function updatePriceDetails(items) {
     if (itemCountEl) itemCountEl.innerText = itemCount;
     if (totalMrpEl) totalMrpEl.innerText = `₹${totalMrp.toFixed(2)}`;
     if (totalDiscountEl) totalDiscountEl.innerText = `- ₹${totalProductDiscount.toFixed(2)}`;
-    if (shippingEl) shippingEl.innerText = `₹0.00`; // ✅ Show 0
+    if (shippingEl) shippingEl.innerText = `₹0.00`;
     if (finalTotalEl) finalTotalEl.innerText = `₹${finalTotal.toFixed(2)}`;
     if (bottomTotalEl) bottomTotalEl.innerText = `₹${finalTotal.toFixed(2)}`;
     
@@ -433,7 +428,12 @@ function updatePriceDetails(items) {
 
     const appliedCode = localStorage.getItem('applied_coupon');
     const couponDiscount = localStorage.getItem('coupon_discount');
-    if (appliedCode && couponDiscount) {
+    
+    // 🔥 AGAR CART EMPTY HAI TO COUPON MAT DIKHAO
+    if (itemCount === 0) {
+        localStorage.removeItem('applied_coupon');
+        localStorage.removeItem('coupon_discount');
+    } else if (appliedCode && couponDiscount) {
         updateTotalsWithCoupon({ discount: parseFloat(couponDiscount) });
     }
 }
@@ -456,14 +456,12 @@ window.addToBag = function(product) {
         }
     }
 
-    // ✅ EXACT PRICES FROM VARIANT
     const finalPrice = selectedVariant ? parseFloat(selectedVariant.final_price) : (parseFloat(product.final_price) || 0);
     const originalPrice = selectedVariant ? parseFloat(selectedVariant.price) : (parseFloat(product.price) || 0);
     const variantType = selectedVariant?.variant_type || 'Size';
     const variantValue = selectedVariant?.variant_value || 'S';
     const variantId = selectedVariant?.id || null;
     
-    // ✅ Available variants for dropdown
     const availableVariants = product.variants ? product.variants.map(v => ({
         id: v.id,
         value: v.variant_value,
@@ -484,9 +482,9 @@ window.addToBag = function(product) {
         id: product.id,
         name: product.name,
         brand: product.brand || '',
-        price: finalPrice,           // ✅ 780.00
-        mrp: originalPrice,          // ✅ 800.00 (yeh important hai)
-        originalPrice: originalPrice, // ✅ 800.00
+        price: finalPrice,
+        mrp: originalPrice,
+        originalPrice: originalPrice,
         image: imageUrl,
         slug: product.slug,
         variantType: variantType,
@@ -510,6 +508,7 @@ window.addToBag = function(product) {
     }
     
     localStorage.setItem('cart', JSON.stringify(cart));
+    
     updateCartBadge();
     showConfirmation(product.name);
     
@@ -568,11 +567,13 @@ function changeVariant(index, variantType, newValue) {
     console.log('Updated cart item:', cart[index]);
     
     localStorage.setItem('cart', JSON.stringify(cart));
+    
     loadCart();
 }
 
 function changeQty(index, delta) {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
     if (!cart[index]) return;
     
     cart[index].quantity += delta;
@@ -582,25 +583,48 @@ function changeQty(index, delta) {
     }
     
     localStorage.setItem('cart', JSON.stringify(cart));
+    
     loadCart();
     updateCartCountBadge();
 }
 
 function removeItem(index) {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
+    const removedItem = cart[index];
+    
+    // Sirf EK item remove karo
     cart.splice(index, 1);
+    
     localStorage.setItem('cart', JSON.stringify(cart));
+
+    if (cart.length === 0) {
+        localStorage.removeItem('applied_coupon');
+        localStorage.removeItem('coupon_discount');
+    }
+
+    const token = localStorage.getItem('token');
+    if (token && removedItem?.cart_item_id) {
+        fetch(`https://retailadmin.ggconsultancy.services/api/cart/remove/${removedItem.cart_item_id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        }).catch(err => console.warn('Server remove failed:', err));
+    }
     loadCart();
     updateCartCountBadge();
 }
-
 function moveToWishlist(index) {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
     let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
     
     const item = cart[index];
     
     cart.splice(index, 1);
+    
     localStorage.setItem('cart', JSON.stringify(cart));
     
     if (!wishlist.some(w => w.id === item.id)) {
@@ -613,7 +637,8 @@ function moveToWishlist(index) {
 }
 
 function updateCartCountBadge() {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
     const total = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
     
     document.querySelectorAll('.cart-badge, #cart-count').forEach(el => {
@@ -650,6 +675,7 @@ function loadAvailableCoupons() {
         couponsList.innerHTML = '<div class="no-coupons">Failed to load coupons</div>';
     });
 }
+
 function applyCoupon(couponCode = null) {
     const code = couponCode || document.getElementById('coupon-code-input')?.value;
     
@@ -695,6 +721,7 @@ function applyCoupon(couponCode = null) {
         showToast('Error applying coupon', 'error');
     });
 }
+
 function showBankOfferPopup(couponCode) {
     const coupon = window.allCoupons?.find(c => c.code === couponCode);
     if (!coupon) return;
@@ -731,6 +758,7 @@ function closeBankOfferPopup() {
 function goToCheckout() {
     window.location.href = '/checkout/shipping';
 }
+
 function showCouponSuccessPopup(code, discount) {
     const popup = document.createElement('div');
     popup.className = 'coupon-success-popup';
@@ -758,6 +786,7 @@ function closeCouponSuccessPopup() {
         popup.remove();
     }
 }
+
 function removeCoupon() {
     fetch('https://retailadmin.ggconsultancy.services/api/coupons/remove', {
         method: 'POST',
@@ -795,7 +824,6 @@ function renderCouponsList(coupons) {
         return;
     }
     
-    // ✅ SIRF APPLICABLE COUPONS FILTER KARO
     const applicableCoupons = coupons.filter(coupon => {
         const minOrder = coupon.min_order_amount ? parseFloat(coupon.min_order_amount) : 0;
         return cartTotal >= minOrder;
@@ -876,6 +904,7 @@ window.showCouponTerms = function(code) {
     sessionStorage.setItem('view_coupon_code', code);
     window.location.href = '/coupon-terms';
 }
+
 function selectCoupon(element) {
     const couponCode = element.dataset.code;
     const input = document.getElementById('coupon-code-input');
@@ -914,7 +943,6 @@ function updateTotalsWithCoupon(couponData) {
         couponDiscountSpan.innerText = `- ₹${couponData.discount.toFixed(2)}`;
     }
     
-    // ✅ NO SHIPPING
     const finalTotal = totalMrp - productDiscount - couponData.discount;
     
     const finalTotalEl = document.getElementById('final-total');
@@ -930,6 +958,7 @@ function updateTotalsWithCoupon(couponData) {
         savingsMsg.style.display = 'flex';
     }
 }
+
 function initCouponSection() {
     const viewCouponsBtn = document.querySelector('.view-coupons-link');
     const couponsWrapper = document.querySelector('.applicable-coupons');
@@ -987,19 +1016,19 @@ loadCart = function() {
 }
 
 function proceedToCheckout() {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
     if (cart.length === 0) {
         showEmptyCartPopup();
         return;
     }
-
+    
     const token = localStorage.getItem('token');
-
+    
     if (!token) {
+        sessionStorage.setItem('guest_checkout_cart', JSON.stringify(cart));
         sessionStorage.setItem('redirect_after_login', '/checkout/shipping');
-        sessionStorage.setItem('login_message', 'Please login to continue checkout');
-        window.location.href = '/register';
+        window.location.href = '/login';
         return;
     }
 
@@ -1030,12 +1059,18 @@ function closeEmptyCartPopup() {
         popup.remove();
     }
 }
+
 function handleLoginSuccess(userData, token) {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
 
-    const redirect = sessionStorage.getItem('redirect_after_login');
+    const guestCart = JSON.parse(localStorage.getItem('cart')) || [];
+    if (guestCart.length > 0) {
+        mergeCartWithUserCart(guestCart);
+    }
 
+    const redirect = sessionStorage.getItem('redirect_after_login');
+    
     if (redirect) {
         sessionStorage.removeItem('redirect_after_login');
         sessionStorage.removeItem('login_message');
@@ -1043,4 +1078,50 @@ function handleLoginSuccess(userData, token) {
     } else {
         window.location.href = '/';
     }
+}
+function syncCartWithServer() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    const localCart = JSON.parse(localStorage.getItem('cart')) || [];
+    
+    if (localCart.length === 0) {
+        // Cart empty hai toh server cart bhi empty karo
+        fetch('https://retailadmin.ggconsultancy.services/api/cart/clear', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        })
+        .then(() => console.log('Server cart cleared'))
+        .catch(err => console.warn('Could not clear server cart:', err));
+        
+        return;
+    }
+    
+    // Server cart ko local cart se sync karo
+    const items = localCart.map(item => ({
+        product_id: Number(item.id),
+        variant_id: Number(item.variantId),
+        quantity: Number(item.quantity) || 1
+    }));
+    
+    fetch('https://retailadmin.ggconsultancy.services/api/cart/sync', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ items })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Cart synced with server');
+            localStorage.setItem('cart_synced', '1');
+        }
+    })
+    .catch(err => console.warn('Could not sync cart:', err));
 }

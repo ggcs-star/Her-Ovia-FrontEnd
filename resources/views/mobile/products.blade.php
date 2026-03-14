@@ -2,23 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Products | RAPID RETAIL</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #fff; }
+        body{
+            font-family:'Inter',sans-serif;
+            background:#fff;
+
+            padding-bottom:env(safe-area-inset-bottom);
+
+            -webkit-overflow-scrolling:touch;
+        }
 
         .header{
             display:flex;
             align-items:center;
             justify-content:space-between;
-            padding:12px 16px;
-            padding-top:calc(env(safe-area-inset-top) + 12px);
+
+            height:calc(56px + env(safe-area-inset-top));
+
+            padding:env(safe-area-inset-top) 16px 0 16px;
+
             border-bottom:1px solid #f0f0f0;
             background:#fff;
+
             position:sticky;
             top:0;
+
             z-index:1000;
         }
         .header-left {
@@ -54,11 +66,14 @@
             display:grid;
             grid-template-columns:repeat(auto-fill,minmax(80px,1fr));
             gap:16px;
+
             border-bottom:1px solid #f0f0f0;
             background:#fff;
+
             position:sticky;
-            top:70px;
-            z-index:99;
+            top:calc(56px + env(safe-area-inset-top));
+
+            z-index:999;
         }
         .sub-strip::-webkit-scrollbar { display: none; }
         .sub-item{
@@ -88,8 +103,8 @@
             grid-template-columns:repeat(2,1fr);
             gap:16px;
             padding:16px;
-            padding-bottom:120px;
-        }
+            padding-bottom:calc(130px + env(safe-area-inset-bottom));
+            }
         .card {
             cursor: pointer;
             border-radius: 12px;
@@ -180,7 +195,7 @@
 
         .action-bar{
             position:fixed;
-            bottom:85px;
+            bottom:calc(70px + env(safe-area-inset-bottom));
             left:0;
             right:0;
             display:flex;
@@ -210,15 +225,19 @@
             bottom:0;
             left:0;
             right:0;
-            height:70px;
+
+            height:calc(65px + env(safe-area-inset-bottom));
+            padding-bottom:env(safe-area-inset-bottom);
+
             display:flex;
             justify-content:space-around;
             align-items:center;
-            padding-bottom:env(safe-area-inset-bottom);
+
             background:#fff;
             border-top:1px solid #f0f0f0;
+
             z-index:1000;
-        }
+            }
         .nav-item {
             display: flex;
             flex-direction: column;
@@ -560,7 +579,24 @@
 .nav-item-figma.active svg {
     stroke: #ff3f6c;
 }
-    </style>
+.header-icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.header-icon-btn svg {
+    stroke: #333333;
+    fill: none;
+}
+
+.header-icon-btn:hover svg {
+    stroke: #ff3f6c;
+}
+</style>
 </head>
 <body data-page="products" data-subcategory-id="{{ request()->query('subcategory') }}" data-category-id="{{ request()->query('category') }}">
 
@@ -572,7 +608,11 @@
     </div>
     <div class="header-right">
         <span onclick="window.location.href='/search'">🔍</span>
-        <span onclick="window.location.href='/wishlist'">❤️</span>
+        <button class="header-icon-btn" onclick="window.location.href='/wishlist'" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center;">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+</button>
         <span onclick="window.location.href='/cart'">🛒</span>
     </div>
 </div>

@@ -28,7 +28,33 @@ body{
     overflow:hidden;
     box-shadow:0 25px 50px rgba(0,0,0,0.1);
 }
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
 
+.password-wrapper input {
+    padding-right: 45px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 20px;
+    color: #999;
+    user-select: none;
+    background: transparent;
+    border: none;
+    padding: 5px;
+    z-index: 10;
+}
+
+.toggle-password:hover {
+    color: #ff3f6c;
+}
 /* LEFT SIDE WITH VIDEO */
 .left{
     position:relative;
@@ -132,7 +158,7 @@ button{
     padding:14px;
     border:none;
     border-radius:10px;
-    background:#2563eb;
+    background:#ff3f6c;  
     color:white;
     font-weight:600;
     cursor:pointer;
@@ -140,9 +166,8 @@ button{
     -webkit-appearance:none;
     appearance:none;
 }
-
-button:hover{
-    background:#1d4ed8;
+button:hover {
+    background:#e6395e;
 }
 
 .login-link{
@@ -152,12 +177,11 @@ button:hover{
 }
 
 .login-link a{
-    color:#2563eb;
+    color:#ff3f6c;  
     text-decoration:none;
     font-weight:600;
 }
 
-/* Mobile Responsive - Full Video & Form Below */
 @media(max-width:768px){
     body{
         display:block;
@@ -286,7 +310,10 @@ button:hover{
         border-radius:14px;
         font-weight:600;
         margin-top:15px;
-        background:#2563eb;
+        background:#ff3f6c; 
+    }
+    button:hover {
+        background:#e6395e;
     }
 
     .login-link{
@@ -458,22 +485,47 @@ button:hover{
     }
 }
 
-/* Ensure form elements don't overflow */
 input, button{
     max-width:100%;
     box-sizing:border-box;
 }
 
-/* Better touch targets for mobile */
 @media(max-width:768px){
     input, button, .login-link a{
-        min-height:48px; /* Better touch targets */
+        min-height:48px; 
+    }
+}
+.back-arrow {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    color: white; 
+    text-decoration: none;
+    font-size: 28px;
+    font-weight: bold;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3); 
+}
+.back-arrow:hover {
+    transform: scale(1.1);
+    color: white;  
+}
+@media(max-width:768px){
+    .back-arrow {
+        top: 15px;
+        left: 15px;
+        font-size: 26px;
     }
 }
 </style>
 </head>
 <body>
-
+<a href="javascript:history.back()" class="back-arrow">←</a>
 <div class="wrapper">
 
 <div class="left">
@@ -517,12 +569,18 @@ input, button{
 
         <div class="form-group">
             <label>Password</label>
-            <input type="password" name="password" required placeholder="Create a password">
+            <div class="password-wrapper">
+                <input type="password" name="password" id="password" required placeholder="Create a password">
+                <span class="toggle-password" onclick="togglePassword('password', this)">👁️</span>
+            </div>
         </div>
 
         <div class="form-group">
             <label>Confirm Password</label>
-            <input type="password" name="password_confirmation" required placeholder="Confirm your password">
+            <div class="password-wrapper">
+                <input type="password" name="password_confirmation" id="confirmPassword" required placeholder="Confirm your password">
+                <span class="toggle-password" onclick="togglePassword('confirmPassword', this)">👁️</span>
+            </div>
         </div>
 
         <button type="submit">Create Account</button>
@@ -533,7 +591,7 @@ input, button{
     </form>
 </div>
 <script>
-const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
+const BASE_URL = "http://192.168.0.105:8000/api";
 
 function showAlert(message, type) {
     const existingAlert = document.querySelector('.alert');
@@ -595,14 +653,20 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = await response.json();
             console.log("API Response:", data);
 
-            if (response.ok) {
+            if (response.ok && data.success) {
                 localStorage.setItem("verify_email", email);
-                showAlert("Registration successful! Redirecting to verification...", 'success');
-                setTimeout(() => {
-                    window.location.href = "/verify-otp";
-                }, 1500);
+                window.location.href = "/verify-otp?email=" + encodeURIComponent(email);
             } else {
-                showAlert(data.message || "Registration failed", 'error');
+                const errorMsg = data.message || data.error || "Registration failed";
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-error';
+                errorDiv.textContent = errorMsg;
+                errorDiv.style.marginBottom = '20px';
+                
+                const form = document.getElementById('registerForm');
+                const existingError = form.querySelector('.alert-error');
+                if (existingError) existingError.remove();
+                form.insertBefore(errorDiv, form.firstChild);
             }
 
         } catch (error) {
@@ -611,6 +675,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+function togglePassword(inputId, element) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        element.textContent = '🔒';
+    } else {
+        input.type = 'password';
+        element.textContent = '👁️';
+    }
+}
 </script>
 </div>
 

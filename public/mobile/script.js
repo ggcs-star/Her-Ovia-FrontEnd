@@ -17,12 +17,13 @@ class RapidRetailsEngine {
         this.slideTimer = null;
         this.allCategories = [];
         this.allBanners = [];
+        this.userCategories = [];
     }
 
     async init() {
         this.renderHeader();
         this.renderBottomNav();
-        
+        this.initSearchRedirect();
         if (this.page === 'landing') {
             await this.initLanding();
         }
@@ -51,18 +52,29 @@ class RapidRetailsEngine {
                             </a>
                         </div>
                         <div class="search-wrapper">
-                            <input type="text" placeholder="Search for Category, Product ...">
-                            <span class="search-icon">🔍</span>
+                            <input id="landing-search" type="text" placeholder="Search for Category, Product ...">
+                            <span class="search-icon" onclick="window.location.href='/search'">🔍</span>
                         </div>
                     </div>
                     <div class="header-icons">
-                        <button class="header-icon-btn" onclick="window.location.href='/wishlist'">❤️</button>
+                    <button class="header-icon-btn" onclick="window.location.href='/wishlist'">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+</button>
                         <button class="header-icon-btn">🔔</button>
                     </div>
                 </div>
             </div>
         `;
     }
+    initSearchRedirect() {
+    const searchInput = document.getElementById("landing-search");
+    if (!searchInput) return;
+    searchInput.addEventListener("focus", () => {
+        window.location.href = "/search";
+    });
+}
     renderBottomNav() {
     const nav = document.getElementById('mobile-bottom-nav');
     if (!nav) return;
@@ -134,7 +146,9 @@ class RapidRetailsEngine {
 
         if (catsRes.success) this.allCategories = catsRes.data;
         if (bannersRes.success) this.allBanners = bannersRes.data;
-
+        if (this.isLoggedIn) {
+        await this.fetchUserCategoryOrder();
+    }
         await this.renderHeroSlider();
         await this.renderCategoryPills();
         await this.renderTrending(topSellingRes);
@@ -144,7 +158,23 @@ class RapidRetailsEngine {
         await this.renderBrandsGrid();
         await this.renderDynamicCategorySections();
     }
-
+    async fetchUserCategoryOrder() {
+    try {
+        const response = await fetch('https://retailadmin.ggconsultancy.services/api";/api/categories/order', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Accept': 'application/json'
+            }
+        });
+        const data = await response.json();
+        if (data.success && data.data.length > 0) {
+            this.userCategories = data.data;
+            console.log('User categories loaded:', this.userCategories);
+        }
+    } catch (error) {
+        console.error('Error fetching user categories:', error);
+    }
+}
     async renderHeroSlider() {
         const slider = document.getElementById('hero-slider');
         const dots = document.getElementById('slider-dots');
@@ -197,9 +227,16 @@ class RapidRetailsEngine {
     
     async renderCategoryPills() {
         const container = document.getElementById('categories-pills');
-        if (!container || !this.allCategories.length) return;
+        if (!container) return;
 
-        container.innerHTML = this.allCategories.slice(0, 8).map(cat => `
+        // YEH CONDITION CHANGE KARO
+        const categoriesToShow = (this.isLoggedIn && this.userCategories.length > 0) 
+            ? this.userCategories 
+            : this.allCategories;
+
+        if (!categoriesToShow.length) return;
+
+        container.innerHTML = categoriesToShow.slice(0, 8).map(cat => `
             <div class="pill-item" onclick='window.app.showCategoryPopup(${JSON.stringify(cat).replace(/'/g, "\\'")})'>
                 <div class="pill-img-wrap">
                     <img src="${this.resolveImage(cat.image_url)}" onerror="this.src='${APP_CONFIG.FALLBACK_IMAGE}'">

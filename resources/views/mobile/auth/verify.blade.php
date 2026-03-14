@@ -29,20 +29,36 @@
         box-shadow:0 25px 50px rgba(0,0,0,0.1);
     }
 
-    /* Left Branding */
     .left{
         flex:1;
-        background:linear-gradient(135deg,#2563eb,#3b82f6);
+        position:relative;
         color:white;
         padding:60px 40px;
         display:flex;
         flex-direction:column;
         justify-content:center;
+        background:url('/images/login-bg.jpg') center center / cover no-repeat;
+        min-height:300px;
     }
 
-    .left h1{
-        font-size:30px;
-        margin-bottom:15px;
+    .left::before{
+        content:'';
+        position:absolute;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:linear-gradient(
+            135deg,
+            rgba(0,0,0,0.6),
+            rgba(255,63,108,0.6)
+        );
+        z-index:1;
+    }
+
+    .left h1, .left p{
+        position:relative;
+        z-index:2;
     }
 
     .left p{
@@ -106,9 +122,9 @@
     }
 
     input:focus{
-        border-color:#2563eb;
+        border-color:#ff3f6c;
         outline:none;
-        box-shadow:0 0 0 3px rgba(37,99,235,0.15);
+        box-shadow:0 0 0 3px rgba(255,63,108,0.15);
     }
 
     .timer{
@@ -123,15 +139,14 @@
         padding:14px;
         border:none;
         border-radius:10px;
-        background:#2563eb;
+        background:#ff3f6c;
         color:white;
         font-weight:600;
         cursor:pointer;
         transition:0.3s;
     }
-
     button:hover{
-        background:#1d4ed8;
+        background:#e6395e;
         transform:translateY(-2px);
     }
 
@@ -142,7 +157,7 @@
     }
 
     .resend a{
-        color:#2563eb;
+        color:#ff3f6c;
         text-decoration:none;
         font-weight:600;
     }
@@ -154,29 +169,110 @@
     }
 
     .back a{
-        color:#2563eb;
+        color:#ff3f6c;
         text-decoration:none;
         font-weight:600;
     }
 
+
     @media(max-width:768px){
+        body{
+            display:block;
+            background:#f5f7fb;
+            padding:0;
+        }
         .wrapper{
             flex-direction:column;
+            max-width:100%;
+            margin:0;
+            border-radius:0;
+            box-shadow:none;
+            background:transparent;
         }
-
         .left{
-            padding:40px 20px;
+            width:100%;
+            min-height:350px;
+            padding:60px 25px;
+            text-align:center;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+        }
+        .left h1{
+            font-size:32px;
+            margin-bottom:12px;
+        }
+        .left p{
+            font-size:16px;
+            max-width:300px;
+            margin:0 auto;
+            line-height:1.5;
+        }
+        .right{
+            background:#ffffff;
+            border-radius:30px 30px 0 0;
+            padding:35px 25px 45px 25px;
+            box-shadow:0 -5px 20px rgba(0,0,0,0.08);
+        }
+        .right h2{
+            font-size:24px;
             text-align:center;
         }
-
-        .right{
-            padding:30px 20px;
+        .subtitle{
+            text-align:center;
+            font-size:15px;
+            margin-bottom:25px;
+        }
+        label{
+            font-size:14px;
+        }
+        input{
+            padding:16px;
+            font-size:20px;
+            border-radius:12px;
+            background:#fafafa;
+        }
+        .timer{
+            text-align:center;
+            font-size:14px;
+        }
+        button{
+            padding:18px;
+            font-size:16px;
+            border-radius:12px;
+        }
+    }
+    .back-arrow {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1000;
+        color: white;
+        text-decoration: none;
+        font-size: 28px;
+        font-weight: bold;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .back-arrow:hover {
+        transform: scale(1.1);
+        color: white;
+    }
+    @media(max-width:768px){
+        .back-arrow {
+            top: 15px;
+            left: 15px;
+            font-size: 26px;
         }
     }
     </style>
-    </head>
-    <body>
-
+</head>
+<body>
+    <a href="javascript:history.back()" class="back-arrow">←</a>
     <div class="wrapper">
 
     <div class="left">
@@ -229,8 +325,7 @@
         </form>
     </div>
 <script>
-const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
-
+// const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
 function showAlert(message, type) {
     const alertContainer = document.getElementById('alertContainer');
     if (!alertContainer) return;
@@ -258,7 +353,9 @@ document.addEventListener("DOMContentLoaded", function () {
         form.insertBefore(alertDiv, form.firstChild);
     }
     
-    const email = localStorage.getItem("verify_email") || localStorage.getItem("reset_email");
+    // ✅ URL se email lo, localStorage se nahi
+    const urlParams = new URLSearchParams(window.location.search);
+    const email = urlParams.get('email');
     
     if (!email) {
         showAlert("Email not found. Please try again.", "error");
@@ -279,7 +376,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            const apiEndpoint = localStorage.getItem("reset_email")
+            // ✅ Check for reset password flow via URL parameter
+            const isReset = urlParams.get('reset') === 'true';
+            
+            const apiEndpoint = isReset
                 ? BASE_URL + "/user/verify-reset-otp"
                 : BASE_URL + "/user/verify-email-otp";
 
@@ -296,23 +396,37 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Verify Response:", data);
 
             if (response.ok && data.success) {
-                showAlert("Verified successfully!", "success");
+                const successDiv = document.createElement('div');
+                successDiv.className = 'alert alert-success';
+                successDiv.textContent = "Verified successfully!";
                 
-                if (localStorage.getItem("reset_email")) {
-                    localStorage.setItem("reset_verified", "true");
-                    localStorage.setItem("reset_otp", otp);
+                const alertContainer = document.getElementById('alertContainer');
+                alertContainer.innerHTML = '';
+                alertContainer.appendChild(successDiv);
+                
+                if (isReset) {
+                    sessionStorage.setItem("reset_verified", "true");
+                    sessionStorage.setItem("reset_otp", otp);
+                    sessionStorage.setItem("reset_email", email);
+                    
                     setTimeout(() => {
                         window.location.href = "/reset-password";
                     }, 1500);
                     
                 } else {
-                    localStorage.removeItem("verify_email");
                     setTimeout(() => {
-                        window.location.href = "/login";
+                        window.location.href = "/login?verified=true";
                     }, 1500);
                 }
             } else {
-                showAlert(data.message || "Invalid OTP", "error");
+                const errorMsg = data.message || "Invalid OTP";
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-error';
+                errorDiv.textContent = errorMsg;
+                
+                const alertContainer = document.getElementById('alertContainer');
+                alertContainer.innerHTML = '';
+                alertContainer.appendChild(errorDiv);
             }
 
         } catch (error) {
@@ -324,15 +438,16 @@ document.addEventListener("DOMContentLoaded", function () {
     resendBtn.addEventListener("click", async function (e) {
         e.preventDefault();
 
-        const email = localStorage.getItem("verify_email") || localStorage.getItem("reset_email");
-
         if (!email) {
             showAlert("Email not found.", "error");
             return;
         }
 
         try {
-            const resendEndpoint = localStorage.getItem("reset_email")
+            // ✅ Check reset flow
+            const isReset = urlParams.get('reset') === 'true';
+            
+            const resendEndpoint = isReset
                 ? BASE_URL + "/user/forgot-password"
                 : BASE_URL + "/user/resend-email-otp";
 
@@ -349,9 +464,21 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Resend Response:", data);
 
             if (response.ok) {
-                showAlert("OTP resent successfully! Check your email.", "success");
+                const successDiv = document.createElement('div');
+                successDiv.className = 'alert alert-success';
+                successDiv.textContent = "OTP resent successfully! Check your email.";
+                
+                const alertContainer = document.getElementById('alertContainer');
+                alertContainer.innerHTML = '';
+                alertContainer.appendChild(successDiv);
             } else {
-                showAlert(data.message || "Failed to resend OTP.", "error");
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-error';
+                errorDiv.textContent = data.message || "Failed to resend OTP.";
+                
+                const alertContainer = document.getElementById('alertContainer');
+                alertContainer.innerHTML = '';
+                alertContainer.appendChild(errorDiv);
             }
 
         } catch (error) {
