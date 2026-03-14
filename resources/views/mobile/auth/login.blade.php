@@ -9,7 +9,26 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-
+.back-arrow {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    color: white;
+    text-decoration: none;
+    font-size: 28px;
+    font-weight: bold;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+.back-arrow:hover {
+    transform: scale(1.1);
+    color: white;
+}
 body{
     font-family:'Inter',sans-serif;
     background:#f5f7fb;
@@ -28,8 +47,33 @@ body{
     overflow:hidden;
     box-shadow:0 25px 50px rgba(0,0,0,0.1);
 }
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
 
-/* Left Branding with Image */
+.password-wrapper input {
+    padding-right: 45px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 20px;
+    color: #999;
+    user-select: none;
+    background: transparent;
+    border: none;
+    padding: 5px;
+    z-index: 10;
+}
+
+.toggle-password:hover {
+    color: #ff3f6c;
+}
 .left{
     flex:1;
     position:relative;
@@ -448,7 +492,7 @@ button:hover{
 </style>
 </head>
 <body>
-
+<a href="javascript:history.back()" class="back-arrow">←</a>
 <div class="wrapper">
 
 <div class="left">
@@ -494,7 +538,10 @@ button:hover{
 
         <div style="margin-bottom:10px;">
             <label>Password</label>
-            <input type="password" name="password" placeholder="Enter your password" required>
+            <div class="password-wrapper">
+                <input type="password" name="password" id="loginPassword" placeholder="Enter your password" required>
+                <span class="toggle-password" onclick="togglePassword('loginPassword', this)">👁️</span>
+            </div>
         </div>
 
         <div class="links">
@@ -545,12 +592,14 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
         const data = await response.json();
         console.log("LOGIN RESPONSE:", data);
 
-        if (response.ok && data.token) {
+         if (response.ok && data.token) {
 
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
 
-            const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/checkout/shipping';
+            const savedRedirect = sessionStorage.getItem('redirect_after_login');
+            const redirectUrl = savedRedirect || '/profile';
+            
             sessionStorage.removeItem('redirect_after_login');
             sessionStorage.removeItem('login_message');
             
@@ -566,14 +615,23 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
             } else {
                 showAlert(data.message || "Login failed", 'error');  
             }
-            }
+        }
 
-            } catch (error) {
-                console.error("Login error:", error);
-                showAlert("Server error. Please try again.", 'error'); 
-            }
-
+    } catch (error) {
+        console.error("Login error:", error);
+        showAlert("Server error. Please try again.", 'error'); 
+    }
 });
+function togglePassword(inputId, element) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        element.textContent = '🔒';
+    } else {
+        input.type = 'password';
+        element.textContent = '👁️';
+    }
+}
 </script>
 
 </div>

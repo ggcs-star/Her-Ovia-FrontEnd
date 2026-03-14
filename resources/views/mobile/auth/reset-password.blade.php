@@ -173,22 +173,138 @@ button:disabled{
     text-decoration:none;
     font-weight:600;
 }
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
 
+.password-wrapper input {
+    padding-right: 45px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 20px;
+    color: #999;
+    user-select: none;
+    background: transparent;
+    border: none;
+    padding: 5px;
+    z-index: 10;
+}
+
+.toggle-password:hover {
+    color: #ff3f6c;
+}
 @media(max-width:768px){
+    body{
+        display:block;
+        background:#f5f7fb;
+        padding:0;
+    }
     .wrapper{
         flex-direction:column;
+        max-width:100%;
+        margin:0;
+        border-radius:0;
+        box-shadow:none;
+        background:transparent;
     }
     .left{
+        width:100%;
         min-height:350px;
+        padding:60px 25px;
+        text-align:center;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+    }
+    .left-content{
+        width:100%;
+    }
+    .left h1{
+        font-size:32px;
+        margin-bottom:12px;
+    }
+    .left p{
+        font-size:16px;
+        max-width:300px;
+        margin:0 auto;
+        line-height:1.5;
     }
     .right{
-        padding:30px 20px;
+        background:#ffffff;
+        border-radius:30px 30px 0 0;
+        padding:35px 25px 45px 25px;
+        box-shadow:0 -5px 20px rgba(0,0,0,0.08);
+    }
+    .right h2{
+        font-size:24px;
+        text-align:center;
+    }
+    .subtitle{
+        text-align:center;
+        font-size:15px;
+        margin-bottom:25px;
+    }
+    label{
+        font-size:14px;
+    }
+    input{
+        padding:16px 18px;
+        font-size:15px;
+        border-radius:12px;
+        background:#fafafa;
+    }
+    input:focus{
+        border-color:#ff3f6c;
+        box-shadow:0 0 0 3px rgba(255,63,108,0.15);
+    }
+    button{
+        padding:18px;
+        font-size:16px;
+        border-radius:12px;
+        margin-top:20px;
+    }
+    .password-hint{
+        font-size:13px;
+    }
+}
+.back-arrow {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    color: white;
+    text-decoration: none;
+    font-size: 28px;
+    font-weight: bold;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+.back-arrow:hover {
+    transform: scale(1.1);
+    color: white;
+}
+@media(max-width:768px){
+    .back-arrow {
+        top: 15px;
+        left: 15px;
+        font-size: 26px;
     }
 }
 </style>
 </head>
 <body>
-
+<a href="javascript:history.back()" class="back-arrow">←</a>
 <div class="wrapper">
     <div class="left">
         <div class="left-content">
@@ -207,13 +323,19 @@ button:disabled{
             @csrf
             <div style="margin-bottom:15px;">
                 <label>New Password</label>
-                <input type="password" name="password" id="password" placeholder="Enter new password" required>
+                <div class="password-wrapper">
+                    <input type="password" name="password" id="password" placeholder="Enter new password" required>
+                    <span class="toggle-password" onclick="togglePassword('password', this)">👁️</span>
+                </div>
                 <div class="password-hint">Minimum 8 characters with 1 uppercase, 1 lowercase, 1 number & 1 special character</div>
             </div>
 
             <div style="margin-bottom:15px;">
                 <label>Confirm Password</label>
-                <input type="password" name="password_confirmation" id="password_confirmation" placeholder="Confirm new password" required>
+                <div class="password-wrapper">
+                    <input type="password" name="password_confirmation" id="password_confirmation" placeholder="Confirm new password" required>
+                    <span class="toggle-password" onclick="togglePassword('password_confirmation', this)">👁️</span>
+                </div>
             </div>
 
             <button type="submit" id="resetBtn">Reset Password</button>
@@ -227,7 +349,6 @@ button:disabled{
 
 <script>
 const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
-
 function showAlert(message, type) {
     const alertContainer = document.getElementById('alertContainer');
     const alertDiv = document.createElement('div');
@@ -242,8 +363,8 @@ function showAlert(message, type) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    const email = localStorage.getItem("reset_email");
-    const verified = localStorage.getItem("reset_verified");
+    const email = sessionStorage.getItem("reset_email");
+    const verified = sessionStorage.getItem("reset_verified");
     
     if (!email || !verified) {
         showAlert('Unauthorized access. Please start from forgot password.', 'error');
@@ -290,7 +411,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 body: JSON.stringify({ 
                     email, 
-                    otp: localStorage.getItem('reset_otp') || '',
+                    otp: sessionStorage.getItem('reset_otp') || '',
                     password, 
                     password_confirmation: passwordConfirmation 
                 })
@@ -322,6 +443,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+function togglePassword(inputId, element) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        element.textContent = '🔒';
+    } else {
+        input.type = 'password';
+        element.textContent = '👁️';
+    }
+}
 </script>
 
 </body>
