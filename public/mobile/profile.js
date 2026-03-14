@@ -20,23 +20,10 @@ function renderGuestProfile() {
     if (!container) return;
     
     const html = `
-        <div class="profile-header" style="text-align: center; padding: 40px 20px;">
-            <div class="profile-avatar" style="margin: 0 auto 20px;">
-                <div class="avatar-initials" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto;">👤</div>
-            </div>
-            <h2 class="profile-name" style="margin-bottom: 10px;">Welcome!</h2>
-            <p class="profile-email" style="margin-bottom: 25px;">Sign in to access your account</p>
-            
-            <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 30px;">
-                <a href="/login" class="edit-profile-btn" style="background: #ff3f6c; color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: 600;">Login</a>
-                <a href="/register" class="edit-profile-btn" style="background: white; color: #ff3f6c; border: 2px solid #ff3f6c; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: 600;">Register</a>
-            </div>
-        </div>
-        
-        <div class="profile-menu">
+        <div class="profile-menu" style="margin-top: 20px;">
             <div class="menu-card">
                 <h3>My Account</h3>
-                <div class="menu-item" onclick="window.location.href='/user/login'">
+                <div class="menu-item" onclick="window.location.href='/login'">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5Z"/>
                         <path d="M4 20c0-3.314 3.582-6 8-6s8 2.686 8 6" stroke-linecap="round"/>
@@ -44,7 +31,7 @@ function renderGuestProfile() {
                     <span>Sign In</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="window.location.href='/user/register'">
+                <div class="menu-item" onclick="window.location.href='/register'">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                         <circle cx="8.5" cy="7" r="4"/>
@@ -177,26 +164,28 @@ function renderProfile(user) {
                         <line x1="9" y1="12" x2="15" y2="12"/>
                     </svg>
                 </button>
-                ${user.profile_image ? `
-                    <button class="remove-avatar-btn" onclick="event.stopPropagation(); removeProfileImage()" title="Remove image">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"/>
-                            <line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                    </button>
-                ` : ''}
             </div>
             <div class="profile-info">
                 <h2 class="profile-name">${user.name || 'User'}</h2>
                 <p class="profile-email">${user.email || ''}</p>
                 <p class="profile-phone">${user.phone || ''}</p>
-                <button class="edit-profile-btn" onclick="openEditProfile()">Edit Profile</button>
+                <div class="profile-actions">
+                    <button class="edit-profile-btn ${!user.profile_image ? 'centered' : ''}" onclick="openEditProfile()">Edit Profile</button>
+                    ${user.profile_image ? `
+                        <button class="remove-image-btn" onclick="removeProfileImage()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                            Remove Photo
+                        </button>
+                    ` : ''}
+                </div>
             </div>
         </div>
         
         <div class="profile-stats"></div>
-        
-        <div class="profile-menu">
+           <div class="profile-menu">
             <div class="menu-card">
                 <h3>My Orders</h3>
                 <div class="menu-item" onclick="window.location.href='/orders'">
@@ -346,6 +335,7 @@ function renderProfile(user) {
     
     container.innerHTML = html;
 }
+
 function triggerImageUpload() {
     document.getElementById('avatarUpload')?.click();
 }
@@ -354,7 +344,6 @@ function handleImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    // size check (2MB)
     if (file.size > 2 * 1024 * 1024) {
         showToast('File size must be less than 2MB', 'error');
         return;
@@ -368,21 +357,20 @@ function handleImageUpload(event) {
 
     const formData = new FormData();
     formData.append('profile_image', file);
+    formData.append('_method', 'PUT');
 
-    fetch(`${API_BASE_URL}/user/profile/image`, {
+    fetch(`${API_BASE_URL}/user/profile`, {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Accept': 'application/json'
         },
         body: formData
     })
     .then(res => res.json())
     .then(response => {
         if (response.success) {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            user.profile_image = response.data.profile_image;
-            localStorage.setItem('user', JSON.stringify(user));
-
+            localStorage.setItem('user', JSON.stringify(response.data));
             loadUserProfile();
             showToast('Profile picture updated!', 'success');
         } else {
@@ -396,29 +384,46 @@ function handleImageUpload(event) {
 }
 
 function removeProfileImage() {
-    if (!confirm('Remove profile picture?')) return;
+    const removeBtn = document.querySelector('.remove-image-btn');
+    if (removeBtn) {
+        removeBtn.disabled = true;
+        removeBtn.innerHTML = 'Removing...';
+    }
     
     fetch(`${API_BASE_URL}/user/profile/image`, {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
         }
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return res.json();
+    })
     .then(response => {
         if (response.success) {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             user.profile_image = null;
             localStorage.setItem('user', JSON.stringify(user));
+            
             loadUserProfile();
-            showToast('Profile picture removed', 'success');
+            showToast('Profile picture removed successfully', 'success');
         } else {
-            showToast('Failed to remove picture', 'error');
+            showToast(response.message || 'Failed to remove picture', 'error');
         }
     })
-    .catch(() => {
-        showToast('Network error', 'error');
+    .catch(error => {
+        console.error('Remove error:', error);
+        showToast('Failed to remove picture', 'error');
+    })
+    .finally(() => {
+        if (removeBtn) {
+            removeBtn.disabled = false;
+        }
     });
 }
 

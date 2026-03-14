@@ -15,6 +15,7 @@
 </main>
 <footer class="site-footer" id="site-footer"></footer>
 <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="{{ asset('mobile/categories/all-categories.js') }}"></script>
 
 </body>

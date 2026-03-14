@@ -59,7 +59,9 @@ Route::get('/categories', function () {
 Route::get('/category', function () {
     return view('mobile.category');
 });
-
+Route::get('/search', function () {
+    return view('mobile.search');
+});
 Route::get('/products', function () {
     return view('mobile.products');
 });

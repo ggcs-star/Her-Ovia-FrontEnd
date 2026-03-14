@@ -83,16 +83,20 @@
     
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
+    // 🔥 ACTIVE VARIANT DHUNDHO
+    const activeBtn = document.querySelector('.pdp-size-btn.active');
     let selectedVariant = null;
     
     if (product.variants && product.variants.length > 0) {
-        const activeBtn = document.querySelector('.variant-btn.active');
         if (activeBtn) {
-            selectedVariant = product.variants.find(v => v.id == activeBtn.dataset.variantId);
+            const variantId = activeBtn.dataset.variantId;
+            selectedVariant = product.variants.find(v => v.id == variantId);
+            console.log('Selected variant from active button:', selectedVariant);
         }
         
         if (!selectedVariant) {
             selectedVariant = product.variants[0];
+            console.log('No active variant, using first:', selectedVariant);
         }
     }
 
@@ -109,16 +113,25 @@
         originalPrice: parseFloat(v.price) || 0
     })) : [];
 
+    // 🔥 JO IMAGE SCREEN PE DIKH RAHI HAI WAHI LO
     let imageUrl = '';
+    
+    // Pehle mainImage se lo (jo currently screen par dikh rahi hai)
     const mainImage = document.getElementById('mainImage');
-    if (mainImage) {
+    if (mainImage && mainImage.src) {
         imageUrl = mainImage.src;
-    } else if (product.gallery_images && product.gallery_images.length > 0) {
-        imageUrl = product.gallery_images[0];
-    } else if (product.image_url) {
+    }
+    // Agar mainImage nahi mili to selected variant ki image lo
+    else if (selectedVariant?.image_url) {
+        imageUrl = selectedVariant.image_url;
+    }
+    // Nahi to product image lo
+    else if (product.image_url) {
         imageUrl = product.image_url;
-    } else {
-        imageUrl = 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c';
+    }
+    // Last option gallery
+    else if (product.gallery_images && product.gallery_images.length > 0) {
+        imageUrl = product.gallery_images[0];
     }
 
     const cartItem = {
@@ -128,7 +141,7 @@
         price: finalPrice,
         mrp: originalPrice,
         originalPrice: originalPrice,
-        image: imageUrl,
+        image: imageUrl,  // 🔥 YAHI IMAGE CART ME JAYEGI
         slug: product.slug,
         variantType: variantType,
         variantValue: variantValue,
@@ -140,10 +153,8 @@
         reviewCount: product.review_count || 33
     };
 
-    console.log('📦 Final cart item:', cartItem);
-
     const existingIndex = cart.findIndex(
-        i => i.id === cartItem.id && i.variantValue === cartItem.variantValue
+        i => i.id === cartItem.id && i.variantId === cartItem.variantId
     );
 
     if (existingIndex >= 0) {
@@ -153,6 +164,7 @@
     }
     
     localStorage.setItem('cart', JSON.stringify(cart));
+    
     updateCartBadge();
     showConfirmation(product.name);
     
@@ -247,54 +259,91 @@
     }
     
     window.selectColor = function(element, colorCode, imageUrl, colorName) {
-        document.querySelectorAll('.pdp-color-circle, .pdp-color-name-item').forEach(item => {
-            item.classList.remove('active');
-        });
-        
-        element.classList.add('active');
-        
-        selectedColor = colorName || colorCode;
-        
-        if (imageUrl) {
-            const mainImage = document.getElementById('mainImage');
-            mainImage.src = imageUrl;
-            
-            currentImages = [imageUrl];
-            currentImageIndex = 0;
-            
-            const counter = document.getElementById('currentImage');
-            if (counter) {
-                counter.textContent = `1/1`;
-            }
-        }
-        
-        const variant = allSizes.find(v => v.color === colorCode);
-        if (variant) {
-            selectedVariant = variant;
-            selectedSize = variant.value;
-            
-            const priceElement = document.getElementById('currentPrice');
-            const buyPriceElement = document.getElementById('buyPrice');
-            if (priceElement) {
-                priceElement.textContent = '₹' + Number(variant.final_price || variant.price).toLocaleString('en-IN');
-            }
-            if (buyPriceElement) {
-                buyPriceElement.textContent = Number(variant.final_price || variant.price).toLocaleString('en-IN');
-            }
-            
-            document.querySelectorAll('.pdp-size-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.textContent === variant.value) {
-                    btn.classList.add('active');
-                }
-            });
-        }
-        
-        if (imageTimer) {
-            clearInterval(imageTimer);
-            imageTimer = null;
-        }
+
+    // ✅ SAME COLOR DOBARA CLICK = UNSELECT
+    if (selectedColor === (colorName || colorCode)) {
+
+        selectedColor = null;
+        selectedVariant = null;
+
+        document.querySelectorAll('.pdp-color-circle, .pdp-color-name-item')
+            .forEach(item => item.classList.remove('active'));
+
+        // 🔥 GALLERY IMAGES WAPIS
+        currentImages = currentProduct.gallery_images && currentProduct.gallery_images.length
+            ? currentProduct.gallery_images
+            : [currentProduct.image_url];
+
+        currentImageIndex = 0;
+
+        const mainImage = document.getElementById('mainImage');
+        const counter = document.getElementById('currentImage');
+
+        if (mainImage) mainImage.src = currentImages[0];
+
+        if (counter) counter.textContent = `1/${currentImages.length}`;
+
+        startImageAutoScroll();
+
+        return;
     }
+
+    document.querySelectorAll('.pdp-color-circle, .pdp-color-name-item')
+        .forEach(item => item.classList.remove('active'));
+
+    element.classList.add('active');
+
+    selectedColor = colorName || colorCode;
+
+    if (imageUrl) {
+
+        const mainImage = document.getElementById('mainImage');
+
+        mainImage.src = imageUrl;
+
+        currentImages = [imageUrl];
+        currentImageIndex = 0;
+
+        const counter = document.getElementById('currentImage');
+
+        if (counter) counter.textContent = `1/1`;
+    }
+
+    const variant = allSizes.find(v => v.color === colorCode);
+
+    if (variant) {
+
+        selectedVariant = variant;
+        selectedSize = variant.value;
+
+        const priceElement = document.getElementById('currentPrice');
+        const buyPriceElement = document.getElementById('buyPrice');
+
+        if (priceElement) {
+            priceElement.textContent = '₹' + Number(variant.final_price || variant.price).toLocaleString('en-IN');
+        }
+
+        if (buyPriceElement) {
+            buyPriceElement.textContent = Number(variant.final_price || variant.price).toLocaleString('en-IN');
+        }
+
+        document.querySelectorAll('.pdp-size-btn').forEach(btn => {
+
+            btn.classList.remove('active');
+
+            if (btn.textContent === variant.value) {
+                btn.classList.add('active');
+            }
+
+        });
+    }
+
+    if (imageTimer) {
+        clearInterval(imageTimer);
+        imageTimer = null;
+    }
+
+};
 
     window.selectScrollColor = function(colorCode, imageUrl, colorName) {
         document.querySelectorAll('.pdp-color-circle').forEach((circle, index) => {
@@ -444,30 +493,52 @@
     };
     
     window.toggleWishlist = function(button) {
-        event.stopPropagation();
-        button.classList.toggle('active');
-        
-        const productData = {
-            id: currentProduct?.id,
-            name: currentProduct?.name,
-            price: parseFloat(currentProduct?.final_price || currentProduct?.price || 0),
-            image: currentProduct?.image_url,
-            brand: currentProduct?.brand,
-            slug: currentProduct?.slug
-        };
-        
-        if (button.classList.contains('active')) {
-            if (!wishlist.some(item => item.id == productData.id)) {
-                wishlist.push(productData);
-                showWishlistToast('❤️ Added to wishlist');
-            }
-        } else {
-            wishlist = wishlist.filter(item => item.id != productData.id);
-            showWishlistToast('💔 Removed from wishlist');
-        }
-        
-        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    event.stopPropagation();
+    button.classList.toggle('active');
+    
+    // 🔥 JO IMAGE SCREEN PE DIKH RAHI HAI WAHI LO
+    const mainImage = document.getElementById('mainImage');
+    let imageUrl = '';
+    
+    // Pehle mainImage se lo
+    if (mainImage && mainImage.src && mainImage.src !== '') {
+        imageUrl = mainImage.src;
+        console.log('Taking image from mainImage:', imageUrl);
+    }
+    // Agar mainImage nahi to gallery se lo
+    else if (currentProduct?.gallery_images?.length > 0) {
+        imageUrl = currentProduct.gallery_images[0];
+        console.log('Taking image from gallery:', imageUrl);
+    }
+    // Last option product image
+    else if (currentProduct?.image_url) {
+        imageUrl = currentProduct.image_url;
+        console.log('Taking image from product:', imageUrl);
+    }
+    
+    const productData = {
+        id: currentProduct?.id,
+        name: currentProduct?.name,
+        price: parseFloat(currentProduct?.final_price || currentProduct?.price || 0),
+        image: imageUrl,
+        brand: currentProduct?.brand,
+        slug: currentProduct?.slug
     };
+    
+    console.log('Saving to wishlist:', productData);
+    
+    if (button.classList.contains('active')) {
+        if (!wishlist.some(item => item.id == productData.id)) {
+            wishlist.push(productData);
+            showWishlistToast('❤️ Added to wishlist');
+        }
+    } else {
+        wishlist = wishlist.filter(item => item.id != productData.id);
+        showWishlistToast('💔 Removed from wishlist');
+    }
+    
+    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+}
     
     function showWishlistToast(message) {
         const toast = document.createElement('div');
@@ -1242,87 +1313,50 @@
         }
     }
     
-    // ✅ Updated similar products function
     async function fetchSimilarProducts() {
-        const grid = document.getElementById('similarGrid');
-        if (!grid) return;
-        
-        try {
-            const categoryId = currentProduct?.category?.id;
-            if (!categoryId) {
-                showFallbackSimilar(grid);
-                return;
-            }
-            
-            const res = await fetch(`https://retailadmin.ggconsultancy.services/api/categories/${categoryId}/products`);
-            const data = await res.json();
-            
-            if (data.success && data.data?.products) {
-                // Current product ko exclude karo
-                const otherProducts = data.data.products.filter(p => p.id != currentProduct.id);
-                
-                if (otherProducts.length > 0) {
-                    grid.innerHTML = otherProducts.map(p => `
-                        <div class="pdp-similar-card" onclick="window.location.href='/product/${p.slug}'">
-                            <img src="${p.image_url}" class="pdp-similar-image">
-                            <div class="pdp-similar-brand">${p.brand || 'Brand'}</div>
-                            <div class="pdp-similar-name">${p.name}</div>
-                            <div class="pdp-similar-price">
-                                <span class="pdp-similar-current">₹${parseFloat(p.final_price || p.price).toLocaleString('en-IN')}</span>
-                                ${p.price > p.final_price ? `<span class="pdp-similar-original">₹${parseFloat(p.price).toLocaleString('en-IN')}</span>` : ''}
-                            </div>
-                        </div>
-                    `).join('');
-                    return;
-                }
-            }
-            
-            showFallbackSimilar(grid);
-            
-        } catch (error) {
-            console.error('Error fetching similar products:', error);
-            showFallbackSimilar(grid);
-        }
-    }
+    const similarSection = document.querySelector('.pdp-similar');
+    const grid = document.getElementById('similarGrid');
+    if (!grid || !similarSection) return;
     
-    // ✅ Fallback function
-    function showFallbackSimilar(grid) {
-        const fallbackSimilar = [
-            {
-                brand: 'H&M',
-                name: 'Maxi Dress',
-                price: 1200,
-                mrp: 1500,
-                image: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=200&h=200&fit=crop'
-            },
-            {
-                brand: 'Zara',
-                name: 'Floral Dress',
-                price: 1400,
-                mrp: 2000,
-                image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=200&h=200&fit=crop'
-            },
-            {
-                brand: 'Calvin Klein',
-                name: 'Summer Dress',
-                price: 1200,
-                mrp: 1500,
-                image: 'https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=200&h=200&fit=crop'
-            }
-        ];
+    try {
+        const categoryId = currentProduct?.category?.id;
+        if (!categoryId) {
+            similarSection.style.display = 'none';  // 🔥 POORI SECTION HI HATA DO
+            return;
+        }
         
-        grid.innerHTML = fallbackSimilar.map(p => `
-            <div class="pdp-similar-card" onclick="window.location.href='/product/${p.slug || '#'}'">
-                <img src="${p.image}" class="pdp-similar-image">
-                <div class="pdp-similar-brand">${p.brand}</div>
-                <div class="pdp-similar-name">${p.name}</div>
-                <div class="pdp-similar-price">
-                    <span class="pdp-similar-current">₹${p.price.toLocaleString('en-IN')}</span>
-                    <span class="pdp-similar-original">₹${p.mrp.toLocaleString('en-IN')}</span>
-                </div>
-            </div>
-        `).join('');
+        const res = await fetch(`https://retailadmin.ggconsultancy.services/api/categories/${categoryId}/products`);
+        const data = await res.json();
+        
+        if (data.success && data.data?.products) {
+            const otherProducts = data.data.products.filter(p => p.id != currentProduct.id);
+            
+            if (otherProducts.length > 0) {
+                similarSection.style.display = 'block';  // 🔥 PRODUCTS HAIN TO DIKHAO
+                grid.innerHTML = otherProducts.map(p => `
+                    <div class="pdp-similar-card" onclick="window.location.href='/product/${p.slug}'">
+                        <img src="${p.image_url || ''}" class="pdp-similar-image" onerror="this.style.display='none'">
+                        <div class="pdp-similar-brand">${p.brand || 'Brand'}</div>
+                        <div class="pdp-similar-name">${p.name}</div>
+                        <div class="pdp-similar-price">
+                            <span class="pdp-similar-current">₹${parseFloat(p.final_price || p.price).toLocaleString('en-IN')}</span>
+                            ${p.price > p.final_price ? `<span class="pdp-similar-original">₹${parseFloat(p.price).toLocaleString('en-IN')}</span>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                similarSection.style.display = 'none';  // 🔥 PRODUCTS NAHI TO POORI SECTION HATAO
+            }
+        } else {
+            similarSection.style.display = 'none';  // 🔥 API FAIL TO BHI HATAO
+        }
+        
+    } catch (error) {
+        console.error('Error fetching similar products:', error);
+        similarSection.style.display = 'none';  // 🔥 ERROR ME BHI HATAO
     }
+}
+    
     
     window.buyNow = function() {
         const token = localStorage.getItem('token');

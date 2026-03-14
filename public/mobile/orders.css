@@ -7,8 +7,8 @@
 .orders-content {
     padding: 0 0 30px;
     min-height: calc(100vh - 200px);
+    overflow-y: auto;
 }
-
 .orders-container {
     max-width: 600px;
     margin: 0 auto;
@@ -31,8 +31,8 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    width: 100%;
 }
-
 .order-card {
     background: white;
     border-radius: 16px;
@@ -346,4 +346,12 @@
         padding: 8px 16px;
         font-size: 12px;
     }
+}
+.orders-content {
+    min-height: 100vh;
+    overflow-y: auto;
+}
+
+.orders-container {
+    padding-bottom: 80px;
 }

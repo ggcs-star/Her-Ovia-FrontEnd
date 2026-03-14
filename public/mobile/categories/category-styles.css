@@ -1,10 +1,79 @@
-/* Safe area variables */
+
 :root {
     --safe-area-inset-top: env(safe-area-inset-top, 0px);
     --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
     --status-bar-height: 24px;
 }
+.categories-header {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0;
+    margin: 0;
+    height: 32px;
+}
+.edit-categories-btn {
+    background: none;
+    border: none;
+    color: #ff3f6c;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 4px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.category-card.draggable {
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-drag: element;
+}
 
+.category-card.draggable:active {
+    cursor: grabbing;
+}
+
+.category-card.dragging {
+    opacity: 0.6;
+    transform: scale(0.98);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+.edit-categories-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: #ff3f6c;
+}
+
+.edit-categories-btn.done {
+    color: #28a745;
+}
+
+.edit-categories-btn.done svg {
+    stroke: #28a745;
+}
+
+/* Simple Drag Handle */
+.category-card.draggable {
+    position: relative;
+}
+
+.category-card.draggable::after {
+    content: '⋮⋮';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    color: #999;
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+.category-card.draggable:hover::after {
+    opacity: 1;
+}
 /* Header with safe area */
 .site-header {
     position: sticky;

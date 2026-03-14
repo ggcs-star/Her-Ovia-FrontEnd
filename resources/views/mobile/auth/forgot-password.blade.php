@@ -363,6 +363,17 @@ function showAlert(message, type) {
     }, 5000);
 }
 
+// Ensure alert container exists
+document.addEventListener('DOMContentLoaded', function() {
+    const alertContainer = document.getElementById('alertContainer');
+    if (!alertContainer) {
+        const container = document.createElement('div');
+        container.id = 'alertContainer';
+        const form = document.getElementById('forgotPasswordForm');
+        form.parentNode.insertBefore(container, form);
+    }
+});
+
 document.getElementById("forgotPasswordForm").addEventListener("submit", async function(e) {
     e.preventDefault();
     
@@ -393,10 +404,10 @@ document.getElementById("forgotPasswordForm").addEventListener("submit", async f
 
         if (response.ok) {
             showAlert('OTP has been sent to your email if it exists in our system.', 'success');
-            localStorage.setItem('reset_email', email);
             
+            // ✅ Email URL parameter mein bhejo
             setTimeout(() => {
-                window.location.href = '/verify-otp';
+                window.location.href = '/verify-otp?email=' + encodeURIComponent(email) + '&reset=true';
             }, 2000);
         } else {
             showAlert(data.message || 'Failed to send OTP. Please try again.', 'error');

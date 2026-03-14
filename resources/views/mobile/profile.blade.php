@@ -17,7 +17,7 @@
         </div>
     </main>
     
-    <input type="file" id="avatarUpload" accept="image/*" capture="environment" style="display:none">
+    <input type="file" id="avatarUpload" accept="image/*" name="profile_image" capture="environment" style="display:none">
         
     <footer class="site-footer" id="site-footer"></footer>
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
