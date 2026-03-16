@@ -63,9 +63,14 @@
 
         .sub-strip{
             padding:12px 16px;
-            display:grid;
-            grid-template-columns:repeat(auto-fill,minmax(80px,1fr));
+
+            display:flex;
             gap:16px;
+
+            overflow-x:auto;
+            overflow-y:hidden;
+
+            white-space:nowrap;
 
             border-bottom:1px solid #f0f0f0;
             background:#fff;
@@ -77,7 +82,8 @@
         }
         .sub-strip::-webkit-scrollbar { display: none; }
         .sub-item{
-            width:100%;
+            min-width:80px;
+            flex-shrink:0;
             text-align:center;
         }
         .sub-img {
@@ -619,9 +625,7 @@
 
 <div class="sub-strip" id="subStrip"></div>
 
-<div class="products" id="productsGrid">
-    <div class="loading">Loading products...</div>
-</div>
+<div class="products" id="productsGrid"></div>
 
 <div class="action-bar">
     <button class="action-btn" onclick="showSortPopup()"><span>⇅</span> Sort</button>
@@ -834,7 +838,6 @@
 
     async function fetchProducts(subId) {
         const grid = document.getElementById('productsGrid');
-        grid.innerHTML = '<div class="loading">Loading products...</div>';
         
         try {
             const res = await fetch(`https://retailadmin.ggconsultancy.services/api/categories/${subId}/products`);
