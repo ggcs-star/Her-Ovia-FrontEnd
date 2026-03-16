@@ -811,5 +811,17 @@ window.goBack = function() {
     }
 };
 
+
 window.app = new RapidRetailsEngine();
 document.addEventListener('DOMContentLoaded', () => window.app.init());
+
+// Hide loader when page ready
+window.addEventListener("load", function () {
+    const loader = document.getElementById("app-loader");
+    if (loader) {
+        loader.style.opacity = "0";
+        setTimeout(() => {
+            loader.style.display = "none";
+        }, 300);
+    }
+});

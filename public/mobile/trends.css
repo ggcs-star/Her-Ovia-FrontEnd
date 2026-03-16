@@ -414,3 +414,42 @@ font-size:22px;
 }
 
 }
+/* REMOVE VIDEO PLAY ICON */
+
+video::-webkit-media-controls-start-playback-button{
+display:none !important;
+-webkit-appearance:none;
+}
+
+video::-webkit-media-controls{
+display:none !important;
+}
+
+video{
+outline:none;
+background:#000;
+}
+/* FORCE HIDE VIDEO PLAY OVERLAY */
+
+.reel-video-player{
+pointer-events:none;
+}
+
+.reel-video-player::-webkit-media-controls{
+display:none !important;
+}
+
+.reel-video-player::-webkit-media-controls-panel{
+display:none !important;
+}
+
+.reel-video-player::-webkit-media-controls-start-playback-button{
+display:none !important;
+}
+
+.reel-video-player::-webkit-media-controls-overlay-play-button{
+display:none !important;
+}.reel-video-player{
+opacity:0;
+transition:opacity .2s ease;
+}

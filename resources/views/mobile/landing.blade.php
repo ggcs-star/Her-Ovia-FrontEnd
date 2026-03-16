@@ -14,7 +14,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body data-page="landing">
-    <header class="site-header" id="site-header"></header>
+
+<div id="app-loader">
+    <div class="loader-content">
+        <img src="{{ asset('mobile/logo.png') }}" class="loader-logo">
+        <p>Loading Rapid Retail...</p>
+        <div class="spinner"></div>
+    </div>
+</div>
+
+<header class="site-header" id="site-header"></header>
 
     <main class="page-content">
         <section class="hero-section">
