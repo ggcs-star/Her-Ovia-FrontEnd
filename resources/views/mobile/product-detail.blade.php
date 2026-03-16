@@ -12,7 +12,6 @@
 <main class="page-content">
     <div class="container">
         <div id="product-container">
-            <div class="loading">Loading product details...</div>
         </div>
     </div>
 </main>

@@ -39,7 +39,8 @@ class RapidRetailsEngine {
         const isCheckoutPage = document.body.classList.contains('checkout-page');
         const isProfilePage = document.body.classList.contains('profile-page');
         const isOrdersPage = document.body.classList.contains('orders-page');
-        const showBackButton = isCartPage || isCheckoutPage || isProfilePage || isOrdersPage;
+        const isWishlistPage = document.body.classList.contains('wishlist-page'); 
+        const showBackButton = isCartPage || isCheckoutPage || isProfilePage || isOrdersPage || isWishlistPage;
         
         header.innerHTML = `
             <div class="container">
