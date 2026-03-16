@@ -109,6 +109,17 @@
             font-weight: 700;
             margin-top: 3px;
         }
+        .recent-item{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+
+            .remove-recent{
+            cursor:pointer;
+            color:#999;
+            font-size:14px;
+        }
     </style>
 </head>
 <body>

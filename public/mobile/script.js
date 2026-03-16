@@ -18,6 +18,7 @@ class RapidRetailsEngine {
         this.allCategories = [];
         this.allBanners = [];
         this.userCategories = [];
+        this.isLoggedIn = !!localStorage.getItem('token');
     }
 
     async init() {
@@ -160,7 +161,7 @@ class RapidRetailsEngine {
     }
     async fetchUserCategoryOrder() {
     try {
-        const response = await fetch('https://retailadmin.ggconsultancy.services/api";/api/categories/order', {
+        const response = await fetch('https://retailadmin.ggconsultancy.services/api/categories/order', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 'Accept': 'application/json'
@@ -226,22 +227,28 @@ class RapidRetailsEngine {
     }
     
     async renderCategoryPills() {
+
         const container = document.getElementById('categories-pills');
         if (!container) return;
 
-        // YEH CONDITION CHANGE KARO
-        const categoriesToShow = (this.isLoggedIn && this.userCategories.length > 0) 
-            ? this.userCategories 
+        const categoriesToShow =
+            (this.isLoggedIn && this.userCategories.length > 0)
+            ? this.userCategories
             : this.allCategories;
 
         if (!categoriesToShow.length) return;
 
-        container.innerHTML = categoriesToShow.slice(0, 8).map(cat => `
-            <div class="pill-item" onclick='window.app.showCategoryPopup(${JSON.stringify(cat).replace(/'/g, "\\'")})'>
+        container.innerHTML = categoriesToShow.map(cat => `
+            <div class="pill-item"
+            onclick="window.app.showCategoryPopupById(${cat.id})">
+
                 <div class="pill-img-wrap">
-                    <img src="${this.resolveImage(cat.image_url)}" onerror="this.src='${APP_CONFIG.FALLBACK_IMAGE}'">
+                    <img src="${this.resolveImage(cat.image_url)}"
+                    onerror="this.src='${APP_CONFIG.FALLBACK_IMAGE}'">
                 </div>
+
                 <span>${cat.name}</span>
+
             </div>
         `).join('');
     }
@@ -355,7 +362,15 @@ showCategoryPopup(category) {
     popup.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
+showCategoryPopupById(categoryId) {
 
+    const category = this.allCategories.find(c => c.id == categoryId);
+
+    if (category) {
+        this.showCategoryPopup(category);
+    }
+
+}
 hideCategoryPopup() {
     const popup = document.getElementById('category-popup-overlay');
     if (popup) {

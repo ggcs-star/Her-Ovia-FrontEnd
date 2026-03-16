@@ -1,4 +1,5 @@
 const API_BASE = "https://retailadmin.ggconsultancy.services/api";
+const S3_BASE_URL = 'https://inventorydata-s3-bucket.s3.amazonaws.com/';
 
 const input = document.getElementById("searchInput");
 const suggestions = document.getElementById("suggestions");
@@ -6,11 +7,26 @@ const results = document.getElementById("results");
 const clearBtn = document.getElementById("clearBtn");
 
 let timer = null;
-
 window.addEventListener("DOMContentLoaded", () => {
     input.focus();
+    showRecentSearches();
 });
+async function resolveImage(slug) {
 
+    try {
+        const res = await fetch(`${API_BASE}/products/${slug}`);
+        const data = await res.json();
+
+        if (data.success && data.data.gallery_images?.length) {
+            return data.data.gallery_images[0];
+        }
+
+    } catch (e) {
+        console.log(e);
+    }
+
+    return "https://via.placeholder.com/300x400?text=No+Image";
+}
 input.addEventListener("input", () => {
     const q = input.value.trim();
     clearBtn.style.display = q ? "block" : "none";
@@ -50,7 +66,7 @@ function renderSuggestions(data) {
     if (data.categories) {
         data.categories.forEach(c => {
             html += `
-<div class="suggestion-item" onclick="searchCategory('${c.slug}')">
+<div class="suggestion-item" onclick="searchCategory('${c.id}')">
 ${c.name}
 </div>
 `;
@@ -73,36 +89,85 @@ async function loadProducts(q) {
         const res = await fetch(`${API_BASE}/products/search?q=${encodeURIComponent(q)}`);
         const data = await res.json();
         if (!data.success) return;
+        saveRecentSearch(q);
         renderProducts(data.data.products);
     } catch (e) {
         console.log(e);
     }
 }
 
-function renderProducts(products) {
-    if (!products || products.length === 0) {
-        results.innerHTML = "<div>No products found</div>";
-        return;
-    }
+async function renderProducts(products) {
+
     let html = "";
-    products.forEach(p => {
+
+    for (const p of products) {
+
+        let imageUrl = await resolveImage(p.slug);
+
         html += `
 <div class="product" onclick="openProduct('${p.slug}')">
-<img src="${p.image_url}">
+<img src="${imageUrl}" 
+     style="width:100%;height:160px;object-fit:cover;"
+     onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
+
 <div class="product-info">
 <div class="product-name">${p.name}</div>
-<div class="product-price">₹${p.final_price || p.price}</div>
+<div class="product-price">₹${p.final_price || p.price || ''}</div>
 </div>
 </div>
 `;
-    });
+    }
+
     results.innerHTML = html;
 }
-
 function openProduct(slug) {
     window.location.href = `/product/${slug}`;
 }
+function searchCategory(id) {
+    window.location.href = `/products?subcategory=${id}`;
+}
+function saveRecentSearch(query) {
 
-function searchCategory(slug) {
-    window.location.href = `/products?category=${slug}`;
+    let searches = JSON.parse(localStorage.getItem("recent_searches")) || [];
+    searches = searches.filter(q => q !== query);
+
+    searches.unshift(query); 
+
+    searches = searches.slice(0,10); 
+
+    localStorage.setItem("recent_searches", JSON.stringify(searches));
+}
+function showRecentSearches() {
+
+    let searches = JSON.parse(localStorage.getItem("recent_searches")) || [];
+
+    if (searches.length === 0) {
+        suggestions.innerHTML = "";
+        return;
+    }
+
+    let html = `<div class="recent-title">Recent Searches</div>`;
+
+    searches.forEach(q => {
+        html += `
+        <div class="suggestion-item recent-item">
+            <span class="recent-text" onclick="searchRecent('${q}')">🕘 ${q}</span>
+            <span class="remove-recent" onclick="removeRecent(event,'${q}')">✕</span>
+        </div>
+        `;
+    });
+
+    suggestions.innerHTML = html;
+}
+function removeRecent(event, query) {
+
+    event.stopPropagation(); // ⭐ important
+
+    let searches = JSON.parse(localStorage.getItem("recent_searches")) || [];
+
+    searches = searches.filter(q => q !== query);
+
+    localStorage.setItem("recent_searches", JSON.stringify(searches));
+
+    showRecentSearches();
 }
