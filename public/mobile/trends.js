@@ -48,16 +48,17 @@ function renderReels(reels){
 <div class="reel-card">
 
     <div class="reel-video">
-        <video
-            src="${media}"
-            muted
-            loop
-            playsinline
-            preload="metadata"
-            class="reel-video-player"
-            data-id="${reel.id}"
-            id="video-${index}">
-        </video>
+<video
+src="${media}"
+autoplay
+muted
+loop
+playsinline
+preload="auto"
+class="reel-video-player"
+data-id="${reel.id}"
+id="video-${index}">
+</video>
     </div>
 
     <div class="reel-gradient"></div>
@@ -178,7 +179,13 @@ function increaseView(id){
 
 }
 
+document.addEventListener("play", function(e) {
 
+if(e.target.tagName === "VIDEO"){
+e.target.style.opacity = 1;
+}
+
+}, true);
 
 /* PROGRESS BAR */
 
