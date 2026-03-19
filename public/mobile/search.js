@@ -65,12 +65,14 @@ function renderSuggestions(data) {
     let html = "";
     if (data.categories) {
         data.categories.forEach(c => {
+
+        let subId = c.children && c.children.length ? c.children[0].id : c.id;
+
             html += `
-<div class="suggestion-item" onclick="searchCategory('${c.id}')">
-${c.name}
-</div>
-`;
-        });
+        <div class="suggestion-item" onclick="searchCategory('${subId}')">
+        ${c.name}
+        </div>`;
+});
     }
     if (data.products) {
         data.products.forEach(p => {

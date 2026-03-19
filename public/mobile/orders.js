@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     loadAllOrders();
+    setInterval(loadAllOrders, 30000);
 });
 
 async function loadAllOrders() {
@@ -16,11 +17,12 @@ async function loadAllOrders() {
     if (!container) return;
     
     try {
-        const response = await fetch(`${API_BASE_URL}/orders?per_page=100`, {
+        const response = await fetch(`${API_BASE_URL}/orders?per_page=100&_=${Date.now()}`, {
             method: "GET",
             headers: {
                 "Authorization": "Bearer " + token,
-                "Accept": "application/json"
+                "Accept": "application/json",
+                "Cache-Control": "no-cache"
             }
         });
         
@@ -37,7 +39,6 @@ async function loadAllOrders() {
         showEmptyState();
     }
 }
-
 function renderOrders(orders) {
     const container = document.getElementById('orders-list');
     if (!container) return;
@@ -47,15 +48,6 @@ function renderOrders(orders) {
         return;
     }
     
-    // 🔥 RECENT ORDERS SE IMAGES KA MAP
-    const recentOrders = JSON.parse(localStorage.getItem('recent_orders') || '[]');
-    const recentOrderImages = {};
-    recentOrders.forEach(order => {
-        order.items.forEach(item => {
-            recentOrderImages[item.product_id + '_' + item.variant_id] = item.image;
-        });
-    });
-    
     let html = '';
     orders.forEach(order => {
         const date = new Date(order.created_at).toLocaleDateString('en-IN', {
@@ -64,31 +56,37 @@ function renderOrders(orders) {
             year: 'numeric'
         });
         
-        const status = order.payment_status || order.status || 'Pending';
-        const statusClass = status.toLowerCase();
+        const orderStatus = order.status || 'pending';
+        const paymentStatus = order.payment_status || 'pending';
         
         const items = order.items || [];
         const firstItem = items[0] || {};
         const itemCount = items.length;
         const moreItems = itemCount - 1;
         
-        let key = firstItem.product_id + '_' + firstItem.variant_id;
-        let image = recentOrderImages[key] || firstItem.image || '';
+        let image = firstItem.image || '';
         
-        if (image && !image.startsWith('http') && image.includes('amazonaws.com')) {
-            // Already full URL
-        } else if (image && !image.startsWith('http')) {
-            image = `https://inventorydata-s3-bucket.s3.amazonaws.com/${image}`;
-        }
-        
+        const imageHtml = image ? 
+            `<img src="${image}" alt="${firstItem.product_name || 'Product'}" 
+                  style="width:80px;height:80px;object-fit:cover;border-radius:8px;"
+                  onerror="this.style.display='none'; this.parentNode.innerHTML+='<div style=\\'width:80px;height:80px;background:#f0f0f0;border-radius:8px;\\'></div>';">` : 
+            '<div style="width:80px;height:80px;background:#f0f0f0;border-radius:8px;"></div>';
+    
         const price = firstItem.price ? parseFloat(firstItem.price) : 0;
         const itemQuantity = firstItem.quantity ? parseInt(firstItem.quantity) : 1;
-        
+
         html += `
             <div class="order-card" onclick="viewOrderDetails('${order.id}')">
                 <div class="order-header">
-                    <div class="order-id">#${order.id}</div>
-                    <div class="order-status ${statusClass}">${status}</div>
+                    <div class="order-id">#${order.order_number || order.id}</div>
+                    <div class="order-status ${orderStatus}">
+                        ${orderStatus === 'pending' ? '⏳ Pending' : ''}
+                        ${orderStatus === 'confirmed' ? '✅ Confirmed' : ''}
+                        ${orderStatus === 'processing' ? '⚙️ Processing' : ''}
+                        ${orderStatus === 'shipped' ? '🚚 Shipped' : ''}
+                        ${orderStatus === 'delivered' ? '📦 Delivered' : ''}
+                        ${orderStatus === 'cancelled' ? '❌ Cancelled' : ''}
+                    </div>
                 </div>
                 
                 <div class="order-date">
@@ -96,9 +94,9 @@ function renderOrders(orders) {
                 </div>
                 
                 <div class="order-item-preview">
-                    ${image ? `<img src="${image}" alt="${firstItem.product_name}" style="width:80px;height:80px;object-fit:cover;">` : '<div style="width:80px;height:80px;background:#f0f0f0;"></div>'}
+                    ${imageHtml}
                     <div class="preview-details">
-                        <div class="preview-name">${firstItem.product_name}</div>
+                        <div class="preview-name">${firstItem.product_name || 'Product'}</div>
                         <div class="preview-price">₹${price.toFixed(2)} x ${itemQuantity}</div>
                         ${moreItems > 0 ? `<div class="more-items">+${moreItems} more</div>` : ''}
                     </div>
@@ -117,7 +115,6 @@ function renderOrders(orders) {
     
     container.innerHTML = html;
 }
-
 function showEmptyState() {
     const container = document.getElementById('orders-list');
     if (!container) return;

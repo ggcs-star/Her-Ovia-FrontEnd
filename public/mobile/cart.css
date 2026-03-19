@@ -645,31 +645,41 @@ body.cart-page{
 .view-coupons-link:hover {
     text-decoration: underline;
 }
+/* FINAL CLEAN POPUP */
+
 .popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 10000;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999999;
     display: flex;
     align-items: flex-end;
+    justify-content: center;
 }
 
 .popup-content {
-    background: white;
+    position: fixed;   /* ⭐ ADD THIS */
+    left: 0;
+    right: 0;
+    bottom: 0;
+
     width: 100%;
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-    animation: slideUp 0.3s ease;
-    max-height: 80vh;
-    overflow-y: auto;
+    max-width: 100%;
+
+    background: white;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    padding: 20px;
+
+    transform: translateY(100%);
+    transition: transform 0.25s ease-out;
 }
 
-@keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+.popup-overlay.active .popup-content {
+    transform: translateY(0);
 }
 
 .popup-header {
@@ -823,7 +833,6 @@ body.cart-page{
     background: white !important;
     padding: 12px 15px !important;
     box-shadow: 0 -4px 12px rgba(0,0,0,0.2) !important;
-    z-index: 999999 !important;
     display: flex !important;
     transform: translateY(0) !important;
     visibility: visible !important;
@@ -864,32 +873,9 @@ body.cart-page{
     transform: translateY(-2px) !important;
     box-shadow: 0 4px 12px rgba(255,63,108,0.4) !important;
 }
-/* Popup Overlay - Sabse upar */
-.popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999999 !important;  /* ✅ Bahut high */
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-}
 
-/* Popup Content */
-.popup-content {
-    background: white;
-    width: 100%;
-    max-width: 500px;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    animation: slideUp 0.3s ease;
-    max-height: 80vh;
-    overflow-y: auto;
-    position: relative;
-    z-index: 1000000 !important;  /* ✅ Overlay se bhi upar */
+.popup-overlay.active .popup-content {
+    transform: translateY(0);   /* 👈 niche se upar aayega */
 }
 
 /* Sticky Bottom Bar - Z-index kam karo */
