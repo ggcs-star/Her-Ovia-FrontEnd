@@ -59,10 +59,12 @@ async function syncCartWithServer() {
         if (localCart.length > 0) {
 
             const items = localCart.map(item => ({
-                product_id: Number(item.id),
-                variant_id: Number(item.variantId),
-                quantity: Number(item.quantity) || 1
-            }));
+            product_id: item.id,
+            variant_id: item.variantId,
+            quantity: item.quantity,
+            price: item.price,
+            image: item.image || ''
+        }))
 
             await fetch(`${API_BASE_URL}/cart/add`, {
                 method: 'POST',
@@ -456,14 +458,6 @@ function placeOrder() {
             billing_address_id: Number(shippingAddress),
             payment_method_id: 1,
             coupon_code: localStorage.getItem('applied_coupon') || null,
-            items: cartItems.map(item => ({
-                product_id: item.id,
-                variant_id: item.variantId,
-                quantity: item.quantity,
-                price: item.price,
-                image: item.image,
-                variant_id: item.variantId
-            }))
         })
     })
     .then(res => res.json())

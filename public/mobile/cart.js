@@ -267,6 +267,12 @@ function openSizePopup(index, variantType, currentValue) {
     `;
     
     document.body.insertAdjacentHTML('beforeend', popupHTML);
+
+const popup = document.querySelector('.popup-overlay');
+
+setTimeout(() => {
+    popup.classList.add('active');  // 👈 animation trigger
+}, 10);
     document.body.style.overflow = 'hidden';
 }
 
@@ -316,6 +322,10 @@ function openQtyPopup(index, currentQty) {
     `;
     
     document.body.insertAdjacentHTML('beforeend', popupHTML);
+     const popup = document.querySelector('.popup-overlay');
+    setTimeout(() => {
+        popup.classList.add('active');
+    }, 10);
     document.body.style.overflow = 'hidden';
 }
 
@@ -359,7 +369,14 @@ function selectQtyFromPopup(index, qty) {
 
 function closePopup() {
     const popup = document.querySelector('.popup-overlay');
-    if (popup) popup.remove();
+    if (!popup) return;
+
+    popup.classList.remove('active');
+
+    setTimeout(() => {
+        popup.remove();
+    }, 250);  // match CSS timing
+
     document.body.style.overflow = '';
     
     const checkoutBar = document.querySelector('.sticky-bottom-bar');
@@ -1153,7 +1170,6 @@ function syncCartWithServer() {
     const localCart = JSON.parse(localStorage.getItem('cart')) || [];
     
     if (localCart.length === 0) {
-        // Cart empty hai toh server cart bhi empty karo
         fetch('https://retailadmin.ggconsultancy.services/api/cart/clear', {
             method: 'POST',
             headers: {
@@ -1166,12 +1182,12 @@ function syncCartWithServer() {
         
         return;
     }
-    
-    // Server cart ko local cart se sync karo
+
     const items = localCart.map(item => ({
         product_id: Number(item.id),
         variant_id: Number(item.variantId),
-        quantity: Number(item.quantity) || 1
+        quantity: Number(item.quantity) || 1,
+        image: item.image 
     }));
     
     fetch('https://retailadmin.ggconsultancy.services/api/cart/sync', {

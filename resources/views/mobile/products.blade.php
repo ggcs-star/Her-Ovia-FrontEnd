@@ -791,17 +791,25 @@
             
             if (data.success) {
                 let mainCat;
-                if (catId) {
-                    mainCat = data.data.find(c => c.id == catId);
-                } else {
-                    mainCat = data.data.find(c => c.children?.some(child => child.id == subId));
-                }
-                
+
+                    // 🔥 check karo subId actually category hai ya subcategory
+                    mainCat = data.data.find(c => c.id == subId); // check as category
+
+                    if (mainCat) {
+                        // agar match mil gaya → ye category hai
+                        currentSub = mainCat.children?.length ? mainCat.children[0].id : null;
+                    } else {
+                        // warna subcategory hai
+                        mainCat = data.data.find(c => c.children?.some(child => child.id == subId));
+                    }
                 if (mainCat) {
-                    allSubs = mainCat.children || [];
-                    renderSubs();
-                    if (currentSub) fetchProducts(currentSub);
-                }
+    allSubs = mainCat.children || [];
+    renderSubs();
+
+    if (currentSub) {
+        fetchProducts(currentSub);
+    }
+}
             }
         } catch (error) {
             console.error('Error:', error);

@@ -40,7 +40,9 @@ class RapidRetailsEngine {
         const isProfilePage = document.body.classList.contains('profile-page');
         const isOrdersPage = document.body.classList.contains('orders-page');
         const isWishlistPage = document.body.classList.contains('wishlist-page'); 
-        const showBackButton = isCartPage || isCheckoutPage || isProfilePage || isOrdersPage || isWishlistPage;
+        const isOrderConfirmationPage = document.body.classList.contains('order-confirmation-page'); 
+
+        const showBackButton = isCartPage || isCheckoutPage || isProfilePage || isOrdersPage || isWishlistPage || isOrderConfirmationPage;
         
         header.innerHTML = `
             <div class="container">
@@ -792,6 +794,9 @@ window.goBack = function() {
     }
     else if (currentPath.includes('/checkout')) {
         window.location.href = '/cart';
+    }
+    else if (currentPath.includes('/order-confirmation')) { 
+        window.location.href = '/orders';
     }
     else if (currentPath === '/profile' || currentPath.includes('/profile')) {
         window.location.href = '/';

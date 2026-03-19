@@ -37,8 +37,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    max-width: 1200px;
-    margin: 0 auto;
 }
 
 .logo-text {
@@ -489,7 +487,34 @@ body {
     width: 22px;
     height: 22px;
 }
+/* ===== FIX HEADER (MATCH CART) ===== */
 
+.profile-page .site-header {
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+.profile-page .header-container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 12px !important;
+    min-height: 56px !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+
+/* search + logo fix */
+.profile-page .logo-search-container {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+/* icons fix */
+.profile-page .header-icons,
+.profile-page .header-icons-figma {
+    flex-shrink: 0 !important;
+}
 @media (max-width: 768px) {
     .profile-header {
         flex-direction: column;

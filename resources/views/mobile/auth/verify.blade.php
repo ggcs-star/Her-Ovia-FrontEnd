@@ -325,7 +325,7 @@
         </form>
     </div>
 <script>
-// const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
+const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
 function showAlert(message, type) {
     const alertContainer = document.getElementById('alertContainer');
     if (!alertContainer) return;

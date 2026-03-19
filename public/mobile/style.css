@@ -44,9 +44,10 @@
 .header-container {
     display: flex;
     align-items: center;
+    justify-content: space-between; /* ⭐ important */
     gap: 8px;
-    padding: 0 12px;
-    min-height: 56px;
+    padding: 8px 0;
+    width: 100%;
 }
 
 /* Bottom Navigation with safe area */
@@ -155,7 +156,17 @@ body {
     margin: 0 auto; 
     padding: 0 16px; 
 }
+.profile-page .container {
+    padding: 20px;
+}
+.site-header .container {
+    padding: 0 16px !important;
+}
 
+.site-header .header-container {
+    display: flex !important;
+    align-items: center !important;
+}
 /* Section spacing */
 .section-container {
     margin-bottom: 30px;
@@ -185,12 +196,12 @@ body {
     border-bottom: 1px solid #f0f0f0;
 }
 
-.header-container {
+/* .header-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-}
+} */
 
 .mobile-search-figma {
     flex: 1;
@@ -1321,12 +1332,12 @@ margin:10px 0 0 0;
     color: #999;
     font-size: 15px;
 }
-.header-container {
+/* .header-container {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 10px 0;
-}
+} */
 
 .header-logo {
     flex-shrink: 0;
@@ -1375,15 +1386,15 @@ margin:10px 0 0 0;
         padding: 6px 10px;
     }
 }
-.header-container {
+/* .header-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 10px 0;
     gap: 12px;
-}
+} */
 
-.logo-search-container {
+/* .logo-search-container {
     display: flex;
     align-items: center;
     flex: 1;
@@ -1392,7 +1403,7 @@ margin:10px 0 0 0;
     border-radius: 30px;
     padding: 4px 4px 4px 12px;
     border: 1px solid #e0e0e0;
-}
+} */
 
 .header-logo {
     flex-shrink: 0;
@@ -1500,13 +1511,13 @@ margin:10px 0 0 0;
         padding: 4px 8px;
     }
 }
-.header-container {
+/* .header-container {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 8px 0;
     width: 100%;
-}
+} */
 
 .back-btn-header {
     background: none;
@@ -1533,11 +1544,12 @@ margin:10px 0 0 0;
     flex: 1;
     display: flex;
     align-items: center;
+    gap: 6px;
     background: #f5f5f6;
     border-radius: 30px;
-    padding: 4px 4px 4px 10px;  /* Padding kam ki */
+    padding: 4px 8px;
     border: 1px solid #e0e0e0;
-    min-width: 0;  /* Text overflow handle */
+    min-width: 0;
 }
 
 .header-logo {

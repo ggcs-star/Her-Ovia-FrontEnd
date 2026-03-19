@@ -207,19 +207,22 @@
 }
 
 .category-card {
-    background: #ffffff;
-    border-radius: 12px;
+    border-radius: 18px;
+    padding: 14px;
+    height: 95px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
     overflow: hidden;
-    cursor: pointer;
-    border: 1px solid #f0f0f0;
-    transition: all 0.2s ease;
+    transition: 0.3s;
 }
 
 .category-card:active {
     transform: scale(0.98);
 }
 
-.category-image {
+/* .category-image {
     width: 100%;
     aspect-ratio: 1/1;
     background: #f8f8f8;
@@ -233,12 +236,12 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-}
+} */
 
 .category-info {
-    padding: 12px;
-    text-align: center;
-    border-top: 1px solid #f0f0f0;
+    padding: 0;
+    text-align: left;
+    border: none;
 }
 
 .category-info h3 {
@@ -668,36 +671,7 @@
     gap: 16px;
     padding: 16px;
 }
-.category-card {
-    background: #ffffff;
-    border-radius: 12px;
-    overflow: hidden;
-    cursor: pointer;
-    border: 1px solid #f0f0f0;
-    transition: all 0.2s ease;
-}
-.category-card:active {
-    transform: scale(0.98);
-}
-.category-image {
-    width: 100%;
-    aspect-ratio: 1/1;
-    background: #f8f8f8;
-    padding: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.category-image img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-.category-info {
-    padding: 12px;
-    text-align: center;
-    border-top: 1px solid #f0f0f0;
-}
+
 .category-info h3 {
     font-size: 14px;
     font-weight: 500;
@@ -1109,4 +1083,36 @@
 
 .nav-item-figma.active svg {
     stroke: #ff3f6c;
+}
+.category-image-box {
+    width: 60px;
+    height: 60px;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(6px);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.category-image-box img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+.category-image-box {
+    width: 60px;
+    height: 60px;
+    background: transparent;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.category-image-box img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 10px; /* 👈 smooth look */
 }

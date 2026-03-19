@@ -355,3 +355,91 @@
 .orders-container {
     padding-bottom: 80px;
 }
+.order-status-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.status-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Order Status Colors */
+.status-badge.order-status.pending { background: #fff3e0; color: #f57c00; }
+.status-badge.order-status.confirmed { background: #e3f2fd; color: #1976d2; }
+.status-badge.order-status.processing { background: #e8eaf6; color: #3f51b5; }
+.status-badge.order-status.shipped { background: #e1f5fe; color: #0288d1; }
+.status-badge.order-status.delivered { background: #e8f5e9; color: #2e7d32; }
+.status-badge.order-status.cancelled { background: #ffebee; color: #c62828; }
+
+/* Payment Status Colors */
+.status-badge.payment-status.paid { background: #e8f5e9; color: #2e7d32; }
+.status-badge.payment-status.pending { background: #fff3e0; color: #f57c00; }
+.status-badge.payment-status.failed { background: #ffebee; color: #c62828; }
+
+/* ✅ Purane .order-status-badges HATAO */
+.order-status-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.status-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ✅ Inki jagah YEH LAGAO */
+.order-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.order-status.pending {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.order-status.confirmed {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.order-status.processing {
+    background: #e8eaf6;
+    color: #3f51b5;
+}
+
+.order-status.shipped {
+    background: #e1f5fe;
+    color: #0288d1;
+}
+
+.order-status.delivered {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.order-status.cancelled {
+    background: #ffebee;
+    color: #c62828;
+}

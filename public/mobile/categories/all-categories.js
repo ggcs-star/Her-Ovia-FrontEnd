@@ -213,25 +213,38 @@ class AllCategoriesPage {
             'https://images.unsplash.com/photo-1598033121397-5ecc08fe7f1f?q=80&w=200&auto=format&fit=crop'
         ];
 
+        const colors = [
+    "linear-gradient(135deg, #FBE7A1, #F9D976)",
+    "linear-gradient(135deg, #F8C8DC, #F4A6C1)",
+    "linear-gradient(135deg, #D6C1E7, #C3A6E8)",
+    "linear-gradient(135deg, #FAD7B5, #F6B98C)",
+    "linear-gradient(135deg, #C8E6C9, #A5D6A7)",
+    "linear-gradient(135deg, #C5CAE9, #9FA8DA)"
+];
         const categoriesToShow = this.userCategories.length > 0 ? this.userCategories : this.allCategories;
         
-        container.innerHTML = editButtonHtml + categoriesToShow.map((cat, index) => {
-            const imageUrl = cat.image_url || fallbackImages[index % fallbackImages.length];
-            return `
-                <div class="category-card" data-id="${cat.id}"
-                onclick="showCategoryPopupById(${cat.id})">
+      container.innerHTML = editButtonHtml + categoriesToShow.map((cat, index) => {
 
-                <div class="category-image">
-                <img src="${imageUrl}">
-                </div>
+    const imageUrl = cat.image_url || fallbackImages[index % fallbackImages.length];
+    const bgColor = colors[index % colors.length];
 
-                <div class="category-info">
-                <h3>${cat.name}</h3>
-                </div>
+    return `
+    <div class="category-card" 
+         style="background: ${bgColor}"
+         data-id="${cat.id}"
+         onclick="showCategoryPopupById(${cat.id})">
 
-                </div>
-                `;
-                    }).join('');
+        <div class="category-info">
+            <h3>${cat.name}</h3>
+        </div>
+
+        <div class="category-image-box">
+            <img src="${imageUrl}">
+        </div>
+
+    </div>
+    `;
+}).join('');
                 }
     createPopup() {
         if (!document.getElementById('popup-overlay')) {
