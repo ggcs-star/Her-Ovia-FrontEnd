@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://retailadmin.ggconsultancy.services/api';
+const API_BASE_URL = 'http://127.0.0.1:8001/api';
 
 document.addEventListener("DOMContentLoaded", () => {
     loadTrendingReels();
@@ -84,6 +84,7 @@ id="video-${index}">
         </div>
 
     </div>
+    
 
 <div class="reel-actions">
 
@@ -96,7 +97,13 @@ id="video-${index}">
 <span class="reel-count" id="like-count-${reel.id}">
 ${reel.likes ?? 0}
 </span>
+<button class="reel-icon-btn comment-btn" data-id="${reel.id}">
+<i class="bi bi-chat"></i>
+</button>
 
+<span class="reel-count" id="comment-count-${reel.id}">
+${reel.comments ?? 0}
+</span>
 </div>
 
 <div class="reel-action-item">
@@ -125,6 +132,8 @@ ${reel.shares ?? 0}
 
     initLikeButtons();
     initShareButtons();
+        initCommentButtons(); 
+
     checkDescriptions();
     setupObserver();
     enableDoubleTap();
@@ -133,7 +142,157 @@ ${reel.shares ?? 0}
 
 
 /* AUTOPLAY */
+/* ================= COMMENTS SYSTEM ================= */
 
+let currentReelId = null;
+
+/* init buttons */
+function initCommentButtons(){
+
+    document.querySelectorAll(".comment-btn").forEach(btn=>{
+
+        btn.addEventListener("click",function(){
+
+            const id = btn.dataset.id;
+            openComments(id);
+
+        });
+
+    });
+
+}
+
+/* open modal */
+function openComments(id){
+
+    currentReelId = id;
+
+    document.getElementById("commentModal").style.display = "block";
+
+    loadComments(id);
+
+    // 🔥 ADD THIS
+    setTimeout(()=>{
+        document.getElementById("commentInput").focus();
+    },300);
+}
+
+/* load comments */
+function loadComments(id){
+
+    const list = document.getElementById("commentList");
+    list.innerHTML = "Loading...";
+
+    fetch(API_BASE_URL + "/reels/" + id + "/comments", {
+        headers:{
+            "Accept": "application/json" // 🔥 MOST IMPORTANT FIX
+        }
+    })
+    .then(res=>res.json())
+    .then(res=>{
+
+        let html = "";
+
+        res.data.forEach(c=>{
+
+            html += `
+            <div class="comment-item insta-comment">
+
+                <img src="${c.user?.avatar ?? 'https://ui-avatars.com/api/?name=User'}" class="comment-avatar"/>
+
+                <div class="comment-content">
+
+                    <div class="comment-header">
+                        <span class="comment-user">${c.user?.name ?? 'User'}</span>
+                        <span class="comment-time">${c.time ?? ''}</span>
+                    </div>
+
+                    <div class="comment-text">
+                        ${c.comment}
+                    </div>
+
+                </div>
+
+            </div>
+            `;
+        });
+
+        list.innerHTML = html || "No comments yet";
+
+    })
+    .catch(err=>{
+        console.error("Comments error:", err);
+        list.innerHTML = "Failed to load comments";
+    });
+
+}
+
+/* add comment */
+function postComment(){
+
+    const input = document.getElementById("commentInput");
+    const text = input.value.trim();
+
+    if(!text) return;
+
+    const token = localStorage.getItem("token");
+
+console.log("TOKEN:", token);
+console.log("REEL ID:", currentReelId);
+
+// ✅ dynamic headers
+let headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+};
+
+if(token){
+    headers["Authorization"] = "Bearer " + token;
+}
+
+fetch(API_BASE_URL + "/reels/" + currentReelId + "/comment", {
+    method: "POST",
+    headers: headers,
+    body: JSON.stringify({
+        comment: text
+    })
+})
+.then(async res => {
+
+    console.log("STATUS:", res.status);
+
+    const data = await res.json();
+    console.log("RESPONSE:", data);
+
+    if(res.status === 401){
+        alert("Unauthorized (login issue)");
+        return;
+    }
+
+    if(!data.status){
+        alert(data.message || "Error");
+        return;
+    }
+
+    input.value = "";
+
+    loadComments(currentReelId);
+
+    const count = document.getElementById("comment-count-"+currentReelId);
+    if(count){
+        count.innerText = parseInt(count.innerText) + 1;
+    }
+
+})
+.catch(err=>{
+    console.error("Comment error:", err);
+    alert("Something went wrong");
+});
+}
+/* close */
+function closeComments(){
+    document.getElementById("commentModal").style.display = "none";
+}
 function setupObserver(){
 
     const videos = document.querySelectorAll(".reel-video-player");
@@ -171,12 +330,17 @@ function setupObserver(){
 
 /* VIEW COUNT */
 
+const viewed = new Set();
+
 function increaseView(id){
+
+    if(viewed.has(id)) return; // ✅ prevent spam
+
+    viewed.add(id);
 
     fetch(API_BASE_URL + "/reels/" + id + "/view",{
         method:"POST"
     }).catch(()=>{});
-
 }
 
 document.addEventListener("play", function(e) {
@@ -308,7 +472,7 @@ let lastTap = 0;
 
 document.querySelectorAll(".reel-video-player").forEach(video=>{
 
-video.addEventListener("touchend",function(e){
+video.addEventListener("click",function(e){
 
 const currentTime = new Date().getTime();
 const tapLength = currentTime - lastTap;
@@ -420,5 +584,6 @@ function showError(){
     if(container){
         container.innerHTML = '<div class="error">Failed to load reels</div>';
     }
+    
 
 }

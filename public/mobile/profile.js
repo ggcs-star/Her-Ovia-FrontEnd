@@ -1,23 +1,96 @@
 const API_BASE_URL = window.API_BASE_URL || 'https://retailadmin.ggconsultancy.services/api';
 
 document.addEventListener('DOMContentLoaded', function() {
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    if (token && user.id) {
-        loadUserProfile();
-        loadUserStats();
-    } else {
-        renderGuestProfile();
-    }
-    
+    initializeProfile();
     updateCartBadge();
     setupEventListeners();
 });
 
+// Add storage event listener to handle multiple tabs
+window.addEventListener('storage', function(e) {
+    if (e.key === 'token' || e.key === 'user') {
+        initializeProfile();
+    }
+});
+
+function initializeProfile() {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    
+    // Clear any cached profile data
+    const container = document.getElementById('profile-container');
+    if (container) {
+        container.innerHTML = ''; // Clear container first
+    }
+    
+    if (token && user && user.id) {
+        // Validate token with server
+        validateAndLoadUserProfile();
+    } else {
+        // Clear any stale data
+        clearAuthData();
+        renderGuestProfile();
+    }
+}
+
+function clearAuthData() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    // Clear any session storage related to auth
+    sessionStorage.removeItem('login_timestamp');
+    sessionStorage.removeItem('redirect_after_login');
+}
+
+async function validateAndLoadUserProfile() {
+    const token = localStorage.getItem('token');
+    const container = document.getElementById('profile-container');
+    
+    if (!container) return;
+    
+    container.innerHTML = '<div class="loading-spinner">Loading profile...</div>';
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/user/profile`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+                'Cache-Control': 'no-cache' // Prevent caching
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success && data.data) {
+            // Update stored user data
+            localStorage.setItem('user', JSON.stringify(data.data));
+            renderProfile(data.data);
+            loadUserStats();
+        } else {
+            // Token is invalid
+            clearAuthData();
+            renderGuestProfile();
+            showToast('Session expired. Please login again.', 'error');
+        }
+    } catch (error) {
+        console.error('Profile validation error:', error);
+        // Network error - try to use cached data temporarily
+        const cachedUser = JSON.parse(localStorage.getItem('user') || 'null');
+        if (cachedUser) {
+            renderProfile(cachedUser);
+            showToast('Using cached data. Check your connection.', 'warning');
+        } else {
+            renderGuestProfile();
+        }
+    }
+}
+
 function renderGuestProfile() {
     const container = document.getElementById('profile-container');
     if (!container) return;
+    
+    // Clear container first
+    container.innerHTML = '';
     
     const html = `
         <div class="profile-menu" style="margin-top: 20px;">
@@ -71,45 +144,36 @@ function renderGuestProfile() {
 }
 
 function loadUserProfile() {
-    const container = document.getElementById('profile-container');
-    if (!container) return;
-    
-    container.innerHTML = '<div class="loading-spinner">Loading profile...</div>';
-    
-    fetch(`${API_BASE_URL}/user/profile`, {
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Accept': 'application/json'
-        }
-    })
-    .then(res => res.json())
-    .then(response => {
-        if (response.success) {
-            renderProfile(response.data);
-        } else {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            renderGuestProfile();
-        }
-    })
-    .catch(() => {
-        renderGuestProfile();
-    });
+    // This is now handled by validateAndLoadUserProfile
+    validateAndLoadUserProfile();
 }
 
-function loadUserStats() {
-    Promise.all([
-        fetch(`${API_BASE_URL}/orders`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }),
-        fetch(`${API_BASE_URL}/wishlist`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }),
-        fetch(`${API_BASE_URL}/coupons`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        })
-    ])
-    .then(async ([ordersRes, wishlistRes, couponsRes]) => {
+async function loadUserStats() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    try {
+        const [ordersRes, wishlistRes, couponsRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/orders`, {
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': 'no-cache'
+                }
+            }),
+            fetch(`${API_BASE_URL}/wishlist`, {
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': 'no-cache'
+                }
+            }),
+            fetch(`${API_BASE_URL}/coupons`, {
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': 'no-cache'
+                }
+            })
+        ]);
+        
         const ordersData = await ordersRes.json();
         const wishlistData = await wishlistRes.json();
         const couponsData = await couponsRes.json();
@@ -119,8 +183,9 @@ function loadUserStats() {
             wishlist: wishlistData.data?.length || 0,
             coupons: couponsData.data?.length || 0
         });
-    })
-    .catch(() => {});
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
 }
 
 function updateStats(stats) {
@@ -147,6 +212,9 @@ function renderProfile(user) {
     const container = document.getElementById('profile-container');
     if (!container) return;
     
+    // Clear container first
+    container.innerHTML = '';
+    
     const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
     
     const html = `
@@ -168,7 +236,7 @@ function renderProfile(user) {
             <div class="profile-info">
                 <h2 class="profile-name">${user.name || 'User'}</h2>
                 <p class="profile-email">${user.email || ''}</p>
-                <p class="profile-phone">${user.phone || ''}</p>
+                <p class="profile-phone">${user.phone || user.mobile || ''}</p>
                 <div class="profile-actions">
                     <button class="edit-profile-btn ${!user.profile_image ? 'centered' : ''}" onclick="openEditProfile()">Edit Profile</button>
                     ${user.profile_image ? `
@@ -185,11 +253,10 @@ function renderProfile(user) {
         </div>
         
         <div class="profile-stats"></div>
-           <div class="profile-menu">
+        <div class="profile-menu">
             <div class="menu-card">
                 <h3>My Orders</h3>
-                <div class="menu-item" onclick="window.location.href='/orders'">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+<div class="menu-item" data-link="/orders">                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                         <line x1="16" y1="2" x2="16" y2="6"/>
                         <line x1="8" y1="2" x2="8" y2="6"/>
@@ -337,7 +404,18 @@ function renderProfile(user) {
 }
 
 function triggerImageUpload() {
-    document.getElementById('avatarUpload')?.click();
+    // Create file input dynamically if it doesn't exist
+    let fileInput = document.getElementById('avatarUpload');
+    if (!fileInput) {
+        fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.id = 'avatarUpload';
+        fileInput.accept = 'image/jpeg,image/jpg,image/png,image/webp';
+        fileInput.style.display = 'none';
+        fileInput.addEventListener('change', handleImageUpload);
+        document.body.appendChild(fileInput);
+    }
+    fileInput.click();
 }
 
 function handleImageUpload(event) {
@@ -357,9 +435,8 @@ function handleImageUpload(event) {
 
     const formData = new FormData();
     formData.append('profile_image', file);
-    formData.append('_method', 'PUT');
 
-    fetch(`${API_BASE_URL}/user/profile`, {
+    fetch(`${API_BASE_URL}/user/profile/image`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -370,8 +447,13 @@ function handleImageUpload(event) {
     .then(res => res.json())
     .then(response => {
         if (response.success) {
-            localStorage.setItem('user', JSON.stringify(response.data));
-            loadUserProfile();
+            // Update user data in localStorage
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            user.profile_image = response.data?.profile_image || response.data?.image;
+            localStorage.setItem('user', JSON.stringify(user));
+            
+            // Refresh profile
+            validateAndLoadUserProfile();
             showToast('Profile picture updated!', 'success');
         } else {
             showToast(response.message || 'Upload failed', 'error');
@@ -394,23 +476,17 @@ function removeProfileImage() {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            'Accept': 'application/json'
         }
     })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return res.json();
-    })
+    .then(res => res.json())
     .then(response => {
         if (response.success) {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             user.profile_image = null;
             localStorage.setItem('user', JSON.stringify(user));
             
-            loadUserProfile();
+            validateAndLoadUserProfile();
             showToast('Profile picture removed successfully', 'success');
         } else {
             showToast(response.message || 'Failed to remove picture', 'error');
@@ -472,7 +548,7 @@ function openEditProfile() {
             
             <div style="margin-bottom: 20px;">
                 <label style="display: block; margin-bottom: 5px; font-weight: 600;">Phone Number <span style="color: #ff3f6c;">*</span></label>
-                <input type="tel" id="edit-phone" value="${user.phone || ''}" 
+                <input type="tel" id="edit-phone" value="${user.phone || user.mobile || ''}" 
                        style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
                 <div id="phone-error" style="color: #ff3f6c; font-size: 12px; margin-top: 5px; display: none;"></div>
             </div>
@@ -559,7 +635,7 @@ function validateAndSaveProfile() {
     .then(response => {
         if (response.success) {
             localStorage.setItem('user', JSON.stringify(response.data));
-            loadUserProfile();
+            validateAndLoadUserProfile();
             showToast('Profile updated successfully!', 'success');
         } else {
             showToast(response.message || 'Failed to update profile', 'error');
@@ -576,6 +652,13 @@ function closeEditModal() {
 }
 
 function handleLogout() {
+    // Show loading state
+    const logoutBtn = document.querySelector('.logout-btn');
+    if (logoutBtn) {
+        logoutBtn.style.opacity = '0.5';
+        logoutBtn.style.pointerEvents = 'none';
+    }
+    
     fetch(`${API_BASE_URL}/logout`, {
         method: 'POST',
         headers: {
@@ -584,10 +667,16 @@ function handleLogout() {
         }
     })
     .finally(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        // Clear ALL auth data
+        clearAuthData();
+        
+        // Clear any other app data
         localStorage.removeItem('cart');
         localStorage.removeItem('cart_synced');
+        localStorage.removeItem('wishlist');
+        sessionStorage.clear();
+        
+        // Force reload to clear all memory
         window.location.href = '/';
     });
 }
@@ -609,20 +698,55 @@ function showToast(message, type) {
     const toast = document.createElement('div');
     toast.className = `toast-message ${type}`;
     toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${type === 'error' ? '#ff3f6c' : type === 'warning' ? '#ffa500' : '#333'};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        z-index: 10000;
+        animation: slideUp 0.3s ease;
+    `;
     document.body.appendChild(toast);
     
-    setTimeout(() => toast.remove(), 3000);
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.style.animation = 'slideDown 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, 3000);
 }
 
 function setupEventListeners() {
-    const fileInput = document.getElementById('avatarUpload');
-    if (fileInput) {
-        fileInput.addEventListener('change', handleImageUpload);
-    }
+    // Remove any existing file input and create new one
+    const oldInput = document.getElementById('avatarUpload');
+    if (oldInput) oldInput.remove();
+    
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.id = 'avatarUpload';
+    fileInput.accept = 'image/jpeg,image/jpg,image/png,image/webp';
+    fileInput.style.display = 'none';
+    fileInput.addEventListener('change', handleImageUpload);
+    document.body.appendChild(fileInput);
     
     window.addEventListener('storage', function(e) {
         if (e.key === 'cart') {
             updateCartBadge();
         }
+        if (e.key === 'token' || e.key === 'user') {
+            initializeProfile();
+        }
     });
+    document.addEventListener('click', function(e) {
+    const item = e.target.closest('.menu-item');
+    if (item && item.dataset.link) {
+        e.preventDefault();
+        window.location.href = item.dataset.link;
+    }
+});
 }

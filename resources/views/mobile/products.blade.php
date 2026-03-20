@@ -10,9 +10,7 @@
         body{
             font-family:'Inter',sans-serif;
             background:#fff;
-
             padding-bottom:env(safe-area-inset-bottom);
-
             -webkit-overflow-scrolling:touch;
         }
 
@@ -20,17 +18,12 @@
             display:flex;
             align-items:center;
             justify-content:space-between;
-
             height:calc(56px + env(safe-area-inset-top));
-
             padding:env(safe-area-inset-top) 16px 0 16px;
-
             border-bottom:1px solid #f0f0f0;
             background:#fff;
-
             position:sticky;
             top:0;
-
             z-index:1000;
         }
         .header-left {
@@ -63,21 +56,15 @@
 
         .sub-strip{
             padding:12px 16px;
-
             display:flex;
             gap:16px;
-
             overflow-x:auto;
             overflow-y:hidden;
-
             white-space:nowrap;
-
             border-bottom:1px solid #f0f0f0;
             background:#fff;
-
             position:sticky;
             top:calc(56px + env(safe-area-inset-top));
-
             z-index:999;
         }
         .sub-strip::-webkit-scrollbar { display: none; }
@@ -104,13 +91,15 @@
         }
         .sub-item.active .sub-name { color: #ff3f6c; }
 
+        /* Products Grid Container */
         .products{
             display:grid;
             grid-template-columns:repeat(2,1fr);
             gap:16px;
             padding:16px;
             padding-bottom:calc(130px + env(safe-area-inset-bottom));
-            }
+        }
+        
         .card {
             cursor: pointer;
             border-radius: 12px;
@@ -231,19 +220,15 @@
             bottom:0;
             left:0;
             right:0;
-
             height:calc(65px + env(safe-area-inset-bottom));
             padding-bottom:env(safe-area-inset-bottom);
-
             display:flex;
             justify-content:space-around;
             align-items:center;
-
             background:#fff;
             border-top:1px solid #f0f0f0;
-
             z-index:1000;
-            }
+        }
         .nav-item {
             display: flex;
             flex-direction: column;
@@ -255,6 +240,247 @@
         }
         .nav-item.active { color: #ff3f6c; }
         .nav-icon { font-size: 20px; }
+
+        /* Desktop Layout Styles - ONLY APPLIES ON WEB/DESKTOP */
+        @media screen and (min-width: 1024px) {
+            /* Create main container for desktop layout */
+            .products-page-wrapper {
+                display: flex;
+                max-width: 1440px;
+                margin: 0 auto;
+                position: relative;
+                gap: 24px;
+                padding: 20px 24px;
+            }
+            
+            /* Left Sidebar - Desktop Filters */
+            .desktop-filters-sidebar {
+                width: 280px;
+                flex-shrink: 0;
+                background: #fff;
+                border-radius: 12px;
+                position: sticky;
+                top: calc(56px + 20px);
+                height: fit-content;
+                max-height: calc(100vh - 80px);
+                overflow-y: auto;
+                padding: 20px;
+                border: 1px solid #f0f0f0;
+            }
+            
+            /* Hide mobile action bar on desktop */
+            .action-bar {
+                display: none !important;
+            }
+            
+            /* Right Content Area - Products */
+            .desktop-products-area {
+                flex: 1;
+                min-width: 0;
+            }
+            
+            /* Products grid - 3 columns on desktop */
+            .products {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+                padding: 0 0 40px 0;
+            }
+            
+            /* Sub-strip styling for desktop */
+            .sub-strip {
+                position: relative;
+                top: 0;
+                padding: 16px 0 20px 0;
+                margin-bottom: 20px;
+                border-bottom: 1px solid #f0f0f0;
+                background: transparent;
+                gap: 20px;
+            }
+            
+            .sub-item {
+                min-width: 70px;
+            }
+            
+            .sub-img {
+                width: 70px;
+                height: 70px;
+            }
+            
+            /* Desktop filter styles */
+            .desktop-filter-section {
+                margin-bottom: 28px;
+                border-bottom: 1px solid #f0f0f0;
+                padding-bottom: 20px;
+            }
+            
+            .desktop-filter-section:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
+            }
+            
+            .desktop-filter-title {
+                font-size: 14px;
+                font-weight: 700;
+                color: #000;
+                margin-bottom: 16px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .desktop-filter-option {
+                display: block;
+                padding: 8px 0;
+                font-size: 13px;
+                color: #666;
+                cursor: pointer;
+                transition: color 0.2s;
+            }
+            
+            .desktop-filter-option:hover {
+                color: #ff3f6c;
+            }
+            
+            .desktop-filter-option input {
+                margin-right: 12px;
+                accent-color: #ff3f6c;
+                cursor: pointer;
+            }
+            
+            .price-range-inputs {
+                display: flex;
+                gap: 12px;
+                margin-bottom: 16px;
+            }
+            
+            .price-input {
+                flex: 1;
+                padding: 10px 12px;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                font-size: 13px;
+                font-family: inherit;
+            }
+            
+            .price-input:focus {
+                outline: none;
+                border-color: #ff3f6c;
+            }
+            
+            .apply-price-btn {
+                width: 100%;
+                padding: 10px;
+                background: #ff3f6c;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 13px;
+                font-weight: 600;
+                cursor: pointer;
+                margin-top: 12px;
+            }
+            
+            .apply-price-btn:hover {
+                background: #e6355a;
+            }
+            
+            .desktop-reset-filters {
+                width: 100%;
+                padding: 12px;
+                background: #f5f5f5;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                color: #333;
+                margin-top: 20px;
+                transition: all 0.2s;
+            }
+            
+            .desktop-reset-filters:hover {
+                background: #e8e8e8;
+            }
+            
+            /* Header adjustments for desktop */
+            .header {
+                position: sticky;
+                top: 0;
+                z-index: 1001;
+                background: #fff;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            
+            /* Bottom nav hidden on desktop (use normal navigation) */
+            .bottom-nav {
+                display: none;
+            }
+            
+            /* Card hover effect on desktop */
+            .card {
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            
+            .card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            }
+            /* Desktop Filter Sections - Collapsible */
+            .desktop-filter-section .filter-options {
+                display: none; /* Pehle band rahega */
+            }
+
+            .desktop-filter-section .filter-options.open {
+                display: block; /* Jab open class ho tab dikhe */
+            }
+
+            .desktop-filter-section .desktop-filter-title {
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .desktop-filter-section .desktop-filter-title::after {
+                content: '+';
+                font-size: 18px;
+                color: #ff3f6c;
+                font-weight: 600;
+            }
+
+            .desktop-filter-section.open .desktop-filter-title::after {
+                content: '−';
+            }
+            
+            /* Hide mobile filter popup on desktop */
+            .filter-popup-overlay,
+            .sort-popup-overlay {
+                display: none !important;
+            }
+        }
+        
+        /* Tablet view - 2 columns */
+        @media screen and (min-width: 768px) and (max-width: 1023px) {
+            .products {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+            
+            .desktop-filters-sidebar {
+                display: none;
+            }
+        }
+        
+        /* Mobile view - NO CHANGES, keep original layout */
+        @media screen and (max-width: 767px) {
+            .desktop-filters-sidebar {
+                display: none;
+            }
+            
+            .products-page-wrapper {
+                display: block;
+            }
+        }
 
         .sort-popup-overlay {
             position: fixed;
@@ -340,171 +566,166 @@
             font-weight: 600;
             cursor: pointer;
         }
-        /* Filter Popup Styles */
-/* Filter Popup Styles */
-.filter-popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    z-index: 10001;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-}
-.filter-popup-overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-.filter-popup-content {
-    background: #fff;
-    width: 100%;
-    max-width: 500px;
-    border-radius: 20px 20px 0 0;
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-}
-.filter-popup-overlay.active .filter-popup-content {
-    transform: translateY(0);
-}
-.filter-popup-header {
-    padding: 20px;
-    border-bottom: 1px solid #f0f0f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.filter-popup-header h3 {
-    font-size: 18px;
-    font-weight: 700;
-    color: #000;
-    margin: 0;
-}
-.filter-popup-close {
-    font-size: 24px;
-    cursor: pointer;
-    color: #999;
-    line-height: 1;
-}
-.filter-popup-body {
-    padding: 0;
-    overflow-y: auto;
-    flex: 1;
-    display: flex;
-    position: relative;
-    min-height: 300px;
-}
-
-/* Left Column - Filter Titles */
-.filter-titles-column {
-    width: 100%;
-    padding: 10px 0;
-    transition: all 0.3s ease;
-}
-.filter-titles-column.half-width {
-    width: 50%;
-    border-right: 1px solid #f0f0f0;
-}
-.filter-title-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: 500;
-    color: #333;
-}
-.filter-title-item:hover {
-    background: #f8f8f8;
-}
-.filter-title-item .arrow-icon {
-    color: #ff3f6c;
-    font-size: 18px;
-}
-
-/* Right Column - Filter Options */
-.filter-options-column {
-    width: 50%;
-    padding: 10px 0;
-    background: #fff;
-    height: 100%;
-    overflow-y: auto;
-}
-.filter-options-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 16px 20px;
-    border-bottom: 1px solid #f0f0f0;
-}
-.back-arrow {
-    font-size: 24px;
-    cursor: pointer;
-    color: #ff3f6c;
-    font-weight: 600;
-}
-.options-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: #000;
-}
-.filter-options-content {
-    padding: 10px 0;
-}
-.filter-checkbox {
-    display: block;
-    padding: 12px 20px;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 14px;
-    color: #666;
-    cursor: pointer;
-}
-.filter-checkbox input {
-    margin-right: 12px;
-    accent-color: #ff3f6c;
-}
-.filter-checkbox:hover {
-    background: #f8f8f8;
-}
-
-.filter-popup-footer {
-    padding: 16px 20px;
-    border-top: 1px solid #f0f0f0;
-    display: flex;
-    gap: 12px;
-}
-.reset-btn {
-    flex: 1;
-    padding: 14px;
-    background: #f5f5f5;
-    color: #333;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-}
-.apply-btn {
-    flex: 2;
-    padding: 14px;
-    background: #ff3f6c;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-}
+        
+        /* Filter Popup Styles - KEPT FOR MOBILE */
+        .filter-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 10001;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .filter-popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .filter-popup-content {
+            background: #fff;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px 20px 0 0;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-popup-overlay.active .filter-popup-content {
+            transform: translateY(0);
+        }
+        .filter-popup-header {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .filter-popup-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #000;
+            margin: 0;
+        }
+        .filter-popup-close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+        }
+        .filter-popup-body {
+            padding: 0;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            position: relative;
+            min-height: 300px;
+        }
+        .filter-titles-column {
+            width: 100%;
+            padding: 10px 0;
+            transition: all 0.3s ease;
+        }
+        .filter-titles-column.half-width {
+            width: 50%;
+            border-right: 1px solid #f0f0f0;
+        }
+        .filter-title-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #333;
+        }
+        .filter-title-item:hover {
+            background: #f8f8f8;
+        }
+        .filter-title-item .arrow-icon {
+            color: #ff3f6c;
+            font-size: 18px;
+        }
+        .filter-options-column {
+            width: 50%;
+            padding: 10px 0;
+            background: #fff;
+            height: 100%;
+            overflow-y: auto;
+        }
+        .filter-options-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .back-arrow {
+            font-size: 24px;
+            cursor: pointer;
+            color: #ff3f6c;
+            font-weight: 600;
+        }
+        .options-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #000;
+        }
+        .filter-options-content {
+            padding: 10px 0;
+        }
+        .filter-checkbox {
+            display: block;
+            padding: 12px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+        }
+        .filter-checkbox input {
+            margin-right: 12px;
+            accent-color: #ff3f6c;
+        }
+        .filter-checkbox:hover {
+            background: #f8f8f8;
+        }
+        .filter-popup-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            gap: 12px;
+        }
+        .reset-btn {
+            flex: 1;
+            padding: 14px;
+            background: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .apply-btn {
+            flex: 2;
+            padding: 14px;
+            background: #ff3f6c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
         .filter-section {
             margin-bottom: 15px;
             border-bottom: 1px solid #f0f0f0;
@@ -529,17 +750,6 @@
             max-height: 250px;
             overflow-y: auto;
         }
-        .filter-checkbox {
-            display: block;
-            padding: 8px 0;
-            font-size: 14px;
-            color: #666;
-            cursor: pointer;
-        }
-        .filter-checkbox input {
-            margin-right: 10px;
-            accent-color: #ff3f6c;
-        }
         .loading {
             text-align: center;
             padding: 40px;
@@ -547,62 +757,55 @@
             grid-column: 1/-1;
         }
         
-
-.nav-item-figma {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    color: #666;
-    text-decoration: none;
-    font-size: 11px;
-    font-weight: 500;
-    flex: 1;
-    transition: color 0.2s;
-    cursor: pointer;
-}
-
-.nav-item-figma.active {
-    color: #ff3f6c;
-}
-
-.nav-icon-box {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.nav-icon-box svg {
-    width: 100%;
-    height: 100%;
-    stroke: currentColor;
-    stroke-width: 2;
-    fill: none;
-}
-
-.nav-item-figma.active svg {
-    stroke: #ff3f6c;
-}
-.header-icon-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-}
-
-.header-icon-btn svg {
-    stroke: #333333;
-    fill: none;
-}
-
-.header-icon-btn:hover svg {
-    stroke: #ff3f6c;
-}
-</style>
+        .nav-item-figma {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #666;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 500;
+            flex: 1;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+        .nav-item-figma.active {
+            color: #ff3f6c;
+        }
+        .nav-icon-box {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nav-icon-box svg {
+            width: 100%;
+            height: 100%;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+        .nav-item-figma.active svg {
+            stroke: #ff3f6c;
+        }
+        .header-icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+        .header-icon-btn svg {
+            stroke: #333333;
+            fill: none;
+        }
+        .header-icon-btn:hover svg {
+            stroke: #ff3f6c;
+        }
+    </style>
 </head>
 <body data-page="products" data-subcategory-id="{{ request()->query('subcategory') }}" data-category-id="{{ request()->query('category') }}">
 
@@ -615,18 +818,70 @@
     <div class="header-right">
         <span onclick="window.location.href='/search'">🔍</span>
         <button class="header-icon-btn" onclick="window.location.href='/wishlist'" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center;">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-    </svg>
-</button>
-        <!-- <span onclick="window.location.href='/cart'">🛒</span> -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+        </button>
     </div>
 </div>
 
-<div class="sub-strip" id="subStrip"></div>
+<!-- Desktop Layout Wrapper -->
+<div class="products-page-wrapper">
+    <!-- Desktop Sidebar Filters (Only visible on desktop) -->
+    <aside class="desktop-filters-sidebar" id="desktopFiltersSidebar">
+      <!-- Category Section -->
+        <div class="desktop-filter-section">
+            <div class="desktop-filter-title">CATEGORY</div>
+            <div class="filter-options" id="desktopCategoryFilters"></div>  <!-- Yeh class pehle se hai -->
+        </div>
 
-<div class="products" id="productsGrid"></div>
+        <!-- Price Section -->
+        <div class="desktop-filter-section">
+            <div class="desktop-filter-title">PRICE</div>
+            <div class="filter-options">
+                <div class="price-range-inputs">
+                    <input type="number" class="price-input" id="minPrice" placeholder="Min" step="1">
+                    <input type="number" class="price-input" id="maxPrice" placeholder="Max" step="1">
+                </div>
+                <button class="apply-price-btn" onclick="applyDesktopPriceFilter()">Apply</button>
+            </div>
+        </div>
 
+        <!-- Brands Section -->
+        <div class="desktop-filter-section">
+            <div class="desktop-filter-title">BRANDS</div>
+            <div class="filter-options" id="desktopBrandFilters"></div>
+        </div>
+
+        <!-- Discount Section -->
+        <div class="desktop-filter-section">
+            <div class="desktop-filter-title">DISCOUNT</div>
+            <div class="filter-options" id="desktopDiscountFilters"></div>
+        </div>
+
+        <!-- Size Section -->
+        <div class="desktop-filter-section">
+            <div class="desktop-filter-title">SIZE</div>
+            <div class="filter-options" id="desktopSizeFilters"></div>
+        </div>
+
+        <!-- Color Section -->
+        <div class="desktop-filter-section">
+            <div class="desktop-filter-title">COLOR</div>
+            <div class="filter-options" id="desktopColorFilters"></div>
+        </div>
+                
+        <button class="desktop-reset-filters" onclick="resetDesktopFilters()">Reset All Filters</button>
+    </aside>
+    
+    <!-- Right Content Area -->
+    <div class="desktop-products-area">
+        <div class="sub-strip" id="subStrip"></div>
+        <div class="products" id="productsGrid"></div>
+    </div>
+</div>
+
+<!-- Mobile Action Bar (Hidden on desktop via CSS) -->
 <div class="action-bar">
     <button class="action-btn" onclick="showSortPopup()"><span>⇅</span> Sort</button>
     <button class="action-btn" onclick="showFilterPopup()"><span>⚲</span> Filter</button>
@@ -689,7 +944,7 @@
     </a>
 </div>
 
-<!-- Sort Popup -->
+<!-- Sort Popup (Mobile Only) -->
 <div class="sort-popup-overlay" id="sortPopupOverlay" onclick="hideSortPopup()">
     <div class="sort-popup-content" onclick="event.stopPropagation()">
         <div class="sort-popup-header">
@@ -710,7 +965,7 @@
     </div>
 </div>
 
-<!-- Filter Popup -->
+<!-- Filter Popup (Mobile Only) -->
 <div class="filter-popup-overlay" id="filterPopupOverlay" onclick="hideFilterPopup()">
     <div class="filter-popup-content" onclick="event.stopPropagation()">
         <div class="filter-popup-header">
@@ -718,7 +973,6 @@
             <span class="filter-popup-close" onclick="hideFilterPopup()">×</span>
         </div>
         <div class="filter-popup-body">
-            <!-- Left Column - Filter Titles -->
             <div class="filter-titles-column" id="filterTitlesColumn">
                 <div class="filter-title-item" onclick="showFilterOptions('category')">
                     <span>CATEGORY</span>
@@ -757,8 +1011,6 @@
                     <span class="arrow-icon">›</span>
                 </div>
             </div>
-            
-            <!-- Right Column - Filter Options (Initially Hidden) -->
             <div class="filter-options-column" id="filterOptionsColumn" style="display: none;">
                 <div class="filter-options-header">
                     <span class="back-arrow" onclick="hideFilterOptions()">‹</span>
@@ -773,6 +1025,7 @@
         </div>
     </div>
 </div>
+
 <script>
 (function() {
     const subId = document.body.dataset.subcategoryId;
@@ -791,25 +1044,21 @@
             
             if (data.success) {
                 let mainCat;
-
-                    // 🔥 check karo subId actually category hai ya subcategory
-                    mainCat = data.data.find(c => c.id == subId); // check as category
-
-                    if (mainCat) {
-                        // agar match mil gaya → ye category hai
-                        currentSub = mainCat.children?.length ? mainCat.children[0].id : null;
-                    } else {
-                        // warna subcategory hai
-                        mainCat = data.data.find(c => c.children?.some(child => child.id == subId));
-                    }
+                mainCat = data.data.find(c => c.id == subId);
                 if (mainCat) {
-    allSubs = mainCat.children || [];
-    renderSubs();
-
-    if (currentSub) {
-        fetchProducts(currentSub);
-    }
-}
+                    currentSub = mainCat.children?.length ? mainCat.children[0].id : null;
+                } else {
+                    mainCat = data.data.find(c => c.children?.some(child => child.id == subId));
+                }
+                if (mainCat) {
+                    allSubs = mainCat.children || [];
+                    renderSubs();
+                    if (currentSub) {
+                        fetchProducts(currentSub);
+                    }
+                    loadDesktopFilters(mainCat);
+                    initDesktopFiltersToggle();
+                }
             }
         } catch (error) {
             console.error('Error:', error);
@@ -855,6 +1104,7 @@
                 currentProducts = data.data.products;
                 originalProducts = [...data.data.products];
                 renderProducts(currentProducts);
+                updateDesktopFiltersFromProducts(currentProducts);
             } else {
                 grid.innerHTML = '<div class="loading">No products found</div>';
             }
@@ -913,6 +1163,114 @@
         }).join('');
     }
 
+    function loadDesktopFilters(mainCategory) {
+        const categoryContainer = document.getElementById('desktopCategoryFilters');
+        if (categoryContainer && mainCategory.children && mainCategory.children.length) {
+            categoryContainer.innerHTML = mainCategory.children.map(child => `
+                <label class="desktop-filter-option">
+                    <input type="checkbox" class="desktop-category-filter" value="${child.id}" onchange="applyDesktopFilters()"> ${child.name}
+                </label>
+            `).join('');
+        }
+    }
+
+    function updateDesktopFiltersFromProducts(products) {
+        const brands = new Set();
+        products.forEach(p => {
+            if (p.brand) brands.add(p.brand);
+        });
+        
+        const brandContainer = document.getElementById('desktopBrandFilters');
+        if (brandContainer) {
+            brandContainer.innerHTML = Array.from(brands).map(brand => `
+                <label class="desktop-filter-option">
+                    <input type="checkbox" class="desktop-brand-filter" value="${brand}" onchange="applyDesktopFilters()"> ${brand}
+                </label>
+            `).join('');
+        }
+        
+        const discountContainer = document.getElementById('desktopDiscountFilters');
+        const discounts = ['10%', '20%', '30%', '40%', '50%', '60%', '70%'];
+        if (discountContainer) {
+            discountContainer.innerHTML = discounts.map(d => `
+                <label class="desktop-filter-option">
+                    <input type="checkbox" class="desktop-discount-filter" value="${d}" onchange="applyDesktopFilters()"> ${d} & above
+                </label>
+            `).join('');
+        }
+        
+        const sizeContainer = document.getElementById('desktopSizeFilters');
+        const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
+        if (sizeContainer) {
+            sizeContainer.innerHTML = sizes.map(s => `
+                <label class="desktop-filter-option">
+                    <input type="checkbox" class="desktop-size-filter" value="${s}" onchange="applyDesktopFilters()"> ${s}
+                </label>
+            `).join('');
+        }
+        
+        const colorContainer = document.getElementById('desktopColorFilters');
+        const colors = ['Red', 'Blue', 'Green', 'Black', 'White', 'Pink', 'Yellow', 'Purple'];
+        if (colorContainer) {
+            colorContainer.innerHTML = colors.map(c => `
+                <label class="desktop-filter-option">
+                    <input type="checkbox" class="desktop-color-filter" value="${c}" onchange="applyDesktopFilters()"> ${c}
+                </label>
+            `).join('');
+        }
+    }
+
+    window.applyDesktopFilters = function() {
+        let filtered = [...originalProducts];
+        
+        const selectedCategories = Array.from(document.querySelectorAll('.desktop-category-filter:checked')).map(cb => cb.value);
+        if (selectedCategories.length > 0) {
+            filtered = filtered.filter(p => selectedCategories.includes(p.subcategory_id?.toString()));
+        }
+        
+        const selectedBrands = Array.from(document.querySelectorAll('.desktop-brand-filter:checked')).map(cb => cb.value);
+        if (selectedBrands.length > 0) {
+            filtered = filtered.filter(p => selectedBrands.includes(p.brand));
+        }
+        
+        const selectedDiscounts = Array.from(document.querySelectorAll('.desktop-discount-filter:checked')).map(cb => cb.value);
+        if (selectedDiscounts.length > 0) {
+            filtered = filtered.filter(p => {
+                if (p.price && p.final_price) {
+                    const original = parseFloat(p.price);
+                    const final = parseFloat(p.final_price);
+                    if (original > final) {
+                        const discount = Math.round(((original - final) / original) * 100);
+                        return selectedDiscounts.some(d => discount >= parseInt(d));
+                    }
+                }
+                return false;
+            });
+        }
+        
+        renderProducts(filtered);
+    };
+
+    window.applyDesktopPriceFilter = function() {
+        const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+        const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+        
+        let filtered = [...originalProducts];
+        filtered = filtered.filter(p => {
+            const price = parseFloat(p.final_price || p.price || 0);
+            return price >= minPrice && price <= maxPrice;
+        });
+        
+        renderProducts(filtered);
+    };
+
+    window.resetDesktopFilters = function() {
+        document.querySelectorAll('.desktop-category-filter, .desktop-brand-filter, .desktop-discount-filter, .desktop-size-filter, .desktop-color-filter').forEach(cb => cb.checked = false);
+        document.getElementById('minPrice').value = '';
+        document.getElementById('maxPrice').value = '';
+        renderProducts(originalProducts);
+    };
+
     window.toggleWish = function(btn, product) {
         event.stopPropagation();
         const exists = wishlist.some(item => item.id == product.id);
@@ -963,20 +1321,17 @@
         hideSortPopup();
     };
 
-    // Show filter popup
     window.showFilterPopup = function() {
         document.getElementById('filterPopupOverlay').classList.add('active');
         document.body.style.overflow = 'hidden';
         hideFilterOptions();
     };
 
-    // Hide filter popup
     window.hideFilterPopup = function() {
         document.getElementById('filterPopupOverlay').classList.remove('active');
         document.body.style.overflow = '';
     };
 
-    // Show filter options for selected category
     window.showFilterOptions = function(filterType) {
         const titlesColumn = document.querySelector('.filter-titles-column');
         const optionsColumn = document.getElementById('filterOptionsColumn');
@@ -996,7 +1351,6 @@
         optionsColumn.style.display = 'block';
     };
 
-    // Hide filter options
     window.hideFilterOptions = function() {
         const titlesColumn = document.querySelector('.filter-titles-column');
         const optionsColumn = document.getElementById('filterOptionsColumn');
@@ -1005,7 +1359,6 @@
         optionsColumn.style.display = 'none';
     };
 
-    // Load filter options dynamically
     async function loadFilterOptions(filterType, container) {
         let options = [];
         
@@ -1054,22 +1407,18 @@
                 break;
                 
             case 'brand':
-                try {
-                    const targetId = subcategoryId || categoryId;
-                    if (targetId) {
-                        const res = await fetch(`https://retailadmin.ggconsultancy.services/api/categories/${targetId}/products`);
-                        const data = await res.json();
-                        
-                        if (data.success && data.data.products) {
-                            const brands = new Set();
-                            data.data.products.forEach(p => {
-                                if (p.brand) brands.add(p.brand);
-                            });
-                            options = Array.from(brands).map(b => ({ value: b, label: b }));
-                        }
+                const targetId = subcategoryId || categoryId;
+                if (targetId) {
+                    const res = await fetch(`https://retailadmin.ggconsultancy.services/api/categories/${targetId}/products`);
+                    const data = await res.json();
+                    
+                    if (data.success && data.data.products) {
+                        const brands = new Set();
+                        data.data.products.forEach(p => {
+                            if (p.brand) brands.add(p.brand);
+                        });
+                        options = Array.from(brands).map(b => ({ value: b, label: b }));
                     }
-                } catch (error) {
-                    console.error('Error loading brands:', error);
                 }
                 break;
                 
@@ -1115,7 +1464,6 @@
         }
     }
 
-    // Apply filters - FINAL VERSION
     window.applyFilters = function() {
         const selected = {
             category: [],
@@ -1141,9 +1489,6 @@
             });
         });
         
-        console.log('Selected filters:', selected);
-        
-        // Handle category filter first
         if (selected.category.length > 0) {
             const firstCategory = selected.category[0];
             if (firstCategory) {
@@ -1163,7 +1508,6 @@
         let filtered = [...currentProducts];
         let filterApplied = false;
         
-        // Price filter
         if (selected.price.length > 0) {
             filterApplied = true;
             filtered = filtered.filter(p => {
@@ -1175,13 +1519,11 @@
             });
         }
         
-        // Brand filter
         if (selected.brand.length > 0) {
             filterApplied = true;
             filtered = filtered.filter(p => selected.brand.includes(p.brand));
         }
         
-        // Discount filter
         if (selected.discount.length > 0) {
             filterApplied = true;
             filtered = filtered.filter(p => {
@@ -1209,7 +1551,7 @@
         }
     }
 
-    // Reset filters
+
     window.resetFilters = function() {
         document.querySelectorAll('.filter-checkbox input').forEach(cb => cb.checked = false);
         
@@ -1223,10 +1565,24 @@
             }
         }
     };
-
-    // Attach to filter button
-    document.querySelector('.action-btn:last-child').onclick = showFilterPopup;
-    
+function initDesktopFiltersToggle() {
+    document.querySelectorAll('.desktop-filter-section').forEach(section => {
+        const title = section.querySelector('.desktop-filter-title');
+        const options = section.querySelector('.filter-options');
+        
+        if (title && options) {
+            // Initially closed
+            options.classList.remove('open');
+            
+            // Add click handler
+            title.addEventListener('click', function(e) {
+                e.preventDefault();
+                section.classList.toggle('open');
+                options.classList.toggle('open');
+            });
+        }
+    });
+}
     fetchData();
 })();
 </script>
