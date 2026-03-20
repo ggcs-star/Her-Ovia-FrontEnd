@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://127.0.0.1:8001/api';
+const API_BASE_URL = 'https://retailadmin.ggconsultancy.services/api';
 
 document.addEventListener("DOMContentLoaded", () => {
     loadTrendingReels();
@@ -15,7 +15,7 @@ function loadTrendingReels(){
     container.innerHTML = '<div class="loading">Loading reels...</div>';
 
     fetch(API_BASE_URL + "/reels")
-    .then(res => res.json())
+    .then(res => res.json()) 
     .then(res => {
 
         if(!res || !res.data){
