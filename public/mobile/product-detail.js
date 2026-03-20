@@ -458,6 +458,7 @@
                 </div>
             </div>
         `;
+        
     });
     
     colorsHtml += '</div>';
@@ -492,8 +493,8 @@
         }
     };
     
-    window.toggleWishlist = function(button) {
-        event.stopPropagation();
+   window.toggleWishlist = function(button, event) {
+    if (event) event.stopPropagation();
         button.classList.toggle('active');
 
         const mainImage = document.getElementById('mainImage');
@@ -590,8 +591,8 @@
         }
     };
     
-   window.showOfferTerms = function(code) {
-    event.stopPropagation(); // Popup band na ho
+window.showOfferTerms = function(code, event) {
+    if (event) event.stopPropagation(); // Popup band na ho
     sessionStorage.setItem('view_coupon_code', code);
     window.location.href = '/coupon-terms';
 };
@@ -982,365 +983,364 @@ function renderOfferItems(type) {
     }
     
     function renderProduct(product) {
-        const container = document.getElementById('product-container');
-        
-        const galleryImages = product.gallery_images || [];
-        currentImages = galleryImages.length > 0 ? galleryImages : (product.image_url ? [product.image_url] : []);
-        
-        if (currentImages.length === 0) {
-            currentImages = ['https://via.placeholder.com/400x600?text=No+Image'];
-        }
-        
-        const variants = product.variants || [];
-        
-        const colorMap = new Map();
-        variants.forEach(v => {
-            if (v.color && !colorMap.has(v.color)) {
-                const colorName = v.color_name || getColorNameFromCode(v.color);
-                colorMap.set(v.color, {
-                    color: v.color,
-                    name: colorName,
-                    image: v.image_url || product.image_url || currentImages[0]
-                });
-            }
-        });
-        
-        allColors = Array.from(colorMap.values());
-        
-        if (allColors.length === 0) {
-            allColors = [
-                { color: '#000000', name: 'Black', image: product.image_url || currentImages[0] }
-            ];
-        }
-        
-        allSizes = [];
-        variants.forEach(v => {
-            if (v.variant_value) {
-                allSizes.push({
-                    id: v.id,
-                    type: v.variant_type || 'Size',  
-                    value: v.variant_value,
-                    price: parseFloat(v.price || 0),
-                    final_price: parseFloat(v.final_price || v.price || 0),
-                    stock: v.quantity || 5,
-                    color: v.color,
-                    inStock: v.in_stock !== false
-                });
-            }
-        });
-        
-        if (allSizes.length === 0) {
-            const defaultPrice = parseFloat(product.final_price || product.price || 1200);
-            allSizes = [
-                { value: 'S', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
-                { value: 'M', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
-                { value: 'L', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
-                { value: 'XL', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color }
-            ];
-        }
-        
-        let displayPrice = 0;
-        let originalPrice = 0;
-        let discountPercentage = 0;
-        
-        if (allSizes.length > 0) {
-            const firstVariant = allSizes[0];
-            displayPrice = firstVariant.final_price;
-            originalPrice = firstVariant.price;
-            
-            if (originalPrice > displayPrice) {
-                discountPercentage = Math.round(((originalPrice - displayPrice) / originalPrice) * 100);
-            }
-        } else {
-            displayPrice = parseFloat(product.final_price || product.price || 1200);
-            originalPrice = parseFloat(product.price || 1500);
-            if (originalPrice > displayPrice) {
-                discountPercentage = Math.round(((originalPrice - displayPrice) / originalPrice) * 100);
-            }
-        }
-        
-        const brand = product.brand || 'H&M';
-        const name = product.name || 'Maxi Dress';
-        const rating = 4.5;
-        const reviewCount = 33;
-        
-        const fullStars = Math.floor(rating);
-        const halfStar = rating % 1 >= 0.5;
-        let starsHtml = '';
-        for (let i = 0; i < fullStars; i++) starsHtml += '★';
-        if (halfStar) starsHtml += '½';
-        for (let i = starsHtml.length; i < 5; i++) starsHtml += '☆';
-        
-        const descriptionPoints = [];
-        if (product.style) descriptionPoints.push(`Style: ${product.style}`);
-        if (product.neckline) descriptionPoints.push(`Neckline: ${product.neckline}`);
-        if (product.length) descriptionPoints.push(`Length: ${product.length}`);
-        if (product.fit) descriptionPoints.push(`Fit: ${product.fit}`);
-        if (product.fabric) descriptionPoints.push(`Fabric: ${product.fabric}`);
-        
-        if (descriptionPoints.length === 0 && product.description) {
-            const lines = product.description.split('\n');
-            lines.forEach(line => {
-                const cleanLine = line.replace(/^[•\s]*/, '').trim();
-                if (cleanLine) descriptionPoints.push(cleanLine);
+    const container = document.getElementById('product-container');
+    
+    const galleryImages = product.gallery_images || [];
+    currentImages = galleryImages.length > 0 ? galleryImages : (product.image_url ? [product.image_url] : []);
+    
+    if (currentImages.length === 0) {
+        currentImages = ['https://via.placeholder.com/400x600?text=No+Image'];
+    }
+    
+    const variants = product.variants || [];
+    
+    const colorMap = new Map();
+    variants.forEach(v => {
+        if (v.color && !colorMap.has(v.color)) {
+            const colorName = v.color_name || getColorNameFromCode(v.color);
+            colorMap.set(v.color, {
+                color: v.color,
+                name: colorName,
+                image: v.image_url || product.image_url || currentImages[0]
             });
         }
-        
-        if (descriptionPoints.length === 0) {
-            descriptionPoints.push('Style: Wrap Maxi Dress');
-            descriptionPoints.push('Neckline: Square neckline');
-            descriptionPoints.push('Length: Full length (Maxi)');
-            descriptionPoints.push('Fit: Regular fit');
+    });
+    
+    allColors = Array.from(colorMap.values());
+    
+    if (allColors.length === 0) {
+        allColors = [
+            { color: '#000000', name: 'Black', image: product.image_url || currentImages[0] }
+        ];
+    }
+    
+    allSizes = [];
+    variants.forEach(v => {
+        if (v.variant_value) {
+            allSizes.push({
+                id: v.id,
+                type: v.variant_type || 'Size',  
+                value: v.variant_value,
+                price: parseFloat(v.price || 0),
+                final_price: parseFloat(v.final_price || v.price || 0),
+                stock: v.quantity || 5,
+                color: v.color,
+                inStock: v.in_stock !== false
+            });
         }
+    });
+    
+    if (allSizes.length === 0) {
+        const defaultPrice = parseFloat(product.final_price || product.price || 1200);
+        allSizes = [
+            { value: 'S', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
+            { value: 'M', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
+            { value: 'L', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
+            { value: 'XL', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color }
+        ];
+    }
+    
+    let displayPrice = 0;
+    let originalPrice = 0;
+    let discountPercentage = 0;
+    
+    if (allSizes.length > 0) {
+        const firstVariant = allSizes[0];
+        displayPrice = firstVariant.final_price;
+        originalPrice = firstVariant.price;
         
-        let html = `
-            <style>
-                .color-scroll-popup {
-                    position: fixed;
-                    bottom: 0;
-                    left: 0;
-                    right: 0;
-                    background: white;
-                    border-top-left-radius: 16px;
-                    border-top-right-radius: 16px;
-                    box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
-                    z-index: 10000;
-                    animation: slideUp 0.3s ease;
-                    padding-bottom: 20px;
-                }
-                @keyframes slideUp {
-                    from { transform: translateY(100%); }
-                    to { transform: translateY(0); }
-                }
-                .color-scroll-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 16px;
-                    border-bottom: 1px solid #f0f0f0;
-                    font-weight: 600;
-                    font-size: 16px;
-                    position: sticky;
-                    top: 0;
-                    background: white;
-                    z-index: 10;
-                }
-                .color-scroll-close {
-                    background: none;
-                    border: none;
-                    font-size: 18px;
-                    cursor: pointer;
-                    padding: 4px 8px;
-                }
-                .color-scroll-container {
-                    display: flex;
-                    overflow-x: auto;
-                    overflow-y: hidden;
-                    padding: 16px;
-                    gap: 12px;
-                    scrollbar-width: thin;
-                    scrollbar-color: #ff3f6c #f0f0f0;
-                    -webkit-overflow-scrolling: touch;
-                }
-                .color-scroll-container::-webkit-scrollbar {
-                    height: 4px;
-                }
-                .color-scroll-container::-webkit-scrollbar-track {
-                    background: #f0f0f0;
-                    border-radius: 10px;
-                }
-                .color-scroll-container::-webkit-scrollbar-thumb {
-                    background: #ff3f6c;
-                    border-radius: 10px;
-                }
-                .color-scroll-item {
-                    flex: 0 0 auto;
-                    width: 100px;
-                    border: 1px solid #f0f0f0;
-                    border-radius: 12px;
-                    overflow: hidden;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    background: white;
-                }
-                .color-scroll-item.selected {
-                    border: 2px solid #ff3f6c;
-                }
-                .color-scroll-image {
-                    width: 100px;
-                    height: 120px;
-                    overflow: hidden;
-                }
-                .color-scroll-image img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                }
-                .color-scroll-info {
-                    padding: 8px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    background: #fafafa;
-                }
-                .color-scroll-dot {
-                    width: 20px;
-                    height: 20px;
-                    border-radius: 50%;
-                    display: inline-block;
-                }
-                .color-scroll-name {
-                    font-size: 12px;
-                    font-weight: 500;
-                    margin: 0 4px;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    max-width: 40px;
-                }
-                .color-scroll-check {
-                    color: #ff3f6c;
-                    font-weight: bold;
-                    font-size: 12px;
-                }
-                .pdp-color-count {
-                    cursor: pointer;
-                    color: #ff3f6c;
-                    font-weight: 500;
-                    text-decoration: underline;
-                }
-                .pdp-color-count:hover {
-                    opacity: 0.8;
-                }
-                .pdp-size-error {
-                    color: #ff3f6c;
-                    font-size: 13px;
-                    margin-top: 8px;
-                    display: none;
-                }
-                @keyframes shake {
-                    0%, 100% { transform: translateX(0); }
-                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-                    20%, 40%, 60%, 80% { transform: translateX(5px); }
-                }
-                .size-error-shake {
-                    animation: shake 0.5s ease;
-                }
-                @keyframes fadeInOut {
-                    0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
-                    10% { opacity: 1; transform: translateX(-50%) translateY(0); }
-                    90% { opacity: 1; transform: translateX(-50%) translateY(0); }
-                    100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-                }
-            </style>
-            
-            <div class="pdp-header">
-                <div class="pdp-header-left">
-                    <span class="back-btn" onclick="goBack()">←</span>  <!-- ✅ Updated back button -->
-                </div>
-                <div class="pdp-header-right">
-                    <button onclick="window.location.href='/search'">🔍</button>
-                     <button class="header-icon-btn" onclick="window.location.href='/wishlist'" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                        </svg>
-                    </button>
-                    <button onclick="window.location.href='/cart'">🛒</button>
-                </div>
+        if (originalPrice > displayPrice) {
+            discountPercentage = Math.round(((originalPrice - displayPrice) / originalPrice) * 100);
+        }
+    } else {
+        displayPrice = parseFloat(product.final_price || product.price || 1200);
+        originalPrice = parseFloat(product.price || 1500);
+        if (originalPrice > displayPrice) {
+            discountPercentage = Math.round(((originalPrice - displayPrice) / originalPrice) * 100);
+        }
+    }
+    
+    const brand = product.brand || 'H&M';
+    const name = product.name || 'Maxi Dress';
+    const rating = 4.5;
+    const reviewCount = 33;
+    
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5;
+    let starsHtml = '';
+    for (let i = 0; i < fullStars; i++) starsHtml += '★';
+    if (halfStar) starsHtml += '½';
+    for (let i = starsHtml.length; i < 5; i++) starsHtml += '☆';
+    
+    const descriptionPoints = [];
+    if (product.style) descriptionPoints.push(`Style: ${product.style}`);
+    if (product.neckline) descriptionPoints.push(`Neckline: ${product.neckline}`);
+    if (product.length) descriptionPoints.push(`Length: ${product.length}`);
+    if (product.fit) descriptionPoints.push(`Fit: ${product.fit}`);
+    if (product.fabric) descriptionPoints.push(`Fabric: ${product.fabric}`);
+    
+    if (descriptionPoints.length === 0 && product.description) {
+        const lines = product.description.split('\n');
+        lines.forEach(line => {
+            const cleanLine = line.replace(/^[•\s]*/, '').trim();
+            if (cleanLine) descriptionPoints.push(cleanLine);
+        });
+    }
+    
+    if (descriptionPoints.length === 0) {
+        descriptionPoints.push('Style: Wrap Maxi Dress');
+        descriptionPoints.push('Neckline: Square neckline');
+        descriptionPoints.push('Length: Full length (Maxi)');
+        descriptionPoints.push('Fit: Regular fit');
+    }
+    
+    let html = `
+        <style>
+            .color-scroll-popup {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                border-top-left-radius: 16px;
+                border-top-right-radius: 16px;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
+                z-index: 10000;
+                animation: slideUp 0.3s ease;
+                padding-bottom: 20px;
+            }
+            @keyframes slideUp {
+                from { transform: translateY(100%); }
+                to { transform: translateY(0); }
+            }
+            .color-scroll-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 16px;
+                border-bottom: 1px solid #f0f0f0;
+                font-weight: 600;
+                font-size: 16px;
+                position: sticky;
+                top: 0;
+                background: white;
+                z-index: 10;
+            }
+            .color-scroll-close {
+                background: none;
+                border: none;
+                font-size: 18px;
+                cursor: pointer;
+                padding: 4px 8px;
+            }
+            .color-scroll-container {
+                display: flex;
+                overflow-x: auto;
+                overflow-y: hidden;
+                padding: 16px;
+                gap: 12px;
+                scrollbar-width: thin;
+                scrollbar-color: #ff3f6c #f0f0f0;
+                -webkit-overflow-scrolling: touch;
+            }
+            .color-scroll-container::-webkit-scrollbar {
+                height: 4px;
+            }
+            .color-scroll-container::-webkit-scrollbar-track {
+                background: #f0f0f0;
+                border-radius: 10px;
+            }
+            .color-scroll-container::-webkit-scrollbar-thumb {
+                background: #ff3f6c;
+                border-radius: 10px;
+            }
+            .color-scroll-item {
+                flex: 0 0 auto;
+                width: 100px;
+                border: 1px solid #f0f0f0;
+                border-radius: 12px;
+                overflow: hidden;
+                cursor: pointer;
+                transition: all 0.2s;
+                background: white;
+            }
+            .color-scroll-item.selected {
+                border: 2px solid #ff3f6c;
+            }
+            .color-scroll-image {
+                width: 100px;
+                height: 120px;
+                overflow: hidden;
+            }
+            .color-scroll-image img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            .color-scroll-info {
+                padding: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: #fafafa;
+            }
+            .color-scroll-dot {
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                display: inline-block;
+            }
+            .color-scroll-name {
+                font-size: 12px;
+                font-weight: 500;
+                margin: 0 4px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 40px;
+            }
+            .color-scroll-check {
+                color: #ff3f6c;
+                font-weight: bold;
+                font-size: 12px;
+            }
+            .pdp-color-count {
+                cursor: pointer;
+                color: #ff3f6c;
+                font-weight: 500;
+                text-decoration: underline;
+            }
+            .pdp-color-count:hover {
+                opacity: 0.8;
+            }
+            .pdp-size-error {
+                color: #ff3f6c;
+                font-size: 13px;
+                margin-top: 8px;
+                display: none;
+            }
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+            .size-error-shake {
+                animation: shake 0.5s ease;
+            }
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            }
+        </style>
+        
+        <div class="pdp-header">
+            <div class="pdp-header-left">
+                <span class="back-btn" onclick="goBack()">←</span>
             </div>
-
-            <div class="pdp-gallery" onclick="nextImage()">
-                <img src="${currentImages[0]}" class="pdp-main-image" id="mainImage" onerror="this.src='https://via.placeholder.com/400x600?text=No+Image'">
-                ${discountPercentage > 20 ? '<span class="pdp-best-seller">Best Seller</span>' : ''}
-                <button class="pdp-wishlist" onclick="event.stopPropagation(); toggleWishlist(this)">♡</button>
-                <button class="pdp-share" onclick="event.stopPropagation(); shareProduct()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18 16.08C17.24 16.08 16.56 16.38 16.04 16.85L8.91 12.7C8.96 12.47 9 12.24 9 12C9 11.76 8.96 11.53 8.91 11.3L15.96 7.19C16.5 7.69 17.21 8 18 8C19.66 8 21 6.66 21 5C21 3.34 19.66 2 18 2C16.34 2 15 3.34 15 5C15 5.24 15.04 5.47 15.09 5.7L8.04 9.81C7.5 9.31 6.79 9 6 9C4.34 9 3 10.34 3 12C3 13.66 4.34 15 6 15C6.79 15 7.5 14.69 8.04 14.19L15.16 18.35C15.11 18.56 15.08 18.78 15.08 19C15.08 20.61 16.39 21.92 18 21.92C19.61 21.92 20.92 20.61 20.92 19C20.92 17.39 19.61 16.08 18 16.08Z" fill="currentColor"/>
+            <div class="pdp-header-right">
+                <button onclick="window.location.href='/search'">🔍</button>
+                <button class="header-icon-btn" onclick="window.location.href='/wishlist'" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                     </svg>
-                </button>                
+                </button>
+                <button onclick="window.location.href='/cart'">🛒</button>
+            </div>
+        </div>
+
+        <div class="pdp-main">
+            <!-- LEFT SIDE - Image Gallery -->
+            <div class="pdp-gallery" onclick="nextImage()">
+                <img src="${currentImages[0]}" class="pdp-main-image" id="mainImage">
+                ${discountPercentage > 20 ? '<span class="pdp-best-seller">Best Seller</span>' : ''}
+                <button class="pdp-wishlist" onclick="toggleWishlist(this, event)">♡</button>
+                <button class="pdp-share" onclick="event.stopPropagation(); shareProduct()">...</button>
                 <span class="pdp-image-counter" id="currentImage">1/${currentImages.length}</span>
-                
             </div>
 
-            <div class="pdp-info">
-                <div class="pdp-brand-row">
-                    <span class="pdp-brand">${brand}</span>
-                    <div class="pdp-header-circles">
-                        ${allColors.slice(0, 4).map(c => `
-                            <span class="pdp-color-circle" style="background: ${c.color}; ${c.color.toLowerCase() === '#ffffff' ? 'border:1px solid #ddd' : ''}" 
-                                  onclick="selectColor(this, '${c.color}', '${c.image}', '${c.name}')"
-                                  title="${c.name}"></span>
-                        `).join('')}
-                        ${allColors.length > 4 ? `<span class="pdp-color-more" onclick="showColorPopup()">+${allColors.length - 4}</span>` : ''}
+            <!-- RIGHT SIDE - Only Product Info, Color, Size, Buttons -->
+            <div class="pdp-right">
+                <div class="pdp-info">
+                    <div class="pdp-brand-row">
+                        <span class="pdp-brand">${brand}</span>
+                        <div class="pdp-header-circles">
+                            ${allColors.slice(0, 4).map(c => `
+                                <span class="pdp-color-circle" style="background: ${c.color}; ${c.color.toLowerCase() === '#ffffff' ? 'border:1px solid #ddd' : ''}" 
+                                      onclick="selectColor(this, '${c.color}', '${c.image}', '${c.name}')"
+                                      title="${c.name}"></span>
+                            `).join('')}
+                            ${allColors.length > 4 ? `<span class="pdp-color-more" onclick="showColorPopup()">+${allColors.length - 4}</span>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="pdp-name-row">
+                        <span class="pdp-title">${name}</span>
+                        <span class="pdp-color-count" onclick="showColorPopup()">${allColors.length} colors</span>
+                    </div>
+                    
+                    <div class="pdp-rating">
+                        <span class="pdp-stars">${starsHtml}</span>
+                        <span class="pdp-review-count">${rating} (${reviewCount} reviews)</span>
+                    </div>
+                    
+                    <div class="pdp-price">
+                        <span class="pdp-current-price" id="currentPrice">₹${displayPrice.toLocaleString('en-IN')}</span>
+                        ${originalPrice > displayPrice ? `<span class="pdp-original-price">₹${originalPrice.toLocaleString('en-IN')}</span>` : ''}
+                        ${discountPercentage > 0 ? `<span class="pdp-discount">${discountPercentage}% Off</span>` : ''}
                     </div>
                 </div>
                 
-                <div class="pdp-name-row">
-                    <span class="pdp-title">${name}</span>
-                    <span class="pdp-color-count" onclick="showColorPopup()">${allColors.length} colors</span>
-                </div>
-                
-                <div class="pdp-rating">
-                    <span class="pdp-stars">${starsHtml}</span>
-                    <span class="pdp-review-count">${rating} (${reviewCount} reviews)</span>
-                </div>
-                <div class="pdp-price">
-                    <span class="pdp-current-price" id="currentPrice">₹${displayPrice.toLocaleString('en-IN')}</span>
-                    ${originalPrice > displayPrice ? `<span class="pdp-original-price">₹${originalPrice.toLocaleString('en-IN')}</span>` : ''}
-                    ${discountPercentage > 0 ? `<span class="pdp-discount">${discountPercentage}% Off</span>` : ''}
-                </div>
-            </div>
-        `;
-        
-        html += `
-            <div class="pdp-size">
-                <div class="pdp-size-header">
-                    <h3>${allSizes[0]?.type || 'Size'}</h3>  
-                    ${allSizes[0]?.type === 'Size' ? '<span class="pdp-size-chart" onclick="showSizeChart()">Size Chart ▾</span>' : ''}
-                </div>
-                <div class="pdp-size-options">
-        `;
-        
-        const uniqueSizes = [...new Map(allSizes.map(s => [s.value, s])).values()];
-        uniqueSizes.forEach(s => {
-            const isInStock = s.stock > 0;
-            html += `
-                <button class="pdp-size-btn ${isInStock ? '' : 'disabled'}" 
-                        data-variant-id="${s.id || ''}"
-                        data-price="${s.price}"
-                        onclick="selectVariant(this, '${s.price}', '${s.id || ''}', '${s.type || ''}')"
-                        ${isInStock ? '' : 'disabled'}>
-                    ${s.value}
-                </button>
+                <div class="pdp-size">
+                    <div class="pdp-size-header">
+                        <h3>${allSizes[0]?.type || 'Size'}</h3>  
+                        ${allSizes[0]?.type === 'Size' ? '<span class="pdp-size-chart" onclick="showSizeChart()">Size Chart ▾</span>' : ''}
+                    </div>
+                    <div class="pdp-size-options">
             `;
-        });
-        
+    
+    const uniqueSizes = [...new Map(allSizes.map(s => [s.value, s])).values()];
+    uniqueSizes.forEach(s => {
+        const isInStock = s.stock > 0;
         html += `
+            <button class="pdp-size-btn ${isInStock ? '' : 'disabled'}" 
+                    data-variant-id="${s.id || ''}"
+                    data-price="${s.price}"
+                    onclick="selectVariant(this, '${s.price}', '${s.id || ''}', '${s.type || ''}')"
+                    ${isInStock ? '' : 'disabled'}>
+                ${s.value}
+            </button>
+        `;
+    });
+    
+    html += `
+                    </div>
+                    <div class="pdp-size-error" style="color: #ff3f6c; font-size: 13px; margin-top: 8px; display: none;">Please select a size</div>
                 </div>
-                <div class="pdp-size-error" style="color: #ff3f6c; font-size: 13px; margin-top: 8px; display: none;">Please select a size</div>
+
+                <div class="pdp-actions">
+                    <button class="pdp-add-to-cart" onclick="addToCartFromProduct()">Add to Cart</button>
+                    <button class="pdp-buy-now" onclick="buyNow()">Buy at ₹<span id="buyPrice">${displayPrice.toLocaleString('en-IN')}</span></button>
+                </div>
+            </div> <!-- pdp-right -->
+        </div> <!-- pdp-main -->
+
+        <!-- BOTTOM SECTION - Full Width -->
+        <div class="pdp-bottom">
+            <div class="pdp-details">
+                <h3>Product Details</h3>
+                <ul class="pdp-details-list">
+    `;
+    
+    descriptionPoints.forEach(point => {
+        html += `<li><span>•</span> <span>${point}</span></li>`;
+    });
+    
+    html += `
+                </ul>
             </div>
 
-            <div class="pdp-actions">
-                <button class="pdp-add-to-cart" onclick="addToCartFromProduct()">Add to Cart</button>
-                <button class="pdp-buy-now" onclick="buyNow()">Buy at ₹<span id="buyPrice">${displayPrice.toLocaleString('en-IN')}</span></button>
-            </div>
-        `;
-        
-        if (descriptionPoints.length > 0) {
-            html += `
-                <div class="pdp-details">
-                    <h3>Product Details</h3>
-                    <ul class="pdp-details-list">
-            `;
-            
-            descriptionPoints.forEach(point => {
-                html += `<li><span>•</span> <span>${point}</span></li>`;
-            });
-            
-            html += `</ul></div>`;
-        }
-        
-        html += `
             <div class="pdp-delivery">
                 <h3>Delivery Details</h3>
                 <div class="pdp-pincode">
@@ -1364,55 +1364,40 @@ function renderOfferItems(type) {
                     <span class="pdp-stars">${starsHtml}</span>
                     <span class="pdp-total-ratings">33 Ratings</span>
                 </div>
-        `;
-        
-        const allReviewImages = allReviews.flatMap(r => r.images || []);
-        if (allReviewImages.length > 0) {
-            html += `
-                <div class="pdp-photos">
-                    ${allReviewImages.slice(0, 5).map(img => `
-                        <div class="pdp-photo"><img src="${img}"></div>
-                    `).join('')}
-                </div>
-            `;
-        }
-        
-        html += `
+
                 <div id="currentReview"></div>
+
                 <div class="pdp-review-nav">
                     <button onclick="prevReview()">‹</button>
-                    <div class="pdp-review-dots">
-                        ${allReviews.map((_, i) => `<span class="pdp-review-dot ${i === 0 ? 'active' : ''}" onclick="changeReview(${i})"></span>`).join('')}
-                    </div>
                     <button onclick="nextReview()">›</button>
                 </div>
             </div>
 
-            <!-- ✅ Only Similar Styles section -->
             <div class="pdp-similar">
                 <h3>Similar Styles</h3>
                 <div class="pdp-similar-grid" id="similarGrid"></div>
             </div>
-        `;
-        
-        container.innerHTML = html;
-        
-        window.productVariants = allSizes;
-        window.displayPrice = displayPrice;
-        window.originalPrice = originalPrice;
-        
-        renderOffers();
-        renderCurrentReview();
-        fetchSimilarProducts();  // ✅ Only one function now
-        
-        const lastPincode = localStorage.getItem('lastPincode');
-        if (lastPincode) {
-            setTimeout(() => {
-                document.getElementById('pincode').value = lastPincode;
-                checkPincode();
-            }, 500);
-        }
+        </div> <!-- pdp-bottom -->
+    `;
+    
+    container.innerHTML = html;
+    
+    window.productVariants = allSizes;
+    window.displayPrice = displayPrice;
+    window.originalPrice = originalPrice;
+    
+    renderOffers();
+    renderCurrentReview();
+    fetchSimilarProducts();
+    
+    const lastPincode = localStorage.getItem('lastPincode');
+    if (lastPincode) {
+        setTimeout(() => {
+            document.getElementById('pincode').value = lastPincode;
+            checkPincode();
+        }, 500);
     }
+}
     
     async function fetchSimilarProducts() {
     const similarSection = document.querySelector('.pdp-similar');
@@ -1441,8 +1426,9 @@ function renderOfferItems(type) {
                         <div class="pdp-similar-name">${p.name}</div>
                         <div class="pdp-similar-price">
                             <span class="pdp-similar-current">₹${parseFloat(p.final_price || p.price).toLocaleString('en-IN')}</span>
-                            ${p.price > p.final_price ? `<span class="pdp-similar-original">₹${parseFloat(p.price).toLocaleString('en-IN')}</span>` : ''}
-                        </div>
+${p.price > p.final_price 
+    ? '<span class="pdp-similar-original">₹' + parseFloat(p.price).toLocaleString('en-IN') + '</span>' 
+    : ''}                        </div>
                     </div>
                 `).join('');
             } else {

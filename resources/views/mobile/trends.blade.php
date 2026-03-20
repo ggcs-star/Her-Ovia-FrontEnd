@@ -45,7 +45,26 @@ Loading reels...
 ❤️
 </div>
 
+<!-- COMMENTS MODAL -->
+<div id="commentModal" class="comment-modal">
 
+  <div class="comment-sheet">
+
+    <div class="comment-header">
+      <span>Comments</span>
+      <button onclick="closeComments()">✕</button>
+    </div>
+
+    <div id="commentList" class="comment-list"></div>
+
+    <div class="comment-input-box">
+      <input type="text" id="commentInput" placeholder="Add a comment..." />
+      <button onclick="postComment()">Post</button>
+    </div>
+
+  </div>
+
+</div>
 <script src="{{ asset('mobile/script.js') }}"></script>
 <script src="{{ asset('mobile/trends.js') }}"></script>
 

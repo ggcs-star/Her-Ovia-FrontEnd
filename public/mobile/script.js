@@ -22,19 +22,65 @@ class RapidRetailsEngine {
     }
 
     async init() {
-        this.renderHeader();
-        this.renderBottomNav();
-        this.initSearchRedirect();
-        if (this.page === 'landing') {
-            await this.initLanding();
-        }
+    // Pehle categories load karo
+    if (this.page === 'landing') {
+        await this.initLanding();
     }
+    
+    this.renderHeader();
+    this.renderBottomNav();
+    this.initSearchRedirect();
+    
+    // Resize handler
+    let lastWidth = window.innerWidth;
+    setInterval(() => {
+        if (lastWidth !== window.innerWidth) {
+            lastWidth = window.innerWidth;
+            this.renderHeader();
+        }
+    }, 100);
+}
+   renderHeader() {
+    const header = document.getElementById('site-header');
+    if (!header) return;
 
-    renderHeader() {
-        const header = document.getElementById('site-header');
-        if (!header) return;
-
-        // Check current page
+    const isDesktop = window.innerWidth >= 1025;
+    
+    if (isDesktop) {
+        const categoriesHtml = this.allCategories.slice(0, 5).map((cat, index) => 
+            `<a href="/category/${cat.id}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`
+        ).join('');
+        
+        header.innerHTML = `
+            <div class="web-header">
+                <div class="top-bar">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
+                <div class="main-header">
+                    <div class="logo-area">
+                        <a href="/" class="logo">RAPID RETAIL</a>
+                        <nav class="nav-menu" id="navMenu">
+                            ${categoriesHtml}
+                        </nav>
+                    </div>
+                    <div class="search-area">
+                        <div class="search-box">
+                            <input type="text" placeholder="Search for products, brands...">
+                            <button>Search</button>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <a href="/login" class="action-link">Profile</a>
+                        <a href="/wishlist" class="action-link">Wishlist</a>
+                        <a href="/cart" class="action-link">Cart</a>
+                    </div>
+                </div>
+            </div>
+            <div class="all-categories-popup" id="allCategoriesPopup" style="display:none; position:absolute; top:100%; left:0; width:100%; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:1000; border-top:1px solid #f0f0f0;"></div>
+        `;
+        
+        this.setupAllCategoriesPopup();
+        
+    } else {
+        // Mobile Header - same rahega
         const isCartPage = document.body.classList.contains('cart-page');
         const isCheckoutPage = document.body.classList.contains('checkout-page');
         const isProfilePage = document.body.classList.contains('profile-page');
@@ -61,17 +107,104 @@ class RapidRetailsEngine {
                         </div>
                     </div>
                     <div class="header-icons">
-                    <button class="header-icon-btn" onclick="window.location.href='/wishlist'">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-    </svg>
-</button>
+                        <button class="header-icon-btn" onclick="window.location.href='/wishlist'">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                        </button>
                         <button class="header-icon-btn">🔔</button>
                     </div>
                 </div>
             </div>
         `;
     }
+}
+setupAllCategoriesPopup() {
+    const navItems = document.querySelectorAll('.nav-item');
+    const popup = document.getElementById('allCategoriesPopup');
+    
+    if (!navItems.length || !popup) return;
+    
+    let hideTimeout = null;
+    
+    const showPopup = () => {
+        if (hideTimeout) clearTimeout(hideTimeout);
+        this.renderAllCategoriesPopup();
+        popup.style.display = 'block';
+    };
+    
+    const hidePopup = () => {
+        hideTimeout = setTimeout(() => {
+            popup.style.display = 'none';
+        }, 200);
+    };
+    
+    navItems.forEach(item => {
+        item.addEventListener('mouseenter', showPopup);
+        item.addEventListener('mouseleave', hidePopup);
+    });
+    
+    popup.addEventListener('mouseenter', () => {
+        if (hideTimeout) clearTimeout(hideTimeout);
+        popup.style.display = 'block';
+    });
+    
+    popup.addEventListener('mouseleave', hidePopup);
+}
+
+renderAllCategoriesPopup() {
+    const popup = document.getElementById('allCategoriesPopup');
+    if (!popup) return;
+    
+    if (!this.allCategories || this.allCategories.length === 0) {
+        popup.innerHTML = '<div style="padding:40px; text-align:center;">Loading categories...</div>';
+        return;
+    }
+    
+    // Filter categories with subcategories
+    const categoriesWithSub = this.allCategories.filter(cat => 
+        cat.children && cat.children.length > 0
+    );
+    
+    // Split into 5 columns
+    const columnSize = Math.ceil(categoriesWithSub.length / 5);
+    const columns = [];
+    
+    for (let i = 0; i < 5; i++) {
+        columns.push(categoriesWithSub.slice(i * columnSize, (i + 1) * columnSize));
+    }
+    
+    let html = `<div style="max-width:1200px; margin:0 auto; padding:30px; display:grid; grid-template-columns:repeat(5,1fr); gap:25px;">`;
+    
+    columns.forEach(col => {
+        if (col.length > 0) {
+            html += `<div>`;
+            col.forEach(cat => {
+                html += `
+                    <div style="margin-bottom:20px;">
+                        <h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">${cat.name}</h3>
+                        <ul style="list-style:none; padding:0; margin-top:12px;">
+                `;
+                
+                if (cat.children && cat.children.length > 0) {
+                    cat.children.slice(0, 6).forEach(sub => {
+                        html += `<li style="margin-bottom:8px;"><a href="/category/${sub.id}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
+                    });
+                    if (cat.children.length > 6) {
+                        html += `<li style="margin-top:5px;"><a href="/category/${cat.id}" style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">+${cat.children.length - 6} more →</a></li>`;
+                    }
+                }
+                
+                html += `</ul></div>`;
+            });
+            html += `</div>`;
+        }
+    });
+    
+    html += `</div>`;
+    popup.innerHTML = html;
+}
+
     initSearchRedirect() {
     const searchInput = document.getElementById("landing-search");
     if (!searchInput) return;
@@ -119,15 +252,6 @@ class RapidRetailsEngine {
             </div>
             <span>Categories</span>
         </a>
-        <a href="/profile" class="nav-item-figma ${this.page === 'profile' ? 'active' : ''}">
-            <div class="nav-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
-                </svg>
-            </div>
-            <span>Profile</span>
-        </a>
         <a href="/cart" class="nav-item-figma ${this.page === 'cart' ? 'active' : ''}">
             <div class="nav-icon-box">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -138,6 +262,16 @@ class RapidRetailsEngine {
             </div>
             <span>Cart</span>
         </a>
+        <a href="/profile" class="nav-item-figma ${this.page === 'profile' ? 'active' : ''}">
+            <div class="nav-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                </svg>
+            </div>
+            <span>Profile</span>
+        </a>
+        
     `;
 }
 
@@ -789,31 +923,54 @@ window.goBack = function() {
     const currentPath = window.location.pathname;
     const token = localStorage.getItem('token');
     
-    if (currentPath === '/cart') {
-        window.location.href = '/';
-    }
-    else if (currentPath.includes('/checkout')) {
+    // 🔥 CHECKOUT PAGE SE BACK - DIRECT CART
+    if (currentPath.includes('/checkout')) {
         window.location.href = '/cart';
+        return;
     }
-    else if (currentPath.includes('/order-confirmation')) { 
+    
+    // 🔥 CART PAGE SE BACK - PRODUCT PAGE PE JANA
+    if (currentPath === '/cart') {
+        const lastProduct = sessionStorage.getItem('last_product_page');
+        if (lastProduct) {
+            window.location.href = lastProduct;
+            sessionStorage.removeItem('last_product_page');
+        } else {
+            window.location.href = '/';
+        }
+        return;
+    }
+    
+    // 🔥 ORDER CONFIRMATION
+    if (currentPath.includes('/order-confirmation')) { 
         window.location.href = '/orders';
+        return;
     }
-    else if (currentPath === '/profile' || currentPath.includes('/profile')) {
+    
+    // 🔥 PROFILE
+    if (currentPath === '/profile' || currentPath.includes('/profile')) {
         window.location.href = '/';
+        return;
     }
-    else if (currentPath === '/orders' || currentPath.includes('/orders')) {
+    
+    // 🔥 ORDERS
+    if (currentPath === '/orders' || currentPath.includes('/orders')) {
         window.location.href = '/profile';
+        return;
     }
-    else if (currentPath === '/login' || currentPath === '/register') {
+    
+    // 🔥 LOGIN/REGISTER
+    if (currentPath === '/login' || currentPath === '/register') {
         if (token) {
             window.location.href = '/';
         } else {
             window.history.back();
         }
+        return;
     }
-    else {
-        window.history.back();
-    }
+    
+    // DEFAULT
+    window.history.back();
 };
 
 

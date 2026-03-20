@@ -103,7 +103,6 @@ class SubCategoryPage {
                     </div>
                     <div class="header-icons-figma">
                         <button class="header-icon-btn">❤️</button>
-                        <button class="header-icon-btn">🔔</button>
                     </div>
                 </div>
             </div>
