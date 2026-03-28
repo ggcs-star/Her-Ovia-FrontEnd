@@ -35,7 +35,7 @@ body{
     justify-content:center;
     padding:60px 40px;
     color:white;
-    background:url('/images/login-bg.jpg') center center / cover no-repeat;
+    background:url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format') center center / cover no-repeat;
     min-height:300px;
 }
 
@@ -301,6 +301,19 @@ button:disabled{
         font-size: 26px;
     }
 }
+.eye-icon {
+    display: none;
+    color: #999;
+}
+.open-eye {
+    display: inline;
+}
+.toggle-password.active .open-eye {
+    display: none;
+}
+.toggle-password.active .closed-eye {
+    display: inline;
+}
 </style>
 </head>
 <body>
@@ -321,22 +334,37 @@ button:disabled{
 
         <form id="resetPasswordForm">
             @csrf
-            <div style="margin-bottom:15px;">
-                <label>New Password</label>
-                <div class="password-wrapper">
-                    <input type="password" name="password" id="password" placeholder="Enter new password" required>
-                    <span class="toggle-password" onclick="togglePassword('password', this)">👁️</span>
-                </div>
-                <div class="password-hint">Minimum 8 characters with 1 uppercase, 1 lowercase, 1 number & 1 special character</div>
+           <div style="margin-bottom:15px;">
+            <label>New Password</label>
+            <div class="password-wrapper">
+                <input type="password" name="password" id="password" placeholder="Enter new password" required>
+                <span class="toggle-password" onclick="togglePassword('password', this)">
+                    <svg class="eye-icon open-eye" viewBox="0 0 24 24" width="22" height="22">
+                        <path fill="currentColor" d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+                    </svg>
+                    <svg class="eye-icon closed-eye" viewBox="0 0 24 24" width="22" height="22">
+                        <path fill="currentColor" d="M12 5c-5 0-9.27 3.11-11 7 1.05 2.36 2.98 4.3 5.42 5.52L3 21l1.41 1.41L21 5.83 19.59 4.41l-3.01 3.01C15.06 6.54 13.57 5 12 5zm0 12c-1.57 0-3.06-.54-4.58-1.42l1.5-1.5A3 3 0 0 0 12 15a3 3 0 0 0 2.92-2.92l1.5-1.5C17.46 12.06 18 13.55 18 15c0 1.66-2.24 3-6 3z"/>
+                    </svg>
+                </span>
             </div>
+            <div id="password-error" class="field-error" style="color:#b91c1c; font-size:11px; margin-top:4px; display:none;"></div>
+        </div>
 
-            <div style="margin-bottom:15px;">
-                <label>Confirm Password</label>
-                <div class="password-wrapper">
-                    <input type="password" name="password_confirmation" id="password_confirmation" placeholder="Confirm new password" required>
-                    <span class="toggle-password" onclick="togglePassword('password_confirmation', this)">👁️</span>
-                </div>
+        <div style="margin-bottom:15px;">
+            <label>Confirm Password</label>
+            <div class="password-wrapper">
+                <input type="password" name="password_confirmation" id="password_confirmation" placeholder="Confirm new password" required>
+                <span class="toggle-password" onclick="togglePassword('password_confirmation', this)">
+                    <svg class="eye-icon open-eye" viewBox="0 0 24 24" width="22" height="22">
+                        <path fill="currentColor" d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+                    </svg>
+                    <svg class="eye-icon closed-eye" viewBox="0 0 24 24" width="22" height="22">
+                        <path fill="currentColor" d="M12 5c-5 0-9.27 3.11-11 7 1.05 2.36 2.98 4.3 5.42 5.52L3 21l1.41 1.41L21 5.83 19.59 4.41l-3.01 3.01C15.06 6.54 13.57 5 12 5zm0 12c-1.57 0-3.06-.54-4.58-1.42l1.5-1.5A3 3 0 0 0 12 15a3 3 0 0 0 2.92-2.92l1.5-1.5C17.46 12.06 18 13.55 18 15c0 1.66-2.24 3-6 3z"/>
+                    </svg>
+                </span>
             </div>
+            <div id="confirm-error" class="field-error" style="color:#b91c1c; font-size:11px; margin-top:4px; display:none;"></div>
+        </div>
 
             <button type="submit" id="resetBtn">Reset Password</button>
 
@@ -377,6 +405,99 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById('resetPasswordForm');
     const resetBtn = document.getElementById('resetBtn');
 
+    const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('password_confirmation');
+    const passwordError = document.getElementById('password-error');
+    const confirmError = document.getElementById('confirm-error');
+
+    function validatePassword(value) {
+        if (!value) {
+            return { valid: false, message: '' };
+        }
+        if (value.length < 8) {
+            return { valid: false, message: 'Password must be at least 8 characters' };
+        }
+        if (!/[A-Z]/.test(value)) {
+            return { valid: false, message: 'Password must contain at least one uppercase letter' };
+        }
+        if (!/[a-z]/.test(value)) {
+            return { valid: false, message: 'Password must contain at least one lowercase letter' };
+        }
+        if (!/[0-9]/.test(value)) {
+            return { valid: false, message: 'Password must contain at least one number' };
+        }
+        return { valid: true, message: '' };
+    }
+
+    function showPasswordError(message) {
+        if (passwordError) {
+            passwordError.textContent = message;
+            passwordError.style.display = 'block';
+            passwordInput.style.borderColor = '#b91c1c';
+        }
+    }
+
+    function clearPasswordError() {
+        if (passwordError) {
+            passwordError.style.display = 'none';
+            passwordInput.style.borderColor = '';
+        }
+    }
+
+    function showConfirmError(message) {
+        if (confirmError) {
+            confirmError.textContent = message;
+            confirmError.style.display = 'block';
+            confirmInput.style.borderColor = '#b91c1c';
+        }
+    }
+
+    function clearConfirmError() {
+        if (confirmError) {
+            confirmError.style.display = 'none';
+            confirmInput.style.borderColor = '';
+        }
+    }
+
+    if (passwordInput) {
+        passwordInput.addEventListener('blur', function() {
+            const result = validatePassword(this.value);
+            if (!result.valid && result.message) {
+                showPasswordError(result.message);
+            } else {
+                clearPasswordError();
+            }
+        });
+        
+        passwordInput.addEventListener('input', function() {
+            if (passwordError.style.display === 'block') {
+                const result = validatePassword(this.value);
+                if (!result.valid && result.message) {
+                    showPasswordError(result.message);
+                } else {
+                    clearPasswordError();
+                }
+            }
+        });
+    }
+
+    if (confirmInput) {
+    confirmInput.addEventListener('blur', function() {
+        if (this.value !== passwordInput.value) {
+            showConfirmError('Passwords do not match');
+        } else {
+            clearConfirmError();
+        }
+    });
+    
+    confirmInput.addEventListener('input', function() {
+        if (this.value !== passwordInput.value) {
+            showConfirmError('Passwords do not match');
+        } else {
+            clearConfirmError();
+        }
+    });
+}
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -447,10 +568,10 @@ function togglePassword(inputId, element) {
     const input = document.getElementById(inputId);
     if (input.type === 'password') {
         input.type = 'text';
-        element.textContent = '🔒';
+        element.classList.add('active');
     } else {
         input.type = 'password';
-        element.textContent = '👁️';
+        element.classList.remove('active');
     }
 }
 </script>

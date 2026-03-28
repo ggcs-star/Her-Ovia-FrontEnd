@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>My Profile | RAPID RETAIL</title>
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/profile.css') }}">
@@ -17,8 +17,7 @@
         </div>
     </main>
     
-    <input type="file" id="avatarUpload" accept="image/*" name="profile_image" capture="environment" style="display:none">
-        
+    <input type="file" id="avatarUpload" accept="image/jpeg,image/jpg,image/png,image/webp" style="opacity: 0; position: absolute; z-index: -1; width: 0.1px; height: 0.1px;">
     <footer class="site-footer" id="site-footer"></footer>
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
     

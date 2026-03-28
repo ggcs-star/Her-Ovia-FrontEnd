@@ -15,15 +15,63 @@
 </head>
 <body data-page="landing">
 
-<div id="app-loader">
-    <div class="loader-content">
-        <img src="{{ asset('mobile/logo.png') }}" class="loader-logo">
-        <p>Loading Rapid Retail...</p>
-        <div class="spinner"></div>
+<div id="skeleton-loader">
+    <div class="skeleton-container">
+        <div class="skeleton skeleton-hero"></div>
+
+        <div class="categories-pills-section">
+            <div class="container">
+                <div class="skeleton-grid">
+                    <div class="skeleton skeleton-category"></div>
+                    <div class="skeleton skeleton-category"></div>
+                    <div class="skeleton skeleton-category"></div>
+                    <div class="skeleton skeleton-category"></div>
+                    <div class="skeleton skeleton-category"></div>
+                </div>
+            </div>
+        </div>
+
+        <section class="trending-section">
+            <div class="container">
+                <div class="section-header centered">
+                    <div class="skeleton skeleton-title"></div>
+                </div>
+                <div class="skeleton-grid">
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-container">
+            <div class="container">
+                <div class="section-header centered">
+                    <div class="skeleton skeleton-title"></div>
+                </div>
+                <div class="skeleton-grid-4">
+                    <div class="skeleton skeleton-product"></div>
+                    <div class="skeleton skeleton-product"></div>
+                    <div class="skeleton skeleton-product"></div>
+                    <div class="skeleton skeleton-product"></div>
+                </div>
+            </div>
+        </section>
+
+        <div class="container">
+            <div class="skeleton-grid-4">
+                <div class="skeleton skeleton-brand"></div>
+                <div class="skeleton skeleton-brand"></div>
+                <div class="skeleton skeleton-brand"></div>
+                <div class="skeleton skeleton-brand"></div>
+            </div>
+        </div>
     </div>
 </div>
 
-<header class="site-header" id="site-header"></header>
+<div id="real-content" style="display: none;">
+    <header class="site-header" id="site-header"></header>
 
     <main class="page-content">
         <section class="hero-section">
@@ -37,19 +85,18 @@
             </div>
         </section>
 
-        
-        <!-- WHAT'S TRENDING - FIGMA STYLE -->
-<section class="trending-section">
-    <div class="section-header centered">
-        <h2 class="section-title">What's Trending</h2>
-    </div>
-    
-    <div class="trending-slider-container">
-        <div class="trending-slider" id="trending-slider">
-            <!-- Cards will be injected here -->
-        </div>
-    </div>
-</section>
+        <section class="trending-section">
+            <div class="container">
+                <div class="section-header centered">
+                    <h2 class="section-title">What's Trending</h2>
+                </div>
+                
+                <div class="trending-slider-container">
+                    <div class="trending-slider" id="trending-slider">
+                    </div>
+                </div>
+            </div>
+        </section>
         <section class="container" id="mid-banner-1-container"></section>
 
         <section class="section-container">
@@ -60,7 +107,7 @@
                 <div id="style-spotlight-grid" class="spotlight-grid"></div>
             </div>
         </section>
-    <section class="container" id="mid-banner-2-container"></section>
+        <section class="container" id="mid-banner-2-container"></section>
         <div id="brands-marquee-container"></div>
 
         <section class="section-container">
@@ -70,8 +117,6 @@
         </section>
 
         <div id="dynamic-category-sections"></div>
-
-        <section class="container" id="mid-banner-2-container"></section>
 
         <section class="container">
             <div class="trust-strip-figma">
@@ -168,17 +213,8 @@
 
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
     <div class="mobile-sticky-cta" id="mobile-sticky-cta"></div>
+</div>
 
-    <div class="category-modal" id="category-modal">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h2>SHOP BY CATEGORY</h2>
-                <span class="modal-close" id="close-category-modal">&times;</span>
-            </div>
-            <div class="modal-body" id="modal-popup-body"></div>
-        </div>
-    </div>
-
-    <script src="{{ asset('mobile/script.js') }}"></script>
+<script src="{{ asset('mobile/script.js') }}"></script>
 </body>
 </html>

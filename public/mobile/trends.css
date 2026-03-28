@@ -1,4 +1,4 @@
-/* PAGE */
+
 
 .trends-page{
 background:#000;
@@ -9,10 +9,8 @@ padding:0;
 }
 
 
-/* SCROLL AREA */
-
 .trends-content{
-height:calc(100dvh - 130px);
+height: calc(100dvh - 140px);
 overflow-y:auto;
 scroll-snap-type:y mandatory;
 scroll-behavior:smooth;
@@ -25,18 +23,14 @@ display:none;
 }
 
 
-/* CONTAINER */
-
 .trends-container{
 display:flex;
 flex-direction:column;
 }
 
 
-/* REEL CARD */
-
 .reel-card{
-height:calc(100dvh - 130px);
+height:calc(100dvh - 140px);
 width:100%;
 position:relative;
 scroll-snap-align:start;
@@ -48,8 +42,6 @@ justify-content:center;
 }
 
 
-/* VIDEO CONTAINER */
-
 .reel-video{
 position:absolute;
 top:0;
@@ -58,10 +50,6 @@ width:100%;
 height:100%;
 overflow:hidden;
 }
-
-
-/* VIDEO */
-
 .reel-video video,
 .reel-video img{
 position:absolute;
@@ -73,10 +61,6 @@ min-width:100%;
 transform:translate(-50%,-50%);
 object-fit:cover;
 }
-
-
-/* GRADIENT OVERLAY */
-
 .reel-gradient{
 position:absolute;
 bottom:0;
@@ -90,12 +74,9 @@ rgba(0,0,0,0.95)
 z-index:2;
 }
 
-
-/* PRODUCT INFO */
-
 .reel-info{
 position:absolute;
-bottom:20px;
+bottom:80px;  
 left:16px;
 right:110px;
 color:#fff;
@@ -105,17 +86,12 @@ flex-direction:column;
 gap:6px;
 }
 
-
-/* PRODUCT TITLE */
-
 .reel-product h3{
 font-size:20px;
 font-weight:700;
 margin-bottom:4px;
 }
 
-
-/* DESCRIPTION */
 
 .reel-product p{
 font-size:14px;
@@ -134,9 +110,6 @@ line-clamp:unset;
 overflow:visible;
 }
 
-
-/* MORE BUTTON */
-
 .reel-more{
 color:#ff3f6c;
 font-weight:600;
@@ -145,9 +118,6 @@ font-size:13px;
 margin-top:2px;
 display:none;
 }
-
-
-/* BUY BUTTON */
 
 .reel-buy{
 display:block;
@@ -169,21 +139,15 @@ background:#ff1658;
 }
 
 
-/* RIGHT SIDE ACTIONS */
-
-.reel-actions{
-position:absolute;
-right:12px;
-top:45%;
-transform:translateY(-50%);
-display:flex;
-flex-direction:column;
-gap:22px;
-z-index:10;
+.reel-actions {
+    position: absolute;
+    right: 12px;
+    bottom: 22%;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    z-index: 10;
 }
-
-
-/* SINGLE ACTION ITEM */
 
 .reel-action-item{
 display:flex;
@@ -191,10 +155,6 @@ flex-direction:column;
 align-items:center;
 justify-content:center;
 }
-
-
-/* ICON BUTTON */
-
 .reel-icon-btn{
 background:rgba(0,0,0,0.45);
 border:none;
@@ -211,7 +171,6 @@ transition:all .2s;
 }
 
 
-/* ICON SIZE */
 
 .reel-icon-btn i{
 font-size:24px;
@@ -219,7 +178,6 @@ pointer-events:none;
 }
 
 
-/* HOVER EFFECT */
 
 .reel-icon-btn:hover{
 transform:scale(1.12);
@@ -227,14 +185,11 @@ background:rgba(0,0,0,0.6);
 }
 
 
-/* LIKE STATE */
 
 .reel-icon-btn.liked i{
 color:#ff3f6c;
 }
 
-
-/* COUNT TEXT */
 
 .reel-count{
 color:#ffffff;
@@ -245,7 +200,6 @@ text-align:center;
 }
 
 
-/* PROGRESS BAR */
 
 .reel-progress{
 position:absolute;
@@ -264,8 +218,6 @@ background:#ff3f6c;
 transition:width .1s linear;
 }
 
-
-/* DOUBLE TAP HEART */
 
 .reel-like-animation{
 position:absolute;
@@ -302,8 +254,6 @@ opacity:0;
 }
 
 
-/* GLOBAL HEART */
-
 .global-like-heart{
 position:fixed;
 top:50%;
@@ -337,19 +287,12 @@ opacity:0;
 }
 
 }
-
-
-/* LOADING */
-
 .loading{
 color:#fff;
 text-align:center;
 padding:40px;
 font-size:16px;
 }
-
-
-/* ERROR */
 
 .error{
 color:#ff3f6c;
@@ -386,35 +329,51 @@ transform:translate(-50%,0);
 }
 }
 
+@media (max-width:480px){
+    .reel-actions {
+        bottom: 18%;
+        gap: 18px;
+    }
+    .reel-icon-btn{
+        width:38px;
+        height:38px;
+    }
+    .reel-icon-btn i{
+        font-size:18px;
+    }
+    /* 🔥 ADD THIS - Mobile ke liye extra space */
+    .reel-info {
+        bottom: 70px;
+    }
+}
 
 /* MOBILE */
-
 @media (max-width:768px){
-
-.reel-product h3{
-font-size:18px;
+    .reel-product h3{
+        font-size:18px;
+    }
+    .reel-product p{
+        font-size:13px;
+    }
+    .reel-buy{
+        font-size:14px;
+        padding:10px;
+    }
+    .reel-icon-btn{
+        width:42px;
+        height:42px;
+    }
+    .reel-icon-btn i{
+        font-size:22px;
+    }
+    .reel-actions {
+        bottom: 20%;
+    }
+    /* 🔥 ADD THIS - Tablet/Mobile ke liye */
+    .reel-info {
+        bottom: 75px;
+    }
 }
-
-.reel-product p{
-font-size:13px;
-}
-
-.reel-buy{
-font-size:14px;
-padding:10px;
-}
-
-.reel-icon-btn{
-width:42px;
-height:42px;
-}
-
-.reel-icon-btn i{
-font-size:22px;
-}
-
-}
-/* REMOVE VIDEO PLAY ICON */
 
 video::-webkit-media-controls-start-playback-button{
 display:none !important;
@@ -564,4 +523,7 @@ transition:opacity .2s ease;
     border-radius:20px;
     font-weight:600;
     cursor:pointer;
+}
+.trends-page .site-header {
+  padding-top: max(12px, env(safe-area-inset-top));
 }

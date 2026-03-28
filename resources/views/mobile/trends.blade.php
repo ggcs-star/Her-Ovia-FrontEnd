@@ -24,7 +24,6 @@ content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
 
 <div class="trends-container" id="trendsContainer">
 
-<!-- Loading -->
 
 <div class="loading">
 Loading reels...
@@ -39,13 +38,10 @@ Loading reels...
 <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
 
 
-<!-- GLOBAL HEART ANIMATION -->
-
 <div id="global-like-heart" class="global-like-heart">
 ❤️
 </div>
 
-<!-- COMMENTS MODAL -->
 <div id="commentModal" class="comment-modal">
 
   <div class="comment-sheet">

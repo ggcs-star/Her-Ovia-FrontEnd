@@ -76,7 +76,7 @@ body{
     justify-content:center;
     padding:60px 40px;
     color:white;
-    background:url('/images/login-bg.jpg') center center / cover no-repeat;
+    background:url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format') center center / cover no-repeat;
     min-height:300px;
 }
 .left::before{
@@ -86,7 +86,7 @@ body{
     left:0;
     width:100%;
     height:100%;
-    background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(37,99,235,0.6));
+    background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(255,63,108,0.6));
     z-index:1;
 }
 .left-content{
@@ -160,7 +160,7 @@ button{
     padding:14px;
     border:none;
     border-radius:10px;
-    background:#2563eb;
+    background:#ff3f6c;
     color:white;
     font-weight:600;
     cursor:pointer;
@@ -170,7 +170,7 @@ button{
     appearance:none;
 }
 button:hover{
-    background:#1d4ed8;
+    background:#e6395e;
     transform:translateY(-2px);
 }
 .links{
@@ -180,7 +180,7 @@ button:hover{
     margin-top:12px;
 }
 .links a{
-    color:#2563eb;
+    color:#ff3f6c;
     text-decoration:none;
     font-weight:500;
 }
@@ -193,7 +193,7 @@ button:hover{
     font-size:14px;
 }
 .register a{
-    color:#2563eb;
+    color:#ff3f6c;
     font-weight:600;
     text-decoration:none;
 }
@@ -216,7 +216,7 @@ button:hover{
         min-height:350px;
         height:auto;
         padding:0;
-        background:url('/images/login-bg.jpg') center center / cover no-repeat;
+        background:url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format') center center / cover no-repeat;
         background-size:cover;
         background-position:center;
         display:flex;
@@ -394,6 +394,19 @@ button:hover{
         background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(255,63,108,0.6));
     }
 }
+.eye-icon {
+    display: none;
+    color: #999;
+}
+.open-eye {
+    display: inline;
+}
+.toggle-password.active .open-eye {
+    display: none;
+}
+.toggle-password.active .closed-eye {
+    display: inline;
+}
 </style>
 </head>
 <body>
@@ -437,7 +450,14 @@ button:hover{
             <label>Password</label>
             <div class="password-wrapper">
                 <input type="password" name="password" id="loginPassword" placeholder="Enter your password" required>
-                <span class="toggle-password" onclick="togglePassword('loginPassword', this)">👁️</span>
+                <span class="toggle-password" onclick="togglePassword('loginPassword', this)">
+                    <svg class="eye-icon open-eye" viewBox="0 0 24 24" width="22" height="22">
+                        <path fill="currentColor" d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+                    </svg>
+                    <svg class="eye-icon closed-eye" viewBox="0 0 24 24" width="22" height="22">
+                        <path fill="currentColor" d="M12 5c-5 0-9.27 3.11-11 7 1.05 2.36 2.98 4.3 5.42 5.52L3 21l1.41 1.41L21 5.83 19.59 4.41l-3.01 3.01C15.06 6.54 13.57 5 12 5zm0 12c-1.57 0-3.06-.54-4.58-1.42l1.5-1.5A3 3 0 0 0 12 15a3 3 0 0 0 2.92-2.92l1.5-1.5C17.46 12.06 18 13.55 18 15c0 1.66-2.24 3-6 3z"/>
+                    </svg>
+                </span>
             </div>
         </div>
         <div class="links">
@@ -466,6 +486,15 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
     e.preventDefault();
     const email = document.querySelector("input[name='email']").value.trim();
     const password = document.querySelector("input[name='password']").value;
+    if (!email || !password) {
+        showAlert("Please enter both email and password", 'error');
+        return;
+    }
+    
+    if (!/^[^\s@]+@([^\s@]+\.)+[^\s@]+$/.test(email)) {
+        showAlert("Please enter a valid email address", 'error');
+        return;
+    }
     try {
         const response = await fetch(BASE_URL + "/user/login", {
             method: "POST",
@@ -478,26 +507,33 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
         const data = await response.json();
         console.log("LOGIN RESPONSE:", data);
         if (response.ok && data.token) {
-            try {
-                const keysToRemove = ['token','user','cart','cart_synced','applied_coupon','coupon_discount','wishlist','recent_orders','last_order','verify_email'];
-                keysToRemove.forEach(key => {
-                    try { localStorage.removeItem(key); } catch(e) {}
-                    try { sessionStorage.removeItem(key); } catch(e) {}
-                });
-                localStorage.clear();
-                sessionStorage.clear();
-            } catch(e) {
-                console.log('Clear error:', e);
-            }
-            setTimeout(() => {
-                localStorage.setItem("token", data.token);
-                localStorage.setItem("user", JSON.stringify(data.user));
-                const savedRedirect = sessionStorage.getItem('redirect_after_login');
-                const redirectUrl = savedRedirect || '/profile';
-                sessionStorage.removeItem('redirect_after_login');
-                sessionStorage.removeItem('login_message');
-                window.location.href = redirectUrl + '?t=' + Date.now();
-            }, 100);
+    const guestCart = localStorage.getItem('cart');
+    const guestWishlist = localStorage.getItem('wishlist');
+    const guestCoupon = localStorage.getItem('applied_coupon');
+    const guestDiscount = localStorage.getItem('coupon_discount');
+    
+    localStorage.clear();
+    
+    if (guestCart) localStorage.setItem('cart', guestCart);
+    if (guestWishlist) localStorage.setItem('wishlist', guestWishlist);
+    if (guestCoupon) localStorage.setItem('applied_coupon', guestCoupon);
+    if (guestDiscount) localStorage.setItem('coupon_discount', guestDiscount);
+    
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    
+    const savedRedirect = sessionStorage.getItem('redirect_after_login');
+    let redirectUrl = '/profile';
+    
+    if (savedRedirect && savedRedirect !== 'null' && savedRedirect !== '') {
+        redirectUrl = savedRedirect;
+    }
+    
+    sessionStorage.clear();
+    
+    console.log('Redirecting to:', redirectUrl);
+    window.location.href = redirectUrl;
+
         } else {
             if (data.message && data.message.toLowerCase().includes("verify")) {
                 localStorage.setItem("verify_email", email);
@@ -515,10 +551,10 @@ function togglePassword(inputId, element) {
     const input = document.getElementById(inputId);
     if (input.type === 'password') {
         input.type = 'text';
-        element.textContent = '🔒';
+        element.classList.add('active');
     } else {
         input.type = 'password';
-        element.textContent = '👁️';
+        element.classList.remove('active');
     }
 }
 </script>

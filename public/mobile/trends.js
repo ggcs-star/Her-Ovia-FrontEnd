@@ -139,11 +139,6 @@ ${reel.shares ?? 0}
     enableDoubleTap();
 }
 
-
-
-/* AUTOPLAY */
-/* ================= COMMENTS SYSTEM ================= */
-
 let currentReelId = null;
 
 /* init buttons */
@@ -177,121 +172,353 @@ function openComments(id){
     },300);
 }
 
-/* load comments */
+/* load comments - WITH CORRECT TIME FORMAT */
 function loadComments(id){
-
     const list = document.getElementById("commentList");
-    list.innerHTML = "Loading...";
+    list.innerHTML = '<div style="text-align:center;padding:20px;">Loading comments...</div>';
 
-    fetch(API_BASE_URL + "/reels/" + id + "/comments", {
+    const timestamp = new Date().getTime();
+    
+    fetch(API_BASE_URL + "/reels/" + id + "/comments?_=" + timestamp, {
         headers:{
-            "Accept": "application/json" // 🔥 MOST IMPORTANT FIX
+            "Accept": "application/json",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache"
         }
     })
-    .then(res=>res.json())
-    .then(res=>{
-
+    .then(res => res.json())
+    .then(res => {
         let html = "";
+        
+        console.log("📝 API Response:", res);
+        
+        if(!res.data || res.data.length === 0){
+            html = '<div style="text-align:center;padding:20px;color:#888;">No comments yet. Be the first to comment!</div>';
+        } else {
+            res.data.forEach(c => {
 
-        res.data.forEach(c=>{
-
-            html += `
-            <div class="comment-item insta-comment">
-
-                <img src="${c.user?.avatar ?? 'https://ui-avatars.com/api/?name=User'}" class="comment-avatar"/>
-
-                <div class="comment-content">
-
-                    <div class="comment-header">
-                        <span class="comment-user">${c.user?.name ?? 'User'}</span>
-                        <span class="comment-time">${c.time ?? ''}</span>
+                let timeValue = '';
+                
+                if(c.time) timeValue = c.time;
+                else if(c.created_at) timeValue = c.created_at;
+                else if(c.createdAt) timeValue = c.createdAt;
+                else if(c.timestamp) timeValue = c.timestamp;
+                else if(c.date) timeValue = c.date;
+                
+                const formattedTime = formatTimeProperly(timeValue);
+                
+                const userName = c.user?.name || c.user?.username || 'User';
+                const userAvatar = c.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=ff2c6d&color=fff`;
+                
+                html += `
+                <div class="comment-item insta-comment">
+                    <img src="${userAvatar}" class="comment-avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=ff2c6d&color=fff'"/>
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <span class="comment-user" style="font-weight:600;">${escapeHtml(userName)}</span>
+                            <span class="comment-time" style="font-size:12px;color:#888;margin-left:8px;">${formattedTime}</span>
+                        </div>
+                        <div class="comment-text" style="font-size:14px;margin-top:4px;">
+                            ${escapeHtml(c.comment)}
+                        </div>
                     </div>
-
-                    <div class="comment-text">
-                        ${c.comment}
-                    </div>
-
                 </div>
-
-            </div>
-            `;
-        });
-
-        list.innerHTML = html || "No comments yet";
-
+                `;
+            });
+        }
+        
+        list.innerHTML = html;
+        list.scrollTop = list.scrollHeight;
     })
-    .catch(err=>{
+    .catch(err => {
         console.error("Comments error:", err);
-        list.innerHTML = "Failed to load comments";
+        list.innerHTML = '<div style="text-align:center;padding:20px;color:#ff3f6c;">Failed to load comments. <span onclick="loadComments(' + id + ')" style="text-decoration:underline;">Retry</span></div>';
     });
-
 }
 
-/* add comment */
-function postComment(){
+function formatTimeProperly(dateValue) {
+    if(!dateValue) return 'just now';
+    
+    try {
+        if(typeof dateValue === 'string' && (dateValue.includes('ago') || dateValue.includes('just now'))) {
+            return dateValue;
+        }
+        
+        let date = new Date(dateValue);
+        
+        if(isNaN(date.getTime())) {
+            return 'just now';
+        }
+        
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+        
+        if(seconds < 5) return 'just now';
+        if(seconds < 60) return `${seconds}s ago`;
+        
+        const minutes = Math.floor(seconds / 60);
+        if(minutes < 60) return `${minutes}m ago`;
+        
+        const hours = Math.floor(minutes / 60);
+        if(hours < 24) return `${hours}h ago`;
+        
+        const days = Math.floor(hours / 24);
+        if(days < 7) return `${days}d ago`;
+        
+        if(days < 30) return `${Math.floor(days / 7)}w ago`;
+        
+        const months = Math.floor(days / 30);
+        if(months < 12) return `${months}mo ago`;
+        
+        const years = Math.floor(days / 365);
+        return `${years}y ago`;
+        
+    } catch(e) {
+        console.error("Time format error:", e);
+        return 'just now';
+    }
+}
 
+function escapeHtml(text) {
+    if(!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function postComment() {
     const input = document.getElementById("commentInput");
     const text = input.value.trim();
-
-    if(!text) return;
-
+    
+    if (!text) return;
+    
     const token = localStorage.getItem("token");
+    const isLoggedIn = token && token !== "null" && token !== "undefined";
 
-console.log("TOKEN:", token);
-console.log("REEL ID:", currentReelId);
-
-// ✅ dynamic headers
-let headers = {
-    "Content-Type": "application/json",
-    "Accept": "application/json"
-};
-
-if(token){
-    headers["Authorization"] = "Bearer " + token;
-}
-
-fetch(API_BASE_URL + "/reels/" + currentReelId + "/comment", {
-    method: "POST",
-    headers: headers,
-    body: JSON.stringify({
-        comment: text
+    if (!isLoggedIn) {
+        showLoginRequiredModal();
+        return;
+    }
+    
+    const postBtn = document.querySelector(".comment-input-box button");
+    const originalText = postBtn.innerText;
+    postBtn.disabled = true;
+    postBtn.innerText = "Posting...";
+    
+    const list = document.getElementById("commentList");
+    const tempId = 'temp_' + Date.now();
+    const tempComment = `
+        <div class="comment-item insta-comment temp-comment" id="${tempId}" style="opacity:0.6;">
+            <img src="https://ui-avatars.com/api/?name=You&background=ff2c6d&color=fff" class="comment-avatar"/>
+            <div class="comment-content">
+                <div class="comment-header">
+                    <span class="comment-user">You</span>
+                    <span class="comment-time">just now</span>
+                </div>
+                <div class="comment-text">
+                    ${escapeHtml(text)}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    if (list.innerHTML.includes("No comments yet")) {
+        list.innerHTML = tempComment;
+    } else {
+        list.innerHTML += tempComment;
+    }
+    list.scrollTop = list.scrollHeight;
+    
+    let headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    };
+    
+    if (isLoggedIn) {
+        headers["Authorization"] = "Bearer " + token;
+    }
+    
+    fetch(API_BASE_URL + "/reels/" + currentReelId + "/comment", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({ comment: text })
     })
-})
-.then(async res => {
-
-    console.log("STATUS:", res.status);
-
-    const data = await res.json();
-    console.log("RESPONSE:", data);
-
-    if(res.status === 401){
-        alert("Unauthorized (login issue)");
-        return;
-    }
-
-    if(!data.status){
-        alert(data.message || "Error");
-        return;
-    }
-
-    input.value = "";
-
-    loadComments(currentReelId);
-
-    const count = document.getElementById("comment-count-"+currentReelId);
-    if(count){
-        count.innerText = parseInt(count.innerText) + 1;
-    }
-
-})
-.catch(err=>{
-    console.error("Comment error:", err);
-    alert("Something went wrong");
-});
+    .then(async res => {
+        const data = await res.json();
+        
+        if (res.status === 401) {
+            document.getElementById(tempId)?.remove();
+            showLoginRequiredModal();
+            return;
+        }
+        
+        if (!data.status) {
+            document.getElementById(tempId)?.remove();
+            showToast(data.message || "Error");
+            return;
+        }
+        
+        input.value = "";
+        document.getElementById(tempId)?.remove();
+        
+        const freshTimestamp = new Date().getTime();
+        fetch(API_BASE_URL + "/reels/" + currentReelId + "/comments?_=" + freshTimestamp, {
+            headers: {
+                "Accept": "application/json",
+                "Cache-Control": "no-cache, no-store, must-revalidate"
+            }
+        })
+        .then(res => res.json())
+        .then(res => {
+            let html = "";
+            if (res.data && res.data.length > 0) {
+                res.data.forEach(c => {
+                    let timeValue = c.time || c.created_at || c.createdAt || '';
+                    const formattedTime = formatTimeProperly(timeValue);
+                    const userName = c.user?.name || c.user?.username || 'User';
+                    const userAvatar = c.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=ff2c6d&color=fff`;
+                    html += `
+                    <div class="comment-item insta-comment">
+                        <img src="${userAvatar}" class="comment-avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=ff2c6d&color=fff'"/>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-user">${escapeHtml(userName)}</span>
+                                <span class="comment-time">${formattedTime}</span>
+                            </div>
+                            <div class="comment-text">${escapeHtml(c.comment)}</div>
+                        </div>
+                    </div>`;
+                });
+            } else {
+                html = '<div style="text-align:center;padding:20px;color:#888;">No comments yet. Be the first to comment!</div>';
+            }
+            list.innerHTML = html;
+            list.scrollTop = list.scrollHeight;
+        });
+        
+        const count = document.getElementById("comment-count-" + currentReelId);
+        if (count) {
+            count.innerText = parseInt(count.innerText) + 1;
+        }
+        
+        showToast("Comment posted!");
+    })
+    .catch(err => {
+        console.error("Comment error:", err);
+        document.getElementById(tempId)?.remove();
+        showToast("Network error. Please try again");
+    })
+    .finally(() => {
+        postBtn.disabled = false;
+        postBtn.innerText = originalText;
+        input.focus();
+    });
 }
-/* close */
+
+
 function closeComments(){
     document.getElementById("commentModal").style.display = "none";
+}
+
+function showLoginRequiredModal() {
+    if (document.getElementById("loginRequiredModal")) return;
+    
+    const modal = document.createElement("div");
+    modal.id = "loginRequiredModal";
+    modal.className = "comment-modal";
+    modal.style.display = "block";
+    modal.innerHTML = `
+        <div class="comment-sheet" style="height: auto; max-height: 60vh; border-radius: 20px; text-align: center; padding: 30px 20px;">
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 70px; margin-bottom: 10px;">🔒</div>
+                <h3 style="color: #fff; font-size: 22px; margin-bottom: 10px;">Login Required</h3>
+                <p style="color: #aaa; font-size: 14px; line-height: 1.5; margin-bottom: 25px;">
+                    You need to login first to comment on reels.<br>
+                    Please login to share your thoughts!
+                </p>
+                <button onclick="redirectToLogin()" style="
+                    background: linear-gradient(45deg, #ff2c6d, #ff5c8a);
+                    color: white;
+                    border: none;
+                    padding: 12px 30px;
+                    border-radius: 30px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    width: 80%;
+                    margin-bottom: 12px;
+                ">
+                    Login Now
+                </button>
+                <button onclick="closeLoginModal()" style="
+                    background: transparent;
+                    color: #ff2c6d;
+                    border: 1px solid #ff2c6d;
+                    padding: 12px 30px;
+                    border-radius: 30px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    width: 80%;
+                ">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    modal.addEventListener("click", function(e) {
+        if (e.target === modal) {
+            closeLoginModal();
+        }
+    });
+}
+
+function closeLoginModal() {
+    const modal = document.getElementById("loginRequiredModal");
+    if (modal) modal.remove();
+}
+
+function redirectToLogin() {
+    closeLoginModal();
+    window.location.href = "/login";
+}
+
+function showToast(message, duration = 3000) {
+    const existingToast = document.querySelector(".custom-toast");
+    if (existingToast) existingToast.remove();
+    
+    const toast = document.createElement("div");
+    toast.className = "custom-toast";
+    toast.innerHTML = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.9);
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 10001;
+        animation: slideUpToast 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.1);
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast && toast.remove) {
+            toast.style.animation = "slideDownToast 0.3s ease";
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, duration);
 }
 function setupObserver(){
 
@@ -326,15 +553,11 @@ function setupObserver(){
 
 }
 
-
-
-/* VIEW COUNT */
-
 const viewed = new Set();
 
 function increaseView(id){
 
-    if(viewed.has(id)) return; // ✅ prevent spam
+    if(viewed.has(id)) return; 
 
     viewed.add(id);
 
@@ -351,7 +574,6 @@ e.target.style.opacity = 1;
 
 }, true);
 
-/* PROGRESS BAR */
 
 function animateProgress(video){
 
@@ -374,10 +596,6 @@ function animateProgress(video){
     requestAnimationFrame(update);
 
 }
-
-
-
-/* DESCRIPTION */
 
 function checkDescriptions(){
 
@@ -410,9 +628,6 @@ function toggleDesc(index){
 
 }
 
-
-
-/* LIKE SYSTEM */
 
 function initLikeButtons(){
 
@@ -463,9 +678,6 @@ count.innerText = res.likes;
 
 }
 
-
-
-/* DOUBLE TAP LIKE */
 function enableDoubleTap(){
 
 let lastTap = 0;
@@ -503,9 +715,6 @@ lastTap = currentTime;
 }
 
 
-
-/* HEART ANIMATION */
-
 function showGlobalHeart(){
 
     const heart = document.getElementById("global-like-heart");
@@ -520,9 +729,6 @@ function showGlobalHeart(){
 
 }
 
-
-
-/* SHARE */
 
 function initShareButtons(){
 
@@ -575,8 +781,6 @@ window.open(whatsapp,"_blank");
 
 
 
-/* ERROR */
-
 function showError(){
 
     const container = document.getElementById("trendsContainer");
@@ -587,3 +791,7 @@ function showError(){
     
 
 }
+
+window.postComment = postComment;
+window.closeComments = closeComments;
+window.toggleDesc = toggleDesc;

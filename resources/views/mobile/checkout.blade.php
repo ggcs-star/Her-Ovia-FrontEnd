@@ -41,7 +41,7 @@
                     </div>
                 </div>
                 <div class="checkout-section" id="add-address-form" style="display: none;">
-                    <h2>Add New Address</h2>
+                    <!-- <h2>Add New Address</h2> -->
                     <form id="addressForm" onsubmit="saveNewAddress(event)">
                         <div class="form-row">
                             <div class="form-group">
@@ -113,7 +113,7 @@
                     </div>
                 </div>
                 
-            </div>  <!-- checkout-left close -->
+            </div> 
             
             <div class="checkout-right">
                 <div class="order-summary-card">
@@ -122,9 +122,7 @@
                         <div class="loading-spinner">Loading summary...</div>
                     </div>
                     <button class="place-order-btn" onclick="handleCheckout()">PLACE ORDER</button>
-                    <div class="secure-checkout">
-                        <span>🔒</span> Secure Checkout
-                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -142,7 +140,18 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="{{ asset('mobile/script.js') }}"></script>
 <script src="{{ asset('mobile/checkout.js') }}"></script>
-
+<div id="confirmModal" class="confirm-modal" style="display: none;">
+    <div class="confirm-modal-overlay"></div>
+    <div class="confirm-modal-content">
+        <div class="confirm-modal-icon">🗑️</div>
+        <h3>Remove Address</h3>
+        <p>Are you sure you want to remove this address?</p>
+        <div class="confirm-modal-buttons">
+            <button class="confirm-modal-cancel" onclick="closeConfirmModal()">Cancel</button>
+            <button class="confirm-modal-confirm" onclick="confirmRemoveAddress()">Remove</button>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

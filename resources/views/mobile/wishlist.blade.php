@@ -10,11 +10,9 @@
 </head>
 <body class="wishlist-page" data-page="wishlist">
 
-<!-- Common Header -->
 <header class="site-header" id="site-header"></header>
 
 
-<!-- Main Content -->
 <main class="page-content">
     <div class="wishlist-container">
         <div class="wishlist-header">
@@ -23,15 +21,13 @@
         </div>
         
         <div id="wishlist-grid" class="wishlist-grid">
-            <!-- Wishlist items will be loaded here -->
+            
         </div>
     </div>
 </main>
 
-<!-- Common Footer -->
 <footer class="site-footer" id="site-footer"></footer>
 
-<!-- Mobile Bottom Navigation -->
 <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
 
 <script src="{{ asset('mobile/script.js') }}"></script>

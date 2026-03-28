@@ -32,7 +32,7 @@ body{
     display:flex;
     flex-direction:column;
     justify-content:center;
-    background:url('/images/login-bg.jpg') center center / cover no-repeat;
+    background:url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format') center center / cover no-repeat;
     min-height:300px;
 }
 .left::before{
@@ -330,7 +330,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 body: JSON.stringify({ email, otp })
             });
             const data = await response.json();
-            if (response.ok && data.success) {
+          if (response.ok && data.success) {
                 showAlert("Verified successfully!", "success");
                 if (isReset) {
                     sessionStorage.setItem("reset_verified", "true");
@@ -339,7 +339,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     setTimeout(() => window.location.href = "/reset-password", 1500);
                 } else {
                     localStorage.removeItem('verify_email');
-                    setTimeout(() => window.location.href = "/login?verified=true", 1500);
+                    sessionStorage.removeItem('redirect_after_login');
+                    setTimeout(() => {
+                        window.location.href = "/login";
+                    }, 1500);
                 }
             } else {
                 showAlert(data.message || "Invalid OTP", "error");

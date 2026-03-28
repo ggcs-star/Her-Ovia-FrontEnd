@@ -197,7 +197,7 @@ button:disabled{
         min-height:350px;
         height:auto;
         padding:0;
-        background:url('/images/login-bg.jpg') center center / cover no-repeat;
+        background:url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format') center center / cover no-repeat;
         background-size:cover;
         background-position:center;
         display:flex;
@@ -385,7 +385,10 @@ document.getElementById("forgotPasswordForm").addEventListener("submit", async f
         showAlert('Please enter your email address', 'error');
         return;
     }
-    
+    if (!/^[^\s@]+@([^\s@]+\.)+[^\s@]+$/.test(email)) {
+    showAlert('Please enter a valid email address', 'error');
+    return;
+    }
     btn.disabled = true;
     btn.innerText = 'Sending...';
 

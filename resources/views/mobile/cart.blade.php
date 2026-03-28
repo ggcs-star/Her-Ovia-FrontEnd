@@ -71,10 +71,16 @@
                     <span class="value" id="coupon-discount">-₹0.00</span>
                 </div>
                 
-                <div class="summary-row total">
-                    <span class="label">Total Amount</span>
-                    <span class="value" id="final-total">₹0.00</span>
+                <div class="checkout-web-wrapper">
+                    <div class="summary-row total">
+                        <span class="label">Total Amount</span>
+                        <span class="value" id="final-total-web">₹0.00</span>
+                    </div>
                 </div>
+            <button class="checkout-btn-web" onclick="proceedToCheckout()">
+                    Proceed to Checkout
+                </button>               
+            </div>
             </div>
 
             <div class="savings-message" style="display: none;">

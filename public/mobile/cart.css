@@ -1,4 +1,3 @@
-/* ===== CART PAGE - REFINED UI MATCHING SCREENSHOT ===== */
 
 :root {
     --primary-pink: #ff3f6c;
@@ -26,7 +25,6 @@ body.cart-page{
     border-bottom: 1px solid #ffe0b2;
 }
 
-/* Free Gifts Banner */
 .gifts-banner {
     background: #fff;
     color: var(--text-dark);
@@ -37,7 +35,6 @@ body.cart-page{
     border-bottom: 1px solid var(--border-color);
 }
 
-/* Main Layout */
 .cart-page-content {
     padding: 15px 0;
 }
@@ -51,7 +48,6 @@ body.cart-page{
     padding: 0 15px;
 }
 
-/* Address Section */
 .address-section {
     background: white;
     padding: 15px;
@@ -85,7 +81,6 @@ body.cart-page{
     border-radius: 4px;
 }
 
-/* Cart Left Header */
 .cart-left h2 {
     font-size: 16px;
     font-weight: 700;
@@ -101,7 +96,6 @@ body.cart-page{
     font-weight: 400;
 }
 
-/* Cart Item Card */
 .cart-item {
     background: white;
     border-radius: 4px;
@@ -261,7 +255,6 @@ body.cart-page{
     background: #fafafa;
 }
 
-/* ===== COUPON STICKERS - CART PAGE ===== */
 .coupon-section {
     background: white;
     padding: 15px;
@@ -316,9 +309,9 @@ body.cart-page{
 }
 
 .coupon-stickers-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
     margin: 8px 0 16px;
 }
 
@@ -389,17 +382,14 @@ body.cart-page{
     border-radius: 8px;
 }
 
-/* Hide old coupon cards */
 .coupon-card {
     display: none;
 }
 
-/* ✅ SHOW ONLY STICKERS */
 .coupon-sticker {
     display: inline-flex;
 }
 
-/* Order Summary */
 .order-summary-card {
     background: white;
     padding: 15px;
@@ -446,7 +436,6 @@ body.cart-page{
     font-weight: 700;
 }
 
-/* Savings Message */
 .savings-message {
     background: #e8f5e9;
     color: var(--success-green);
@@ -496,7 +485,6 @@ body.cart-page{
     font-weight: 700;
 }
 
-/* Empty Cart */
 .empty-cart {
     text-align: center;
     padding: 60px 20px;
@@ -520,7 +508,7 @@ body.cart-page{
     margin-top: 20px;
 }
 
-/* Toast */
+
 .cart-toast {
     position: fixed;
     bottom: 100px;
@@ -535,7 +523,7 @@ body.cart-page{
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-/* Responsive */
+
 @media (min-width: 768px) {
     .cart-container {
         flex-direction: row;
@@ -552,11 +540,10 @@ body.cart-page{
         top: 20px;
     }
 }
-/* Add to your cart.css */
 
 .applicable-coupons {
     margin-top: 15px;
-    display: none; /* Initially hidden */
+    display: none; 
 }
 
 .coupon-card {
@@ -645,7 +632,7 @@ body.cart-page{
 .view-coupons-link:hover {
     text-decoration: underline;
 }
-/* FINAL CLEAN POPUP */
+
 
 .popup-overlay {
     position: fixed;
@@ -661,7 +648,7 @@ body.cart-page{
 }
 
 .popup-content {
-    position: fixed;   /* ⭐ ADD THIS */
+    position: fixed;   
     left: 0;
     right: 0;
     bottom: 0;
@@ -824,7 +811,6 @@ body.cart-page{
     width: 100%;
     max-width: 200px;
 }
-/* Sticky Bottom Bar - FORCE VISIBLE */
 .sticky-bottom-bar {
     position: fixed !important;
     bottom: 0 !important;
@@ -875,10 +861,9 @@ body.cart-page{
 }
 
 .popup-overlay.active .popup-content {
-    transform: translateY(0);   /* 👈 niche se upar aayega */
+    transform: translateY(0); 
 }
 
-/* Sticky Bottom Bar - Z-index kam karo */
 .sticky-bottom-bar {
     position: fixed;
     bottom: 0;
@@ -889,7 +874,7 @@ body.cart-page{
     box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
     z-index: 1000;  /* ✅ Kam rakhna hai */
 }
-/* Coupon Card Styles */
+
 .coupon-card {
     border: 1px solid #e0e0e0;
     border-radius: 12px;
@@ -1017,7 +1002,7 @@ body.cart-page{
     display: inline-block;
 }
 
-/* Coupon Terms Popup */
+
 .coupon-terms-overlay {
     position: fixed;
     top: 0;
@@ -1475,7 +1460,7 @@ body.cart-page{
     background: #f9f9f9;
     border-radius: 12px;
 }
-/* Coupon Success Popup - Center */
+
 .coupon-success-popup {
     position: fixed;
     top: 0;
@@ -1512,7 +1497,7 @@ body.cart-page{
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
     z-index: 1000001;
 }
-/* ===== COUPON TABS ===== */
+
 .coupon-tabs {
     display: flex;
     gap: 8px;
@@ -1710,7 +1695,7 @@ body.cart-page{
 .coupon-success-btn:active {
     transform: translateY(0);
 }
-/* Mobile Responsive */
+
 @media (max-width: 480px) {
     .coupon-success-content {
         max-width: 300px;
@@ -1739,7 +1724,7 @@ body.cart-page{
         font-size: 16px;
     }
 }
-/* Cart Header with Back Button */
+
 .site-header .container {
     width: 100%;
 }
@@ -1791,7 +1776,6 @@ body.cart-page{
     visibility: hidden;
 }
 
-/* Mobile Responsive */
 @media (max-width: 480px) {
     .back-btn {
         font-size: 22px;
@@ -1803,7 +1787,7 @@ body.cart-page{
         font-size: 16px;
     }
 }
-/* Bank Offer Popup */
+
 .bank-offer-popup {
     position: fixed;
     top: 0;
@@ -2065,4 +2049,162 @@ body.cart-page{
 }
 .mobile-bottom-nav {
     display: none !important;
+}
+@media (min-width: 768px) {
+    .sticky-bottom-bar {
+        display: none !important;
+    }
+    
+    .checkout-web-wrapper {
+        display: block !important;
+        margin-top: 20px !important;
+        padding-top: 15px !important;
+        border-top: 1px solid #eee !important;
+    }
+    
+    .total-display-web {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 15px !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+    }
+    
+    .total-display-web span:first-child {
+        color: #666 !important;
+    }
+    
+    .total-display-web span:last-child {
+        color: #000 !important;
+        font-size: 22px !important;
+        font-weight: 700 !important;
+    }
+    
+    .checkout-btn-web {
+        width: 100% !important;
+        background: #ff3f6c !important;
+        color: #fff !important;
+        border: none !important;
+        padding: 14px !important;
+        border-radius: 8px !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        text-align: center !important;
+    }
+}
+.popup-qty-input {
+    width: 60px;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 8px;
+}
+
+.popup-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.popup-cancel-btn {
+    flex: 1;
+    background: #f0f0f0;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.popup-done-btn {
+    flex: 1;
+    background: #ff3f6c;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+body.cart-page .site-header {
+    padding-top: max(12px, env(safe-area-inset-top));
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+    body.cart-page .site-header {
+        padding-top: calc(12px + env(safe-area-inset-top));
+    }
+}
+
+.summary-row.total {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+
+    font-size: 16px !important;
+    font-weight: 700 !important;
+
+    border-top: 1px solid #eee !important;
+    margin-top: 10px !important;
+    padding-top: 10px !important;
+
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#final-total-web {
+    font-weight: 700 !important;
+    color: #000 !important;
+    display: inline-block !important;
+}
+
+.checkout-btn-web {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .checkout-btn-web {
+        display: block;
+        width: 100%;
+        margin-top: 12px;
+        padding: 12px;
+        background: #ff3f6c;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+}
+
+
+.savings-message {
+    background: #e6f4ea;
+    color: #0f5132;
+
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 12px;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .savings-message {
+        max-width: 510px;    
+        margin-left: auto;    
+        margin-right: 2;
+    }
 }

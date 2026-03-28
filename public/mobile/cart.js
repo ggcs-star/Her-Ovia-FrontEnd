@@ -1,4 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
+    const buyNowOriginalCart = sessionStorage.getItem('buy_now_original_cart');
+    if (buyNowOriginalCart && window.location.pathname === '/cart') {
+        console.log('Restoring original cart after Buy Now');
+        localStorage.setItem('cart', buyNowOriginalCart);
+        sessionStorage.removeItem('buy_now_original_cart');
+        location.reload();
+        return;
+    }
+    
     if (document.getElementById('cart-items')) {
         loadCart();
         initCouponSection();
@@ -28,6 +37,11 @@ document.addEventListener('DOMContentLoaded', function() {
 function loadCart() {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
     console.log('📦 Cart from localStorage:', cart.length);
+    
+    // 🔥 DEBUG: Check cart items prices
+    cart.forEach((item, idx) => {
+        console.log(`Item ${idx}: ${item.name} - Price: ${item.price}, MRP: ${item.mrp}, Variant: ${item.variantValue}`);
+    });
 
     fetchBrandsForCartItems(cart).then(updatedCart => {
         renderCart(updatedCart);
@@ -40,10 +54,11 @@ function loadCart() {
     }, 100);
 }
 
-window.goBack = function() {
-    window.history.back();
-};
-
+if (document.body.classList.contains('cart-page')) {
+    window.goBack = function() {
+        window.history.back();
+    };
+}
 async function fetchBrandsForCartItems(cart) {
     if (!cart || cart.length === 0) return cart;
     
@@ -111,25 +126,21 @@ function renderCart(items) {
     if (stickyBar) stickyBar.style.display = 'flex';
 
     const fixedItems = items.map(item => {
-        item.price = parseFloat(item.price) || 0;
+        let price = parseFloat(item.price);
+        let mrp = parseFloat(item.mrp) || parseFloat(item.originalPrice);
         
-        if (!item.mrp || item.mrp === 0) {
-            if (item.availableVariants && item.availableVariants.length > 0) {
-                const matchedVariant = item.availableVariants.find(v => v.value === item.variantValue);
-                if (matchedVariant && matchedVariant.originalPrice) {
-                    item.mrp = matchedVariant.originalPrice;
-                    item.originalPrice = matchedVariant.originalPrice;
-                }
-            }
-            
-            if (!item.mrp || item.mrp === 0) {
-                if (item.originalPrice) {
-                    item.mrp = item.originalPrice;
-                } else {
-                    item.mrp = item.price;
-                }
+        if ((price === 0 || isNaN(price)) && item.availableVariants && item.availableVariants.length > 0) {
+            const matchedVariant = item.availableVariants.find(v => v.value === item.variantValue);
+            if (matchedVariant) {
+                price = parseFloat(matchedVariant.price) || 0;
+                mrp = parseFloat(matchedVariant.originalPrice) || price;
+                console.log(`✅ Fixed price in render for ${item.name}: ${price}`);
             }
         }
+        
+        item.price = price;
+        item.mrp = mrp;
+        item.originalPrice = mrp;
         
         return item;
     });
@@ -149,7 +160,7 @@ function renderCart(items) {
     }).join('');
 
     updatePriceDetails(fixedItems);
-    if (countEl) countEl.innerText = fixedItems.length;
+    if (countEl) countEl.innerText = fixedItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
 }
 
 function getEmptyCartHTML() {
@@ -183,7 +194,7 @@ function getCartItemHTML(item, index, qty, price, itemTotal) {
                 <img src="${item.image || 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c'}" 
                      alt="${item.name}" 
                      class="cart-item-img"
-                     onclick="window.location.href='/products/${item.slug}'"
+                     onclick="window.location.href='/product/${item.slug || item.id}'"
                      onerror="this.src='https://images.unsplash.com/photo-1503342217505-b0a15ec3261c'">
                 
                 <div class="cart-item-info">
@@ -271,7 +282,7 @@ function openSizePopup(index, variantType, currentValue) {
 const popup = document.querySelector('.popup-overlay');
 
 setTimeout(() => {
-    popup.classList.add('active');  // 👈 animation trigger
+    popup.classList.add('active');
 }, 10);
     document.body.style.overflow = 'hidden';
 }
@@ -303,30 +314,114 @@ function openQtyPopup(index, currentQty) {
     if (checkoutBar) checkoutBar.style.display = 'none';
     
     const popupHTML = `
-        <div class="popup-overlay" onclick="closePopup()">
-            <div class="popup-content">
+        <div class="popup-overlay" id="qty-popup-overlay" onclick="closeQtyPopup()">
+            <div class="popup-content" onclick="event.stopPropagation()">
                 <div class="popup-header">
                     <h3>Select Quantity</h3>
-                    <button class="popup-close" onclick="closePopup()">✕</button>
+                    <button class="popup-close" onclick="closeQtyPopup()">✕</button>
                 </div>
                 <div class="popup-qty-container">
                     <div class="popup-qty-controls">
-                        <button class="popup-qty-btn" onclick="updateQtyFromPopup(${index}, ${currentQty - 1})" ${currentQty <= 1 ? 'disabled' : ''}>−</button>
-                        <span class="popup-qty-value" id="popup-qty-${index}">${currentQty}</span>
-                        <button class="popup-qty-btn" onclick="updateQtyFromPopup(${index}, ${currentQty + 1})">+</button>
+                        <button class="popup-qty-btn" id="qty-minus-btn" onclick="updateTempQty(${index}, -1)" ${currentQty <= 1 ? 'disabled' : ''}>−</button>
+                        <input type="number" class="popup-qty-input" id="popup-qty-input-${index}" value="${currentQty}" min="1" max="99" onchange="updateTempQtyFromInput(${index})">
+                        <button class="popup-qty-btn" id="qty-plus-btn" onclick="updateTempQty(${index}, 1)">+</button>
                     </div>
-                    <button class="popup-done-btn" onclick="closePopup()">DONE</button>
+                    <div class="popup-buttons">
+                        <button class="popup-cancel-btn" onclick="closeQtyPopup()">CANCEL</button>
+                        <button class="popup-done-btn" onclick="applyQtyChange(${index})">DONE</button>
+                    </div>
                 </div>
             </div>
         </div>
     `;
     
     document.body.insertAdjacentHTML('beforeend', popupHTML);
-     const popup = document.querySelector('.popup-overlay');
+    const popup = document.querySelector('.popup-overlay');
     setTimeout(() => {
         popup.classList.add('active');
     }, 10);
     document.body.style.overflow = 'hidden';
+    
+    popup.dataset.tempQty = currentQty;
+}
+
+function updateTempQty(index, delta) {
+    const input = document.getElementById(`popup-qty-input-${index}`);
+    if (!input) return;
+    
+    let currentQty = parseInt(input.value);
+    if (isNaN(currentQty)) currentQty = 1;
+    
+    let newQty = currentQty + delta;
+    
+    if (newQty < 1) newQty = 1;
+    if (newQty > 99) newQty = 99;
+    
+    input.value = newQty;
+    
+    const minusBtn = document.getElementById('qty-minus-btn');
+    if (minusBtn) {
+        if (newQty <= 1) {
+            minusBtn.setAttribute('disabled', 'disabled');
+        } else {
+            minusBtn.removeAttribute('disabled');
+        }
+    }
+    
+    const popup = document.querySelector('.popup-overlay');
+    if (popup) popup.dataset.tempQty = newQty;
+}
+
+function updateTempQtyFromInput(index) {
+    const input = document.getElementById(`popup-qty-input-${index}`);
+    if (!input) return;
+    
+    let newQty = parseInt(input.value);
+    if (isNaN(newQty) || newQty < 1) newQty = 1;
+    if (newQty > 99) newQty = 99;
+    input.value = newQty;
+    
+    const minusBtn = document.getElementById('qty-minus-btn');
+    if (minusBtn) {
+        if (newQty <= 1) {
+            minusBtn.setAttribute('disabled', 'disabled');
+        } else {
+            minusBtn.removeAttribute('disabled');
+        }
+    }
+    
+    const popup = document.querySelector('.popup-overlay');
+    if (popup) popup.dataset.tempQty = newQty;
+}
+
+function applyQtyChange(index) {
+    const popup = document.querySelector('.popup-overlay');
+    const newQty = popup ? parseInt(popup.dataset.tempQty) : null;
+    
+    if (newQty && newQty > 0) {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        if (cart[index]) {
+            cart[index].quantity = newQty;
+            localStorage.setItem('cart', JSON.stringify(cart));
+            loadCart();
+        }
+    }
+    closeQtyPopup();
+}
+
+function closeQtyPopup() {
+    const popup = document.querySelector('.popup-overlay');
+    if (!popup) return;
+    
+    popup.classList.remove('active');
+    setTimeout(() => {
+        popup.remove();
+    }, 250);
+    
+    document.body.style.overflow = '';
+    
+    const checkoutBar = document.querySelector('.sticky-bottom-bar');
+    if (checkoutBar) checkoutBar.style.display = 'flex';
 }
 
 function updateQtyFromPopup(index, newQty) {
@@ -375,7 +470,7 @@ function closePopup() {
 
     setTimeout(() => {
         popup.remove();
-    }, 250);  // match CSS timing
+    }, 250);  
 
     document.body.style.overflow = '';
     
@@ -400,11 +495,21 @@ function updatePriceDetails(items) {
     let totalMrp = 0;
     let totalFinalPrice = 0;
     let totalProductDiscount = 0;
-    let itemCount = items.length;
+    let itemCount = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
     
     items.forEach((item) => {
-        const mrp = Number(item.mrp) || Number(item.originalPrice) || Number(item.price) || 0;
-        const finalPrice = Number(item.price) || 0;
+        let finalPrice = Number(item.price);
+        let mrp = Number(item.mrp) || Number(item.originalPrice);
+        
+        if ((finalPrice === 0 || isNaN(finalPrice)) && item.availableVariants && item.availableVariants.length > 0) {
+            const matchedVariant = item.availableVariants.find(v => v.value === item.variantValue);
+            if (matchedVariant) {
+                finalPrice = Number(matchedVariant.price) || 0;
+                mrp = Number(matchedVariant.originalPrice) || finalPrice;
+                console.log(`✅ Fixed price for ${item.name}: ${finalPrice}`);
+            }
+        }
+        
         const qty = Number(item.quantity) || 1;
         
         const itemMrp = mrp * qty;
@@ -422,7 +527,7 @@ function updatePriceDetails(items) {
     const totalMrpEl = document.getElementById('total-mrp');
     const totalDiscountEl = document.getElementById('total-discount');
     const shippingEl = document.getElementById('shipping-charge');
-    const finalTotalEl = document.getElementById('final-total');
+    const finalTotalEl = document.getElementById('final-total-web');
     const bottomTotalEl = document.getElementById('bottom-total');
     const savingsMsg = document.querySelector('.savings-message');
     const savingsAmountEl = document.getElementById('savings-amount');
@@ -446,12 +551,14 @@ function updatePriceDetails(items) {
     const appliedCode = localStorage.getItem('applied_coupon');
     const couponDiscount = localStorage.getItem('coupon_discount');
     
-    // 🔥 AGAR CART EMPTY HAI TO COUPON MAT DIKHAO
     if (itemCount === 0) {
         localStorage.removeItem('applied_coupon');
         localStorage.removeItem('coupon_discount');
     } else if (appliedCode && couponDiscount) {
-        updateTotalsWithCoupon({ discount: parseFloat(couponDiscount) });
+        const discountValue = parseFloat(couponDiscount);
+        if (!isNaN(discountValue) && discountValue > 0) {
+            updateTotalsWithCoupon({ discount: discountValue });
+        }
     }
 }
 
@@ -610,7 +717,6 @@ function removeItem(index) {
     
     const removedItem = cart[index];
     
-    // Sirf EK item remove karo
     cart.splice(index, 1);
     
     localStorage.setItem('cart', JSON.stringify(cart));
@@ -703,14 +809,17 @@ function applyCoupon(couponCode = null) {
     
     const selectedCoupon = window.allCoupons?.find(c => c.code === code);
     
-    // 🔥 BANK OFFER - Sirf message do, redirect mat karo
     if (selectedCoupon?.coupon_type === 'BANK') {
         showToast('This offer can be applied during checkout', 'info');
         return;  // ✅ Sirf message, redirect nahi
     }
     
-    // 🔥 NORMAL COUPON - Cart mein apply karo
-    const cartTotal = parseFloat(document.getElementById('final-total')?.innerText.replace('₹', '') || 0);
+    const cartTotal = parseFloat(
+    document.getElementById('final-total-web')?.innerText
+        .replace('₹', '')
+        .replace(',', '') || 0
+);
+    
     
     fetch('https://retailadmin.ggconsultancy.services/api/coupons/apply', {
         method: 'POST',
@@ -837,8 +946,13 @@ function renderCouponsList(coupons) {
     const couponsList = document.getElementById('coupons-list');
     if (!couponsList) return;
     
-    const finalTotalEl = document.getElementById('final-total');
-    const cartTotal = parseFloat(finalTotalEl?.innerText.replace('₹', '').replace(',', '') || 0);
+    const bottomTotalEl = document.getElementById('bottom-total');
+
+    const cartTotal = parseFloat(
+        bottomTotalEl?.innerText
+            .replace('₹', '')
+            .replace(',', '') || 0
+    );
     
     if (cartTotal === 0) {
         couponsList.innerHTML = '<div class="no-coupons">Add items to see applicable coupons</div>';
@@ -886,7 +1000,6 @@ function renderCouponsList(coupons) {
     
     couponsList.innerHTML = html;
     
-    // Tab click events
     document.querySelectorAll('.coupon-tab').forEach(tab => {
         tab.addEventListener('click', function() {
             document.querySelectorAll('.coupon-tab').forEach(t => t.classList.remove('active'));
@@ -1027,12 +1140,17 @@ function updateTotalsWithCoupon(couponData) {
         couponDiscountSpan.innerText = `- ₹${couponData.discount.toFixed(2)}`;
     }
     
-    const finalTotal = totalMrp - productDiscount - couponData.discount;
+    const couponDiscount = parseFloat(couponData?.discount || 0);
+
+    const finalTotal = Math.max(
+        totalMrp - productDiscount - couponDiscount,
+        0
+    );
     
-    const finalTotalEl = document.getElementById('final-total');
-    if (finalTotalEl) finalTotalEl.innerText = `₹${finalTotal.toFixed(2)}`;
-    
+    const finalTotalEl = document.getElementById('final-total-web');
     const bottomTotalEl = document.getElementById('bottom-total');
+    
+    if (finalTotalEl) finalTotalEl.innerText = `₹${finalTotal.toFixed(2)}`;
     if (bottomTotalEl) bottomTotalEl.innerText = `₹${finalTotal.toFixed(2)}`;
     
     const savingsMsg = document.querySelector('.savings-message');
@@ -1078,24 +1196,6 @@ function initCouponSection() {
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') applyCoupon();
         });
-    }
-}
-
-const originalLoadCart = loadCart;
-loadCart = function() {
-    originalLoadCart();
-    
-    const appliedCode = localStorage.getItem('applied_coupon');
-    const couponDiscount = localStorage.getItem('coupon_discount');
-    
-    if (appliedCode && couponDiscount) {
-        showAppliedCoupon(appliedCode, parseFloat(couponDiscount));
-        
-        const totalMrp = parseFloat(document.getElementById('total-mrp')?.innerText.replace('₹', '') || 0);
-        const finalTotal = totalMrp - parseFloat(couponDiscount);
-        
-        document.getElementById('final-total').innerText = `₹${finalTotal.toFixed(2)}`;
-        document.getElementById('bottom-total').innerText = `₹${finalTotal.toFixed(2)}`;
     }
 }
 
@@ -1207,4 +1307,18 @@ function syncCartWithServer() {
         }
     })
     .catch(err => console.warn('Could not sync cart:', err));
+}
+
+if (document.body.classList.contains('cart-page')) {
+    window.goBack = function() {
+        console.log('Cart page back button - redirecting to last product or home');
+        const lastProduct = sessionStorage.getItem('last_product_page');
+        
+        if (lastProduct && !lastProduct.includes('/checkout') && !lastProduct.includes('/cart')) {
+            window.location.href = lastProduct;
+            sessionStorage.removeItem('last_product_page');
+        } else {
+            window.location.href = '/';
+        }
+    };
 }

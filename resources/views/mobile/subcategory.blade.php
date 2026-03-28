@@ -131,7 +131,6 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     const subcategoryId = document.body.dataset.subcategoryId;
     
-    // ✅ Bottom Nav render karo
     renderBottomNav();
     
     fetch(`https://retailadmin.ggconsultancy.services/api/categories/${subcategoryId}/products`)
@@ -155,7 +154,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 });
 
-// ✅ Bottom Navigation function
 function renderBottomNav() {
     const nav = document.getElementById('mobile-bottom-nav');
     if (!nav) return;
