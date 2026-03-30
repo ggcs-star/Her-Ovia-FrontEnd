@@ -1,5 +1,4 @@
-/* checkout.css - Fully Responsive Checkout Styles */
-/* Base Reset & Variables */
+
 * {
     margin: 0;
     padding: 0;
@@ -23,7 +22,6 @@
     --transition: all 0.3s ease;
 }
 
-/* Main Layout - Mobile First Approach */
 .checkout-page {
     background: var(--light-bg);
     padding-top: max(12px, var(--safe-area-inset-top));
@@ -45,7 +43,6 @@
     padding-right: max(16px, env(safe-area-inset-right));
 }
 
-/* Typography */
 .page-title {
     font-size: 1.75rem;
     font-weight: 700;
@@ -54,7 +51,6 @@
     letter-spacing: -0.3px;
 }
 
-/* Progress Steps - Flexible Layout */
 .checkout-progress {
     display: flex;
     align-items: center;
@@ -116,14 +112,12 @@
     margin: 0 8px;
 }
 
-/* Checkout Grid - Responsive */
 .checkout-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.5rem;
 }
 
-/* Cards & Sections */
 .checkout-section {
     background: var(--white);
     border-radius: var(--radius-md);
@@ -166,7 +160,6 @@
     color: var(--white);
 }
 
-/* Address Cards */
 .address-list {
     display: flex;
     flex-direction: column;
@@ -343,7 +336,6 @@
     transform: translateY(-1px);
 }
 
-/* Order Summary Card */
 .order-summary-card {
     background: var(--white);
     border-radius: var(--radius-md);
@@ -475,7 +467,6 @@
     cursor: help;
 }
 
-/* Promo Code */
 .promo-code {
     display: flex;
     flex-direction: column;
@@ -508,7 +499,6 @@
     background: #1a1e2f;
 }
 
-/* Place Order Button */
 .place-order-btn {
     width: 100%;
     padding: 1rem;
@@ -539,7 +529,6 @@
     gap: 0.375rem;
 }
 
-/* Payment Methods */
 .payment-methods-section {
     margin-top: 1.5rem;
 }
@@ -579,7 +568,7 @@
     color: var(--text-dark);
 }
 
-/* States */
+
 .loading-spinner {
     text-align: center;
     padding: 2rem;
@@ -637,7 +626,6 @@
     margin-top: 0.3125rem;
 }
 
-/* Toast Notification */
 .toast-message {
     position: fixed;
     bottom: calc(20px + var(--safe-area-inset-bottom));
@@ -683,7 +671,6 @@
     }
 }
 
-/* Tablet Breakpoint (768px and up) */
 @media (min-width: 768px) {
     .checkout-content {
         padding: 20px 0 30px;
@@ -754,7 +741,6 @@
     }
 }
 
-/* Desktop Breakpoint (992px and up) */
 @media (min-width: 992px) {
     .checkout-grid {
         grid-template-columns: 1fr 380px;
@@ -782,7 +768,6 @@
     }
 }
 
-/* Large Desktop (1200px and up) */
 @media (min-width: 1200px) {
     .checkout-container {
         padding: 0 20px;
@@ -793,7 +778,6 @@
     }
 }
 
-/* Mobile Landscape (max-width: 767px) */
 @media (max-width: 767px) {
     .checkout-progress {
         padding: 0.875rem;
@@ -824,7 +808,6 @@
     }
 }
 
-/* Small Mobile (max-width: 480px) */
 @media (max-width: 480px) {
     .checkout-content {
         padding-bottom: calc(70px + var(--safe-area-inset-bottom));
@@ -870,7 +853,6 @@
     }
 }
 
-/* Extra Small Mobile (max-width: 360px) */
 @media (max-width: 360px) {
     .checkout-progress {
         flex-direction: column;
@@ -906,7 +888,6 @@
     }
 }
 
-/* Safe Area Support */
 @supports (padding: max(0px)) {
     .checkout-container {
         padding-left: max(16px, env(safe-area-inset-left));
@@ -930,7 +911,7 @@
     }
 }
 
-/* Print Styles */
+
 @media print {
     .checkout-page {
         background: white;
@@ -955,4 +936,169 @@
     .address-card {
         break-inside: avoid;
     }
+}
+.address-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    background: white;
+    position: relative;
+}
+
+.address-card.default {
+    background: #fff0f3;
+    border-color: #ff3f6c;
+}
+
+.address-radio {
+    flex-shrink: 0;
+    padding-top: 2px;
+}
+
+.address-details {
+    flex: 1;
+    cursor: pointer;
+}
+
+.address-name {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.address-phone {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.address-text {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.address-actions {
+    flex-shrink: 0;
+}
+
+.remove-address-btn {
+    background: transparent;
+    color: #b91c1c;
+    border: 1px solid #fee2e2;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0;
+}
+
+.remove-address-btn:hover {
+    background: #fee2e2;
+    border-color: #b91c1c;
+}
+
+.remove-address-btn svg {
+    width: 16px;
+    height: 16px;
+}
+.confirm-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirm-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.confirm-modal-content {
+    position: relative;
+    background: white;
+    width: 280px;
+    max-width: 85%;
+    border-radius: 20px;
+    padding: 24px 20px;
+    text-align: center;
+    animation: modalPopIn 0.2s ease;
+}
+
+@keyframes modalPopIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.confirm-modal-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.confirm-modal-content h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.confirm-modal-content p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 24px;
+}
+
+.confirm-modal-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.confirm-modal-cancel {
+    flex: 1;
+    background: #f5f5f5;
+    border: none;
+    padding: 12px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.confirm-modal-confirm {
+    flex: 1;
+    background: #ff3f6c;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.confirm-modal-confirm:hover {
+    background: #e6355a;
 }

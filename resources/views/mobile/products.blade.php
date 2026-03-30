@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Products | RAPID RETAIL</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body{
@@ -105,6 +106,40 @@
             border-radius: 12px;
             overflow: hidden;
             border: 1px solid #f0f0f0;
+        }
+        .card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+        .img-box {
+            aspect-ratio: 3/4;
+            background: #f8f8f8;
+        }
+        
+        .info {
+            padding: 10px;
+        }
+        
+        .brand {
+            font-size: 11px;
+        }
+        
+        .name {
+            font-size: 12px;
+            line-height: 1.3;
+        }
+        
+        .price .current {
+            font-size: 13px;
+        }
+        
+        .price .original {
+            font-size: 10px;
+        }
+        
+        .off {
+            font-size: 10px;
         }
         .img-box {
             position: relative;
@@ -241,9 +276,7 @@
         .nav-item.active { color: #ff3f6c; }
         .nav-icon { font-size: 20px; }
 
-        /* Desktop Layout Styles - ONLY APPLIES ON WEB/DESKTOP */
         @media screen and (min-width: 1024px) {
-            /* Create main container for desktop layout */
             .products-page-wrapper {
                 display: flex;
                 max-width: 1440px;
@@ -253,7 +286,6 @@
                 padding: 20px 24px;
             }
             
-            /* Left Sidebar - Desktop Filters */
             .desktop-filters-sidebar {
                 width: 280px;
                 flex-shrink: 0;
@@ -268,25 +300,21 @@
                 border: 1px solid #f0f0f0;
             }
             
-            /* Hide mobile action bar on desktop */
             .action-bar {
                 display: none !important;
             }
             
-            /* Right Content Area - Products */
             .desktop-products-area {
                 flex: 1;
                 min-width: 0;
             }
             
-            /* Products grid - 3 columns on desktop */
             .products {
-                grid-template-columns: repeat(3, 1fr);
+                grid-template-columns: repeat(4, 1fr) !important;  /* 3 se 4 columns kar diya */
                 gap: 20px;
                 padding: 0 0 40px 0;
             }
             
-            /* Sub-strip styling for desktop */
             .sub-strip {
                 position: relative;
                 top: 0;
@@ -306,7 +334,6 @@
                 height: 70px;
             }
             
-            /* Desktop filter styles */
             .desktop-filter-section {
                 margin-bottom: 28px;
                 border-bottom: 1px solid #f0f0f0;
@@ -805,26 +832,129 @@
         .header-icon-btn:hover svg {
             stroke: #ff3f6c;
         }
+@media screen and (min-width: 1025px) {
+    .product-desktop-header {
+        display: block !important;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: white;
+    }
+    .header {
+        display: none !important;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .product-desktop-header {
+        display: none !important;
+    }
+    
+    .header {
+        display: flex !important;
+    }
+}
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-right button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+}
+
+.header-right button svg {
+    width: 22px;
+    height: 22px;
+    stroke: #333;
+    fill: none;
+}
+
+.header-right button:hover svg {
+    stroke: #ff3f6c;
+}
+.nav-icon-box {
+    position: relative;
+}
+
+.cart-count-badge {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+
+    background: #ff3f6c;
+    color: white;
+
+    font-size: 10px;
+    font-weight: 600;
+
+    min-width: 16px;
+    height: 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    padding: 0 4px;
+}
     </style>
 </head>
 <body data-page="products" data-subcategory-id="{{ request()->query('subcategory') }}" data-category-id="{{ request()->query('category') }}">
 
 <div class="header">
     <div class="header-left">
-        <span class="back-btn" onclick="window.history.back()">←</span>
+        <span class="back-btn" onclick="goBack()">←</span>
         <img src="{{ asset('images/logo.jpg') }}" alt="RAPID RETAIL" style="height: 32px; width: auto;">
         <h1>Products</h1>
     </div>
     <div class="header-right">
-        <span onclick="window.location.href='/search'">🔍</span>
-        <button class="header-icon-btn" onclick="window.location.href='/wishlist'" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-        </button>
-    </div>
+    <button class="search-icon-btn" onclick="window.location.href='/search'">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="10" cy="10" r="7"/>
+            <line x1="21" y1="21" x2="15" y2="15"/>
+        </svg>
+    </button>
+    <button class="wishlist-icon-btn" onclick="window.location.href='/wishlist'">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+    </button>
+</div>
 </div>
 
+<div class="product-desktop-header" id="productDesktopHeader" style="display: none;">
+    <div class="web-header">
+        <div class="top-bar">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
+        <div class="main-header">
+            <div class="logo-area">
+                <a href="/" class="logo">RAPID RETAIL</a>
+                <nav class="nav-menu" id="productNavMenu">
+                </nav>
+            </div>
+            <div class="search-area">
+                <div class="search-box">
+                    <input type="text" placeholder="Search for products, brands...">
+                    <button>Search</button>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="/profile" class="action-link" id="desktopProfileLink">Profile</a>
+                <a href="/wishlist" class="action-link">Wishlist</a>
+                <a href="/cart" class="action-link">Cart</a>
+            </div>
+        </div>
+    </div>
+    <div class="all-categories-popup" id="productAllCategoriesPopup" style="display:none; position:absolute; top:100%; left:0; width:100%; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:1000; border-top:1px solid #f0f0f0;"></div>
+</div>
 <!-- Desktop Layout Wrapper -->
 <div class="products-page-wrapper">
     <!-- Desktop Sidebar Filters (Only visible on desktop) -->
@@ -923,6 +1053,32 @@
         </div>
         <span>Categories</span>
     </a>
+    
+    <a href="/cart" class="nav-item-figma">
+        <div class="nav-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 1H5L7.68 14.39
+                        C7.77144 14.8504 8.02191 15.264
+                        8.38755 15.5583
+                        C8.75318 15.8526 9.2107 16.009
+                        9.68 16
+                        H19.4
+                        C19.8693 16.009 20.3268 15.8526
+                        20.6925 15.5583
+                        C21.0581 15.264 21.3086 14.8504
+                        21.4 14.39
+                        L23 6H6"/>
+                <circle cx="9" cy="21" r="1.5"/>
+                <circle cx="20" cy="21" r="1.5"/>
+            </svg>
+            <span id="cart-count-badge" class="cart-count-badge">
+                0
+            </span>
+        </div>
+        <span>Cart</span>
+    </a>
     <a href="/profile" class="nav-item-figma">
         <div class="nav-icon-box">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -931,16 +1087,6 @@
             </svg>
         </div>
         <span>Profile</span>
-    </a>
-    <a href="/cart" class="nav-item-figma">
-        <div class="nav-icon-box">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 1H5L7.68 14.39C7.77144 14.8504 8.02191 15.264 8.38755 15.5583C8.75318 15.8526 9.2107 16.009 9.68 16H19.4C19.8693 16.009 20.3268 15.8526 20.6925 15.5583C21.0581 15.264 21.3086 14.8504 21.4 14.39L23 6H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <circle cx="9" cy="21" r="1.5" fill="currentColor"/>
-                <circle cx="20" cy="21" r="1.5" fill="currentColor"/>
-            </svg>
-        </div>
-        <span>Cart</span>
     </a>
 </div>
 
@@ -1025,6 +1171,7 @@
         </div>
     </div>
 </div>
+<script src="{{ asset('mobile/script.js') }}"></script>
 
 <script>
 (function() {
@@ -1114,55 +1261,58 @@
     }
 
     function renderProducts(products) {
-        const grid = document.getElementById('productsGrid');
-        if (!grid) return;
-        if (!products.length) { grid.innerHTML = '<div class="loading">No products found</div>'; return; }
+    const grid = document.getElementById('productsGrid');
+    if (!grid) return;
+    if (!products.length) { grid.innerHTML = '<div class="loading">No products found</div>'; return; }
+    
+    // ✅ Get latest wishlist every time
+    const latestWishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
 
-        const fallback = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
+    const fallback = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
 
-        grid.innerHTML = products.map(p => {
-            const price = parseFloat(p.final_price || p.price || 0);
-            const mrp = parseFloat(p.price || 0);
-            const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
-            const rating = 4.3;
-            const full = Math.floor(rating);
-            const half = (rating % 1) >= 0.3;
-            let stars = '';
-            for (let i = 0; i < full; i++) stars += '★';
-            if (half) stars += '½';
-            for (let i = stars.length; i < 5; i++) stars += '☆';
-            
-            const inWish = wishlist.some(item => item.id == p.id);
-            const isBest = discount > 20;
-            
-            return `
-                <div class="card">
-                    <div class="img-box" onclick="window.location.href='/product/${p.slug}'">
-                        <img src="${p.image_url || fallback}" onerror="this.src='${fallback}'">
-                        ${isBest ? '<span class="badge">Best Seller</span>' : ''}
-                        <button class="wishlist ${inWish ? 'active' : ''}" 
-                                onclick="event.stopPropagation(); toggleWish(this, ${JSON.stringify({
-                                    id: p.id, name: p.name, price: price,
-                                    image: p.image_url, brand: p.brand, slug: p.slug
-                                }).replace(/"/g, '&quot;')})">
-                            ${inWish ? '❤️' : '♡'}
-                        </button>
-                    </div>
-                    <div class="info" onclick="window.location.href='/product/${p.slug}'">
-                        <div class="brand">${p.brand || 'RAPID RETAIL'}</div>
-                        <div class="name">${p.name}</div>
-                        <div class="rating"><span class="stars">${stars}</span> | ${Math.floor(Math.random() * 50) + 10}</div>
-                        <div class="price">
-                            <span class="current">₹${price.toLocaleString('en-IN')}</span>
-                            ${mrp > price ? `<span class="original">₹${mrp.toLocaleString('en-IN')}</span>` : ''}
-                            ${discount > 0 ? `<span class="off">${discount}% Off</span>` : ''}
-                        </div>
+    grid.innerHTML = products.map(p => {
+        const price = parseFloat(p.final_price || p.price || 0);
+        const mrp = parseFloat(p.price || 0);
+        const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
+        const rating = 4.3;
+        const full = Math.floor(rating);
+        const half = (rating % 1) >= 0.3;
+        let stars = '';
+        for (let i = 0; i < full; i++) stars += '★';
+        if (half) stars += '½';
+        for (let i = stars.length; i < 5; i++) stars += '☆';
+        
+        // ✅ Use latestWishlist instead of wishlist
+        const inWish = latestWishlist.some(item => item.id == p.id);
+        const isBest = discount > 20;
+        
+        return `
+            <div class="card">
+                <div class="img-box" onclick="window.location.href='/product/${p.slug}'">
+                    <img src="${p.image_url || fallback}" onerror="this.src='${fallback}'">
+                    ${isBest ? '<span class="badge">Best Seller</span>' : ''}
+                    <button class="wishlist ${inWish ? 'active' : ''}" 
+                            onclick="event.stopPropagation(); toggleWish(this, ${JSON.stringify({
+                                id: p.id, name: p.name, price: price,
+                                image: p.image_url, brand: p.brand, slug: p.slug
+                            }).replace(/"/g, '&quot;')})">
+                        ${inWish ? '❤️' : '♡'}
+                    </button>
+                </div>
+                <div class="info" onclick="window.location.href='/product/${p.slug}'">
+                    <div class="brand">${p.brand || 'RAPID RETAIL'}</div>
+                    <div class="name">${p.name}</div>
+                    <div class="rating"><span class="stars">${stars}</span> | ${Math.floor(Math.random() * 50) + 10}</div>
+                    <div class="price">
+                        <span class="current">₹${price.toLocaleString('en-IN')}</span>
+                        ${mrp > price ? `<span class="original">₹${mrp.toLocaleString('en-IN')}</span>` : ''}
+                        ${discount > 0 ? `<span class="off">${discount}% Off</span>` : ''}
                     </div>
                 </div>
-            `;
-        }).join('');
-    }
-
+            </div>
+        `;
+    }).join('');
+}
     function loadDesktopFilters(mainCategory) {
         const categoryContainer = document.getElementById('desktopCategoryFilters');
         if (categoryContainer && mainCategory.children && mainCategory.children.length) {
@@ -1173,84 +1323,71 @@
             `).join('');
         }
     }
-
     function updateDesktopFiltersFromProducts(products) {
-        const brands = new Set();
-        products.forEach(p => {
-            if (p.brand) brands.add(p.brand);
-        });
-        
-        const brandContainer = document.getElementById('desktopBrandFilters');
-        if (brandContainer) {
-            brandContainer.innerHTML = Array.from(brands).map(brand => `
-                <label class="desktop-filter-option">
-                    <input type="checkbox" class="desktop-brand-filter" value="${brand}" onchange="applyDesktopFilters()"> ${brand}
-                </label>
-            `).join('');
-        }
-        
-        const discountContainer = document.getElementById('desktopDiscountFilters');
-        const discounts = ['10%', '20%', '30%', '40%', '50%', '60%', '70%'];
-        if (discountContainer) {
-            discountContainer.innerHTML = discounts.map(d => `
-                <label class="desktop-filter-option">
-                    <input type="checkbox" class="desktop-discount-filter" value="${d}" onchange="applyDesktopFilters()"> ${d} & above
-                </label>
-            `).join('');
-        }
-        
-        const sizeContainer = document.getElementById('desktopSizeFilters');
-        const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
-        if (sizeContainer) {
-            sizeContainer.innerHTML = sizes.map(s => `
-                <label class="desktop-filter-option">
-                    <input type="checkbox" class="desktop-size-filter" value="${s}" onchange="applyDesktopFilters()"> ${s}
-                </label>
-            `).join('');
-        }
-        
-        const colorContainer = document.getElementById('desktopColorFilters');
-        const colors = ['Red', 'Blue', 'Green', 'Black', 'White', 'Pink', 'Yellow', 'Purple'];
-        if (colorContainer) {
-            colorContainer.innerHTML = colors.map(c => `
-                <label class="desktop-filter-option">
-                    <input type="checkbox" class="desktop-color-filter" value="${c}" onchange="applyDesktopFilters()"> ${c}
-                </label>
-            `).join('');
-        }
+    const brands = new Set();
+    products.forEach(p => {
+        if (p.brand) brands.add(p.brand);
+    });
+    
+    const brandContainer = document.getElementById('desktopBrandFilters');
+    if (brandContainer) {
+        brandContainer.innerHTML = Array.from(brands).map(brand => `
+            <label class="desktop-filter-option">
+                <input type="checkbox" class="desktop-brand-filter" value="${brand}" onchange="applyDesktopFilters()"> ${brand}
+            </label>
+        `).join('');
     }
-
+    
+    const discountContainer = document.getElementById('desktopDiscountFilters');
+    const discounts = ['10%', '20%', '30%', '40%', '50%', '60%', '70%'];
+    if (discountContainer) {
+        discountContainer.innerHTML = discounts.map(d => `
+            <label class="desktop-filter-option">
+                <input type="checkbox" class="desktop-discount-filter" value="${d}" onchange="applyDesktopFilters()"> ${d} & above
+            </label>
+        `).join('');
+    }
+}
     window.applyDesktopFilters = function() {
-        let filtered = [...originalProducts];
-        
-        const selectedCategories = Array.from(document.querySelectorAll('.desktop-category-filter:checked')).map(cb => cb.value);
-        if (selectedCategories.length > 0) {
-            filtered = filtered.filter(p => selectedCategories.includes(p.subcategory_id?.toString()));
-        }
-        
-        const selectedBrands = Array.from(document.querySelectorAll('.desktop-brand-filter:checked')).map(cb => cb.value);
-        if (selectedBrands.length > 0) {
-            filtered = filtered.filter(p => selectedBrands.includes(p.brand));
-        }
-        
-        const selectedDiscounts = Array.from(document.querySelectorAll('.desktop-discount-filter:checked')).map(cb => cb.value);
-        if (selectedDiscounts.length > 0) {
-            filtered = filtered.filter(p => {
-                if (p.price && p.final_price) {
-                    const original = parseFloat(p.price);
-                    const final = parseFloat(p.final_price);
-                    if (original > final) {
-                        const discount = Math.round(((original - final) / original) * 100);
-                        return selectedDiscounts.some(d => discount >= parseInt(d));
-                    }
+    let filtered = [...currentProducts];
+    let filterApplied = false;
+    
+    const selectedCategories = Array.from(document.querySelectorAll('.desktop-category-filter:checked')).map(cb => cb.value);
+    if (selectedCategories.length > 0) {
+        filterApplied = true;
+        filtered = filtered.filter(p => selectedCategories.includes(p.subcategory_id?.toString()));
+    }
+    
+    const selectedBrands = Array.from(document.querySelectorAll('.desktop-brand-filter:checked')).map(cb => cb.value);
+    if (selectedBrands.length > 0) {
+        filterApplied = true;
+        filtered = filtered.filter(p => selectedBrands.includes(p.brand));
+    }
+    
+    const selectedDiscounts = Array.from(document.querySelectorAll('.desktop-discount-filter:checked')).map(cb => cb.value);
+    if (selectedDiscounts.length > 0) {
+        filterApplied = true;
+        filtered = filtered.filter(p => {
+            if (p.price && p.final_price) {
+                const original = parseFloat(p.price);
+                const final = parseFloat(p.final_price);
+                if (original > final) {
+                    const discount = Math.round(((original - final) / original) * 100);
+                    return selectedDiscounts.some(d => discount >= parseInt(d));
                 }
-                return false;
-            });
-        }
-        
+            }
+            return false;
+        });
+    }
+    
+    if (!filterApplied) {
+        renderProducts(currentProducts);
+    } else if (filtered.length > 0) {
         renderProducts(filtered);
-    };
-
+    } else {
+        document.getElementById('productsGrid').innerHTML = '<div class="loading" style="grid-column:1/-1; padding:40px; text-align:center; color:#999;">No products match your filters</div>';
+    }
+};
     window.applyDesktopPriceFilter = function() {
         const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
         const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
@@ -1273,19 +1410,24 @@
 
     window.toggleWish = function(btn, product) {
         event.stopPropagation();
-        const exists = wishlist.some(item => item.id == product.id);
+        let currentWishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+        const exists = currentWishlist.some(item => item.id == product.id);
         if (exists) {
-            wishlist = wishlist.filter(item => item.id != product.id);
+            currentWishlist = currentWishlist.filter(item => item.id != product.id);
             btn.innerHTML = '♡';
             btn.classList.remove('active');
         } else {
-            wishlist.push(product);
+            currentWishlist.push(product);
             btn.innerHTML = '❤️';
             btn.classList.add('active');
         }
-        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        localStorage.setItem('wishlist', JSON.stringify(currentWishlist));
+        window.wishlist = currentWishlist;
+        
+        // ✅ Force re-render by calling renderProducts with currentProducts
+        renderProducts(currentProducts);
     };
-
+        
     window.showSortPopup = function() {
         document.getElementById('sortPopupOverlay').classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -1565,6 +1707,120 @@
             }
         }
     };
+    // Load categories for product page desktop header
+async function loadProductDesktopHeader() {
+    const navMenu = document.getElementById('productNavMenu');
+    const popup = document.getElementById('productAllCategoriesPopup');
+    
+    if (!navMenu) return;
+    
+    try {
+        const res = await fetch('https://retailadmin.ggconsultancy.services/api/categories');
+        const data = await res.json();
+        
+        if (data.success) {
+            const categories = data.data.slice(0, 5);
+            
+            navMenu.innerHTML = categories.map(cat => 
+                `<a href="/category/${cat.id}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`
+            ).join('');
+            
+            // Setup hover popup
+            const navItems = document.querySelectorAll('#productNavMenu .nav-item');
+            
+            const showPopup = () => {
+                if (!popup) return;
+                renderProductAllCategoriesPopup(data.data);
+                popup.style.display = 'block';
+            };
+            
+            const hidePopup = () => {
+                if (!popup) return;
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                }, 200);
+            };
+            
+            navItems.forEach(item => {
+                item.addEventListener('mouseenter', showPopup);
+                item.addEventListener('mouseleave', hidePopup);
+            });
+            
+            if (popup) {
+                popup.addEventListener('mouseenter', () => {
+                    popup.style.display = 'block';
+                });
+                popup.addEventListener('mouseleave', hidePopup);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading categories:', error);
+    }
+}
+
+function renderProductAllCategoriesPopup(categories) {
+    const popup = document.getElementById('productAllCategoriesPopup');
+    if (!popup) return;
+    
+    const allMainCategories = categories;
+    const columnSize = Math.ceil(allMainCategories.length / 5);
+    const columns = [];
+    
+    for (let i = 0; i < 5; i++) {
+        columns.push(allMainCategories.slice(i * columnSize, (i + 1) * columnSize));
+    }
+    
+    let html = `<div style="max-width:1200px; margin:0 auto; padding:30px; display:grid; grid-template-columns:repeat(5,1fr); gap:25px;">`;
+    
+    columns.forEach(col => {
+        if (col.length > 0) {
+            html += `<div>`;
+            col.forEach(cat => {
+                html += `
+                    <div style="margin-bottom:20px;">
+                        <h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">${cat.name}</h3>
+                        <ul style="list-style:none; padding:0; margin-top:12px;">
+                `;
+                
+                if (cat.children && cat.children.length > 0) {
+                    cat.children.slice(0, 6).forEach(sub => {
+                        html += `<li style="margin-bottom:8px;"><a href="/category/${sub.id}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
+                    });
+                    if (cat.children.length > 6) {
+                        html += `<li style="margin-top:5px;"><a href="/category/${cat.id}" style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">+${cat.children.length - 6} more →</a></li>`;
+                    }
+                }
+                
+                html += `</ul></div>`;
+            });
+            html += `</div>`;
+        }
+    });
+    
+    html += `</div>`;
+    popup.innerHTML = html;
+}
+document.addEventListener('DOMContentLoaded', function () {
+    updateCartCountBadge();
+});
+function updateCartCountBadge() {
+
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    // count unique products (not qty)
+    let totalItems = cart.length;
+
+    const badge = document.getElementById('cart-count-badge');
+
+    if (!badge) return;
+
+    badge.style.display = 'flex';
+    badge.textContent = totalItems;
+}
+// Call this function when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    loadProductDesktopHeader();
+});
 function initDesktopFiltersToggle() {
     document.querySelectorAll('.desktop-filter-section').forEach(section => {
         const title = section.querySelector('.desktop-filter-title');

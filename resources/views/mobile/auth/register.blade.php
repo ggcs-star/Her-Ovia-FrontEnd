@@ -522,6 +522,26 @@ input, button{
         font-size: 26px;
     }
 }
+.eye-icon {
+    display: none;
+    color: #999;
+}
+
+.open-eye {
+    display: inline;
+}
+
+.toggle-password.active .open-eye {
+    display: none;
+}
+
+.toggle-password.active .closed-eye {
+    display: inline;
+}
+
+.toggle-password:hover {
+    color: #ff3f6c;
+}
 </style>
 </head>
 <body>
@@ -537,14 +557,13 @@ input, button{
     playsinline
     webkit-playsinline
     preload="auto">
-    <source src="{{ asset('videos/shop-loop.mp4') }}" type="video/mp4">
+    <source src="{{ asset('videos/Pink_and_White_Brand_Theme_Video.mp4') }}" type="video/mp4">
 </video>
-
 
     <div class="overlay"></div>
 
     <div class="left-content">
-        <h1>Shop. Earn. Save.</h1>
+        <h1>STYLE. SAVE. REPEAT..</h1>
         <p>Get exclusive discounts, cashback rewards, and coins on every purchase.</p>
     </div>
 
@@ -571,7 +590,18 @@ input, button{
             <label>Password</label>
             <div class="password-wrapper">
                 <input type="password" name="password" id="password" required placeholder="Create a password">
-                <span class="toggle-password" onclick="togglePassword('password', this)">👁️</span>
+                <span class="toggle-password" onclick="togglePassword('password', this)">
+                <svg class="eye-icon open-eye" viewBox="0 0 24 24" width="22" height="22">
+                    <path fill="currentColor"
+                    d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+                </svg>
+
+                <svg class="eye-icon closed-eye" viewBox="0 0 24 24" width="22" height="22">
+                    <path fill="currentColor"
+                    d="M12 5c-5 0-9.27 3.11-11 7 1.05 2.36 2.98 4.3 5.42 5.52L3 21l1.41 1.41L21 5.83 19.59 4.41l-3.01 3.01C15.06 6.54 13.57 5 12 5zm0 12c-1.57 0-3.06-.54-4.58-1.42l1.5-1.5A3 3 0 0 0 12 15a3 3 0 0 0 2.92-2.92l1.5-1.5C17.46 12.06 18 13.55 18 15c0 1.66-2.24 3-6 3z"/>
+                </svg>
+
+            </span>
             </div>
         </div>
 
@@ -579,7 +609,18 @@ input, button{
             <label>Confirm Password</label>
             <div class="password-wrapper">
                 <input type="password" name="password_confirmation" id="confirmPassword" required placeholder="Confirm your password">
-                <span class="toggle-password" onclick="togglePassword('confirmPassword', this)">👁️</span>
+                <span class="toggle-password" onclick="togglePassword('confirmPassword', this)">
+                <svg class="eye-icon open-eye" viewBox="0 0 24 24" width="22" height="22">
+                    <path fill="currentColor"
+                    d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+                </svg>
+
+                <svg class="eye-icon closed-eye" viewBox="0 0 24 24" width="22" height="22">
+                    <path fill="currentColor"
+                    d="M12 5c-5 0-9.27 3.11-11 7 1.05 2.36 2.98 4.3 5.42 5.52L3 21l1.41 1.41L21 5.83 19.59 4.41l-3.01 3.01C15.06 6.54 13.57 5 12 5zm0 12c-1.57 0-3.06-.54-4.58-1.42l1.5-1.5A3 3 0 0 0 12 15a3 3 0 0 0 2.92-2.92l1.5-1.5C17.46 12.06 18 13.55 18 15c0 1.66-2.24 3-6 3z"/>
+                </svg>
+
+            </span>
             </div>
         </div>
 
@@ -591,7 +632,7 @@ input, button{
     </form>
 </div>
 <script>
-const BASE_URL = "http://192.168.0.105:8000/api";
+const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
 
 function showAlert(message, type) {
     const existingAlert = document.querySelector('.alert');
@@ -609,29 +650,138 @@ function showAlert(message, type) {
     }, 5000);
 }
 
+function validateField(field, value) {
+    const fieldNames = {
+        name: { label: 'Full Name', min: 2, max: 50 },
+        email: { label: 'Email', pattern: /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/ },
+        password: { label: 'Password', min: 8 },
+        confirm: { label: 'Confirm Password' }
+    };
+    
+    if (field === 'name') {
+        if (value.length < 2) return { valid: false, message: 'Full Name must be at least 2 characters' };
+        if (value.length > 50) return { valid: false, message: 'Full Name must be less than 50 characters' };
+        if (!/^[a-zA-Z\s]+$/.test(value)) return { valid: false, message: 'Full Name can only contain letters and spaces' };
+    }
+    
+    if (field === 'email') {
+        if (!value) return { valid: false, message: 'Email is required' };
+        if (!/^[^\s@]+@([^\s@]+\.)+[^\s@]+$/.test(value)) return { valid: false, message: 'Enter a valid email address' };
+    }
+    
+    if (field === 'password') {
+        if (value.length < 8) return { valid: false, message: 'Password must be at least 8 characters' };
+        if (!/[A-Z]/.test(value)) return { valid: false, message: 'Password must contain at least one uppercase letter' };
+        if (!/[a-z]/.test(value)) return { valid: false, message: 'Password must contain at least one lowercase letter' };
+        if (!/[0-9]/.test(value)) return { valid: false, message: 'Password must contain at least one number' };
+    }
+    
+    return { valid: true, message: '' };
+}
+
+function showFieldError(fieldId, message) {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+    
+    const existingError = input.parentElement.querySelector('.field-error');
+    if (existingError) existingError.remove();
+    
+    const errorSpan = document.createElement('span');
+    errorSpan.className = 'field-error';
+    errorSpan.textContent = message;
+    errorSpan.style.cssText = 'color: #b91c1c; font-size: 11px; margin-top: 4px; display: block;';
+    input.parentElement.appendChild(errorSpan);
+    
+    input.style.borderColor = '#b91c1c';
+    
+    setTimeout(() => {
+        const err = input.parentElement.querySelector('.field-error');
+        if (err) err.remove();
+        input.style.borderColor = '';
+    }, 3000);
+}
+
+function clearFieldError(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const error = input.parentElement.querySelector('.field-error');
+    if (error) error.remove();
+    input.style.borderColor = '';
+}
 document.addEventListener("DOMContentLoaded", function () {
     const formElement = document.getElementById("registerForm");
+    const nameInput = document.querySelector("input[name='name']");
+    const emailInput = document.querySelector("input[name='email']");
+    const passwordInput = document.getElementById("password");
+    const confirmInput = document.getElementById("confirmPassword");
+    
+    function validateOnBlur() {
+        if (nameInput.value.trim()) {
+            const result = validateField('name', nameInput.value.trim());
+            if (!result.valid) showFieldError('name', result.message);
+            else clearFieldError('name');
+        }
+        if (emailInput.value.trim()) {
+            const result = validateField('email', emailInput.value.trim());
+            if (!result.valid) showFieldError('email', result.message);
+            else clearFieldError('email');
+        }
+    }
+    
+    nameInput.addEventListener('blur', validateOnBlur);
+    emailInput.addEventListener('blur', validateOnBlur);
+    
+    passwordInput.addEventListener('blur', function() {
+        if (this.value) {
+            const result = validateField('password', this.value);
+            if (!result.valid) showFieldError('password', result.message);
+            else clearFieldError('password');
+        }
+    });
+    
+    confirmInput.addEventListener('blur', function() {
+        if (this.value && passwordInput.value) {
+            if (this.value !== passwordInput.value) {
+                showFieldError('confirmPassword', 'Passwords do not match');
+            } else {
+                clearFieldError('confirmPassword');
+            }
+        }
+    });
 
     formElement.addEventListener("submit", async function (e) {
         e.preventDefault();
 
-        const name = document.querySelector("input[name='name']").value.trim();
-        const email = document.querySelector("input[name='email']").value.trim();
-        const password = document.querySelector("input[name='password']").value;
-        const passwordConfirmation = document.querySelector("input[name='password_confirmation']").value;
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const passwordConfirmation = confirmInput.value;
+        
+        clearFieldError('name');
+        clearFieldError('email');
+        clearFieldError('password');
+        clearFieldError('confirmPassword');
 
-        if (!name || !email || !password || !passwordConfirmation) {
-            showAlert("Please fill in all fields", 'error');
+        const nameCheck = validateField('name', name);
+        if (!nameCheck.valid) {
+            showFieldError('name', nameCheck.message);
             return;
         }
-
+        
+        const emailCheck = validateField('email', email);
+        if (!emailCheck.valid) {
+            showFieldError('email', emailCheck.message);
+            return;
+        }
+        
+        const passwordCheck = validateField('password', password);
+        if (!passwordCheck.valid) {
+            showFieldError('password', passwordCheck.message);
+            return;
+        }
+        
         if (password !== passwordConfirmation) {
-            showAlert("Passwords do not match", 'error');
-            return;
-        }
-
-        if (password.length < 8) {
-            showAlert("Password must be at least 8 characters", 'error');
+            showFieldError('confirmPassword', 'Passwords do not match');
             return;
         }
 
@@ -651,22 +801,19 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             const data = await response.json();
-            console.log("API Response:", data);
 
             if (response.ok && data.success) {
                 localStorage.setItem("verify_email", email);
                 window.location.href = "/verify-otp?email=" + encodeURIComponent(email);
             } else {
-                const errorMsg = data.message || data.error || "Registration failed";
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'alert alert-error';
-                errorDiv.textContent = errorMsg;
-                errorDiv.style.marginBottom = '20px';
-                
-                const form = document.getElementById('registerForm');
-                const existingError = form.querySelector('.alert-error');
-                if (existingError) existingError.remove();
-                form.insertBefore(errorDiv, form.firstChild);
+                let errorMsg = "Registration failed";
+                if (data.message) errorMsg = data.message;
+                else if (data.error) errorMsg = data.error;
+                else if (data.errors) {
+                    const firstError = Object.values(data.errors)[0];
+                    if (firstError && firstError[0]) errorMsg = firstError[0];
+                }
+                showAlert(errorMsg, 'error');
             }
 
         } catch (error) {
@@ -676,14 +823,23 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 function togglePassword(inputId, element) {
+
     const input = document.getElementById(inputId);
+
     if (input.type === 'password') {
+
         input.type = 'text';
-        element.textContent = '🔒';
+
+        element.classList.add('active');
+
     } else {
+
         input.type = 'password';
-        element.textContent = '👁️';
+
+        element.classList.remove('active');
+
     }
+
 }
 </script>
 </div>

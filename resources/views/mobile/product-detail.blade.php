@@ -5,12 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Product Details | RAPID RETAIL</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/product-styles.css') }}">
 </head>
 <body class="product-detail-page" data-page="product-detail" data-slug="{{ request()->route('slug') }}">
 
+<div class="product-desktop-header">
+    <div class="web-header">
+        <div class="top-bar">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
+        <div class="main-header">
+            <div class="logo-area">
+                <a href="/" class="logo">RAPID RETAIL</a>
+                <nav class="nav-menu" id="productDesktopNavMenu"></nav>
+            </div>
+            <div class="search-area">
+                <div class="search-box">
+                    <input type="text" placeholder="Search for products, brands...">
+                    <button>Search</button>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="${localStorage.getItem('token') ? '/profile' : '/login'}" class="action-link">Profile</a>
+                <a href="/wishlist" class="action-link">Wishlist</a>
+                <a href="/cart" class="action-link">Cart</a>
+            </div>
+        </div>
+    </div>
+    <div class="all-categories-popup" id="productDesktopPopup" style="display:none;"></div>
+</div>
 <main class="page-content">
-    <div class="container">
+    <div class="container web-product-wrapper">
         <div id="product-container">
         </div>
     </div>

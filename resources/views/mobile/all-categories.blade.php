@@ -11,7 +11,15 @@
 <body data-page="all-categories">
 <header class="site-header" id="site-header"></header>
 <main class="page-content">
-    <div class="all-categories-grid" id="all-categories-grid"></div>
+    <div class="categories-layout-web">
+        <aside class="categories-web-sidebar" id="categoriesWebSidebar">
+            <div class="categories-web-sidebar-title">ALL CATEGORIES</div>
+            <ul class="categories-web-sidebar-list" id="categoriesWebSidebarList">
+            </ul>
+        </aside>
+        
+        <div class="all-categories-grid" id="all-categories-grid"></div>
+    </div>
 </main>
 <footer class="site-footer" id="site-footer"></footer>
 <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>

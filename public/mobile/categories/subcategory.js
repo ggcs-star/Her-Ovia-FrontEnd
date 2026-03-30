@@ -29,7 +29,6 @@ class SubCategoryPage {
         }
     }
     checkForSingleCategory() {
-    // Check URL pattern /category/123
     const pathParts = window.location.pathname.split('/');
     if (pathParts[1] === 'category' && pathParts[2]) {
         this.loadSingleCategory(pathParts[2]);
@@ -40,11 +39,9 @@ class SubCategoryPage {
         const container = document.getElementById('all-categories-grid');
         if (!container) return;
         
-        // Show loading
         container.innerHTML = '<div style="text-align:center;padding:50px;">Loading products...</div>';
         
         try {
-            // Fetch products for this category
             const response = await fetch(`https://retailadmin.ggconsultancy.services/api/categories/${categoryId}/products`);
             const data = await response.json();
             
@@ -63,7 +60,6 @@ class SubCategoryPage {
         const container = document.getElementById('all-categories-grid');
         if (!container) return;
         
-        // Update page title
         document.title = `${categoryName || 'Products'} | RAPID RETAIL`;
         
         if (products.length === 0) {
@@ -71,7 +67,6 @@ class SubCategoryPage {
             return;
         }
         
-        // Render products in grid (same style as categories)
         container.innerHTML = products.map(product => {
             const price = product.final_price || product.price || '0';
             const originalPrice = product.mrp || product.price || price;
@@ -112,7 +107,6 @@ class SubCategoryPage {
     const nav = document.getElementById('mobile-bottom-nav');
     if (!nav) return;
     
-    // Get current path to set active class
     const currentPath = window.location.pathname;
     
     nav.innerHTML = `
@@ -188,7 +182,6 @@ class SubCategoryPage {
         container.innerHTML = this.categoryData.children.map(child => {
             console.log('Creating card for child:', child.id, child.name);
             
-            // ✅ DEBUG LINK - CONSOLE MEIN PRINT HOGA
             const link = `/products?subcategory=${child.id}`;
             console.log('Link for', child.name, ':', link);
             

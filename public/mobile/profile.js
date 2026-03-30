@@ -1,4 +1,4 @@
-const API_BASE_URL = window.API_BASE_URL || 'https://retailadmin.ggconsultancy.services/api';
+const API_BASE_URL = 'https://retailadmin.ggconsultancy.services/api';
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeProfile();
@@ -6,46 +6,36 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
 });
 
-// Add storage event listener to handle multiple tabs
 window.addEventListener('storage', function(e) {
     if (e.key === 'token' || e.key === 'user') {
+        console.log('🔄 Token changed, reloading profile...');
         initializeProfile();
+        if (localStorage.getItem('token')) {
+            loadUserStats();
+        }
     }
 });
 
 function initializeProfile() {
     const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
-    
-    // Clear any cached profile data
     const container = document.getElementById('profile-container');
     if (container) {
-        container.innerHTML = ''; // Clear container first
+        container.innerHTML = '';
     }
     
-    if (token && user && user.id) {
-        // Validate token with server
+    if (token) {
         validateAndLoadUserProfile();
     } else {
-        // Clear any stale data
-        clearAuthData();
         renderGuestProfile();
     }
-}
-
-function clearAuthData() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    // Clear any session storage related to auth
-    sessionStorage.removeItem('login_timestamp');
-    sessionStorage.removeItem('redirect_after_login');
 }
 
 async function validateAndLoadUserProfile() {
     const token = localStorage.getItem('token');
     const container = document.getElementById('profile-container');
-    
     if (!container) return;
+    
+    console.log('🔄 Validating profile for token:', token ? token.substring(0, 20) + '...' : 'NO TOKEN');
     
     container.innerHTML = '<div class="loading-spinner">Loading profile...</div>';
     
@@ -54,34 +44,25 @@ async function validateAndLoadUserProfile() {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json',
-                'Cache-Control': 'no-cache' // Prevent caching
-            }
+                'Accept': 'application/json'
+            },
+            cache: 'no-store'
         });
         
         const data = await response.json();
         
         if (response.ok && data.success && data.data) {
-            // Update stored user data
-            localStorage.setItem('user', JSON.stringify(data.data));
             renderProfile(data.data);
             loadUserStats();
         } else {
-            // Token is invalid
-            clearAuthData();
             renderGuestProfile();
-            showToast('Session expired. Please login again.', 'error');
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+            }
         }
     } catch (error) {
-        console.error('Profile validation error:', error);
-        // Network error - try to use cached data temporarily
-        const cachedUser = JSON.parse(localStorage.getItem('user') || 'null');
-        if (cachedUser) {
-            renderProfile(cachedUser);
-            showToast('Using cached data. Check your connection.', 'warning');
-        } else {
-            renderGuestProfile();
-        }
+        console.error('Profile error:', error);
+        renderGuestProfile();
     }
 }
 
@@ -89,10 +70,7 @@ function renderGuestProfile() {
     const container = document.getElementById('profile-container');
     if (!container) return;
     
-    // Clear container first
-    container.innerHTML = '';
-    
-    const html = `
+    container.innerHTML = `
         <div class="profile-menu" style="margin-top: 20px;">
             <div class="menu-card">
                 <h3>My Account</h3>
@@ -139,13 +117,6 @@ function renderGuestProfile() {
             <span class="shop-now">Shop Now →</span>
         </div>
     `;
-    
-    container.innerHTML = html;
-}
-
-function loadUserProfile() {
-    // This is now handled by validateAndLoadUserProfile
-    validateAndLoadUserProfile();
 }
 
 async function loadUserStats() {
@@ -153,35 +124,21 @@ async function loadUserStats() {
     if (!token) return;
     
     try {
-        const [ordersRes, wishlistRes, couponsRes] = await Promise.all([
+        const [ordersRes, wishlistRes] = await Promise.all([
             fetch(`${API_BASE_URL}/orders`, {
-                headers: { 
-                    'Authorization': `Bearer ${token}`,
-                    'Cache-Control': 'no-cache'
-                }
+                headers: { 'Authorization': `Bearer ${token}` }
             }),
             fetch(`${API_BASE_URL}/wishlist`, {
-                headers: { 
-                    'Authorization': `Bearer ${token}`,
-                    'Cache-Control': 'no-cache'
-                }
-            }),
-            fetch(`${API_BASE_URL}/coupons`, {
-                headers: { 
-                    'Authorization': `Bearer ${token}`,
-                    'Cache-Control': 'no-cache'
-                }
+                headers: { 'Authorization': `Bearer ${token}` }
             })
         ]);
         
         const ordersData = await ordersRes.json();
         const wishlistData = await wishlistRes.json();
-        const couponsData = await couponsRes.json();
         
         updateStats({
             orders: ordersData.data?.length || 0,
-            wishlist: wishlistData.data?.length || 0,
-            coupons: couponsData.data?.length || 0
+            wishlist: wishlistData.data?.length || 0
         });
     } catch (error) {
         console.error('Error loading stats:', error);
@@ -202,7 +159,7 @@ function updateStats(stats) {
             <span class="stat-label">Wishlist</span>
         </div>
         <div class="stat-item" onclick="window.location.href='/coupons'">
-            <span class="stat-value">${stats.coupons}</span>
+            <span class="stat-value">0</span>
             <span class="stat-label">Coupons</span>
         </div>
     `;
@@ -212,51 +169,52 @@ function renderProfile(user) {
     const container = document.getElementById('profile-container');
     if (!container) return;
     
-    // Clear container first
     container.innerHTML = '';
     
     const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
+    let profileImage = user.profile_image;
+    
+    if (profileImage && !profileImage.startsWith('http')) {
+        profileImage = `https://inventorydata-s3-bucket.s3.amazonaws.com/${profileImage}`;
+    }
     
     const html = `
         <div class="profile-header">
-            <div class="profile-avatar" onclick="triggerImageUpload()" style="cursor: pointer; position: relative;">
-                ${user.profile_image ? 
-                    `<img src="${user.profile_image}" alt="${user.name}">` : 
-                    `<div class="avatar-initials">${initials}</div>`
-                }
-                <button class="edit-avatar-btn" onclick="event.stopPropagation(); triggerImageUpload()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                        <circle cx="12" cy="13" r="4"/>
-                        <line x1="12" y1="9" x2="12" y2="17"/>
-                        <line x1="9" y1="12" x2="15" y2="12"/>
-                    </svg>
-                </button>
-            </div>
+            <div class="profile-avatar" style="cursor: pointer; position: relative;">
+    ${profileImage ? 
+        `<img src="${profileImage}" alt="${user.name}" id="profileAvatarImg" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:3px solid #ff3f6c;" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'avatar-initials\\'>${initials}</div>';">` : 
+        `<div class="avatar-initials">${initials}</div>`
+    }
+    
+    <input type="file" id="avatarUpload" accept="image/jpeg,image/jpg,image/png,image/webp" 
+       style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 999; cursor: pointer;">
+
+    <div class="edit-avatar-btn" style="pointer-events: none;"> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+            <line x1="12" y1="9" x2="12" y2="17"/>
+            <line x1="9" y1="12" x2="15" y2="12"/>
+        </svg>
+    </div>
+</div>
             <div class="profile-info">
-                <h2 class="profile-name">${user.name || 'User'}</h2>
-                <p class="profile-email">${user.email || ''}</p>
-                <p class="profile-phone">${user.phone || user.mobile || ''}</p>
+                <h2 class="profile-name">${escapeHtml(user.name) || 'User'}</h2>
+                <p class="profile-email">${escapeHtml(user.email) || ''}</p>
+                <p class="profile-phone">${escapeHtml(user.phone || user.mobile) || ''}</p>
                 <div class="profile-actions">
-                    <button class="edit-profile-btn ${!user.profile_image ? 'centered' : ''}" onclick="openEditProfile()">Edit Profile</button>
-                    ${user.profile_image ? `
-                        <button class="remove-image-btn" onclick="removeProfileImage()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="18" y1="6" x2="6" y2="18"/>
-                                <line x1="6" y1="6" x2="18" y2="18"/>
-                            </svg>
-                            Remove Photo
-                        </button>
-                    ` : ''}
+                    <button class="edit-profile-btn" onclick="openEditProfile()">Edit Profile</button>
+                    ${profileImage ? `<button class="remove-image-btn" onclick="removeProfileImage()">Remove Photo</button>` : ''}
                 </div>
             </div>
         </div>
         
         <div class="profile-stats"></div>
+        
         <div class="profile-menu">
             <div class="menu-card">
                 <h3>My Orders</h3>
-<div class="menu-item" data-link="/orders">                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <div class="menu-item" data-link="/orders">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                         <line x1="16" y1="2" x2="16" y2="6"/>
                         <line x1="8" y1="2" x2="8" y2="6"/>
@@ -395,48 +353,69 @@ function renderProfile(user) {
             <span class="shop-now">Shop Now →</span>
         </div>
         
-        <div class="version-info">
-            Version 9.29.1 Build 3630
-        </div>
+        <div class="version-info">Version 9.29.1 Build 3630</div>
     `;
     
     container.innerHTML = html;
+    setTimeout(() => {
+    const fileInput = document.getElementById('avatarUpload');
+    if (fileInput) {
+        fileInput.addEventListener('change', handleImageUpload);
+        console.log("✅ File upload listener attached");
+    }
+}, 100);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
 }
 
 function triggerImageUpload() {
-    // Create file input dynamically if it doesn't exist
-    let fileInput = document.getElementById('avatarUpload');
-    if (!fileInput) {
-        fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.id = 'avatarUpload';
-        fileInput.accept = 'image/jpeg,image/jpg,image/png,image/webp';
-        fileInput.style.display = 'none';
-        fileInput.addEventListener('change', handleImageUpload);
-        document.body.appendChild(fileInput);
+    const fileInput = document.getElementById('avatarUpload');
+    if (fileInput) {
+        fileInput.value = '';
+        fileInput.click();
     }
-    fileInput.click();
 }
 
 function handleImageUpload(event) {
+    console.log('🚀 3. UPLOAD START: handleImageUpload function trigger ho gaya!');
+    
     const file = event.target.files[0];
-    if (!file) return;
-
+    
+    if (!file) {
+        console.warn('⚠️ CANCELLED: User ne gallery open ki par koi photo select nahi ki.');
+        return;
+    }
+    
+    console.log(`📁 4. FILE DETAILS - Name: ${file.name}, Size: ${(file.size / 1024 / 1024).toFixed(2)} MB, Type: ${file.type}`);
+    
     if (file.size > 2 * 1024 * 1024) {
+        console.error('❌ ERROR: File 2MB se badi hai!');
         showToast('File size must be less than 2MB', 'error');
         return;
     }
-
+    
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
+        console.error(`❌ ERROR: Galat file format select hua hai -> ${file.type}`);
         showToast('Only JPG, PNG, WEBP allowed', 'error');
         return;
     }
-
+    
     const formData = new FormData();
     formData.append('profile_image', file);
-
-    fetch(`${API_BASE_URL}/user/profile/image`, {
+    formData.append('_method', 'PUT');
+    
+    console.log(`🌐 5. API CALL: Photo API par bheji ja rahi hai... (${API_BASE_URL}/user/profile)`);
+    
+    fetch(`${API_BASE_URL}/user/profile`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -444,19 +423,45 @@ function handleImageUpload(event) {
         },
         body: formData
     })
-    .then(res => res.json())
+    .then(res => {
+        console.log(`📡 6. API RESPONSE STATUS: ${res.status}`);
+        return res.json();
+    })
     .then(response => {
+        console.log('📦 7. API FULL RESPONSE:', response);
         if (response.success) {
-            // Update user data in localStorage
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            user.profile_image = response.data?.profile_image || response.data?.image;
-            localStorage.setItem('user', JSON.stringify(user));
-            
-            // Refresh profile
+            console.log('✅ SUCCESS: Profile picture successfully update ho gayi!');
             validateAndLoadUserProfile();
             showToast('Profile picture updated!', 'success');
         } else {
+            console.error('❌ API REJECTED:', response.message);
             showToast(response.message || 'Upload failed', 'error');
+        }
+    })
+    .catch(err => {
+        console.error('🔥 CRITICAL NETWORK ERROR:', err);
+        showToast('Network error', 'error');
+    });
+}
+
+function removeProfileImage() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    fetch(`${API_BASE_URL}/user/profile/image`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(response => {
+        if (response.success) {
+            validateAndLoadUserProfile();
+            showToast('Profile picture removed', 'success');
+        } else {
+            showToast(response.message || 'Failed to remove', 'error');
         }
     })
     .catch(err => {
@@ -465,47 +470,26 @@ function handleImageUpload(event) {
     });
 }
 
-function removeProfileImage() {
-    const removeBtn = document.querySelector('.remove-image-btn');
-    if (removeBtn) {
-        removeBtn.disabled = true;
-        removeBtn.innerHTML = 'Removing...';
+function openEditProfile() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        showToast('Please login first', 'error');
+        return;
     }
     
-    fetch(`${API_BASE_URL}/user/profile/image`, {
-        method: 'DELETE',
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Accept': 'application/json'
-        }
+    fetch(`${API_BASE_URL}/user/profile`, {
+        headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => res.json())
-    .then(response => {
-        if (response.success) {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            user.profile_image = null;
-            localStorage.setItem('user', JSON.stringify(user));
-            
-            validateAndLoadUserProfile();
-            showToast('Profile picture removed successfully', 'success');
-        } else {
-            showToast(response.message || 'Failed to remove picture', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Remove error:', error);
-        showToast('Failed to remove picture', 'error');
-    })
-    .finally(() => {
-        if (removeBtn) {
-            removeBtn.disabled = false;
+    .then(data => {
+        if (data.success && data.data) {
+            const user = data.data;
+            showEditModal(user);
         }
     });
 }
 
-function openEditProfile() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
+function showEditModal(user) {
     const modal = document.createElement('div');
     modal.className = 'edit-modal';
     modal.style.cssText = `
@@ -522,46 +506,30 @@ function openEditProfile() {
     `;
     
     modal.innerHTML = `
-        <div class="edit-modal-content" style="
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        ">
+        <div class="edit-modal-content" style="background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 400px;">
             <h3 style="margin-bottom: 20px; color: #282c3f;">Edit Profile</h3>
             
             <div style="margin-bottom: 15px;">
                 <label style="display: block; margin-bottom: 5px; font-weight: 600;">Full Name <span style="color: #ff3f6c;">*</span></label>
-                <input type="text" id="edit-name" value="${user.name || ''}" 
-                       style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                <input type="text" id="edit-name" value="${escapeHtml(user.name || '')}" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
                 <div id="name-error" style="color: #ff3f6c; font-size: 12px; margin-top: 5px; display: none;"></div>
             </div>
             
             <div style="margin-bottom: 15px;">
                 <label style="display: block; margin-bottom: 5px; font-weight: 600;">Email Address <span style="color: #ff3f6c;">*</span></label>
-                <input type="email" id="edit-email" value="${user.email || ''}" readonly
-                       style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: #f5f5f5;">
+                <input type="email" id="edit-email" value="${escapeHtml(user.email || '')}" readonly style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: #f5f5f5;">
                 <div style="color: #999; font-size: 11px; margin-top: 5px;">Email cannot be changed</div>
             </div>
             
             <div style="margin-bottom: 20px;">
                 <label style="display: block; margin-bottom: 5px; font-weight: 600;">Phone Number <span style="color: #ff3f6c;">*</span></label>
-                <input type="tel" id="edit-phone" value="${user.phone || user.mobile || ''}" 
-                       style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                <input type="tel" id="edit-phone" value="${escapeHtml(user.phone || user.mobile || '')}" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
                 <div id="phone-error" style="color: #ff3f6c; font-size: 12px; margin-top: 5px; display: none;"></div>
             </div>
             
             <div style="display: flex; gap: 10px;">
-                <button onclick="closeEditModal()" 
-                        style="flex: 1; padding: 14px; background: #f5f5f5; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                    Cancel
-                </button>
-                <button onclick="validateAndSaveProfile()" 
-                        style="flex: 1; padding: 14px; background: #ff3f6c; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                    Save Changes
-                </button>
+                <button onclick="closeEditModal()" style="flex: 1; padding: 14px; background: #f5f5f5; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Cancel</button>
+                <button onclick="saveProfile()" style="flex: 1; padding: 14px; background: #ff3f6c; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Save Changes</button>
             </div>
         </div>
     `;
@@ -569,57 +537,37 @@ function openEditProfile() {
     document.body.appendChild(modal);
 }
 
-function validateProfileData(name, phone) {
-    const errors = [];
-    
-    if (!name || name.trim() === '') {
-        errors.push({ field: 'name', message: 'Name is required' });
-    } else if (name.length < 3) {
-        errors.push({ field: 'name', message: 'Name must be at least 3 characters' });
-    } else if (name.length > 50) {
-        errors.push({ field: 'name', message: 'Name must be less than 50 characters' });
-    }
-    
-    const phoneRegex = /^[6-9]\d{9}$/;
-    if (!phone) {
-        errors.push({ field: 'phone', message: 'Phone number is required' });
-    } else if (!phoneRegex.test(phone)) {
-        errors.push({ field: 'phone', message: 'Enter a valid 10-digit Indian mobile number' });
-    }
-    
-    return errors;
+function closeEditModal() {
+    const modal = document.querySelector('.edit-modal');
+    if (modal) modal.remove();
 }
 
-function validateAndSaveProfile() {
+function saveProfile() {
     const nameInput = document.getElementById('edit-name');
     const phoneInput = document.getElementById('edit-phone');
-    
     const name = nameInput?.value.trim() || '';
     const phone = phoneInput?.value.trim() || '';
     
     document.getElementById('name-error').style.display = 'none';
     document.getElementById('phone-error').style.display = 'none';
-    nameInput.style.borderColor = '#ddd';
-    phoneInput.style.borderColor = '#ddd';
     
-    const errors = validateProfileData(name, phone);
+    let hasError = false;
     
-    if (errors.length > 0) {
-        errors.forEach(error => {
-            if (error.field === 'name') {
-                document.getElementById('name-error').textContent = error.message;
-                document.getElementById('name-error').style.display = 'block';
-                nameInput.style.borderColor = '#ff3f6c';
-            } else if (error.field === 'phone') {
-                document.getElementById('phone-error').textContent = error.message;
-                document.getElementById('phone-error').style.display = 'block';
-                phoneInput.style.borderColor = '#ff3f6c';
-            }
-        });
-        return;
+    if (!name || name.length < 3) {
+        document.getElementById('name-error').textContent = 'Name must be at least 3 characters';
+        document.getElementById('name-error').style.display = 'block';
+        hasError = true;
     }
     
-    const data = { name, mobile: phone };
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phone || !phoneRegex.test(phone)) {
+        document.getElementById('phone-error').textContent = 'Enter a valid 10-digit mobile number';
+        document.getElementById('phone-error').style.display = 'block';
+        hasError = true;
+    }
+    
+    if (hasError) return;
+    
     closeEditModal();
     
     fetch(`${API_BASE_URL}/user/profile`, {
@@ -629,56 +577,37 @@ function validateAndSaveProfile() {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Accept': 'application/json'
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify({ name, mobile: phone })
     })
     .then(res => res.json())
     .then(response => {
         if (response.success) {
-            localStorage.setItem('user', JSON.stringify(response.data));
             validateAndLoadUserProfile();
-            showToast('Profile updated successfully!', 'success');
+            showToast('Profile updated!', 'success');
         } else {
-            showToast(response.message || 'Failed to update profile', 'error');
+            showToast(response.message || 'Update failed', 'error');
         }
     })
     .catch(() => {
-        showToast('Network error. Please try again.', 'error');
+        showToast('Network error', 'error');
     });
-}
-
-function closeEditModal() {
-    const modal = document.querySelector('.edit-modal');
-    if (modal) modal.remove();
 }
 
 function handleLogout() {
-    // Show loading state
-    const logoutBtn = document.querySelector('.logout-btn');
-    if (logoutBtn) {
-        logoutBtn.style.opacity = '0.5';
-        logoutBtn.style.pointerEvents = 'none';
+    const token = localStorage.getItem('token');
+    if (token) {
+        fetch(`${API_BASE_URL}/logout`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        }).catch(() => {});
     }
     
-    fetch(`${API_BASE_URL}/logout`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Accept': 'application/json'
-        }
-    })
-    .finally(() => {
-        // Clear ALL auth data
-        clearAuthData();
-        
-        // Clear any other app data
-        localStorage.removeItem('cart');
-        localStorage.removeItem('cart_synced');
-        localStorage.removeItem('wishlist');
-        sessionStorage.clear();
-        
-        // Force reload to clear all memory
-        window.location.href = '/';
-    });
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    window.dispatchEvent(new Event('storage'));
+    
+    window.location.href = '/';
 }
 
 function updateCartBadge() {
@@ -703,11 +632,10 @@ function showToast(message, type) {
         bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
-        background: ${type === 'error' ? '#ff3f6c' : type === 'warning' ? '#ffa500' : '#333'};
+        background: ${type === 'error' ? '#ff3f6c' : '#333'};
         color: white;
         padding: 12px 24px;
         border-radius: 8px;
-        font-size: 14px;
         z-index: 10000;
         animation: slideUp 0.3s ease;
     `;
@@ -722,31 +650,21 @@ function showToast(message, type) {
 }
 
 function setupEventListeners() {
-    // Remove any existing file input and create new one
-    const oldInput = document.getElementById('avatarUpload');
-    if (oldInput) oldInput.remove();
-    
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.id = 'avatarUpload';
-    fileInput.accept = 'image/jpeg,image/jpg,image/png,image/webp';
-    fileInput.style.display = 'none';
-    fileInput.addEventListener('change', handleImageUpload);
-    document.body.appendChild(fileInput);
+    const fileInput = document.getElementById('avatarUpload');
+    if (fileInput) {
+        fileInput.addEventListener('change', handleImageUpload);
+    }
     
     window.addEventListener('storage', function(e) {
-        if (e.key === 'cart') {
-            updateCartBadge();
-        }
-        if (e.key === 'token' || e.key === 'user') {
-            initializeProfile();
+        if (e.key === 'cart') updateCartBadge();
+        if (e.key === 'token') initializeProfile();
+    });
+    
+    document.addEventListener('click', function(e) {
+        const item = e.target.closest('.menu-item');
+        if (item && item.dataset.link) {
+            e.preventDefault();
+            window.location.href = item.dataset.link;
         }
     });
-    document.addEventListener('click', function(e) {
-    const item = e.target.closest('.menu-item');
-    if (item && item.dataset.link) {
-        e.preventDefault();
-        window.location.href = item.dataset.link;
-    }
-});
 }

@@ -33,7 +33,6 @@ async function syncCartWithServer() {
 
     try {
 
-        // 1️⃣ server cart fetch
         const res = await fetch(`${API_BASE_URL}/cart`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -44,7 +43,6 @@ async function syncCartWithServer() {
         const data = await res.json();
         const serverItems = data?.data?.items || [];
 
-        // 2️⃣ server cart clear (remove each item)
         for (const item of serverItems) {
             await fetch(`${API_BASE_URL}/cart/remove/${item.id}`, {
                 method: 'DELETE',
@@ -55,7 +53,6 @@ async function syncCartWithServer() {
             });
         }
 
-        // 3️⃣ add fresh local cart
         if (localCart.length > 0) {
 
             const items = localCart.map(item => ({
@@ -145,23 +142,15 @@ function renderCheckoutSummary(cart) {
         `;
     }
 
-    html += `
-        <div class="detail-row">
-            <span>Tax (GST)</span>
-            <span>₹${tax.toFixed(2)}</span>
-        </div>
-    `;
+    if (tax > 0) {
+        html += `
+            <div class="detail-row">
+                <span>Tax (GST)</span>
+                <span>₹${tax.toFixed(2)}</span>
+            </div>
+        `;
+    }
 
-    const orderTotal = subtotal - discount;
-    html += `
-        <div class="detail-row order-total">
-            <span>Order Total</span>
-            <span>₹${orderTotal.toFixed(2)}</span>
-        </div>
-    `;
-
-    html += `<div class="fee-details">`;
-    
     if (shipping > 0) {
         html += `
             <div class="detail-row">
@@ -186,8 +175,6 @@ function renderCheckoutSummary(cart) {
             </div>
         `;
     }
-    
-    html += `</div>`;
 
     html += `
         <div class="detail-row final-total">
@@ -259,7 +246,7 @@ function renderAddresses(responseData) {
         addressContainer.innerHTML = `
             <div class="no-addresses">
                 <p>No saved addresses found</p>
-                <button onclick="showAddAddressForm()" class="add-address-btn">+ Add New Address</button>
+                
             </div>
         `;
         return;
@@ -267,28 +254,86 @@ function renderAddresses(responseData) {
     
     let html = '';
     validAddresses.forEach(address => {
-        const isDefault = address.is_default ? 'default' : '';
+        const isDefault = address.is_default === true;
+        const defaultClass = isDefault ? 'default' : '';
+        
         html += `
-            <div class="address-card ${isDefault}" onclick="selectAddress(${address.id})">
-                <div class="address-radio">
+            <div class="address-card ${defaultClass}" data-address-id="${address.id}">
+                <div class="address-radio" onclick="event.stopPropagation(); selectAddress(${address.id})">
                     <input type="radio" name="shipping_address" value="${address.id}" ${isDefault ? 'checked' : ''}>
                 </div>
-                <div class="address-details">
-                    <div class="address-name">${address.full_name || ''}</div>
-                    <div class="address-phone">${address.phone || ''}</div>
+                <div class="address-details" onclick="selectAddress(${address.id})">
+                    <div class="address-name">${escapeHtml(address.full_name) || ''}</div>
+                    <div class="address-phone">${escapeHtml(address.phone) || ''}</div>
                     <div class="address-text">
-                        ${address.address_line_1 || ''}${address.address_line_2 ? ', ' + address.address_line_2 : ''}, 
-                        ${address.city || ''}, ${address.state || ''} - ${address.postal_code || ''}
+                        ${escapeHtml(address.address_line_1) || ''}${address.address_line_2 ? ', ' + escapeHtml(address.address_line_2) : ''}, 
+                        ${escapeHtml(address.city) || ''}, ${escapeHtml(address.state) || ''} - ${escapeHtml(address.postal_code) || ''}
                     </div>
+                </div>
+                <div class="address-actions" onclick="event.stopPropagation()">
+                <button class="remove-address-btn" onclick="showConfirmModal(${address.id})" aria-label="Remove address">                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke-linecap="round"/>
+                            <line x1="10" y1="11" x2="10" y2="17"/>
+                            <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
         `;
     });
     
-    html += '<button onclick="showAddAddressForm()" class="add-address-btn">+ Add New Address</button>';
     addressContainer.innerHTML = html;
 }
 
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+async function removeAddress(addressId) {
+    const token = localStorage.getItem('token');
+    const btn = document.querySelector(`.remove-address-btn[onclick*="${addressId}"]`);
+    const originalText = btn ? btn.innerText : 'Remove';
+    if (btn) {
+        btn.innerText = 'Removing...';
+        btn.disabled = true;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/user/addresses/${addressId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            showToast('Address removed successfully', 'success');
+            loadUserAddresses();
+        } else {
+            showToast(data.message || 'Failed to remove address', 'error');
+            if (btn) {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+    } catch (error) {
+        console.error('Error removing address:', error);
+        showToast('Server error, please try again', 'error');
+        if (btn) {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+}
 function showAddAddressForm() {
     document.getElementById('shipping-section').style.display = 'none';
     document.getElementById('add-address-form').style.display = 'block';
@@ -426,8 +471,35 @@ function selectAddress(addressId) {
             radio.checked = true;
         }
     });
+    
+    const token = localStorage.getItem('token');
+    
+    fetch(`${API_BASE_URL}/user/addresses/${addressId}/set-default`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (data.success) {
+            loadUserAddresses();
+        } else {
+            console.error('Set default failed:', data.message);
+        }
+    })
+    .catch(err => {
+        console.error('Error setting default:', err);
+        // Don't show toast, just log error
+    });
 }
-
 function placeOrder() {
     const shippingAddress = document.querySelector(
         'input[name="shipping_address"]:checked'
@@ -491,8 +563,9 @@ function placeOrder() {
             showToast('Order placed successfully', 'success');
             
             setTimeout(() => {
-                window.location.href = `/order-confirmation/${response.data.order.id}`;
+                window.location.replace(`/order-confirmation/${response.data.order.id}`);
             }, 1200);
+
         } else {
             PAYMENT_IN_PROGRESS = false;
             if (placeOrderBtn) {
@@ -660,7 +733,7 @@ function verifyRazorpayPayment(response) {
             localStorage.removeItem('applied_coupon');
             localStorage.removeItem('coupon_discount');
 
-            window.location.href = `/order-confirmation/${res.data.order_id}`;
+             window.location.replace(`/order-confirmation/${res.data.order_id}`);
             return;
         }
 
@@ -706,4 +779,30 @@ function removeCoupon() {
     localStorage.removeItem('coupon_discount');
     loadCheckoutSummary();
     showToast('Coupon removed', 'info');
+}
+let pendingAddressId = null;
+
+function showConfirmModal(addressId) {
+    pendingAddressId = addressId;
+    const modal = document.getElementById('confirmModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeConfirmModal() {
+    const modal = document.getElementById('confirmModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        pendingAddressId = null;
+    }
+}
+
+function confirmRemoveAddress() {
+    if (pendingAddressId) {
+        removeAddress(pendingAddressId);
+        closeConfirmModal();
+    }
 }

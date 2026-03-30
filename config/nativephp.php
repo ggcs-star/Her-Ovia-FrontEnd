@@ -351,4 +351,5 @@ return [
             'landscape_right' => false,
         ],
     ],
+      'splash_screen' => false,
 ];

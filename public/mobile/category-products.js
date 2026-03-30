@@ -137,6 +137,5 @@
         alert('Filter feature coming soon!');
     };
 
-    // Initialize
     fetchCategoryProducts();
 })();
