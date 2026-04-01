@@ -1273,3 +1273,54 @@
         border-radius: 50%;
         padding: 0 4px;
     }
+
+.skeleton-card {
+    border-radius: 18px;
+    padding: 14px;
+    height: 95px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f2f2f2;
+    overflow: hidden;
+    position: relative;
+}
+
+.skeleton-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: #e0e0e0;
+}
+
+.skeleton-text {
+    width: 80px;
+    height: 14px;
+    border-radius: 6px;
+    background: #e0e0e0;
+}
+
+.skeleton-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -150px;
+    height: 100%;
+    width: 150px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,0.6),
+        transparent
+    );
+    animation: skeleton-loading 1.2s infinite;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        left: -150px;
+    }
+    100% {
+        left: 100%;
+    }
+}

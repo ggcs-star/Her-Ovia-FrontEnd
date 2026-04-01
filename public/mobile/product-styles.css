@@ -1952,3 +1952,135 @@ html, body {
 
     z-index: 1000;
 }
+@media (min-width: 1024px) {
+
+    .pdp-bottom .pdp-details {
+        display: none;
+    }
+
+    .pdp-details-desktop {
+        display: block;
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 10px;
+    }
+
+}
+@media (max-width: 1023px) {
+    .pdp-details-desktop {
+        display: none !important;
+    }
+}
+@media (min-width: 1024px) {
+    .pdp-bottom .pdp-details {
+        display: none !important;
+    }
+}
+@media screen and (min-width: 1024px) {
+    .pdp-color-desktop-panel {
+        position: absolute;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        padding: 20px;
+        z-index: 1000;
+        min-width: 320px;
+        border: 1px solid #e8e8e8;
+        animation: fadeInUp 0.2s ease;
+    }
+    
+    .pdp-color-desktop-panel-header {
+        font-size: 14px;
+        font-weight: 600;
+        color: #282c3f;
+        padding-bottom: 12px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .pdp-color-desktop-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        max-height: 320px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+    
+    .pdp-color-desktop-list::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .pdp-color-desktop-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .pdp-color-desktop-list::-webkit-scrollbar-thumb {
+        background: #ff3f6c;
+        border-radius: 4px;
+    }
+    
+    .pdp-color-desktop-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        cursor: pointer;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+    
+    .pdp-color-desktop-item:hover {
+        background: #fafafa;
+        border-color: #ff3f6c;
+    }
+    
+    .pdp-color-desktop-item.selected {
+        background: #fff5f7;
+        border-color: #ff3f6c;
+    }
+    
+    .pdp-color-desktop-dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .pdp-color-desktop-name {
+        flex: 1;
+        font-size: 13px;
+        font-weight: 500;
+        color: #282c3f;
+    }
+    
+    .pdp-color-desktop-check {
+        color: #ff3f6c;
+        font-size: 16px;
+        font-weight: bold;
+    }
+    
+    .pdp-color-desktop-thumb {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #f0f0f0;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}

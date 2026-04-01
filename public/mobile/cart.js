@@ -188,6 +188,56 @@ function getCartItemHTML(item, index, qty, price, itemTotal) {
     deliveryDate.setDate(deliveryDate.getDate() + 5);
     const formattedDate = deliveryDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 
+    const isWeb = window.innerWidth >= 1025;
+
+    let selectorsHtml = '';
+    
+    if (isWeb) {
+        let variantsHtml = '';
+        if (availableVariants && availableVariants.length > 0) {
+            variantsHtml = availableVariants.map(v => `
+                <div class="dropdown-option ${v.value === variantValue ? 'selected' : ''}" data-value="${v.value}" data-price="${v.price || 0}" data-original="${v.originalPrice || 0}">
+                    ${v.value}
+                </div>
+            `).join('');
+        }
+        
+        selectorsHtml = `
+            <div class="selector-wrapper">
+                <div class="selector-trigger" onclick="toggleVariantDropdown(${index})">
+                    <span class="selector-label">${variantType}:</span>
+                    <span class="selector-value">${variantValue}</span>
+                    <span class="dropdown-arrow">▼</span>
+                </div>
+                <div class="selector-dropdown" id="variant-dropdown-${index}">
+                    <div class="dropdown-options">
+                        ${variantsHtml}
+                    </div>
+                </div>
+            </div>
+            <div class="selector-wrapper">
+                <div class="qty-control">
+                    <button class="qty-btn" onclick="updateWebQty(${index}, -1)">−</button>
+                    <input type="number" class="qty-input" id="qty-input-${index}" value="${qty}" min="1" max="99" onchange="updateWebQtyFromInput(${index})">
+                    <button class="qty-btn" onclick="updateWebQty(${index}, 1)">+</button>
+                </div>
+            </div>
+        `;
+    } else {
+        selectorsHtml = `
+            <div class="selector-box" onclick="openSizePopup(${index}, '${variantType}', '${variantValue}')">
+                <span class="selector-label">${variantType}:</span>
+                <span class="selector-value">${variantValue}</span>
+                <span class="dropdown-arrow">▼</span>
+            </div>
+            <div class="selector-box" onclick="openQtyPopup(${index}, ${qty})">
+                <span class="selector-label">Qty:</span>
+                <span class="selector-value">${qty}</span>
+                <span class="dropdown-arrow">▼</span>
+            </div>
+        `;
+    }
+
     return `
         <div class="cart-item" data-index="${index}" data-product-id="${item.id}">
             <div class="cart-item-main">
@@ -214,19 +264,9 @@ function getCartItemHTML(item, index, qty, price, itemTotal) {
                         ` : ''}
                     </div>
                                         
-                  <div class="cart-item-selectors">
-                    <div class="selector-box" onclick="openSizePopup(${index}, '${variantType}', '${variantValue}')">
-                        <span class="selector-label">${variantType}:</span>
-                        <span class="selector-value">${variantValue}</span>
-                        <span class="dropdown-arrow">▼</span>
+                    <div class="cart-item-selectors">
+                        ${selectorsHtml}
                     </div>
-                    
-                    <div class="selector-box" onclick="openQtyPopup(${index}, ${qty})">
-                        <span class="selector-label">Qty:</span>
-                        <span class="selector-value">${qty}</span>
-                        <span class="dropdown-arrow">▼</span>
-                    </div>
-                </div>
 
                     <div class="delivery-info">
                         <span class="info-icon">🚚</span>
@@ -247,7 +287,6 @@ function getCartItemHTML(item, index, qty, price, itemTotal) {
         </div>
     `;
 }
-
 function openSizePopup(index, variantType, currentValue) {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
     
@@ -1322,3 +1361,110 @@ if (document.body.classList.contains('cart-page')) {
         }
     };
 }
+function toggleVariantDropdown(index) {
+    const dropdown = document.getElementById(`variant-dropdown-${index}`);
+    const trigger = dropdown?.previousElementSibling;
+    
+    if (!dropdown) return;
+    
+    if (dropdown.classList.contains('show')) {
+        dropdown.classList.remove('show');
+        trigger?.classList.remove('open');
+    } else {
+        document.querySelectorAll('.selector-dropdown').forEach(d => d.classList.remove('show'));
+        document.querySelectorAll('.selector-trigger').forEach(t => t.classList.remove('open'));
+        
+        dropdown.classList.add('show');
+        trigger?.classList.add('open');
+        
+        const options = dropdown.querySelectorAll('.dropdown-option');
+        options.forEach(opt => {
+            opt.onclick = function(e) {
+                e.stopPropagation();
+                const value = this.dataset.value;
+                const price = parseFloat(this.dataset.price);
+                const originalPrice = parseFloat(this.dataset.original);
+                selectWebVariant(index, value, price, originalPrice);
+            };
+        });
+    }
+}
+
+function selectWebVariant(index, value, price, originalPrice) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
+    if (!cart[index]) return;
+    
+    cart[index].variantValue = value;
+    if (price && !isNaN(price)) cart[index].price = price;
+    if (originalPrice && !isNaN(originalPrice)) {
+        cart[index].mrp = originalPrice;
+        cart[index].originalPrice = originalPrice;
+    }
+    
+    localStorage.setItem('cart', JSON.stringify(cart));
+    
+    const dropdown = document.getElementById(`variant-dropdown-${index}`);
+    if (dropdown) {
+        dropdown.classList.remove('show');
+        const trigger = dropdown.previousElementSibling;
+        if (trigger) {
+            trigger.classList.remove('open');
+            const valueSpan = trigger.querySelector('.selector-value');
+            if (valueSpan) valueSpan.innerText = value;
+        }
+    }
+    
+    loadCart();
+}
+
+function updateWebQty(index, delta) {
+    const input = document.getElementById(`qty-input-${index}`);
+    if (!input) return;
+    
+    let currentQty = parseInt(input.value);
+    if (isNaN(currentQty)) currentQty = 1;
+    
+    let newQty = currentQty + delta;
+    if (newQty < 1) newQty = 1;
+    if (newQty > 99) newQty = 99;
+    
+    input.value = newQty;
+    
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    if (cart[index]) {
+        cart[index].quantity = newQty;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updatePriceDetails(cart);
+        updateCartCountBadge();
+    }
+}
+
+function updateWebQtyFromInput(index) {
+    const input = document.getElementById(`qty-input-${index}`);
+    if (!input) return;
+    
+    let newQty = parseInt(input.value);
+    if (isNaN(newQty) || newQty < 1) newQty = 1;
+    if (newQty > 99) newQty = 99;
+    input.value = newQty;
+    
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    if (cart[index]) {
+        cart[index].quantity = newQty;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updatePriceDetails(cart);
+        updateCartCountBadge();
+    }
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.selector-wrapper')) {
+        document.querySelectorAll('.selector-dropdown').forEach(d => {
+            d.classList.remove('show');
+        });
+        document.querySelectorAll('.selector-trigger').forEach(t => {
+            t.classList.remove('open');
+        });
+    }
+});

@@ -1069,10 +1069,13 @@ function renderOfferItems(type) {
                     </div>
                     <div class="pdp-size-error" style="color: #ff3f6c; font-size: 13px; margin-top: 8px; display: none;">Please select a size</div>
                 </div>
+                <div class="pdp-details pdp-details-desktop" id="productDetailsDesktop">
+                    </div>
                 <div class="pdp-actions">
                     <button class="pdp-add-to-cart" onclick="addToCartFromProduct()">Add to Cart</button>
                     <button class="pdp-buy-now" onclick="buyNow()">Buy at ₹<span id="buyPrice">${displayPrice.toLocaleString('en-IN')}</span></button>
                 </div>
+                
             </div>
         </div>
         <div class="pdp-bottom">
@@ -1122,6 +1125,20 @@ function renderOfferItems(type) {
     renderCurrentReview();
     fetchSimilarProducts();
     updateCartBadge();
+  setTimeout(() => {
+
+    if (window.innerWidth >= 1024) {
+
+        const desktopDetails = document.getElementById('productDetailsDesktop');
+        const mobileDetails = document.querySelector('.pdp-bottom .pdp-details');
+
+        if (desktopDetails && mobileDetails) {
+            desktopDetails.innerHTML = mobileDetails.innerHTML;
+        }
+
+    }
+
+}, 100);
     const lastPincode = localStorage.getItem('lastPincode');
     if (lastPincode) {
         setTimeout(() => {
@@ -1296,6 +1313,37 @@ function renderOfferItems(type) {
         updateCartBadge();
         window.location.href = '/checkout/shipping';
     };
+    async function fetchAppSettingsForProductPage() {
+    try {
+        const response = await fetch('https://retailadmin.ggconsultancy.services/api/app-settings');
+        const data = await response.json();
+        if (data.success) {
+            const appName = data.data.app_name;
+            const headerLogo = data.data.header_logo || data.data.app_logo;
+            
+            document.title = appName;
+            
+            const desktopLogo = document.querySelector('.logo');
+            if (desktopLogo) {
+                desktopLogo.textContent = appName;
+            }
+            
+            const mobileLogo = document.querySelector('.header-left img');
+            if (mobileLogo && headerLogo) {
+                mobileLogo.src = headerLogo;
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching app settings:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartBadge();
+    fetchProduct();
+    fetchAppSettingsForProductPage();
+    setTimeout(() => { loadProductDesktopCategories(); }, 500);
+});
     
     function showError(message) {
         const container = document.getElementById('product-container');

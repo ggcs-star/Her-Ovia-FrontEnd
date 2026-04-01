@@ -906,15 +906,32 @@
     border-radius: 50%;
     padding: 0 4px;
 }
+.header-left img {
+    height: 24px;
+    width: 20px;
+    object-fit: contain;
+}
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #fff;
+}
+@media screen and (max-width: 767px) {
+    .header-left img {
+        height: 24px;
+        width: auto;
+        max-width: 100px;
+    }
+}
     </style>
 </head>
 <body data-page="products" data-subcategory-id="{{ request()->query('subcategory') }}" data-category-id="{{ request()->query('category') }}">
 
 <div class="header">
-    <div class="header-left">
+        <div class="header-left">
         <span class="back-btn" onclick="goBack()">←</span>
-        <img src="{{ asset('images/logo.jpg') }}" alt="RAPID RETAIL" style="height: 32px; width: auto;">
-        <h1>Products</h1>
+        <img src="" id="mobileHeaderLogo" style="height: 28px; width: auto;" onerror="this.style.display='none'">        <h1>Products</h1>
     </div>
     <div class="header-right">
     <button class="search-icon-btn" onclick="window.location.href='/search'">
@@ -936,7 +953,7 @@
         <div class="top-bar">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
         <div class="main-header">
             <div class="logo-area">
-                <a href="/" class="logo">RAPID RETAIL</a>
+                <a href="/" class="logo" id="desktopAppName">RAPID RETAIL</a>
                 <nav class="nav-menu" id="productNavMenu">
                 </nav>
             </div>
@@ -1212,6 +1229,18 @@
         }
     }
 
+    async function updateMobileLogo() {
+    try {
+        const res = await fetch('https://retailadmin.ggconsultancy.services/api/app-settings');
+        const data = await res.json();
+        if (data.success) {
+            const logo = data.data.header_logo || data.data.app_logo;
+            const img = document.getElementById('mobileHeaderLogo');
+            if (img && logo) img.src = logo;
+        }
+    } catch(e) { console.log(e); }
+}
+updateMobileLogo();
     function renderSubs() {
         const strip = document.getElementById('subStrip');
         if (!strip) return;
@@ -1817,8 +1846,30 @@ function updateCartCountBadge() {
     badge.style.display = 'flex';
     badge.textContent = totalItems;
 }
+async function fetchAppSettingsForProducts() {
+    try {
+        const response = await fetch('https://retailadmin.ggconsultancy.services/api/app-settings');
+        const data = await response.json();
+        if (data.success) {
+            const appName = data.data.app_name;
+            const headerLogo = data.data.header_logo || data.data.app_logo;
+            
+            const desktopNameEl = document.getElementById('desktopAppName');
+            if (desktopNameEl) desktopNameEl.textContent = appName;
+            
+            const mobileLogoEl = document.getElementById('mobileHeaderLogo');
+if (mobileLogoEl) {
+    mobileLogoEl.style.height = '28px';
+    mobileLogoEl.style.width = 'auto';
+    mobileLogoEl.src = headerLogo;
+}}
+    } catch (error) {
+        console.error('Error fetching app settings:', error);
+    }
+}
 // Call this function when page loads
 document.addEventListener('DOMContentLoaded', function() {
+    fetchAppSettingsForProducts();
     loadProductDesktopHeader();
 });
 function initDesktopFiltersToggle() {
@@ -1839,6 +1890,20 @@ function initDesktopFiltersToggle() {
         }
     });
 }
+setTimeout(function() {
+    fetch('https://retailadmin.ggconsultancy.services/api/app-settings')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const logo = data.data.header_logo || data.data.app_logo;
+                const img = document.getElementById('mobileHeaderLogo');
+                if (img && logo) {
+                    img.src = logo;
+                    img.style.display = 'block';
+                }
+            }
+        });
+}, 100);
     fetchData();
 })();
 </script>
