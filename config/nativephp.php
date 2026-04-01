@@ -40,6 +40,7 @@ return [
     */
 
     'app_id' => env('NATIVEPHP_APP_ID'),
+    
 
     /*
     |--------------------------------------------------------------------------
@@ -132,6 +133,7 @@ return [
     ],
 
     'android' => [
+        'app_name' => env('NATIVEPHP_APP_NAME', 'Rapid Retails'),
         'gradle_jdk_path' => env('NATIVEPHP_GRADLE_PATH'),
         'android_sdk_path' => env('NATIVEPHP_ANDROID_SDK_LOCATION'),
         'emulator_path' => env('ANDROID_EMULATOR'),

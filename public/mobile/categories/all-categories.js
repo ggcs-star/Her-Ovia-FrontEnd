@@ -4,6 +4,7 @@ class AllCategoriesPage {
         this.isLoggedIn = !!localStorage.getItem('token');
         this.userCategories = [];
         this.isDragging = false;
+        this.appSettings = null;
         this.init();
          window.addEventListener('resize', () => {
             this.renderHeader();
@@ -11,6 +12,9 @@ class AllCategoriesPage {
         });
     }
     async init() {
+        this.showSkeletonLoader();  
+        this.showSidebarSkeleton();
+        await this.fetchAppSettings(); 
         await this.fetchCategories();
         if (this.isLoggedIn) { 
         await this.fetchUserCategoryOrder();
@@ -21,6 +25,70 @@ class AllCategoriesPage {
         this.renderBottomNav();
         this.createPopup();
     }
+    showSkeletonLoader() {
+    const container = document.getElementById('all-categories-grid');
+    if (!container) return;
+
+    let skeletons = '';
+
+    for (let i = 0; i < 6; i++) {
+        skeletons += `
+            <div class="skeleton-card">
+                <div class="category-info">
+                    <div class="skeleton-text"></div>
+                </div>
+
+                <div class="skeleton-image"></div>
+            </div>
+        `;
+    }
+
+    container.innerHTML = skeletons;
+}
+showSidebarSkeleton() {
+
+    const sidebar = document.getElementById('categoriesWebSidebarList');
+
+    if (!sidebar) return;
+
+    if (window.innerWidth < 1024) return;
+
+    let skeleton = '';
+
+    for (let i = 0; i < 6; i++) {
+        skeleton += `
+            <li>
+                <div style="
+                    height:14px;
+                    width:80%;
+                    background:#e0e0e0;
+                    border-radius:6px;
+                    margin-bottom:12px;
+                    position:relative;
+                    overflow:hidden;
+                ">
+                    <div style="
+                        position:absolute;
+                        top:0;
+                        left:-100px;
+                        height:100%;
+                        width:100px;
+                        background:linear-gradient(
+                            90deg,
+                            transparent,
+                            rgba(255,255,255,0.6),
+                            transparent
+                        );
+                        animation:skeleton-loading 1.2s infinite;
+                    "></div>
+                </div>
+            </li>
+        `;
+    }
+
+    sidebar.innerHTML = skeleton;
+
+}
     
     async fetchCategories() {
         try {
@@ -78,7 +146,7 @@ class AllCategoriesPage {
                 <div class="top-bar">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
                 <div class="main-header">
                     <div class="logo-area">
-                        <a href="/" class="logo">RAPID RETAIL</a>
+                        <a href="/" class="logo">${this.appSettings?.app_name || 'RAPID RETAIL'}</a>
                         <nav class="nav-menu" id="navMenu">
                             ${categoriesHtml}
                         </nav>
@@ -108,9 +176,9 @@ class AllCategoriesPage {
             <div class="container">
                 <div class="header-container">
                     <div class="logo-search-container">
-                        <div class="header-logo">
+                      <div class="header-logo">
                             <a href="/">
-                                <img src="/images/logo.jpg" alt="RAPID RETAIL" class="site-logo" 
+                                <img src="${this.appSettings?.header_logo || this.appSettings?.app_logo || '/images/logo.jpg'}" alt="RAPID RETAIL" class="site-logo" 
                                     onerror="this.src='https://via.placeholder.com/100x35?text=RAPID'">
                             </a>
                         </div>
@@ -134,6 +202,17 @@ class AllCategoriesPage {
                 </div>
             </div>
         `;
+    }
+}
+async fetchAppSettings() {
+    try {
+        const response = await fetch('https://retailadmin.ggconsultancy.services/api/app-settings');
+        const data = await response.json();
+        if (data.success) {
+            this.appSettings = data.data;
+        }
+    } catch (error) {
+        console.error('Error fetching app settings:', error);
     }
 }
 setupAllCategoriesPopup() {
@@ -558,16 +637,11 @@ function updateCartCountBadge() {
 
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-    // count unique items only
     let totalItems = cart.length;
 
     const badge = document.getElementById('cart-count-badge');
 
     if (!badge) return;
-
-    // always show badge
     badge.style.display = 'flex';
-
-    // show item count (not qty)
     badge.textContent = totalItems;
 }

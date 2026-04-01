@@ -6,6 +6,7 @@ const APP_CONFIG = {
         CATEGORY_PRODUCTS: (id) => `https://retailadmin.ggconsultancy.services/api/categories/${id}/products`, 
         TOP_SELLING: 'https://retailadmin.ggconsultancy.services/api/products/top-selling',
         BANNERS: 'https://retailadmin.ggconsultancy.services/api/banners',
+        APP_SETTINGS: 'https://retailadmin.ggconsultancy.services/api/app-settings',
     },
     FALLBACK_IMAGE: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop',
 };
@@ -22,6 +23,8 @@ class RapidRetailsEngine {
     }
 
     async init() {
+
+    await this.fetchAppSettings();
     if (this.page === 'landing') {
         await this.initLanding();
     }
@@ -30,14 +33,14 @@ class RapidRetailsEngine {
     this.renderBottomNav();
     this.initSearchRedirect();
     
-    let lastWidth = window.innerWidth;
-    setInterval(() => {
-        if (lastWidth !== window.innerWidth) {
-            lastWidth = window.innerWidth;
-            this.renderHeader();
-        }
-    }, 100);
-}
+        let lastWidth = window.innerWidth;
+        setInterval(() => {
+            if (lastWidth !== window.innerWidth) {
+                lastWidth = window.innerWidth;
+                this.renderHeader();
+            }
+        }, 100);
+    }
    renderHeader() {
     const header = document.getElementById('site-header');
     if (!header) return;
@@ -108,8 +111,8 @@ class RapidRetailsEngine {
                     <div class="logo-search-container">
                         <div class="header-logo">
                             <a href="/">
-                                <img src="/images/logo.jpg" alt="RAPID RETAIL" class="site-logo" 
-                                    onerror="this.src='https://placehold.co/100x35?text=RAPID'">
+                            <img src="" alt="Logo" class="site-logo" id="site-logo"                                    
+                            onerror="this.src='https://placehold.co/100x35?text=RAPID'">
                             </a>
                         </div>
                         <div class="search-wrapper">
@@ -133,6 +136,7 @@ class RapidRetailsEngine {
             </div>
         `;
     }
+    this.applyAppSettings();
 }
 setupAllCategoriesPopup() {
     const navItems = document.querySelectorAll('.nav-item');
@@ -434,7 +438,68 @@ renderAllCategoriesPopup() {
         slides[this.slideIdx].classList.add('active');
         if (dots.length) dots[this.slideIdx].classList.add('active');
     }
-    
+    async fetchAppSettings() {
+        try {
+
+            const response = await fetch(
+                APP_CONFIG.ENDPOINTS.APP_SETTINGS
+            );
+
+            const data = await response.json();
+
+            if (data.success) {
+
+                this.appSettings = data.data;
+
+                console.log(
+                    "App Settings Loaded:",
+                    this.appSettings
+                );
+
+                this.applyAppSettings();
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Error loading app settings:",
+                error
+            );
+
+        }
+    }
+    applyAppSettings() {
+
+        if (!this.appSettings) return;
+
+        const headerLogo =
+            document.getElementById('site-logo');
+
+        if (
+            headerLogo &&
+            this.appSettings.header_logo
+        ) {
+            headerLogo.src =
+                this.appSettings.header_logo;
+        }
+
+        if (this.appSettings.app_name) {
+
+            document.title =
+                this.appSettings.app_name;
+
+            const logoText =
+                document.querySelector('.logo');
+
+            if (logoText) {
+                logoText.textContent =
+                    this.appSettings.app_name;
+            }
+
+        }
+
+    }
     async renderCategoryPills() {
 
         const container = document.getElementById('categories-pills');
@@ -1068,3 +1133,43 @@ function updateCartCountBadge() {
 
     badge.textContent = totalItems;
 }
+async function fetchFooterSettings() {
+    try {
+        const response = await fetch('https://retailadmin.ggconsultancy.services/api/app-settings');
+        const data = await response.json();
+        if (data.success) {
+            const appName = data.data.app_name;
+            const footerAppName = document.getElementById('footerAppName');
+            const footerAppNameBottom = document.getElementById('footerAppNameBottom');
+            if (footerAppName) footerAppName.textContent = appName;
+            if (footerAppNameBottom) footerAppNameBottom.textContent = appName;
+        }
+    } catch (error) {
+        console.error('Error fetching app settings:', error);
+    }
+}
+
+async function fetchCategoriesForFooter() {
+    try {
+        const response = await fetch('https://retailadmin.ggconsultancy.services/api/categories');
+        const data = await response.json();
+        if (data.success && data.data.length > 0) {
+            const categories = data.data.slice(0, 6);
+            const listContainer = document.getElementById('footerCategoriesList');
+            if (listContainer) {
+                listContainer.innerHTML = categories.map(cat => `
+                    <li><a href="/category/${cat.id}">${cat.name}</a></li>
+                `).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+    }
+}
+
+document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+document.addEventListener('DOMContentLoaded', function() {
+    fetchFooterSettings();
+    fetchCategoriesForFooter();
+});
