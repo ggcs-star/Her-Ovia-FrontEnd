@@ -346,9 +346,11 @@ button:disabled{
         </form>
     </div>
 </div>
-
 <script>
-const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
+    window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
+</script>
+<script>
+const BASE_URL = window.API_BASE_URL;
 
 function showAlert(message, type) {
     const alertContainer = document.getElementById('alertContainer');

@@ -103,10 +103,13 @@
 <footer class="site-footer" id="site-footer"></footer>
 <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
 <script>
+    window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
+</script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
     const subcategoryId = document.body.dataset.subcategoryId;
     
-    fetch(`https://retailadmin.ggconsultancy.services/api/categories/${subcategoryId}/products`)
+    fetch(`${API_BASE_URL}/categories/${subcategoryId}/products`)
         .then(r => r.json())
         .then(data => {
             const grid = document.getElementById('products-grid');
@@ -133,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     renderBottomNav();
     
-    fetch(`https://retailadmin.ggconsultancy.services/api/categories/${subcategoryId}/products`)
+     fetch(`${API_BASE_URL}/categories/${subcategoryId}/products`)
         .then(r => r.json())
         .then(data => {
             const grid = document.getElementById('products-grid');
@@ -218,5 +221,6 @@ function renderBottomNav() {
     `;
 }
 </script>
+@include('components.footer')
 </body>
 </html>

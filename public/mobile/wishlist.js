@@ -1,5 +1,4 @@
 (function() {
-    const API_BASE_URL = 'https://retailadmin.ggconsultancy.services/api';
     
     const wishlistActions = {
         addToWishlist(product) {

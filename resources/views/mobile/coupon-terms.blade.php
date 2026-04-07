@@ -174,7 +174,9 @@
                 <div class="loading">Loading...</div>
             </div>
         </div>
-
+        <script>
+            window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
+        </script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const code = sessionStorage.getItem('view_coupon_code');
@@ -183,7 +185,7 @@
                     return;
                 }
 
-                fetch('https://retailadmin.ggconsultancy.services/api/coupons')
+                fetch(`${window.API_BASE_URL}/coupons`)
                     .then(res => res.json())
                     .then(response => {
                         if (response.success) {

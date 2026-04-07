@@ -184,7 +184,9 @@
     </div>
 </div>
 
-<!-- Main Script -->
+<script>
+    window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
+</script>
 <script src="{{ asset('mobile/script.js') }}"></script>
 <script src="{{ asset('mobile/filter-fix.js') }}"></script>
 
@@ -222,9 +224,8 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', async () => {
     const categoryId = document.body.dataset.categoryId || window.location.pathname.split('/').pop();
     
-    // Load current category for filter
-    const catRes = await window.app.callAPI(`https://retailadmin.ggconsultancy.services/api/categories/${categoryId}`);
-    
+   
+    const catRes = await window.app.callAPI(`${window.API_BASE_URL}/categories/${categoryId}`);    
     if (catRes.success && catRes.data) {
         const category = catRes.data;
         
@@ -266,8 +267,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
     `).join('');
 
-    const res = await window.app.callAPI(`https://retailadmin.ggconsultancy.services/api/categories/${categoryId}/products`);
-    
+const res = await window.app.callAPI(`${window.API_BASE_URL}/categories/${categoryId}/products`);    
     const products = res?.data?.products || [];
     const categoryName = res?.data?.category?.name || 'Category';
     

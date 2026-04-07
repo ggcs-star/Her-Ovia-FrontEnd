@@ -924,6 +924,31 @@
         max-width: 100px;
     }
 }
+.web-search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #eaeaec;
+    border-radius: 12px;
+    margin-top: 6px;
+    z-index: 9999;
+    max-height: 320px;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.web-suggestion-item {
+    padding: 10px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.web-suggestion-item:hover {
+    background: #f5f5f5;
+}
     </style>
 </head>
 <body data-page="products" data-subcategory-id="{{ request()->query('subcategory') }}" data-category-id="{{ request()->query('category') }}">
@@ -953,14 +978,34 @@
         <div class="top-bar">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
         <div class="main-header">
             <div class="logo-area">
-                <a href="/" class="logo" id="desktopAppName">RAPID RETAIL</a>
+                <a href="/" class="logo">
+                    <img 
+                        src=""
+                        id="desktopHeaderLogo"
+                        class="site-logo"
+                        alt="Logo"
+                        style="height:40px;width:auto;"
+                        onerror="this.src='https://placehold.co/120x40?text=LOGO'"
+                    >
+                </a>
                 <nav class="nav-menu" id="productNavMenu">
                 </nav>
             </div>
             <div class="search-area">
-                <div class="search-box">
-                    <input type="text" placeholder="Search for products, brands...">
-                    <button>Search</button>
+                <div class="search-box" style="position:relative;">
+                <input
+                        type="text"
+                        id="web-search-input"
+                        placeholder="Search for products, brands..."
+                        autocomplete="off"
+                    >
+
+                    <div
+                        id="web-search-suggestions"
+                        class="web-search-suggestions"
+                        style="display:none;"
+                    ></div>
+
                 </div>
             </div>
             <div class="header-actions">
@@ -972,17 +1017,13 @@
     </div>
     <div class="all-categories-popup" id="productAllCategoriesPopup" style="display:none; position:absolute; top:100%; left:0; width:100%; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:1000; border-top:1px solid #f0f0f0;"></div>
 </div>
-<!-- Desktop Layout Wrapper -->
 <div class="products-page-wrapper">
-    <!-- Desktop Sidebar Filters (Only visible on desktop) -->
     <aside class="desktop-filters-sidebar" id="desktopFiltersSidebar">
-      <!-- Category Section -->
         <div class="desktop-filter-section">
             <div class="desktop-filter-title">CATEGORY</div>
-            <div class="filter-options" id="desktopCategoryFilters"></div>  <!-- Yeh class pehle se hai -->
+            <div class="filter-options" id="desktopCategoryFilters"></div> 
         </div>
 
-        <!-- Price Section -->
         <div class="desktop-filter-section">
             <div class="desktop-filter-title">PRICE</div>
             <div class="filter-options">
@@ -994,25 +1035,18 @@
             </div>
         </div>
 
-        <!-- Brands Section -->
         <div class="desktop-filter-section">
             <div class="desktop-filter-title">BRANDS</div>
             <div class="filter-options" id="desktopBrandFilters"></div>
         </div>
-
-        <!-- Discount Section -->
         <div class="desktop-filter-section">
             <div class="desktop-filter-title">DISCOUNT</div>
             <div class="filter-options" id="desktopDiscountFilters"></div>
         </div>
-
-        <!-- Size Section -->
         <div class="desktop-filter-section">
             <div class="desktop-filter-title">SIZE</div>
             <div class="filter-options" id="desktopSizeFilters"></div>
         </div>
-
-        <!-- Color Section -->
         <div class="desktop-filter-section">
             <div class="desktop-filter-title">COLOR</div>
             <div class="filter-options" id="desktopColorFilters"></div>
@@ -1021,14 +1055,12 @@
         <button class="desktop-reset-filters" onclick="resetDesktopFilters()">Reset All Filters</button>
     </aside>
     
-    <!-- Right Content Area -->
     <div class="desktop-products-area">
         <div class="sub-strip" id="subStrip"></div>
         <div class="products" id="productsGrid"></div>
     </div>
 </div>
 
-<!-- Mobile Action Bar (Hidden on desktop via CSS) -->
 <div class="action-bar">
     <button class="action-btn" onclick="showSortPopup()"><span>⇅</span> Sort</button>
     <button class="action-btn" onclick="showFilterPopup()"><span>⚲</span> Filter</button>
@@ -1107,7 +1139,6 @@
     </a>
 </div>
 
-<!-- Sort Popup (Mobile Only) -->
 <div class="sort-popup-overlay" id="sortPopupOverlay" onclick="hideSortPopup()">
     <div class="sort-popup-content" onclick="event.stopPropagation()">
         <div class="sort-popup-header">
@@ -1128,7 +1159,6 @@
     </div>
 </div>
 
-<!-- Filter Popup (Mobile Only) -->
 <div class="filter-popup-overlay" id="filterPopupOverlay" onclick="hideFilterPopup()">
     <div class="filter-popup-content" onclick="event.stopPropagation()">
         <div class="filter-popup-header">
@@ -1188,9 +1218,15 @@
         </div>
     </div>
 </div>
+<script>
+    window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
+</script>
+
 <script src="{{ asset('mobile/script.js') }}"></script>
 
+
 <script>
+    
 (function() {
     const subId = document.body.dataset.subcategoryId;
     const catId = document.body.dataset.categoryId;
@@ -1203,7 +1239,7 @@
 
     async function fetchData() {
         try {
-            const res = await fetch('https://retailadmin.ggconsultancy.services/api/categories');
+            const res = await fetch(`${API_BASE_URL}/categories`);
             const data = await res.json();
             
             if (data.success) {
@@ -1231,7 +1267,7 @@
 
     async function updateMobileLogo() {
     try {
-        const res = await fetch('https://retailadmin.ggconsultancy.services/api/app-settings');
+        const res = await fetch(`${API_BASE_URL}/app-settings`);
         const data = await res.json();
         if (data.success) {
             const logo = data.data.header_logo || data.data.app_logo;
@@ -1273,7 +1309,7 @@ updateMobileLogo();
         const grid = document.getElementById('productsGrid');
         
         try {
-            const res = await fetch(`https://retailadmin.ggconsultancy.services/api/categories/${subId}/products`);
+            const res = await fetch(`${API_BASE_URL}/categories/${subId}/products`);
             const data = await res.json();
             
             if (data.success && data.data.products) {
@@ -1294,7 +1330,6 @@ updateMobileLogo();
     if (!grid) return;
     if (!products.length) { grid.innerHTML = '<div class="loading">No products found</div>'; return; }
     
-    // ✅ Get latest wishlist every time
     const latestWishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
 
     const fallback = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
@@ -1311,7 +1346,6 @@ updateMobileLogo();
         if (half) stars += '½';
         for (let i = stars.length; i < 5; i++) stars += '☆';
         
-        // ✅ Use latestWishlist instead of wishlist
         const inWish = latestWishlist.some(item => item.id == p.id);
         const isBest = discount > 20;
         
@@ -1540,7 +1574,7 @@ updateMobileLogo();
         switch(filterType) {
             case 'category':
                 try {
-                    const res = await fetch('https://retailadmin.ggconsultancy.services/api/categories');
+                    const res = await fetch(`${API_BASE_URL}/categories`);
                     const data = await res.json();
                     
                     if (data.success) {
@@ -1580,7 +1614,7 @@ updateMobileLogo();
             case 'brand':
                 const targetId = subcategoryId || categoryId;
                 if (targetId) {
-                    const res = await fetch(`https://retailadmin.ggconsultancy.services/api/categories/${targetId}/products`);
+                    const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
                     const data = await res.json();
                     
                     if (data.success && data.data.products) {
@@ -1674,53 +1708,146 @@ updateMobileLogo();
         
         hideFilterPopup();
     };
+    function initWebSearchDropdown() {
 
-    function applyOtherFilters(selected) {
-        let filtered = [...currentProducts];
-        let filterApplied = false;
-        
-        if (selected.price.length > 0) {
-            filterApplied = true;
-            filtered = filtered.filter(p => {
-                const price = parseFloat(p.final_price || p.price || 0);
-                return selected.price.some(range => {
-                    const [min, max] = range.split('-').map(Number);
-                    return price >= min && price <= max;
-                });
-            });
-        }
-        
-        if (selected.brand.length > 0) {
-            filterApplied = true;
-            filtered = filtered.filter(p => selected.brand.includes(p.brand));
-        }
-        
-        if (selected.discount.length > 0) {
-            filterApplied = true;
-            filtered = filtered.filter(p => {
-                if (p.price && p.final_price) {
-                    const original = parseFloat(p.price);
-                    const final = parseFloat(p.final_price);
-                    if (original > final) {
-                        const discount = Math.round(((original - final) / original) * 100);
-                        return selected.discount.some(d => {
-                            const discountVal = parseInt(d.replace('%', ''));
-                            return discount >= discountVal;
-                        });
-                    }
+        setTimeout(() => {
+
+            const input = document.getElementById("web-search-input");
+            if (!input) return;
+
+            let suggestionsBox =
+                document.getElementById("web-search-suggestions");
+
+            let timer;
+
+            input.addEventListener("input", async (e) => {
+
+                clearTimeout(timer);
+
+                const q = e.target.value.trim();
+
+                if (q.length === 0) {
+                    suggestionsBox.style.display = "none";
+                    suggestionsBox.innerHTML = "";
+                    return;
                 }
-                return false;
+
+                try {
+
+                    /* first letter instant */
+
+                    if (q.length === 1) {
+
+                        const res = await fetch(
+                            `${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`
+                        );
+
+                        const data = await res.json();
+
+                        if (!data.success) return;
+
+                        renderSuggestions(data.data.products);
+
+                        return;
+                    }
+
+                    /* smooth delay */
+
+                    timer = setTimeout(async () => {
+
+                        const res = await fetch(
+                            `${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`
+                        );
+
+                        const data = await res.json();
+
+                        if (!data.success) return;
+
+                        renderSuggestions(data.data.products);
+
+                    }, 200);
+
+                } catch (err) {
+                    console.log(err);
+                }
+
             });
-        }
+
+            document.addEventListener("click", (e) => {
+                if (
+                    !input.contains(e.target) &&
+                    !suggestionsBox.contains(e.target)
+                ) {
+                    suggestionsBox.style.display = "none";
+                }
+            });
+
+            function renderSuggestions(products) {
+
+                let html = "";
+
+                products.forEach(p => {
+                    html += `<div class="web-suggestion-item" onclick="window.location.href='/product/${p.slug}'">${p.name}</div>`;
+                });
+
+                if (html === "") {
+                    html = `<div class="web-suggestion-item">No results found</div>`;
+                }
+
+                suggestionsBox.innerHTML = html;
+                suggestionsBox.style.display = "block";
+            }
+
+        }, 300);
+
+    }
         
-        if (filterApplied) {
-            if (filtered.length > 0) {
-                renderProducts(filtered);
-            } else {
-                document.getElementById('productsGrid').innerHTML = '<div class="loading" style="grid-column:1/-1; padding:40px; text-align:center; color:#999;">No products match your filters</div>';
+    function applyOtherFilters(selected) {
+            let filtered = [...currentProducts];
+            let filterApplied = false;
+            
+            if (selected.price.length > 0) {
+                filterApplied = true;
+                filtered = filtered.filter(p => {
+                    const price = parseFloat(p.final_price || p.price || 0);
+                    return selected.price.some(range => {
+                        const [min, max] = range.split('-').map(Number);
+                        return price >= min && price <= max;
+                    });
+                });
+            }
+            
+            if (selected.brand.length > 0) {
+                filterApplied = true;
+                filtered = filtered.filter(p => selected.brand.includes(p.brand));
+            }
+            
+            if (selected.discount.length > 0) {
+                filterApplied = true;
+                filtered = filtered.filter(p => {
+                    if (p.price && p.final_price) {
+                        const original = parseFloat(p.price);
+                        const final = parseFloat(p.final_price);
+                        if (original > final) {
+                            const discount = Math.round(((original - final) / original) * 100);
+                            return selected.discount.some(d => {
+                                const discountVal = parseInt(d.replace('%', ''));
+                                return discount >= discountVal;
+                            });
+                        }
+                    }
+                    return false;
+                });
+            }
+            
+            if (filterApplied) {
+                if (filtered.length > 0) {
+                    renderProducts(filtered);
+                } else {
+                    document.getElementById('productsGrid').innerHTML = '<div class="loading" style="grid-column:1/-1; padding:40px; text-align:center; color:#999;">No products match your filters</div>';
+                }
             }
         }
-    }
 
 
     window.resetFilters = function() {
@@ -1744,7 +1871,7 @@ async function loadProductDesktopHeader() {
     if (!navMenu) return;
     
     try {
-        const res = await fetch('https://retailadmin.ggconsultancy.services/api/categories');
+        const res = await fetch(`${API_BASE_URL}/categories`);
         const data = await res.json();
         
         if (data.success) {
@@ -1848,14 +1975,16 @@ function updateCartCountBadge() {
 }
 async function fetchAppSettingsForProducts() {
     try {
-        const response = await fetch('https://retailadmin.ggconsultancy.services/api/app-settings');
+        const response = await fetch(`${API_BASE_URL}/app-settings`);
         const data = await response.json();
         if (data.success) {
             const appName = data.data.app_name;
             const headerLogo = data.data.header_logo || data.data.app_logo;
             
-            const desktopNameEl = document.getElementById('desktopAppName');
-            if (desktopNameEl) desktopNameEl.textContent = appName;
+            const desktopLogoEl = document.getElementById('desktopHeaderLogo');
+            if (desktopLogoEl && headerLogo) {
+                desktopLogoEl.src = headerLogo;
+            }
             
             const mobileLogoEl = document.getElementById('mobileHeaderLogo');
 if (mobileLogoEl) {
@@ -1871,6 +2000,8 @@ if (mobileLogoEl) {
 document.addEventListener('DOMContentLoaded', function() {
     fetchAppSettingsForProducts();
     loadProductDesktopHeader();
+    initWebSearchDropdown();
+
 });
 function initDesktopFiltersToggle() {
     document.querySelectorAll('.desktop-filter-section').forEach(section => {
@@ -1891,7 +2022,7 @@ function initDesktopFiltersToggle() {
     });
 }
 setTimeout(function() {
-    fetch('https://retailadmin.ggconsultancy.services/api/app-settings')
+    fetch(`${API_BASE_URL}/app-settings`)
         .then(r => r.json())
         .then(data => {
             if (data.success) {
@@ -1907,5 +2038,6 @@ setTimeout(function() {
     fetchData();
 })();
 </script>
+@include('components.footer')
 </body>
 </html>

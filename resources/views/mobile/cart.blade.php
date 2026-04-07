@@ -99,12 +99,14 @@
     </div>
 </div>
 
-<footer class="site-footer" id="site-footer"></footer>
+@include('components.footer')
 
 
 <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
 
-
+<script>
+    window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
+</script>
 <script src="{{ asset('mobile/script.js') }}"></script>
 <script src="{{ asset('mobile/cart.js') }}"></script>
 <script src="{{ asset('mobile/wishlist.js') }}"></script>

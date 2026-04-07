@@ -1,3 +1,4 @@
+const API_BASE_URL = window.API_BASE_URL;
 class AllCategoriesPage {
     constructor() {
         this.allCategories = [];
@@ -92,7 +93,7 @@ showSidebarSkeleton() {
     
     async fetchCategories() {
         try {
-            const response = await fetch('https://retailadmin.ggconsultancy.services/api/categories');
+            const response = await fetch(`${API_BASE_URL}/categories`);
             const data = await response.json();
             if (data.success) {
                 this.allCategories = data.data;
@@ -116,7 +117,7 @@ showSidebarSkeleton() {
     }
     async fetchUserCategoryOrder() {
         try {
-            const response = await fetch('https://retailadmin.ggconsultancy.services/api/categories/order', {
+            const response = await fetch(`${API_BASE_URL}/categories/order`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                     'Accept': 'application/json'
@@ -146,15 +147,34 @@ showSidebarSkeleton() {
                 <div class="top-bar">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
                 <div class="main-header">
                     <div class="logo-area">
-                        <a href="/" class="logo">${this.appSettings?.app_name || 'RAPID RETAIL'}</a>
+                        <a href="/" class="logo">
+                            <img 
+                                src="${this.appSettings?.header_logo || 'https://placehold.co/120x40?text=LOGO'}"
+                                alt="Logo"
+                                id="site-logo"
+                                class="site-logo"
+                                onerror="this.src='https://placehold.co/120x40?text=LOGO'"
+                            >
+                        </a>
                         <nav class="nav-menu" id="navMenu">
                             ${categoriesHtml}
                         </nav>
                     </div>
                     <div class="search-area">
-                        <div class="search-box">
-                            <input type="text" placeholder="Search for products, brands...">
-                            <button>Search</button>
+                       <div class="search-box" style="position:relative;">
+                            <input 
+                                type="text"
+                                id="web-search-input"
+                                placeholder="Search for products, brands..."
+                                autocomplete="off"
+                            >
+
+                            <div 
+                                id="web-search-suggestions"
+                                class="web-search-suggestions"
+                                style="display:none;"
+                            ></div>
+
                         </div>
                     </div>
                     <div class="header-actions">
@@ -167,8 +187,8 @@ showSidebarSkeleton() {
             <div class="all-categories-popup" id="allCategoriesPopup" style="display:none; position:absolute; top:100%; left:0; width:100%; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:1000; border-top:1px solid #f0f0f0;"></div>
         `;
         
-        // 🔥 ADD THIS LINE
         this.setupAllCategoriesPopup();
+        this.initWebSearchDropdown();
         
     } else {
         // Mobile header (same as before)
@@ -204,9 +224,115 @@ showSidebarSkeleton() {
         `;
     }
 }
+initWebSearchDropdown() {
+
+    setTimeout(() => {
+
+        const input = document.getElementById("web-search-input");
+
+        if (!input) return;
+
+        let suggestionsBox =
+            document.getElementById("web-search-suggestions");
+
+        let timer;
+
+        input.addEventListener("input", async (e) => {
+
+            clearTimeout(timer);
+
+            const q = e.target.value.trim();
+
+            if (q.length === 0) {
+                suggestionsBox.style.display = "none";
+                suggestionsBox.innerHTML = "";
+                return;
+            }
+
+            try {
+
+                /* first letter instant */
+
+                if (q.length === 1) {
+
+                    const res = await fetch(
+                        `${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`
+                    );
+
+                    const data = await res.json();
+
+                    if (!data.success) return;
+
+                    renderSuggestions(data.data.products);
+
+                    return;
+                }
+
+                timer = setTimeout(async () => {
+
+                    const res = await fetch(
+                        `${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`
+                    );
+
+                    const data = await res.json();
+
+                    if (!data.success) return;
+
+                    renderSuggestions(data.data.products);
+
+                }, 200);
+
+            } catch (err) {
+                console.log(err);
+            }
+
+        });
+
+        document.addEventListener("click", (e) => {
+
+            if (
+                !input.contains(e.target) &&
+                !suggestionsBox.contains(e.target)
+            ) {
+                suggestionsBox.style.display = "none";
+            }
+
+        });
+
+        function renderSuggestions(products) {
+
+            let html = "";
+
+            products.forEach(p => {
+
+                html += `
+                <div class="web-suggestion-item"
+                     onclick="window.location.href='/product/${p.slug}'">
+                     ${p.name}
+                </div>
+                `;
+
+            });
+
+            if (html === "") {
+                html =
+                    `<div class="web-suggestion-item">
+                        No results found
+                     </div>`;
+            }
+
+            suggestionsBox.innerHTML = html;
+
+            suggestionsBox.style.display = "block";
+
+        }
+
+    }, 300);
+
+}
 async fetchAppSettings() {
     try {
-        const response = await fetch('https://retailadmin.ggconsultancy.services/api/app-settings');
+        const response = await fetch(`${API_BASE_URL}/app-settings`);
         const data = await response.json();
         if (data.success) {
             this.appSettings = data.data;
@@ -564,7 +690,7 @@ renderAllCategoriesPopup() {
             ids.push(item.dataset.id);
         });
 
-        fetch('https://retailadmin.ggconsultancy.services/api/categories/order', {
+        fetch(`${API_BASE_URL}/categories/order`, {
             method: "POST",
             headers: {
                 "Authorization": "Bearer " + localStorage.getItem("token"),
@@ -630,7 +756,7 @@ function hideCategoryPopup() {
 
 document.addEventListener('DOMContentLoaded', () => {
     if (document.body.dataset.page === 'all-categories') {
-        window.allCategoriesPage = new AllCategoriesPage();  // YEH CHANGE KARO
+        window.allCategoriesPage = new AllCategoriesPage();  
     }
 });
 function updateCartCountBadge() {

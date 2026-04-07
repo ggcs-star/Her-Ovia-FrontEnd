@@ -1,3 +1,4 @@
+const API_BASE_URL = window.API_BASE_URL;
 (function() {
     if (!document.body.classList.contains('category-products-page')) return;
 
@@ -11,7 +12,7 @@
         if (!container) return;
 
         try {
-            const response = await fetch(`https://retailadmin.ggconsultancy.services/api/categories/${categoryId}/products`);
+const response = await fetch(`${API_BASE_URL}/categories/${categoryId}/products`);
             const data = await response.json();
             
             if (data.success && data.data) {

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://retailadmin.ggconsultancy.services/api';
+const API_BASE_URL = window.API_BASE_URL;
 let PAYMENT_IN_PROGRESS = false;
 let PAYMENT_COMPLETED = false;
 

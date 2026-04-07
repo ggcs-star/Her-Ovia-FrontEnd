@@ -1,3 +1,4 @@
+const API_BASE_URL = window.API_BASE_URL || '';
 document.addEventListener('DOMContentLoaded', function() {
     const buyNowOriginalCart = sessionStorage.getItem('buy_now_original_cart');
     if (buyNowOriginalCart && window.location.pathname === '/cart') {
@@ -71,7 +72,7 @@ async function fetchBrandsForCartItems(cart) {
         
         if (item.categoryId) {
             try {
-                const res = await fetch(`https://retailadmin.ggconsultancy.services/api/categories/${item.categoryId}/products`);
+                const res = await fetch(`${API_BASE_URL}/categories/${item.categoryId}/products`);
                 const data = await res.json();
                 
                 if (data.success && data.data?.products) {
@@ -767,7 +768,7 @@ function removeItem(index) {
 
     const token = localStorage.getItem('token');
     if (token && removedItem?.cart_item_id) {
-        fetch(`https://retailadmin.ggconsultancy.services/api/cart/remove/${removedItem.cart_item_id}`, {
+        fetch(`${API_BASE_URL}/cart/remove/${removedItem.cart_item_id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -814,7 +815,7 @@ function loadAvailableCoupons() {
     
     couponsList.innerHTML = '<div class="loading-coupons">Loading coupons...</div>';
     
-    fetch('https://retailadmin.ggconsultancy.services/api/coupons', {
+    fetch(`${API_BASE_URL}/coupons`, {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -825,6 +826,7 @@ function loadAvailableCoupons() {
         return res.json();
     })
     .then(response => {
+        console.log("Coupons API response:", response.data);
         if (response.success && response.data && response.data.length > 0) {
             window.allCoupons = response.data;
             renderCouponsList(response.data);
@@ -860,7 +862,7 @@ function applyCoupon(couponCode = null) {
 );
     
     
-    fetch('https://retailadmin.ggconsultancy.services/api/coupons/apply', {
+    fetch(`${API_BASE_URL}/coupons/apply`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -956,7 +958,7 @@ function closeCouponSuccessPopup() {
 }
 
 function removeCoupon() {
-    fetch('https://retailadmin.ggconsultancy.services/api/coupons/remove', {
+    fetch(`${API_BASE_URL}/coupons/remove`, {
         method: 'POST',
         headers: {
             'Accept': 'application/json'
@@ -1309,7 +1311,7 @@ function syncCartWithServer() {
     const localCart = JSON.parse(localStorage.getItem('cart')) || [];
     
     if (localCart.length === 0) {
-        fetch('https://retailadmin.ggconsultancy.services/api/cart/clear', {
+        fetch(`${API_BASE_URL}/cart/clear`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1329,7 +1331,7 @@ function syncCartWithServer() {
         image: item.image 
     }));
     
-    fetch('https://retailadmin.ggconsultancy.services/api/cart/sync', {
+    fetch(`${API_BASE_URL}/cart/sync`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

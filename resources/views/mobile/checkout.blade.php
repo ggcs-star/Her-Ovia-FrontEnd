@@ -130,7 +130,7 @@
         </div>
     </div>
 </main>
-<footer class="site-footer" id="site-footer"></footer>
+@include('components.footer')
 <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
 
 <script>
@@ -138,6 +138,9 @@
     console.log('Frontend Razorpay key:', window.RAZORPAY_KEY_ID);
 </script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
+</script>
 <script src="{{ asset('mobile/script.js') }}"></script>
 <script src="{{ asset('mobile/checkout.js') }}"></script>
 <div id="confirmModal" class="confirm-modal" style="display: none;">

@@ -1176,7 +1176,31 @@
 body.order-confirmation-page .site-header {
     padding-top: calc(12px + env(safe-area-inset-top));
 }
+.web-search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #eaeaec;
+    border-radius: 8px;
+    margin-top: 6px;
+    z-index: 99999;
+    max-height: 320px;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
 
+.web-suggestion-item {
+    padding: 10px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.web-suggestion-item:hover {
+    background: #f5f5f5;
+}
     </style>
 </head>
 <body>
@@ -1191,9 +1215,11 @@ body.order-confirmation-page .site-header {
             </div>
         </div>
     </div>
-
+<script>
+    window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
+</script>
     <script>
-        const API_BASE_URL = 'https://retailadmin.ggconsultancy.services/api';
+        const API_BASE_URL = window.API_BASE_URL;
         const token = localStorage.getItem('token');
         const orderId = '{{ $orderId }}';
 
@@ -1208,7 +1234,7 @@ function renderHeader() {
     const isDesktop = window.innerWidth >= 1025;
     
     if (isDesktop) {
-        fetch('https://retailadmin.ggconsultancy.services/api/categories')
+        fetch(`${API_BASE_URL}/categories`)
             .then(r => r.json())
             .then(data => {
                 if (data.success && data.data) {
@@ -1222,13 +1248,37 @@ function renderHeader() {
                             <div class="top-bar">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
                             <div class="main-header">
                                 <div class="logo-area">
-                                    <a href="/" class="logo">RAPID RETAIL</a>
+                                    <a href="/" class="logo">
+                                        <img 
+                                            id="site-logo"
+                                            class="site-logo"
+                                            src=""
+                                            alt="Logo"
+                                            style="height:40px;width:auto;"
+                                            onerror="this.src='https://placehold.co/120x40?text=LOGO'"
+                                        >
+                                    </a>
                                     <nav class="nav-menu">${categoriesHtml}</nav>
                                 </div>
                                 <div class="search-area">
-                                    <div class="search-box">
+                                    <div class="search-box" style="position:relative;">
+                                    <span id="web-clear-btn" style="
+                                        position:absolute;
+                                        right:10px;
+                                        top:50%;
+                                        transform:translateY(-50%);
+                                        cursor:pointer;
+                                        display:none;
+                                        font-size:16px;
+                                    ">✕</span>
+
+                                    <div
+                                        id="web-search-suggestions"
+                                        class="web-search-suggestions"
+                                        style="display:none;"
+                                    ></div>
                                         <input type="text" placeholder="Search for products, brands..." id="web-search-input">
-                                        <button onclick="window.location.href='/search'">⌕</button>
+                                        
                                     </div>
                                 </div>
                                 <div class="header-actions">
@@ -1240,13 +1290,13 @@ function renderHeader() {
                         </div>
                         <div class="all-categories-popup" id="allCategoriesPopup" style="display:none;"></div>
                     `;
-                    
+                    setTimeout(initWebSearchDropdown, 100);
                     const navItems = document.querySelectorAll('.nav-item');
                     const popup = document.getElementById('allCategoriesPopup');
                     
                     navItems.forEach(item => {
                         item.addEventListener('mouseenter', () => {
-                            fetch('https://retailadmin.ggconsultancy.services/api/categories')
+                            fetch(`${API_BASE_URL}/categories`)
                                 .then(r => r.json())
                                 .then(res => {
                                     if (res.success && res.data) {
@@ -1283,12 +1333,7 @@ function renderHeader() {
                     popup.addEventListener('mouseenter', () => { popup.style.display = 'block'; });
                     popup.addEventListener('mouseleave', () => { popup.style.display = 'none'; });
                     
-                    const webSearch = document.getElementById('web-search-input');
-                    if (webSearch) {
-                        webSearch.addEventListener('focus', () => {
-                            window.location.href = '/search';
-                        });
-                    }
+                    
                 }
             });
     } else {
@@ -1352,7 +1397,8 @@ style.textContent = `
     .nav-item { text-decoration: none; color: #282c3f; font-size: 14px; font-weight: 600; letter-spacing: 0.5px; cursor: pointer; }
     .nav-item:hover { color: #ff3f6c; }
     .search-area { flex: 1; max-width: 400px; }
-    .search-box { display: flex; background: #f5f5f6; border-radius: 4px; overflow: hidden; }
+    .search-box {display: flex ; background: #f5f5f6; border-radius: 4px; position: relative; overflow: visible;   /* IMPORTANT */
+}
     .search-box input { flex: 1; border: none; padding: 10px 15px; outline: none; font-size: 14px; background: transparent; }
     .search-box button { background: transparent; border: none; padding: 0 15px; cursor: pointer; font-size: 18px; color: #333; }
     .header-actions { display: flex; gap: 25px; flex-shrink: 0; }
@@ -1377,8 +1423,98 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 renderHeader();
-window.addEventListener('resize', () => renderHeader());
-        function goBack() {
+
+function initWebSearchDropdown() {
+
+    const input = document.getElementById("web-search-input");
+    const box = document.getElementById("web-search-suggestions");
+    const clearBtn = document.getElementById("web-clear-btn");
+
+    if (!input) return;
+
+    let timer;
+
+    input.addEventListener("input", function(e) {
+
+        clearTimeout(timer);
+
+        const q = e.target.value.trim();
+
+        clearBtn.style.display = q ? "block" : "none";
+
+        if (q.length === 0) {
+            box.style.display = "none";
+            box.innerHTML = "";
+            return;
+        }
+
+        timer = setTimeout(async () => {
+
+            try {
+
+                const res = await fetch(
+                    `${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`
+                );
+
+                const data = await res.json();
+
+                if (!data.success) return;
+
+                let html = "";
+
+                const products = data.data.products || [];
+
+                products.forEach(p => {
+                    html += `
+                        <div class="web-suggestion-item"
+                             onclick="window.location.href='/product/${p.slug}'">
+                             ${p.name}
+                        </div>
+                    `;
+                });
+
+                if (html === "") {
+                    html = `<div class="web-suggestion-item">No results found</div>`;
+                }
+
+                box.innerHTML = html;
+                box.style.display = "block";
+
+            } catch (err) {
+                console.log(err);
+            }
+
+        }, 200);
+
+    });
+
+    clearBtn.addEventListener("click", function() {
+        input.value = "";
+        box.style.display = "none";
+        box.innerHTML = "";
+        clearBtn.style.display = "none";
+        input.focus();
+    });
+
+    document.addEventListener("click", function(e) {
+        if (!input.contains(e.target) && !box.contains(e.target)) {
+            box.style.display = "none";
+        }
+    });
+
+}
+setTimeout(() => {
+    applyAppSettingsForOrderPage();
+}, 100);
+
+window.addEventListener('resize', () => {
+    renderHeader();
+
+    setTimeout(() => {
+        applyAppSettingsForOrderPage();
+    }, 100);
+});
+    function goBack() {
             window.history.back();
         }
 
@@ -1767,7 +1903,31 @@ history.pushState(null, null, window.location.href);
 function handleBackToOrders() {
     window.location.replace('/orders');
 }
+async function applyAppSettingsForOrderPage() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/app-settings`);
+        const data = await res.json();
 
+        if (data.success) {
+            const headerLogo =
+                data.data.header_logo ||
+                data.data.app_logo;
+
+            const logoImg =
+                document.getElementById('site-logo');
+
+            if (logoImg && headerLogo) {
+                logoImg.src = headerLogo;
+            }
+
+            if (data.data.app_name) {
+                document.title = data.data.app_name;
+            }
+        }
+    } catch (e) {
+        console.error('Logo load error:', e);
+    }
+}
 document.querySelectorAll('.back-btn-header, [onclick="goBack()"]').forEach(btn => {
     btn.onclick = function(e) {
         e.preventDefault();
@@ -1776,7 +1936,6 @@ document.querySelectorAll('.back-btn-header, [onclick="goBack()"]').forEach(btn 
 });
 
         document.body.classList.add('order-confirmation-page');
-        renderHeader();
         fetchOrderData();
         startAutoRefresh();
     </script>

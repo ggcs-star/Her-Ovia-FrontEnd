@@ -466,11 +466,13 @@
 <footer class="footer">
     <p>© 2026 StockFlow · Pure API E-Commerce</p>
 </footer>
-
+<script>
+    window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
+</script>
 <script>
     // ==================== API CONFIGURATION ====================
-const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
-    const token = localStorage.getItem("token");
+const BASE_URL = window.API_BASE_URL;
+const token = localStorage.getItem("token");
 
     // ==================== STATE MANAGEMENT ====================
     let cart = [];

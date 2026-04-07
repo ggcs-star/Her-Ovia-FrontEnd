@@ -126,7 +126,17 @@
     <div class="search-header">
         <button class="back-btn" onclick="history.back()">←</button>
         <div class="search-box">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#000"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </span>
             <input id="searchInput" class="search-input" placeholder="Search products">
             <span id="clearBtn" class="clear-btn">✕</span>
         </div>
@@ -134,7 +144,9 @@
 
     <div id="suggestions" class="suggestions"></div>
     <div id="results" class="results"></div>
-
+    <script>
+        window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
+    </script>
     <script src="/mobile/search.js"></script>
 </body>
 </html>

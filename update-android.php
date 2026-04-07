@@ -1,5 +1,5 @@
 <?php
-$apiUrl = 'https://retailadmin.ggconsultancy.services/api/app-settings';
+$apiUrl = 'https://radiantejeweladmin.radiantejewel.com/api/app-settings';
 $response = file_get_contents($apiUrl);
 $data = json_decode($response, true);
 

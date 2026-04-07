@@ -1,6 +1,7 @@
-const API_BASE = "https://retailadmin.ggconsultancy.services/api";
-const S3_BASE_URL = 'https://inventorydata-s3-bucket.s3.amazonaws.com/';
-
+const API_BASE = window.API_BASE_URL;
+// const S3_BASE_URL = 'https://inventorydata-s3-bucket.s3.amazonaws.com/';
+const API_BASE_URL = window.API_BASE_URL;
+const S3_BASE_URL = window.S3_BASE_URL;
 const input = document.getElementById("searchInput");
 const suggestions = document.getElementById("suggestions");
 const results = document.getElementById("results");
@@ -8,8 +9,10 @@ const clearBtn = document.getElementById("clearBtn");
 
 let timer = null;
 window.addEventListener("DOMContentLoaded", () => {
-    input.focus();
-    showRecentSearches();
+    if (input) {
+        input.focus();
+        showRecentSearches();
+    }
 });
 async function resolveImage(slug) {
 
@@ -27,7 +30,8 @@ async function resolveImage(slug) {
 
     return "https://via.placeholder.com/300x400?text=No+Image";
 }
-input.addEventListener("input", () => {
+if (input) {
+    input.addEventListener("input", () => {
     const q = input.value.trim();
     clearBtn.style.display = q ? "block" : "none";
     clearTimeout(timer);
@@ -41,7 +45,8 @@ input.addEventListener("input", () => {
         loadProducts(q);
     }, 300);
 });
-
+}
+if (clearBtn) {
 clearBtn.addEventListener("click", () => {
     input.value = "";
     suggestions.innerHTML = "";
@@ -49,6 +54,7 @@ clearBtn.addEventListener("click", () => {
     clearBtn.style.display = "none";
     input.focus();
 });
+}
 
 async function loadSuggestions(q) {
     try {

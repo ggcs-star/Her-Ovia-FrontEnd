@@ -1,3 +1,4 @@
+const API_BASE_URL = window.API_BASE_URL;
 class SubCategoryPage {
     constructor() {
         this.categoryId = this.getCategoryIdFromUrl();
@@ -18,7 +19,7 @@ class SubCategoryPage {
     }
     async fetchAllCategories() {
         try {
-            const response = await fetch('https://retailadmin.ggconsultancy.services/api/categories');
+            const response = await fetch(`${API_BASE_URL}/categories`);
             const data = await response.json();
             if (data.success) {
                 this.allCategories = data.data;
@@ -42,7 +43,7 @@ class SubCategoryPage {
         container.innerHTML = '<div style="text-align:center;padding:50px;">Loading products...</div>';
         
         try {
-            const response = await fetch(`https://retailadmin.ggconsultancy.services/api/categories/${categoryId}/products`);
+            const response = await fetch(`${API_BASE_URL}/categories/${categoryId}/products`);
             const data = await response.json();
             
             if (data.success && data.data.products) {

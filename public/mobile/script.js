@@ -1,12 +1,12 @@
-const S3_BASE_URL = 'https://inventorydata-s3-bucket.s3.amazonaws.com/';
-
+window.S3_BASE_URL = 'https://inventorydata-s3-bucket.s3.amazonaws.com/';
+window.API_BASE_URL = window.API_BASE_URL;
 const APP_CONFIG = {
     ENDPOINTS: {
-        CATEGORIES: 'https://retailadmin.ggconsultancy.services/api/categories',
-        CATEGORY_PRODUCTS: (id) => `https://retailadmin.ggconsultancy.services/api/categories/${id}/products`, 
-        TOP_SELLING: 'https://retailadmin.ggconsultancy.services/api/products/top-selling',
-        BANNERS: 'https://retailadmin.ggconsultancy.services/api/banners',
-        APP_SETTINGS: 'https://retailadmin.ggconsultancy.services/api/app-settings',
+        CATEGORIES: `${API_BASE_URL}/categories`,
+        CATEGORY_PRODUCTS: (id) => `${API_BASE_URL}/categories/${id}/products`,
+        TOP_SELLING: `${API_BASE_URL}/products/top-selling`,
+        BANNERS: `${API_BASE_URL}/banners`,
+        APP_SETTINGS: `${API_BASE_URL}/app-settings`,
     },
     FALLBACK_IMAGE: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop',
 };
@@ -71,15 +71,18 @@ class RapidRetailsEngine {
                 <div class="top-bar">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
                 <div class="main-header">
                     <div class="logo-area">
-                        <a href="/" class="logo">RAPID RETAIL</a>
+                        <a href="/" class="logo">
+                            <img src="" alt="Logo" id="site-logo" class="site-logo"
+                            onerror="this.src='https://placehold.co/120x40?text=LOGO'">
+                        </a>
                         <nav class="nav-menu" id="navMenu">
                             ${categoriesHtml}
                         </nav>
                     </div>
-                    <div class="search-area">
-                        <div class="search-box">
-                            <input type="text" placeholder="Search for products, brands...">
-                            <button>Search</button>
+                   <div class="search-area">
+                        <div class="search-box" style="position:relative;">
+                            <input type="text" id="web-search-input" placeholder="Search for products, brands..." autocomplete="off">
+                            <div id="web-search-suggestions" class="web-search-suggestions" style="display:none;"></div>
                         </div>
                     </div>
                     <div class="header-actions">
@@ -93,6 +96,9 @@ class RapidRetailsEngine {
         `;
         
         this.setupAllCategoriesPopup();
+        this.initWebSearchDropdown();
+       
+
         
     } else {
         const isCartPage = document.body.classList.contains('cart-page');
@@ -137,6 +143,139 @@ class RapidRetailsEngine {
         `;
     }
     this.applyAppSettings();
+}
+
+initWebSearchDropdown() {
+    setTimeout(() => {
+        const input = document.getElementById("web-search-input");
+        if (!input) {
+            console.log("Web search input not found");
+            return;
+        }
+        
+        console.log("Web search input found");
+        
+        let suggestionsBox = document.getElementById("web-search-suggestions");
+        if (!suggestionsBox) {
+            const parent = input.parentElement;
+            const div = document.createElement("div");
+            div.id = "web-search-suggestions";
+            div.className = "web-search-suggestions";
+            div.style.display = "none";
+            parent.appendChild(div);
+            suggestionsBox = div;
+        }
+        
+        let timer;
+        
+        input.addEventListener("input", async (e) => {
+
+    clearTimeout(timer);
+
+    const q = e.target.value.trim();
+
+    /* empty input */
+    if (q.length === 0) {
+        suggestionsBox.style.display = "none";
+        suggestionsBox.innerHTML = "";
+        return;
+    }
+
+    try {
+
+        /* ⭐ First letter pe instant suggestion */
+        if (q.length === 1) {
+
+            const res = await fetch(
+                `${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`
+            );
+
+            const data = await res.json();
+
+            if (!data.success) return;
+
+            const products = data.data.products || [];
+
+            let html = "";
+
+            products.forEach(p => {
+                html += `
+                <div class="web-suggestion-item"
+                     onclick="window.location.href='/product/${p.slug}'">
+                     ${p.name}
+                </div>
+                `;
+            });
+
+            if (html === "") {
+                html = `
+                <div class="web-suggestion-item">
+                    No results found for "${q}"
+                </div>`;
+            }
+
+            suggestionsBox.innerHTML = html;
+            suggestionsBox.style.display = "block";
+
+            return;
+        }
+
+        /* ⭐ baaki typing pe smooth delay */
+
+        timer = setTimeout(async () => {
+
+            try {
+
+                const res = await fetch(
+                    `${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`
+                );
+
+                const data = await res.json();
+
+                if (!data.success) return;
+
+                const products = data.data.products || [];
+
+                let html = "";
+
+                products.forEach(p => {
+                    html += `
+                    <div class="web-suggestion-item"
+                         onclick="window.location.href='/product/${p.slug}'">
+                         ${p.name}
+                    </div>
+                    `;
+                });
+
+                if (html === "") {
+                    html = `
+                    <div class="web-suggestion-item">
+                        No results found for "${q}"
+                    </div>`;
+                }
+
+                suggestionsBox.innerHTML = html;
+                suggestionsBox.style.display = "block";
+
+            } catch (err) {
+                console.log(err);
+            }
+
+        }, 200);
+
+    } catch (err) {
+        console.log(err);
+    }
+
+});
+        
+        document.addEventListener("click", (e) => {
+            if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.style.display = "none";
+            }
+        });
+        
+    }, 500);
 }
 setupAllCategoriesPopup() {
     const navItems = document.querySelectorAll('.nav-item');
@@ -222,14 +361,15 @@ renderAllCategoriesPopup() {
     popup.innerHTML = html;
 }
 
-    initSearchRedirect() {
-    const searchInput = document.getElementById("landing-search");
-    if (!searchInput) return;
-    searchInput.addEventListener("focus", () => {
-        window.location.href = "/search";
-    });
+initSearchRedirect() {
+    const mobileSearchInput = document.getElementById("landing-search");
+    if (mobileSearchInput) {
+        mobileSearchInput.addEventListener("focus", () => {
+            window.location.href = "/search";
+        });
+    }
 }
-   renderBottomNav() {
+renderBottomNav() {
     const nav = document.getElementById('mobile-bottom-nav');
     if (!nav) return;
     
@@ -357,7 +497,7 @@ renderAllCategoriesPopup() {
 }
     async fetchUserCategoryOrder() {
     try {
-        const response = await fetch('https://retailadmin.ggconsultancy.services/api/categories/order', {
+        const response = await fetch(`${API_BASE_URL}/categories/order`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 'Accept': 'application/json'
@@ -471,35 +611,24 @@ renderAllCategoriesPopup() {
     }
     applyAppSettings() {
 
-        if (!this.appSettings) return;
+    if (!this.appSettings) return;
 
-        const headerLogo =
-            document.getElementById('site-logo');
+    const headerLogo = document.getElementById('site-logo');
 
-        if (
-            headerLogo &&
-            this.appSettings.header_logo
-        ) {
-            headerLogo.src =
-                this.appSettings.header_logo;
-        }
+    if (headerLogo && this.appSettings.header_logo) {
 
-        if (this.appSettings.app_name) {
+        headerLogo.src = this.appSettings.header_logo;
 
-            document.title =
-                this.appSettings.app_name;
-
-            const logoText =
-                document.querySelector('.logo');
-
-            if (logoText) {
-                logoText.textContent =
-                    this.appSettings.app_name;
-            }
-
-        }
-
+        headerLogo.onerror = function () {
+            this.src = 'https://placehold.co/120x40?text=LOGO';
+        };
     }
+
+    if (this.appSettings.app_name) {
+        document.title = this.appSettings.app_name;
+    }
+
+}
     async renderCategoryPills() {
 
         const container = document.getElementById('categories-pills');
@@ -1135,7 +1264,7 @@ function updateCartCountBadge() {
 }
 async function fetchFooterSettings() {
     try {
-        const response = await fetch('https://retailadmin.ggconsultancy.services/api/app-settings');
+        const response = await fetch(`${API_BASE_URL}/app-settings`);
         const data = await response.json();
         if (data.success) {
             const appName = data.data.app_name;
@@ -1151,7 +1280,7 @@ async function fetchFooterSettings() {
 
 async function fetchCategoriesForFooter() {
     try {
-        const response = await fetch('https://retailadmin.ggconsultancy.services/api/categories');
+        const response = await fetch(`${API_BASE_URL}/categories`)
         const data = await response.json();
         if (data.success && data.data.length > 0) {
             const categories = data.data.slice(0, 6);
@@ -1167,9 +1296,31 @@ async function fetchCategoriesForFooter() {
     }
 }
 
-document.getElementById('footerYear').textContent = new Date().getFullYear();
+const footerYear = document.getElementById('footerYear');
 
+if (footerYear) {
+    footerYear.textContent = new Date().getFullYear();
+}
 document.addEventListener('DOMContentLoaded', function() {
     fetchFooterSettings();
     fetchCategoriesForFooter();
+});
+document.addEventListener("click", (e) => {
+
+    const box =
+        document.querySelector(".search-box");
+
+    const suggestions =
+        document.getElementById(
+            "web-search-suggestions"
+        );
+
+    if (!box || !suggestions) return;
+
+    if (!box.contains(e.target)) {
+
+        suggestions.style.display = "none";
+
+    }
+
 });

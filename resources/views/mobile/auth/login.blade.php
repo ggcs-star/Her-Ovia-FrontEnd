@@ -469,7 +469,17 @@ button:hover{
         </div>
     </form>
 <script>
-const BASE_URL = "https://retailadmin.ggconsultancy.services/api";
+    window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
+</script>
+<script>
+    if (localStorage.getItem('token')) {
+        window.history.replaceState(null, null, '/profile');
+
+        window.location.replace('/profile');
+    }
+</script>
+<script>
+const BASE_URL = window.API_BASE_URL;
 function showAlert(message, type) {
     const existingAlert = document.querySelector('.alert');
     if (existingAlert) existingAlert.remove();
