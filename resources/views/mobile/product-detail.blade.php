@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Product Details | RAPID RETAIL</title>
+    <title>Product Details | RADIANT JEWEL</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/product-styles.css') }}">
@@ -47,10 +47,80 @@
                 </div>
             </div>
             <div class="header-actions">
-                <a href="${localStorage.getItem('token') ? '/profile' : '/login'}" class="action-link">Profile</a>
-                <a href="/wishlist" class="action-link">Wishlist</a>
-                <a href="/cart" class="action-link">Cart</a>
-            </div>
+
+    <!-- Profile -->
+    <a href="/profile" class="action-link">
+
+        <svg class="header-icon"
+             viewBox="0 0 24 24"
+             width="18"
+             height="18"
+             fill="none"
+             stroke="#333"
+             stroke-width="2">
+
+            <circle cx="12" cy="7" r="4"/>
+            <path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>
+
+        </svg>
+
+        Profile
+
+    </a>
+
+    <!-- Wishlist -->
+    <a href="/wishlist" class="action-link">
+
+        <svg class="header-icon"
+             viewBox="0 0 24 24"
+             width="18"
+             height="18"
+             fill="none"
+             stroke="#333"
+             stroke-width="2">
+
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0
+                     L12 5.67l-1.06-1.06
+                     a5.5 5.5 0 0 0-7.78 7.78
+                     l1.06 1.06L12 21.23
+                     l7.78-7.78
+                     1.06-1.06
+                     a5.5 5.5 0 0 0 0-7.78z"/>
+
+        </svg>
+
+        Wishlist
+
+    </a>
+
+    <!-- Cart -->
+    <a href="/cart" class="action-link cart-link">
+
+        <span class="cart-icon-wrapper">
+
+            <svg class="header-icon"
+                 viewBox="0 0 24 24"
+                 width="18"
+                 height="18"
+                 fill="none"
+                 stroke="#333"
+                 stroke-width="2">
+
+                <circle cx="9" cy="21" r="1.5"/>
+                <circle cx="18" cy="21" r="1.5"/>
+                <path d="M2 2h3l3 12h11l2-8H6"/>
+
+            </svg>
+
+            <span id="cart-count-badge">0</span>
+
+        </span>
+
+        Cart
+
+    </a>
+
+</div>
         </div>
     </div>
     <div class="all-categories-popup" id="productDesktopPopup" style="display:none;"></div>

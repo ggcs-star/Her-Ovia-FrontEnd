@@ -162,6 +162,7 @@ function renderCart(items) {
 
     updatePriceDetails(fixedItems);
     if (countEl) countEl.innerText = fixedItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    updateCartCountBadge();
 }
 
 function getEmptyCartHTML() {
@@ -801,12 +802,21 @@ function moveToWishlist(index) {
 
 function updateCartCountBadge() {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
-    
-    const total = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-    
-    document.querySelectorAll('.cart-badge, #cart-count').forEach(el => {
-        if (el) el.innerText = total;
-    });
+    const totalItems = cart.length;
+    const cartPageCount = document.getElementById('cart-count');
+    if (cartPageCount) {
+        cartPageCount.innerText = totalItems;
+    }
+    const webBadge = document.getElementById('web-cart-count-badge');
+    if (webBadge) {
+        webBadge.innerText = totalItems;
+        webBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+    }
+    const mobileBadge = document.querySelector('.cart-badge');
+    if (mobileBadge) {
+        mobileBadge.innerText = totalItems;
+        mobileBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+    }
 }
 
 function loadAvailableCoupons() {

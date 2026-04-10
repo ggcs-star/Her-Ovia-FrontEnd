@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-<title>Register - StockFlow</title>
+<title>Register - RADIANT JEWEL</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -557,7 +557,7 @@ input, button{
     playsinline
     webkit-playsinline
     preload="auto">
-    <source src="{{ asset('videos/Pink_and_White_Brand_Theme_Video.mp4') }}" type="video/mp4">
+    <source src="{{ asset('videos\Radiant_Jewel_video.mp4') }}" type="video/mp4">
 </video>
 
     <div class="overlay"></div>
@@ -644,15 +644,23 @@ function showAlert(message, type) {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type}`;
     alertDiv.textContent = message;
+    alertDiv.style.cssText = `
+        padding: 12px 14px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        background: ${type === 'error' ? '#fee2e2' : '#dcfce7'};
+        color: ${type === 'error' ? '#b91c1c' : '#166534'};
+        border: 1px solid ${type === 'error' ? '#fecaca' : '#bbf7d0'};
+    `;
     
     const form = document.getElementById('registerForm');
     form.parentNode.insertBefore(alertDiv, form);
     
     setTimeout(() => {
-        alertDiv.remove();
+        if (alertDiv) alertDiv.remove();
     }, 5000);
 }
-
 function validateField(field, value) {
     const fieldNames = {
         name: { label: 'Full Name', min: 2, max: 50 },
@@ -790,35 +798,50 @@ document.addEventListener("DOMContentLoaded", function () {
 
         try {
             const response = await fetch(BASE_URL + "/user/register", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
-                body: JSON.stringify({
-                    name,
-                    email,
-                    password,
-                    password_confirmation: passwordConfirmation
-                })
-            });
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    },
+    body: JSON.stringify({
+        name,
+        email,
+        password,
+        password_confirmation: passwordConfirmation
+    })
+});
 
-            const data = await response.json();
+const data = await response.json();
 
-            if (response.ok && data.success) {
-                localStorage.setItem("verify_email", email);
-                window.location.href = "/verify-otp?email=" + encodeURIComponent(email);
-            } else {
-                let errorMsg = "Registration failed";
-                if (data.message) errorMsg = data.message;
-                else if (data.error) errorMsg = data.error;
-                else if (data.errors) {
-                    const firstError = Object.values(data.errors)[0];
-                    if (firstError && firstError[0]) errorMsg = firstError[0];
-                }
-                showAlert(errorMsg, 'error');
-            }
-
+// Pehle HTTP status code check karo
+if (response.ok && data.success) {
+    localStorage.setItem("verify_email", email);
+    window.location.href = "/verify-otp?email=" + encodeURIComponent(email);
+} else {
+    let errorMsg = "Registration failed";
+    
+    // Agar email already registered hai
+    if (response.status === 422 || response.status === 409) {
+        if (data.message && data.message.toLowerCase().includes('email')) {
+            errorMsg = "This email is already registered. Please login instead.";
+        } else if (data.errors && data.errors.email) {
+            errorMsg = data.errors.email[0];
+        } else if (data.message) {
+            errorMsg = data.message;
+        }
+    } 
+    // Other errors
+    else {
+        if (data.message) errorMsg = data.message;
+        else if (data.error) errorMsg = data.error;
+        else if (data.errors) {
+            const firstError = Object.values(data.errors)[0];
+            if (firstError && firstError[0]) errorMsg = firstError[0];
+        }
+    }
+    
+    showAlert(errorMsg, 'error');
+}
         } catch (error) {
             console.error("Register error:", error);
             showAlert("Server error. Please try again.", 'error');

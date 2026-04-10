@@ -436,17 +436,50 @@ body.cart-page{
     font-weight: 700;
 }
 
-.savings-message {
-    background: #e8f5e9;
-    color: var(--success-green);
-    padding: 12px;
+.cart-right {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.order-summary-card {
+    background: white;
+    padding: 15px;
     border-radius: 4px;
-    margin-top: 15px;
-    font-size: 12px;
-    font-weight: 700;
+    border: 1px solid var(--border-color);
+    margin-bottom: 0;
+}
+
+.savings-message {
+    background: #e6f4ea;
+    color: #0f5132;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 500;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
+    width: 100%;
+    margin-top: 0;
+}
+
+@media (min-width: 768px) {
+    .cart-right {
+        position: sticky;
+        top: 20px;
+    }
+    
+    .savings-message {
+        width: 100%;
+        margin-top: 0;
+    }
+}
+@media (min-width: 768px) {
+    .savings-message {
+        display: none !important;
+    }
 }
 
     .sticky-bottom-bar{
@@ -2372,4 +2405,61 @@ body.cart-page .site-header {
     .cart-item-selectors .selector-box {
         display: flex !important;
     }
+}
+.coupon-stickers-row{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    width:100%;
+}
+
+.coupon-sticker{
+    width:100%;
+    min-height:36px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:6px 10px;
+
+    font-size:12px;
+    border-radius:999px;
+
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.cart-icon-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+.header-actions {
+    overflow: visible !important;
+}
+
+.action-link {
+    position: relative;
+    overflow: visible !important;
+}
+#web-cart-count-badge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: #ff3f6c;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    z-index: 1000;
 }

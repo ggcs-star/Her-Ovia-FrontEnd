@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>RAPID RETAIL | Fashion Store</title>
+    <title>RADIANT JEWEL</title>
     
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/categories/category-styles.css') }}">
@@ -97,7 +97,7 @@
                 </div>
             </div>
         </section>
-        <section class="container" id="mid-banner-1-container"></section>
+        
 
         <section class="section-container">
             <div class="container">
@@ -107,14 +107,15 @@
                 <div id="style-spotlight-grid" class="spotlight-grid"></div>
             </div>
         </section>
+        <section class="container" id="mid-banner-1-container"></section>
         <section class="container" id="mid-banner-2-container"></section>
-        <div id="brands-marquee-container"></div>
+        <!-- <div id="brands-marquee-container"></div> -->
 
-        <section class="section-container">
+        <!-- <section class="section-container">
             <div class="container">
                 <div id="brands-grid" class="brands-grid-figma"></div>
             </div>
-        </section>
+        </section> -->
 
         <div id="dynamic-category-sections"></div>
 

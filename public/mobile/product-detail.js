@@ -28,52 +28,48 @@ const API_BASE_URL = window.API_BASE_URL;
 
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-    const badge = document.querySelector('.cart-badge');
+    let totalItems = cart.length;
 
-    if (!badge) return;
+    const appBadge = document.querySelector('.cart-badge');
 
-    // show unique items count
-    badge.textContent = cart.length;
+    if (appBadge) {
+        appBadge.textContent = totalItems;
+        appBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+    }
+
+    const webBadge = document.getElementById('cart-count-badge');
+
+    if (webBadge) {
+        webBadge.textContent = totalItems;
+        webBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+    }
+
 }
     
     function showConfirmation(productName) {
-        const existingConfirmation = document.querySelector('.add-confirmation, .cart-confirmation-popup');
-        if (existingConfirmation) existingConfirmation.remove();
-        
-        const popup = document.createElement('div');
-        popup.className = 'cart-confirmation-popup';
-        popup.innerHTML = `
-            <div class="cart-confirmation-overlay" onclick="closeCartConfirmation()"></div>
-            <div class="cart-confirmation-content">
-                <div class="cart-confirmation-icon">
-                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ff3f6c" stroke-width="2">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-linecap="round"/>
-                        <polyline points="22 4 12 14.01 9 11.01" stroke-linecap="round"/>
-                    </svg>
-                </div>
-                <h3 class="cart-confirmation-title">Added to Bag!</h3>
-                <p class="cart-confirmation-product">${productName}</p>
-                <div class="cart-confirmation-actions">
-                    <button class="cart-confirmation-viewbag" onclick="window.location.href='/cart'">VIEW BAG</button>
-                    <button class="cart-confirmation-continue" onclick="closeCartConfirmation()">CONTINUE SHOPPING</button>
-                </div>
-                <button class="cart-confirmation-close" onclick="closeCartConfirmation()">✕</button>
-            </div>
-        `;
-        
-        document.body.appendChild(popup);
-        document.body.style.overflow = 'hidden';
-        
-        setTimeout(() => {
-            const popupElement = document.querySelector('.cart-confirmation-popup');
-            if (popupElement) {
-                popupElement.classList.add('fade-out');
-                setTimeout(() => {
-                    closeCartConfirmation();
-                }, 300);
-            }
-        }, 3000);
-    }
+    const existingToast = document.querySelector('.top-toast-message');
+    if (existingToast) existingToast.remove();
+    
+    const toast = document.createElement('div');
+    toast.className = 'top-toast-message';
+    toast.innerHTML = `
+        <div class="top-toast-content">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff3f6c" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-linecap="round"/>
+                <polyline points="22 4 12 14.01 9 11.01" stroke-linecap="round"/>
+            </svg>
+            <span>${productName}</span>
+            <span class="toast-action">added to cart</span>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
+}
 
     window.closeCartConfirmation = function() {
         const popup = document.querySelector('.cart-confirmation-popup');

@@ -178,10 +178,83 @@ showSidebarSkeleton() {
                         </div>
                     </div>
                     <div class="header-actions">
-                        <a href="${this.isLoggedIn ? '/profile' : '/login'}" class="action-link">Profile</a>
-                        <a href="/wishlist" class="action-link">Wishlist</a>
-                        <a href="/cart" class="action-link">Cart</a>
-                    </div>
+
+    <!-- Profile -->
+    <a href="${this.isLoggedIn ? '/profile' : '/login'}"
+       class="action-link">
+
+        <svg class="header-icon"
+             width="18"
+             height="18"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="#333"
+             stroke-width="2">
+
+            <circle cx="12" cy="7" r="4"/>
+            <path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>
+
+        </svg>
+
+        Profile
+
+    </a>
+
+    <!-- Wishlist -->
+    <a href="/wishlist"
+       class="action-link">
+
+        <svg class="header-icon"
+             width="18"
+             height="18"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="#333"
+             stroke-width="2">
+
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0
+                     L12 5.67l-1.06-1.06
+                     a5.5 5.5 0 0 0-7.78 7.78
+                     l1.06 1.06L12 21.23
+                     l7.78-7.78
+                     1.06-1.06
+                     a5.5 5.5 0 0 0 0-7.78z"/>
+
+        </svg>
+
+        Wishlist
+
+    </a>
+
+    <!-- Cart -->
+    <a href="/cart"
+       class="action-link cart-link">
+
+        <span class="cart-icon-wrapper">
+
+            <svg class="header-icon"
+                 width="18"
+                 height="18"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="#333"
+                 stroke-width="2">
+
+                <circle cx="9" cy="21" r="1.5"/>
+                <circle cx="18" cy="21" r="1.5"/>
+                <path d="M2 2h3l3 12h11l2-8H6"/>
+
+            </svg>
+
+            <span id="cart-count-badge">0</span>
+
+        </span>
+
+        Cart
+
+    </a>
+
+</div>
                 </div>
             </div>
             <div class="all-categories-popup" id="allCategoriesPopup" style="display:none; position:absolute; top:100%; left:0; width:100%; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:1000; border-top:1px solid #f0f0f0;"></div>
@@ -189,6 +262,7 @@ showSidebarSkeleton() {
         
         this.setupAllCategoriesPopup();
         this.initWebSearchDropdown();
+        updateCartCountBadge();
         
     } else {
         // Mobile header (same as before)
@@ -451,6 +525,7 @@ renderAllCategoriesPopup() {
             </div>
             <span>Home</span>
         </a>
+        <!--
         <a href="/trends" class="nav-item-figma ${activePage === 'trends' ? 'active' : ''}">
             <div class="nav-icon-box">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -466,6 +541,7 @@ renderAllCategoriesPopup() {
             </div>
             <span>Trends</span>
         </a>
+        --!>
         <a href="/categories" class="nav-item-figma ${activePage === 'all-categories' ? 'active' : ''}">
             <div class="nav-icon-box">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -620,21 +696,69 @@ renderAllCategoriesPopup() {
         if (layout) layout.style.display = 'flex';
     }
     renderWebSidebar() {
-    const sidebar = document.getElementById('categoriesWebSidebarList');
+
+    const sidebar =
+        document.getElementById('categoriesWebSidebarList');
+
     if (!sidebar) return;
-    
+
     if (window.innerWidth < 1024) return;
-    
-    const categoriesToShow = this.userCategories.length > 0 ? this.userCategories : this.allCategories;
-    
-    sidebar.innerHTML = categoriesToShow.map(cat => `
-        <li>
-            <a href="/category/${cat.id}" class="category-sidebar-link" data-id="${cat.id}">
-                ${cat.name}
-            </a>
-        </li>
-    `).join('');
-}            
+
+    const categoriesToShow =
+        this.userCategories.length > 0
+            ? this.userCategories
+            : this.allCategories;
+
+    sidebar.innerHTML =
+        categoriesToShow.map(cat => {
+
+            let subHtml = "";
+
+            if (cat.children && cat.children.length > 0) {
+
+                subHtml =
+                    `
+                    <ul class="subcategory-dropdown"
+                        id="sub-${cat.id}"
+                        style="display:none;">
+                        ${
+                            cat.children.map(sub => `
+                                <li>
+                                    <a href="/products?subcategory=${sub.id}">
+                                        ${sub.name}
+                                    </a>
+                                </li>
+                            `).join("")
+                        }
+                    </ul>
+                    `;
+
+            }
+
+            return `
+                <li class="category-item">
+
+                    <div class="category-parent"
+                         onclick="window.allCategoriesPage.toggleSubcategory(${cat.id})">
+
+                        ${cat.name}
+
+                        ${
+                            cat.children && cat.children.length > 0
+                                ? `<span class="arrow">▸</span>`
+                                : ""
+                        }
+
+                    </div>
+
+                    ${subHtml}
+
+                </li>
+            `;
+
+        }).join("");
+
+}     
     createPopup() {
         if (!document.getElementById('popup-overlay')) {
             const popupHTML = `
@@ -651,7 +775,33 @@ renderAllCategoriesPopup() {
             document.body.insertAdjacentHTML('beforeend', popupHTML);
         }
     }
-    
+    toggleSubcategory(categoryId) {
+
+    const dropdown =
+        document.getElementById(`sub-${categoryId}`);
+
+    if (!dropdown) return;
+
+    const parent =
+        dropdown.previousElementSibling;
+
+    const isOpen =
+        dropdown.style.display === "block";
+
+    document
+        .querySelectorAll(".subcategory-dropdown")
+        .forEach(el => el.style.display = "none");
+
+    document
+        .querySelectorAll(".category-parent")
+        .forEach(el => el.classList.remove("active"));
+
+    if (!isOpen) {
+        dropdown.style.display = "block";
+        parent.classList.add("active");
+    }
+
+}
     toggleEditMode() {
         const btn = document.querySelector('.edit-categories-btn');
         const grid = document.getElementById('all-categories-grid');
@@ -714,6 +864,7 @@ openFilterModal() {
     alert('Filter modal - coming soon');
 }
 }
+
 function showCategoryPopupById(categoryId) {
     const cat = window.allCategoriesPage.allCategories.find(c => c.id == categoryId);
     if (cat) showCategoryPopup(cat);

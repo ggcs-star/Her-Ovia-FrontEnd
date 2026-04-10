@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
-    <title>Order Details | RAPID RETAIL</title>
+    <title>Order Details | RADIANT JEWEL</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -270,61 +270,40 @@
 
         .step-list {
             display: flex;
-            flex-direction: column;
-            gap: 0;
-        }
-
-        .step-item-wrapper {
-            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            padding: 20px 0;
+            margin: 0;
             position: relative;
         }
 
+        .step-item-wrapper {
+            position: relative;
+            flex: 1;
+            text-align: center;
+            min-width: 0;
+        }
+
         .step-icon-box {
-            width: 40px;
-            flex-shrink: 0;
+            position: relative;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        @media (min-width: 768px) {
-            .step-icon-box {
-                width: 44px;
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .step-icon-box {
-                width: 48px;
-            }
+            justify-content: center;
+            margin-bottom: 12px;
         }
 
         .step-dot {
-            width: 32px;
-            height: 32px;
-            border-radius: 32px;
-            background: #f1f5f9;
+            width: 44px;
+            height: 44px;
+            background: #e2e8f0;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
-            z-index: 2;
-        }
-
-        @media (min-width: 768px) {
-            .step-dot {
-                width: 34px;
-                height: 34px;
-                font-size: 15px;
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .step-dot {
-                width: 36px;
-                height: 36px;
-                font-size: 16px;
-            }
+            font-size: 20px;
+            position: relative;
+            z-index: 10;
+            color: #64748b;
         }
 
         .step-dot.completed {
@@ -335,69 +314,68 @@
         .step-dot.active {
             background: #ff3f6c;
             color: white;
-            box-shadow: 0 0 0 4px rgba(255, 63, 108, 0.15);
+            box-shadow: 0 0 0 4px rgba(255, 63, 108, 0.2);
         }
 
         .step-connector-line {
-            width: 2px;
+            position: absolute;
+            top: 22px;
+            left: 0;
+            width: 100%;
+            height: 3px;
             background: #e2e8f0;
-            flex: 1;
-            margin: 4px 0;
-            min-height: 28px;
+            z-index: 1;
+        }
+
+        .step-connector-line.completed {
+            background: #ff3f6c;
         }
 
         .step-content-box {
-            flex: 1;
-            padding-bottom: 20px;
-            padding-left: 10px;
-        }
-
-        @media (min-width: 768px) {
-            .step-content-box {
-                padding-bottom: 22px;
-                padding-left: 12px;
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .step-content-box {
-                padding-bottom: 24px;
-            }
+            padding: 0 6px;
         }
 
         .step-label-text {
             font-weight: 700;
-            font-size: 14px;
+            font-size: 12px;
             color: #0f172a;
-        }
-
-        @media (min-width: 768px) {
-            .step-label-text {
-                font-size: 14.5px;
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .step-label-text {
-                font-size: 15px;
-            }
+            white-space: nowrap;
         }
 
         .step-date {
-            font-size: 11px;
-            color: #64748b;
-            margin-top: 4px;
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 6px;
+            white-space: nowrap;
         }
 
-        @media (min-width: 768px) {
+        @media (max-width: 640px) {
+            .step-label-text {
+                font-size: 10px;
+                white-space: normal;
+            }
             .step-date {
-                font-size: 11.5px;
+                font-size: 9px;
+                white-space: normal;
+            }
+            .step-dot {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+            .step-connector-line {
+                top: 18px;
             }
         }
 
-        @media (min-width: 1024px) {
-            .step-date {
-                font-size: 12px;
+        @media (min-width: 768px) {
+            .step-dot {
+                width: 48px;
+                height: 48px;
+                font-size: 22px;
+            }
+            .step-connector-line {
+                top: 24px;
             }
         }
 
@@ -806,16 +784,15 @@
         }
 
         .header-container {
-            max-width: 1280px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 10px 12px;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 8px;
             min-height: 56px;
         }
-
 
         @media (min-width: 768px) {
             .header-container {
@@ -907,34 +884,32 @@
             }
         }
 
-        
         .search-icon-btn svg {
-    width: 20px;
-    height: 20px;
-    stroke: #666;
-    stroke-width: 2;
-}
+            width: 20px;
+            height: 20px;
+            stroke: #666;
+            stroke-width: 2;
+        }
 
-.header-icons {
-    display: flex;
-    gap: 6px;
-    flex-shrink: 0;
-}
+        .header-icons {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
 
-.header-icon-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 6px;
-    color: #333;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
+        .header-icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            color: #333;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
 
         @media (min-width: 768px) {
             .header-icon-btn {
@@ -945,28 +920,28 @@
         }
 
         .header-icon-btn svg {
-    width: 22px;
-    height: 22px;
-    stroke: #333;
-    stroke-width: 2;
-    fill: none;
-}
+            width: 22px;
+            height: 22px;
+            stroke: #333;
+            stroke-width: 2;
+            fill: none;
+        }
 
-.back-btn-header {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    color: #333;
-    flex-shrink: 0;
-    font-weight: 500;
-}
+        .back-btn-header {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: #333;
+            flex-shrink: 0;
+            font-weight: 500;
+        }
 
         @media (min-width: 768px) {
             .back-btn-header {
@@ -982,224 +957,311 @@
             }
         }
         @keyframes slideUpToast {
-        from {
-            opacity: 0;
-            transform: translateX(-50%) translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
         }
 
         .toast-message {
-        animation: slideUpToast 0.3s ease;
+            animation: slideUpToast 0.3s ease;
         }
         @media (min-width: 375px) and (max-width: 480px) {
-    .header-container {
-        padding: 10px 12px;
-        gap: 8px;
-    }
-    
-    .logo-search-container {
-        gap: 6px;
-        padding: 4px 4px 4px 10px;
-    }
-    
-    .site-logo {
-        height: 26px;
-        max-width: 65px;
-    }
-    
-    .search-wrapper input {
-        font-size: 12px;
-        padding: 7px 0;
-    }
-    
-    .search-wrapper input::placeholder {
-        font-size: 11px;
-    }
-    
-    .header-icon-btn {
-        width: 32px;
-        height: 32px;
-    }
-    
-    .header-icon-btn svg {
-        width: 20px;
-        height: 20px;
-    }
-    
-    .back-btn-header {
-        width: 32px;
-        height: 32px;
-        font-size: 22px;
-    }
-}
-@media (max-width: 374px) {
-    .header-container {
-        padding: 8px 10px;
-        gap: 6px;
-    }
-    
-    .logo-search-container {
-        gap: 4px;
-        padding: 3px 3px 3px 8px;
-    }
-    
-    .site-logo {
-        height: 24px;
-        max-width: 55px;
-    }
-    
-    .search-wrapper input {
-        font-size: 11px;
-        padding: 6px 0;
-    }
-    
-    .search-wrapper input::placeholder {
-        font-size: 10px;
-    }
-    
-    .search-icon-btn {
-        padding: 4px 6px;
-    }
-    
-    .search-icon-btn svg {
-        width: 18px;
-        height: 18px;
-    }
-    
-    .header-icon-btn {
-        width: 28px;
-        height: 28px;
-    }
-    
-    .header-icon-btn svg {
-        width: 18px;
-        height: 18px;
-    }
-    
-    .back-btn-header {
-        width: 28px;
-        height: 28px;
-        font-size: 20px;
-    }
+            .header-container {
+                padding: 10px 12px;
+                gap: 8px;
+            }
+            .logo-search-container {
+                gap: 6px;
+                padding: 4px 4px 4px 10px;
+            }
+            .site-logo {
+                height: 26px;
+                max-width: 65px;
+            }
+            .search-wrapper input {
+                font-size: 12px;
+                padding: 7px 0;
+            }
+            .search-wrapper input::placeholder {
+                font-size: 11px;
+            }
+            .header-icon-btn {
+                width: 32px;
+                height: 32px;
+            }
+            .header-icon-btn svg {
+                width: 20px;
+                height: 20px;
+            }
+            .back-btn-header {
+                width: 32px;
+                height: 32px;
+                font-size: 22px;
+            }
+        }
+        @media (max-width: 374px) {
+            .header-container {
+                padding: 8px 10px;
+                gap: 6px;
+            }
+            .logo-search-container {
+                gap: 4px;
+                padding: 3px 3px 3px 8px;
+            }
+            .site-logo {
+                height: 24px;
+                max-width: 55px;
+            }
+            .search-wrapper input {
+                font-size: 11px;
+                padding: 6px 0;
+            }
+            .search-wrapper input::placeholder {
+                font-size: 10px;
+            }
+            .search-icon-btn {
+                padding: 4px 6px;
+            }
+            .search-icon-btn svg {
+                width: 18px;
+                height: 18px;
+            }
+            .header-icon-btn {
+                width: 28px;
+                height: 28px;
+            }
+            .header-icon-btn svg {
+                width: 18px;
+                height: 18px;
+            }
+            .back-btn-header {
+                width: 28px;
+                height: 28px;
+                font-size: 20px;
+            }
+        }
+
+        @media (min-width: 481px) and (max-width: 768px) {
+            .header-container {
+                padding: 12px 16px;
+                gap: 12px;
+            }
+            .logo-search-container {
+                gap: 10px;
+                padding: 5px 5px 5px 14px;
+            }
+            .site-logo {
+                height: 32px;
+                max-width: 90px;
+            }
+            .search-wrapper input {
+                font-size: 14px;
+                padding: 9px 0;
+            }
+            .search-wrapper input::placeholder {
+                font-size: 13px;
+            }
+            .search-icon-btn svg {
+                width: 22px;
+                height: 22px;
+            }
+            .header-icon-btn {
+                width: 40px;
+                height: 40px;
+            }
+            .header-icon-btn svg {
+                width: 24px;
+                height: 24px;
+            }
+            .back-btn-header {
+                width: 40px;
+                height: 40px;
+                font-size: 26px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .header-logo {
+                display: none;
+            }
+            .logo-search-container {
+                padding-left: 12px;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .header-container {
+                padding: 14px 24px;
+                gap: 16px;
+            }
+            .site-logo {
+                height: 34px;
+                max-width: 100px;
+            }
+            .search-wrapper input {
+                font-size: 14px;
+            }
+            .header-icon-btn {
+                width: 42px;
+                height: 42px;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .site-header {
+                display: block;
+            }
+        }
+        body.order-confirmation-page .site-header {
+            padding-top: calc(12px + env(safe-area-inset-top));
+        }
+        .web-search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border: 1px solid #eaeaec;
+            border-radius: 8px;
+            margin-top: 6px;
+            z-index: 99999;
+            max-height: 320px;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        .web-suggestion-item {
+            padding: 10px 14px;
+            font-size: 14px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .web-suggestion-item:hover {
+            background: #f5f5f5;
+        }
+        .cart-icon-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        #cart-count-badge {
+            position: absolute;
+            top: -6px;
+            right: -8px;
+            background: #ff3f6c;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 600;
+            min-width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .header-actions .action-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .header-icon {
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            stroke: #333;
+            fill: none;
+        }
+
+        .header-actions .action-link:hover .header-icon {
+            stroke: #ff3f6c;
+        }
+        .web-header {
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        .top-bar {
+            margin: 0 !important;
+        }
+        .main-header {
+            max-width: 1200px !important;
+            margin: 0 auto !important;
+            padding: 12px 16px !important;
+        }
+        .web-header,
+        .main-header,
+        .nav-menu,
+        .nav-item,
+        .action-link,
+        .header-actions,
+        .search-box input,
+        .logo,
+        .logo-area {
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        .nav-item {
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.3px !important;
+        }
+
+        .action-link {
+            font-size: 14px !important;
+            font-weight: 500 !important;
+        }
+
+        .search-box input {
+            font-size: 14px !important;
+        }
+
+        .logo {
+            font-size: 18px !important;
+            font-weight: 700 !important;
+        }
+        .main-header {
+            height: 72px !important;
+        }
+
+        .nav-menu {
+            gap: 28px !important;
+        }
+        .cart-icon-wrapper {
+    position: relative;
+    display: inline-block;
 }
 
-/* Large phones (481px - 768px) */
-@media (min-width: 481px) and (max-width: 768px) {
-    .header-container {
-        padding: 12px 16px;
-        gap: 12px;
-    }
-    
-    .logo-search-container {
-        gap: 10px;
-        padding: 5px 5px 5px 14px;
-    }
-    
-    .site-logo {
-        height: 32px;
-        max-width: 90px;
-    }
-    
-    .search-wrapper input {
-        font-size: 14px;
-        padding: 9px 0;
-    }
-    
-    .search-wrapper input::placeholder {
-        font-size: 13px;
-    }
-    
-    .search-icon-btn svg {
-        width: 22px;
-        height: 22px;
-    }
-    
-    .header-icon-btn {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .header-icon-btn svg {
-        width: 24px;
-        height: 24px;
-    }
-    
-    .back-btn-header {
-        width: 40px;
-        height: 40px;
-        font-size: 26px;
-    }
-}
-
-/* Hide logo on very small screens if needed */
-@media (max-width: 360px) {
-    .header-logo {
-        display: none;
-    }
-    
-    .logo-search-container {
-        padding-left: 12px;
-    }
-}
-
-/* Tablet (769px - 1024px) */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .header-container {
-        padding: 14px 24px;
-        gap: 16px;
-    }
-    
-    .site-logo {
-        height: 34px;
-        max-width: 100px;
-    }
-    
-    .search-wrapper input {
-        font-size: 14px;
-    }
-    
-    .header-icon-btn {
-        width: 42px;
-        height: 42px;
-    }
-}
-
-@media (min-width: 1025px) {
-    .site-header {
-        display: block;
-    }
-}
-body.order-confirmation-page .site-header {
-    padding-top: calc(12px + env(safe-area-inset-top));
-}
-.web-search-suggestions {
+#cart-count-badge {
     position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background: #fff;
-    border: 1px solid #eaeaec;
-    border-radius: 8px;
-    margin-top: 6px;
-    z-index: 99999;
-    max-height: 320px;
-    overflow-y: auto;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-}
-
-.web-suggestion-item {
-    padding: 10px 14px;
-    font-size: 14px;
-    cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.web-suggestion-item:hover {
-    background: #f5f5f5;
+    top: -6px;
+    right: -8px;
+    background: #ff3f6c;
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
 }
     </style>
 </head>
@@ -1281,16 +1343,105 @@ function renderHeader() {
                                         
                                     </div>
                                 </div>
-                                <div class="header-actions">
-                                    <a href="${localStorage.getItem('token') ? '/profile' : '/login'}" class="action-link">Profile</a>
-                                    <a href="/wishlist" class="action-link">Wishlist</a>
-                                    <a href="/cart" class="action-link">Cart</a>
-                                </div>
+                            <div class="header-actions">
+                                <a href="/profile"
+                                class="action-link">
+
+                                    <svg class="header-icon"
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2">
+
+                                        <circle cx="12" cy="7" r="4"/>
+                                        <path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>
+
+                                    </svg>
+
+                                    Profile
+
+                                </a>
+
+                                <!-- Wishlist -->
+                                <a href="/wishlist"
+                                class="action-link">
+
+                                    <svg class="header-icon"
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2">
+
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0
+                                                L12 5.67l-1.06-1.06
+                                                a5.5 5.5 0 0 0-7.78 7.78
+                                                l1.06 1.06L12 21.23
+                                                l7.78-7.78
+                                                1.06-1.06
+                                                a5.5 5.5 0 0 0 0-7.78z"/>
+
+                                    </svg>
+
+                                    Wishlist
+
+                                </a>
+
+                                <!-- Cart -->
+                                <a href="/cart"
+                                class="action-link cart-link">
+
+                                    <span class="cart-icon-wrapper">
+
+                                        <svg class="header-icon"
+                                            width="18"
+                                            height="18"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2">
+
+                                            <circle cx="9" cy="21" r="1.5"/>
+                                            <circle cx="18" cy="21" r="1.5"/>
+                                            <path d="M2 2h3l3 12h11l2-8H6"/>
+
+                                        </svg>
+
+                                        <span id="cart-count-badge">
+                                            0
+                                        </span>
+
+                                    </span>
+
+                                    Cart
+
+                                </a>
+
+                            </div>
                             </div>
                         </div>
                         <div class="all-categories-popup" id="allCategoriesPopup" style="display:none;"></div>
                     `;
                     setTimeout(initWebSearchDropdown, 100);
+                    setTimeout(() => {
+                        const webLogo = document.getElementById('site-logo');
+                        if (webLogo) {
+                            fetch(`${API_BASE_URL}/app-settings`)
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        const logoUrl = data.data.header_logo || data.data.app_logo;
+                                        if (logoUrl && webLogo) {
+                                            webLogo.src = logoUrl;
+                                        }
+                                    }
+                                })
+                                .catch(err => console.log('Logo error:', err));
+                        }
+                    }, 100);
                     const navItems = document.querySelectorAll('.nav-item');
                     const popup = document.getElementById('allCategoriesPopup');
                     
@@ -1397,8 +1548,7 @@ style.textContent = `
     .nav-item { text-decoration: none; color: #282c3f; font-size: 14px; font-weight: 600; letter-spacing: 0.5px; cursor: pointer; }
     .nav-item:hover { color: #ff3f6c; }
     .search-area { flex: 1; max-width: 400px; }
-    .search-box {display: flex ; background: #f5f5f6; border-radius: 4px; position: relative; overflow: visible;   /* IMPORTANT */
-}
+    .search-box {display: flex ; background: #f5f5f6; border-radius: 4px; position: relative; overflow: visible; }
     .search-box input { flex: 1; border: none; padding: 10px 15px; outline: none; font-size: 14px; background: transparent; }
     .search-box button { background: transparent; border: none; padding: 0 15px; cursor: pointer; font-size: 18px; color: #333; }
     .header-actions { display: flex; gap: 25px; flex-shrink: 0; }
@@ -1423,7 +1573,9 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 renderHeader();
-
+setTimeout(() => {
+    updateCartCountForOrderPage();
+}, 800);
 function initWebSearchDropdown() {
 
     const input = document.getElementById("web-search-input");
@@ -1554,7 +1706,7 @@ window.addEventListener('resize', () => {
 
         const stepsConfig = [
             { key: 'pending', label: 'Order Placed', icon: '📦', timeKey: 'created_at' },
-            { key: 'confirmed', label: 'Confirmed', icon: '✅', timeKey: 'confirmed_at' },
+            { key: 'confirmed', label: 'Confirmed', icon: '✓', timeKey: 'confirmed_at' },
             { key: 'processing', label: 'Processing', icon: '⚙️', timeKey: 'processing_at' },
             { key: 'shipped', label: 'Shipped', icon: '🚚', timeKey: 'shipped_at' },
             { key: 'delivered', label: 'Delivered', icon: '🏠', timeKey: 'delivered_at' }
@@ -1571,7 +1723,7 @@ window.addEventListener('resize', () => {
         }
 
         function renderOrderDetails(order) {
-                window.currentOrder = order; // ADD THIS
+            window.currentOrder = order;
 
             if (!order) {
                 document.getElementById('order-root').innerHTML = '<div class="error-box" style="grid-column:1/-1">⚠️ Order data unavailable</div>';
@@ -1592,19 +1744,14 @@ window.addEventListener('resize', () => {
 
             let paymentText = 'Cash on Delivery';
             let paymentIcon = '💵';
-            if (
-                order.payment_status === 'paid'
-            ) {
+            if (order.payment_status === 'paid') {
                 paymentText = 'Online Payment';
                 paymentIcon = '💳';
-            }
-            else if (
-                order.payment_method === 'cod' ||
-                order.payment_method === 'COD'
-            ) {
+            } else if (order.payment_method === 'cod' || order.payment_method === 'COD') {
                 paymentText = 'Cash on Delivery';
                 paymentIcon = '💵';
             }
+
             const addr = order.shipping_address || {};
             const fullName = addr.full_name || addr.name || 'Customer';
             const phone = addr.phone || '';
@@ -1622,39 +1769,47 @@ window.addEventListener('resize', () => {
                 stepsConfig.forEach((step, idx) => {
                     const isCompleted = idx <= currentIdx;
                     const isActive = idx === currentIdx;
-                    let stepTime = '';
-                    if (step.timeKey && order[step.timeKey]) {
-                        stepTime = formatShortDateTime(order[step.timeKey]);
-                    } else if (step.key === 'pending' && order.created_at) {
-                        stepTime = formatShortDateTime(order.created_at);
+                    
+                    let statusDate = '';
+                    if (step.key === 'pending' && order.created_at) {
+                        statusDate = formatShortDateTime(order.created_at);
+                    } else if (step.key === 'confirmed' && order.confirmed_at) {
+                        statusDate = formatShortDateTime(order.confirmed_at);
+                    } else if (step.key === 'processing' && order.processing_at) {
+                        statusDate = formatShortDateTime(order.processing_at);
+                    } else if (step.key === 'shipped' && order.shipped_at) {
+                        statusDate = formatShortDateTime(order.shipped_at);
+                    } else if (step.key === 'delivered' && order.delivered_at) {
+                        statusDate = formatShortDateTime(order.delivered_at);
                     }
-
+                    
                     trackerHtml += `
                         <div class="step-item-wrapper">
                             <div class="step-icon-box">
-                                <div class="step-dot ${isCompleted ? 'completed' : (isActive ? 'active' : '')}">
+                                <div class="step-dot ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}">
                                     ${step.icon}
-                                </div>
-                                ${idx < stepsConfig.length - 1 ? `<div class="step-connector-line"></div>` : ''}
+                                </div>`;
+                    
+                    if (idx < stepsConfig.length - 1) {
+                        trackerHtml += `<div class="step-connector-line ${isCompleted ? 'completed' : ''}"></div>`;
+                    }
+                    
+                    trackerHtml += `
                             </div>
                             <div class="step-content-box">
                                 <div class="step-label-text">${step.label}</div>
-                                ${stepTime ? `<div class="step-date">🕒 ${stepTime}</div>` : ''}
+                                ${statusDate ? `<div class="step-date">${statusDate}</div>` : ''}
                             </div>
                         </div>
                     `;
                 });
                 trackerHtml += `</div>`;
             } else {
-                const cancelTime = order.cancelled_at ? formatShortDateTime(order.cancelled_at) : '';
                 trackerHtml = `
-                    <div class="step-item-wrapper">
-                        <div class="step-icon-box">
-                            <div class="step-dot" style="background:#ef4444; color:white;">❌</div>
-                        </div>
-                        <div class="step-content-box">
-                            <div class="step-label-text">Order Cancelled</div>
-                            ${cancelTime ? `<div class="step-date">📅 ${cancelTime}</div>` : ''}
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="background: #fef2f2; border-radius: 12px; padding: 16px; color: #dc2626;">
+                            ❌ Order Cancelled
+                            ${order.cancelled_at ? `<div style="font-size: 12px; margin-top: 8px;">on ${formatShortDateTime(order.cancelled_at)}</div>` : ''}
                         </div>
                     </div>
                 `;
@@ -1853,7 +2008,7 @@ window.addEventListener('resize', () => {
 
                 renderOrderDetails(order);
                 localStorage.setItem('last_order_cached', JSON.stringify(order));
-                                const oldOrder = JSON.parse(localStorage.getItem('last_order_cached') || '{}');
+                const oldOrder = JSON.parse(localStorage.getItem('last_order_cached') || '{}');
                 if (oldOrder.status !== order.status && order.status) {
                     const statusMessages = {
                         'pending': '⏳ Order Placed',
@@ -1888,54 +2043,71 @@ window.addEventListener('resize', () => {
         }
 
         let refreshInterval;
-            function startAutoRefresh() {
-                if (refreshInterval) clearInterval(refreshInterval);
-                refreshInterval = setInterval(() => fetchOrderData(), 5000);
-            }
+        function startAutoRefresh() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(() => fetchOrderData(), 5000);
+        }
 
-window.addEventListener('popstate', function(event) {
-    window.location.replace('/orders');
-});
+        window.addEventListener('popstate', function(event) {
+            window.location.replace('/orders');
+        });
 
-history.pushState(null, null, window.location.href);
+        history.pushState(null, null, window.location.href);
 
+        function handleBackToOrders() {
+            window.location.replace('/orders');
+        }
+        async function applyAppSettingsForOrderPage() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/app-settings`);
+                const data = await res.json();
 
-function handleBackToOrders() {
-    window.location.replace('/orders');
-}
-async function applyAppSettingsForOrderPage() {
-    try {
-        const res = await fetch(`${API_BASE_URL}/app-settings`);
-        const data = await res.json();
-
-        if (data.success) {
-            const headerLogo =
-                data.data.header_logo ||
-                data.data.app_logo;
-
-            const logoImg =
-                document.getElementById('site-logo');
-
-            if (logoImg && headerLogo) {
-                logoImg.src = headerLogo;
-            }
-
-            if (data.data.app_name) {
-                document.title = data.data.app_name;
+                if (data.success) {
+                    const headerLogo = data.data.header_logo || data.data.app_logo;
+                    const logoImg = document.getElementById('site-logo');
+                    if (logoImg && headerLogo) {
+                        logoImg.src = headerLogo;
+                    }
+                    if (data.data.app_name) {
+                        document.title = data.data.app_name;
+                    }
+                }
+            } catch (e) {
+                console.error('Logo load error:', e);
             }
         }
+        document.querySelectorAll('.back-btn-header, [onclick="goBack()"]').forEach(btn => {
+            btn.onclick = function(e) {
+                e.preventDefault();
+                window.location.replace('/orders');
+            };
+        });
+        function updateCartCountForOrderPage() {
+    try {
+        const badge = document.getElementById("cart-count-badge");
+        if (!badge) return;
+
+        let cart = JSON.parse(localStorage.getItem("cart_items")) ||
+            JSON.parse(localStorage.getItem("cart")) ||
+            JSON.parse(localStorage.getItem("shopping_cart")) || [];
+
+        if (!Array.isArray(cart)) cart = [];
+
+        let count = cart.length;
+        badge.textContent = count;
+        
+        if (count > 0) {
+            badge.style.display = "flex";
+        } else {
+            badge.style.display = "none";
+        }
     } catch (e) {
-        console.error('Logo load error:', e);
+        console.log("Cart count error:", e);
     }
 }
-document.querySelectorAll('.back-btn-header, [onclick="goBack()"]').forEach(btn => {
-    btn.onclick = function(e) {
-        e.preventDefault();
-        window.location.replace('/orders');
-    };
-});
-
+        
         document.body.classList.add('order-confirmation-page');
+        renderHeader();
         fetchOrderData();
         startAutoRefresh();
     </script>

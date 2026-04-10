@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Verify OTP - StockFlow</title>
+<title>Verify OTP - RADIANT JEWEL</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -32,7 +32,7 @@ body{
     display:flex;
     flex-direction:column;
     justify-content:center;
-    background:url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format') center center / cover no-repeat;
+    background:url('{{ asset("images/jewel.jpg") }}') center center / cover no-repeat;
     min-height:300px;
 }
 .left::before{

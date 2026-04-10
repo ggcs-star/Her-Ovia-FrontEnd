@@ -25,7 +25,7 @@
                         <circle cx="12" cy="10" r="3"></circle>
                     </svg>
                     <span>
-                        5th Floor, Grand Empio, Shiv Habitat B-Block,
+                        5th Floor, Grand Emporio, Shiv Habitat B-Block,
                         Motera Stadium Rd, Motera,
                         Ahmedabad, Gujarat 380005
                     </span>

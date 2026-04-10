@@ -41,6 +41,43 @@ if ($data['success']) {
         }
         echo "✅ Icon saved\n";
     }
+    $iconData = file_get_contents($appLogo);
+
+if ($iconData) {
+
+    $folders = ['hdpi', 'mdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi'];
+
+    foreach ($folders as $folder) {
+
+        $path = "nativephp/android/app/src/main/res/mipmap-$folder/ic_launcher.png";
+
+        file_put_contents($path, $iconData);
+
+        file_put_contents(
+            str_replace('ic_launcher.png', 'ic_launcher_round.png', $path),
+            $iconData
+        );
+
+        echo "✅ $folder\n";
+    }
+
+    echo "✅ Icon saved\n";
+
+    // Play Store icon
+
+    $playstoreDir = 'nativephp/android/app/src/main/playstore';
+
+    if (!is_dir($playstoreDir)) {
+        mkdir($playstoreDir, 0777, true);
+    }
+
+    file_put_contents(
+        $playstoreDir . '/ic_launcher_playstore.png',
+        $iconData
+    );
+
+    echo "✅ Play Store icon saved\n";
+}
 } else {
     echo "❌ API failed\n";
 }
