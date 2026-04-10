@@ -34,7 +34,7 @@
     flex-direction: column;
     gap: 20px;
     width: 100%;
-    padding-bottom: 40px;
+    padding-bottom: 80px;
 }
 
 .order-card {
@@ -235,7 +235,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
     gap: 16px;
     padding-top: 16px;
     border-top: 1px solid #f0f0f0;
@@ -243,8 +242,9 @@
 
 .order-total {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
 }
 
 .order-total span:first-child {
@@ -276,6 +276,22 @@
     gap: 8px;
 }
 
+@media (max-width: 767px) {
+    .order-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .order-total {
+        justify-content: space-between;
+    }
+    
+    .view-details-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
 .view-details-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(255,63,108,0.35);
@@ -812,4 +828,43 @@ html {
 }
 body.orders-page .site-header {
     padding-top: calc(12px + env(safe-area-inset-top));
+}
+.orders-list {
+    display: grid;
+    width: 100%;
+    padding-bottom: 40px;
+}
+
+@media (min-width: 1024px) {
+    .orders-list {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .orders-list {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+@media (max-width: 767px) {
+    .orders-list {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+.view-details-btn {
+    position: relative;
+    z-index: 10;
+}
+
+.mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: white;
 }

@@ -626,9 +626,7 @@ async function startRazorpayPayment() {
         return;
     }
 
-    const shippingAddress = document.querySelector(
-        'input[name="shipping_address"]:checked'
-    )?.value;
+    const shippingAddress = document.querySelector('input[name="shipping_address"]:checked')?.value;
 
     if (!shippingAddress) {
         showToast('Please select a delivery address', 'error');
@@ -637,32 +635,58 @@ async function startRazorpayPayment() {
 
     PAYMENT_IN_PROGRESS = true;
 
-    fetch(`${API_BASE_URL}/checkout/razorpay/create-order`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-            shipping_address_id: Number(shippingAddress),
-            billing_address_id: Number(shippingAddress),
-            payment_method_id: 2,
-            coupon_code: localStorage.getItem('applied_coupon') || null
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (!data.success) {
-            PAYMENT_IN_PROGRESS = false;
-            throw new Error(data.message || 'Could not start payment');
+    const payload = {
+        shipping_address_id: Number(shippingAddress),
+        billing_address_id: Number(shippingAddress),
+        payment_method_id: 2,
+        coupon_code: localStorage.getItem('applied_coupon') || null
+    };
+
+    console.log("=== Razorpay Create Order Debug ===");
+    console.log("API URL:", `${API_BASE_URL}/checkout/razorpay/create-order`);
+    console.log("Payload:", payload);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/checkout/razorpay/create-order`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        console.log("Response Status:", response.status);
+        console.log("Response OK:", response.ok);
+
+        const text = await response.text();
+        console.log("Raw Response:", text);
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error("JSON parse error:", e);
+            throw new Error("Invalid JSON response from server");
         }
+
+        console.log("Parsed Response:", data);
+
+        if (!response.ok || !data.success) {
+            PAYMENT_IN_PROGRESS = false;
+            console.error("Backend Error Message:", data.message);
+            throw new Error(data.message || `Server error (${response.status})`);
+        }
+
+        console.log("Razorpay order created successfully");
         openRazorpay(data.data);
-    })
-    .catch(err => {
+
+    } catch (err) {
         PAYMENT_IN_PROGRESS = false;
+        console.error("=== Razorpay Error ===", err);
         showToast(err.message, 'error');
-    });
+    }
 }
 
 function openRazorpay(data) {

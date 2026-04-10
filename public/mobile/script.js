@@ -23,7 +23,6 @@ class RapidRetailsEngine {
     }
 
     async init() {
-
     await this.fetchAppSettings();
     if (this.page === 'landing') {
         await this.initLanding();
@@ -33,14 +32,26 @@ class RapidRetailsEngine {
     this.renderBottomNav();
     this.initSearchRedirect();
     
-        let lastWidth = window.innerWidth;
-        setInterval(() => {
-            if (lastWidth !== window.innerWidth) {
-                lastWidth = window.innerWidth;
-                this.renderHeader();
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (this.page === 'landing') {
+                this.renderPromotionalBanners();  
+                this.renderHeroSlider();          
             }
-        }, 100);
-    }
+            this.renderHeader();
+        }, 250);
+    });
+    
+    let lastWidth = window.innerWidth;
+    setInterval(() => {
+        if (lastWidth !== window.innerWidth) {
+            lastWidth = window.innerWidth;
+            this.renderHeader();
+        }
+    }, 100);
+}
    renderHeader() {
     const header = document.getElementById('site-header');
     if (!header) return;
@@ -86,10 +97,36 @@ class RapidRetailsEngine {
                         </div>
                     </div>
                     <div class="header-actions">
-                        <a href="${this.isLoggedIn ? '/profile' : '/login'}" class="action-link">Profile</a>
-                        <a href="/wishlist" class="action-link">Wishlist</a>
-                        <a href="/cart" class="action-link">Cart</a>
-                    </div>
+
+                <a href="${this.isLoggedIn ? '/profile' : '/login'}" class="action-link">
+                    <svg class="header-icon" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+                        <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Profile
+                </a>
+
+                <a href="/wishlist" class="action-link">
+                    <svg class="header-icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 21s-6-4.35-9-8.5C-1 6.5 4 2 8 5c2 1.5 4 3.5 4 3.5S14 6.5 16 5c4-3 9 1.5 5 7.5C18 16.65 12 21 12 21z"
+                            stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Wishlist
+                </a>
+
+                <a href="/cart" class="action-link cart-link">
+                <span class="cart-icon-wrapper">
+                    <svg class="header-icon" viewBox="0 0 24 24" fill="none">
+                        <circle cx="9" cy="21" r="1.5" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="18" cy="21" r="1.5" stroke="currentColor" stroke-width="2"/>
+                        <path d="M2 2h3l3 12h11l2-8H6"
+                            stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span id="web-cart-count-badge">0</span>
+                </span>
+                Cart
+            </a>
+            </div>
                 </div>
             </div>
             <div class="all-categories-popup" id="allCategoriesPopup" style="display:none; position:absolute; top:100%; left:0; width:100%; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:1000; border-top:1px solid #f0f0f0;"></div>
@@ -97,7 +134,11 @@ class RapidRetailsEngine {
         
         this.setupAllCategoriesPopup();
         this.initWebSearchDropdown();
-       
+       this.applyAppSettings();
+
+setTimeout(() => {
+    updateCartCountBadge();
+}, 0);
 
         
     } else {
@@ -394,6 +435,7 @@ renderBottomNav() {
             </div>
             <span>Home</span>
         </a>
+        <!--
         <a href="/trends" class="nav-item-figma ${activePage === 'trends' ? 'active' : ''}">
             <div class="nav-icon-box">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -409,6 +451,7 @@ renderBottomNav() {
             </div>
             <span>Trends</span>
         </a>
+        --!>
         <a href="/categories" class="nav-item-figma ${activePage === 'all-categories' ? 'active' : ''}">
             <div class="nav-icon-box">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -517,7 +560,7 @@ renderBottomNav() {
     const dots = document.getElementById('slider-dots');
     if (!slider) return;
 
-    const heroBanners = this.allBanners.filter(b => b.position === 'hero' || b.page === 'home');
+    const heroBanners = this.allBanners.filter(b => b.position === 'hero');
     
     if (heroBanners.length === 0) return;
     
@@ -629,32 +672,41 @@ renderBottomNav() {
     }
 
 }
-    async renderCategoryPills() {
+async renderCategoryPills() {
+    const container = document.getElementById('categories-pills');
+    if (!container) return;
 
-        const container = document.getElementById('categories-pills');
-        if (!container) return;
+    const categoriesToShow =
+        (this.isLoggedIn && this.userCategories.length > 0)
+        ? this.userCategories
+        : this.allCategories;
 
-        const categoriesToShow =
-            (this.isLoggedIn && this.userCategories.length > 0)
-            ? this.userCategories
-            : this.allCategories;
+    if (!categoriesToShow.length) return;
 
-        if (!categoriesToShow.length) return;
-
-        container.innerHTML = categoriesToShow.map(cat => `
-            <div class="pill-item"
-            onclick="window.app.showCategoryPopupById(${cat.id})">
-
-                <div class="pill-img-wrap">
-                    <img src="${this.resolveImage(cat.image_url)}"
-                    onerror="this.src='${APP_CONFIG.FALLBACK_IMAGE}'">
-                </div>
-
-                <span>${cat.name}</span>
-
+    let categoriesHtml = `
+        <div class="pill-item" onclick="window.location.href='/categories'">
+            <div class="pill-img-wrap all-categories-pill">
+                <img src="https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=100&h=100&fit=crop" 
+     style="width:100%; height:100%; object-fit:cover; border-radius:50%;"
+     onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=100&h=100&fit=crop'">
             </div>
-        `).join('');
-    }
+            <span>All Categories</span>
+        </div>
+    `;
+    
+    categoriesHtml += categoriesToShow.map(cat => `
+        <div class="pill-item"
+        onclick="window.app.showCategoryPopupById(${cat.id})">
+            <div class="pill-img-wrap">
+                <img src="${this.resolveImage(cat.image_url)}"
+                onerror="this.src='${APP_CONFIG.FALLBACK_IMAGE}'">
+            </div>
+            <span>${cat.name}</span>
+        </div>
+    `).join('');
+    
+    container.innerHTML = categoriesHtml;
+}
 
     startTrendingAutoScroll(container) {
         let scrollAmount = 0;
@@ -676,14 +728,25 @@ async renderPromotionalBanners() {
     const container1 = document.getElementById('mid-banner-1-container');
     const container2 = document.getElementById('mid-banner-2-container');
 
+    // ✅ Desktop/Mobile check add karo
+    const isMobile = window.innerWidth < 768;
+
     if (banners.length > 0 && container1) {
         const b = banners[0];
-        const bannerImage = b.mobile_image || b.image;
+        
+        // ✅ Image selection logic - same as hero banner
+        let bannerImage;
+        if (isMobile) {
+            bannerImage = b.mobile_image || b.image;
+        } else {
+            bannerImage = b.image || b.mobile_image;
+        }
+        
         const hasText = b.title || b.subtitle || b.button_text;
         
         container1.innerHTML = `
-            <div class="spring-bloom-banner" style="background: transparent;">
-                <img src="${this.resolveImage(bannerImage)}" style="width:100%; height:auto; display:block;">
+            <div class="spring-bloom-banner">
+                <img src="${this.resolveImage(bannerImage)}" alt="${b.title || 'Banner'}">
                 ${hasText ? `
                     <div>
                         <span class="banner-tag-script">${b.subtitle || 'Special Offer'}</span>
@@ -698,7 +761,15 @@ async renderPromotionalBanners() {
 
     if (banners.length > 1 && container2) {
         const b = banners[1];
-        const bannerImage = b.mobile_image || b.image;
+        
+        // ✅ Same for second banner
+        let bannerImage;
+        if (isMobile) {
+            bannerImage = b.mobile_image || b.image;
+        } else {
+            bannerImage = b.image || b.mobile_image;
+        }
+        
         const hasText = b.title || b.subtitle || b.button_text;
         
         container2.innerHTML = `
@@ -1017,7 +1088,18 @@ async renderStyleSpotlight() {
         }
     ];
 
-    const displayItems = items.length > 0 ? items.slice(0, 10) : fallbackItems;
+    let displayItems = [];
+        if (items.length > 0) {
+            if (window.innerWidth >= 1025) {
+                displayItems = items.slice(0, 8);
+            }
+            else {
+                displayItems = items;
+            }
+        }
+        else {
+            displayItems = fallbackItems;
+        }
 
     container.innerHTML = displayItems.map(item => {
         const brand = item.brand || 'Premium Brand';
@@ -1080,8 +1162,9 @@ async renderBrandsGrid() {
         ];
     }
 
-    // Limit to 6 brands
-    const displayBrands = brandNames.slice(0, 6);
+    const isDesktop = window.innerWidth >= 1025;
+    const maxBrands = isDesktop ? 4 : 6;
+    const displayBrands = brandNames.slice(0, maxBrands);
 
     container.innerHTML = displayBrands.map((brand, index) => `
         <div class="brand-card-figma" onclick="window.location.href='/category/${brand.toLowerCase().replace(/\s+/g, '-')}'">
@@ -1093,7 +1176,7 @@ async renderBrandsGrid() {
     console.log("Brands Grid rendered:", displayBrands);
 }
 
-    async renderDynamicCategorySections() {
+async renderDynamicCategorySections() {
     const container = document.getElementById('dynamic-category-sections');
     if (!container || !this.allCategories.length) return;
 
@@ -1102,6 +1185,8 @@ async renderBrandsGrid() {
     let subcategoriesShown = 0;
     const MAX_SUBCATEGORIES = 4;
     const MAX_PRODUCTS = 5;
+    
+    let categoriesArray = [];
 
     for (let i = 0; i < this.allCategories.length && subcategoriesShown < MAX_SUBCATEGORIES; i++) {
         const category = this.allCategories[i];
@@ -1131,7 +1216,11 @@ async renderBrandsGrid() {
                                 </div>
                             </section>
                         `;
-                        container.innerHTML += sectionHtml;
+                        
+                        categoriesArray.push({
+                            name: subcategory.name,
+                            html: sectionHtml
+                        });
                         subcategoriesShown++;
                     }
                 } catch (error) {
@@ -1141,7 +1230,34 @@ async renderBrandsGrid() {
         }
     }
     
-    console.log(`✅ Displayed ${subcategoriesShown} subcategories with ${MAX_PRODUCTS} products each`);
+    let finalHtml = '';
+    for (let i = 0; i < categoriesArray.length; i++) {
+        if (categoriesArray[i].name === 'Full Bridal Sets') {
+            finalHtml += `<div id="brands-marquee-container"></div>`;
+        }
+        
+        finalHtml += categoriesArray[i].html;
+        
+        if (categoriesArray[i].name === 'Long Haar Necklace') {
+            finalHtml += `
+                <section class="section-container">
+                    <div class="container">
+                        <div class="section-header centered">
+                            <h2 class="section-title">Shop by Brands</h2>
+                        </div>
+                        <div id="brands-grid" class="brands-grid-figma"></div>
+                    </div>
+                </section>
+            `;
+        }
+    }
+    
+    container.innerHTML = finalHtml;
+    
+    await this.renderBrandsGrid();
+    await this.renderBrandsMarquee();
+    
+    console.log(`✅ Displayed ${categoriesArray.length} subcategories`);
 }
 
     genCircularItem(p) {
@@ -1252,15 +1368,24 @@ window.addEventListener("DOMContentLoaded", function () {
 function updateCartCountBadge() {
 
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
     let totalItems = cart.length;
 
-    const badge = document.getElementById('cart-count-badge');
-
-    if (!badge) return;
-    badge.style.display = 'flex';
-
-    badge.textContent = totalItems;
+    const mobileBadge = document.getElementById('cart-count-badge');
+    if (mobileBadge) {
+        mobileBadge.style.display = 'flex';
+        mobileBadge.textContent = totalItems;
+        if (totalItems === 0) {
+            mobileBadge.style.display = 'flex';  
+        }
+    }
+    const webBadge = document.getElementById('web-cart-count-badge');
+    if (webBadge) {
+        webBadge.style.display = 'flex';
+        webBadge.textContent = totalItems;
+        if (totalItems === 0) {
+            webBadge.style.display = 'flex'; 
+        }
+    }
 }
 async function fetchFooterSettings() {
     try {

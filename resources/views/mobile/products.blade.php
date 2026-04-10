@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Products | RAPID RETAIL</title>
+    <title>Products | RADIANT JEWEL</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <style>
@@ -377,11 +377,15 @@
             .price-range-inputs {
                 display: flex;
                 gap: 12px;
+                width: 100%;
                 margin-bottom: 16px;
             }
             
             .price-input {
                 flex: 1;
+                min-width: 0;      /* IMPORTANT */
+                width: 100%;       /* FIX overflow */
+                box-sizing: border-box;
                 padding: 10px 12px;
                 border: 1px solid #e0e0e0;
                 border-radius: 8px;
@@ -949,6 +953,71 @@
 .web-suggestion-item:hover {
     background: #f5f5f5;
 }
+.header-actions .action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.header-icon {
+    display: inline-block;
+}
+
+.cart-icon-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+#cart-count-badge {
+    position: absolute;
+
+    top: -6px;
+    right: -8px;
+
+    background: #ff3f6c;
+    color: #fff;
+
+    font-size: 10px;
+    font-weight: 600;
+
+    min-width: 16px;
+    height: 16px;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.header-actions .action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.header-icon {
+    width: 18px;
+    height: 18px;
+
+    display: inline-block;
+
+    stroke: #333;
+    fill: none;
+}
+
+.header-actions .action-link:hover .header-icon {
+    stroke: #ff3f6c;
+}
     </style>
 </head>
 <body data-page="products" data-subcategory-id="{{ request()->query('subcategory') }}" data-category-id="{{ request()->query('category') }}">
@@ -1009,10 +1078,85 @@
                 </div>
             </div>
             <div class="header-actions">
-                <a href="/profile" class="action-link" id="desktopProfileLink">Profile</a>
-                <a href="/wishlist" class="action-link">Wishlist</a>
-                <a href="/cart" class="action-link">Cart</a>
-            </div>
+
+    <!-- Profile -->
+    <a href="/profile"
+       class="action-link">
+
+        <svg class="header-icon"
+             width="18"
+             height="18"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2">
+
+            <circle cx="12" cy="7" r="4"/>
+            <path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>
+
+        </svg>
+
+        Profile
+
+    </a>
+
+    <!-- Wishlist -->
+    <a href="/wishlist"
+       class="action-link">
+
+        <svg class="header-icon"
+             width="18"
+             height="18"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2">
+
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0
+                     L12 5.67l-1.06-1.06
+                     a5.5 5.5 0 0 0-7.78 7.78
+                     l1.06 1.06L12 21.23
+                     l7.78-7.78
+                     1.06-1.06
+                     a5.5 5.5 0 0 0 0-7.78z"/>
+
+        </svg>
+
+        Wishlist
+
+    </a>
+
+    <!-- Cart -->
+    <a href="/cart"
+       class="action-link cart-link">
+
+        <span class="cart-icon-wrapper">
+
+            <svg class="header-icon"
+                 width="18"
+                 height="18"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2">
+
+                <circle cx="9" cy="21" r="1.5"/>
+                <circle cx="18" cy="21" r="1.5"/>
+                <path d="M2 2h3l3 12h11l2-8H6"/>
+
+            </svg>
+
+            <span id="cart-count-badge">
+                0
+            </span>
+
+        </span>
+
+        Cart
+
+    </a>
+
+</div>
         </div>
     </div>
     <div class="all-categories-popup" id="productAllCategoriesPopup" style="display:none; position:absolute; top:100%; left:0; width:100%; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:1000; border-top:1px solid #f0f0f0;"></div>
@@ -1076,6 +1220,7 @@
         </div>
         <span>Home</span>
     </a>
+    <!--
     <a href="/trends" class="nav-item-figma">
         <div class="nav-icon-box">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1091,6 +1236,7 @@
         </div>
         <span>Trends</span>
     </a>
+    -->
     <a href="/categories" class="nav-item-figma active">
         <div class="nav-icon-box">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1146,8 +1292,8 @@
             <span class="sort-popup-close" onclick="hideSortPopup()">×</span>
         </div>
         <div class="sort-popup-body">
-            <label class="sort-option"><input type="radio" name="sort" value="popularity"> Popularity</label>
-            <label class="sort-option"><input type="radio" name="sort" value="newest"> Newest</label>
+            <!-- <label class="sort-option"><input type="radio" name="sort" value="popularity"> Popularity</label>
+            <label class="sort-option"><input type="radio" name="sort" value="newest"> Newest</label> -->
             <label class="sort-option"><input type="radio" name="sort" value="price-low"> Price: Low to High</label>
             <label class="sort-option"><input type="radio" name="sort" value="price-high"> Price: High to Low</label>
             <label class="sort-option"><input type="radio" name="sort" value="rating"> Rating</label>
@@ -1402,54 +1548,122 @@ updateMobileLogo();
     }
     
     const discountContainer = document.getElementById('desktopDiscountFilters');
-    const discounts = ['10%', '20%', '30%', '40%', '50%', '60%', '70%'];
-    if (discountContainer) {
-        discountContainer.innerHTML = discounts.map(d => `
+
+if (discountContainer) {
+
+    const discountSet = new Set();
+
+    products.forEach(p => {
+
+        if (p.price && p.final_price) {
+
+            const original = parseFloat(p.price);
+            const final = parseFloat(p.final_price);
+
+            if (original > final) {
+
+                const discount =
+                    Math.round(
+                        ((original - final) / original) * 100
+                    );
+
+                discountSet.add(discount);
+
+            }
+
+        }
+
+    });
+
+    const sortedDiscounts =
+        Array.from(discountSet)
+            .sort((a, b) => a - b);
+
+    discountContainer.innerHTML =
+        sortedDiscounts.map(d => `
+
             <label class="desktop-filter-option">
-                <input type="checkbox" class="desktop-discount-filter" value="${d}" onchange="applyDesktopFilters()"> ${d} & above
+                <input
+                    type="checkbox"
+                    class="desktop-discount-filter"
+                    value="${d}"
+                    onchange="applyDesktopFilters()"
+                >
+                ${d}% & above
             </label>
+
         `).join('');
-    }
+
+}
 }
     window.applyDesktopFilters = function() {
+
     let filtered = [...currentProducts];
     let filterApplied = false;
-    
-    const selectedCategories = Array.from(document.querySelectorAll('.desktop-category-filter:checked')).map(cb => cb.value);
-    if (selectedCategories.length > 0) {
-        filterApplied = true;
-        filtered = filtered.filter(p => selectedCategories.includes(p.subcategory_id?.toString()));
+
+    const selectedCategories =
+        Array.from(
+            document.querySelectorAll(
+                '.desktop-category-filter:checked'
+            )
+        ).map(cb => cb.value);
+
+    /* MULTIPLE SUBCATEGORY SUPPORT */
+
+    if (selectedCategories.length === 1) {
+
+        changeSubcategory(
+            selectedCategories[0]
+        );
+
+        return;
     }
-    
-    const selectedBrands = Array.from(document.querySelectorAll('.desktop-brand-filter:checked')).map(cb => cb.value);
+
+    if (selectedCategories.length > 1) {
+
+        fetchMultipleSubcategories(
+            selectedCategories
+        );
+
+        return;
+    }
+
+    /* BRAND FILTER */
+
+    const selectedBrands =
+        Array.from(
+            document.querySelectorAll(
+                '.desktop-brand-filter:checked'
+            )
+        ).map(cb => cb.value);
+
     if (selectedBrands.length > 0) {
+
         filterApplied = true;
-        filtered = filtered.filter(p => selectedBrands.includes(p.brand));
+
+        filtered = filtered.filter(p =>
+            selectedBrands.includes(p.brand)
+        );
+
     }
-    
-    const selectedDiscounts = Array.from(document.querySelectorAll('.desktop-discount-filter:checked')).map(cb => cb.value);
-    if (selectedDiscounts.length > 0) {
-        filterApplied = true;
-        filtered = filtered.filter(p => {
-            if (p.price && p.final_price) {
-                const original = parseFloat(p.price);
-                const final = parseFloat(p.final_price);
-                if (original > final) {
-                    const discount = Math.round(((original - final) / original) * 100);
-                    return selectedDiscounts.some(d => discount >= parseInt(d));
-                }
-            }
-            return false;
-        });
-    }
-    
+
     if (!filterApplied) {
+
         renderProducts(currentProducts);
-    } else if (filtered.length > 0) {
-        renderProducts(filtered);
-    } else {
-        document.getElementById('productsGrid').innerHTML = '<div class="loading" style="grid-column:1/-1; padding:40px; text-align:center; color:#999;">No products match your filters</div>';
+
     }
+    else if (filtered.length > 0) {
+
+        renderProducts(filtered);
+
+    }
+    else {
+
+        document.getElementById('productsGrid').innerHTML =
+            '<div class="loading">No products match your filters</div>';
+
+    }
+
 };
     window.applyDesktopPriceFilter = function() {
         const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
@@ -1502,30 +1716,75 @@ updateMobileLogo();
     };
 
     window.applySort = function() {
-        const selected = document.querySelector('input[name="sort"]:checked');
-        if (!selected) { alert('Please select a sort option'); return; }
-        
-        const sortBy = selected.value;
-        let sorted = [...currentProducts];
-        
-        switch(sortBy) {
-            case 'price-low':
-                sorted.sort((a, b) => (a.final_price || a.price || 0) - (b.final_price || b.price || 0));
-                break;
-            case 'price-high':
-                sorted.sort((a, b) => (b.final_price || b.price || 0) - (a.final_price || a.price || 0));
-                break;
-            case 'newest':
-                sorted.sort((a, b) => (b.id || 0) - (a.id || 0));
-                break;
-            default:
-                break;
-        }
-        
-        renderProducts(sorted);
-        hideSortPopup();
-    };
+    const selected = document.querySelector('input[name="sort"]:checked');
+    if (!selected) {
+        alert('Please select a sort option');
+        return;
+    }
 
+    const sortBy = selected.value;
+    let sorted = [...currentProducts];
+
+    switch (sortBy) {
+
+        case 'price-low':
+            sorted.sort((a, b) =>
+                parseFloat(a.final_price || a.price || 0) -
+                parseFloat(b.final_price || b.price || 0)
+            );
+            break;
+
+        case 'price-high':
+            sorted.sort((a, b) =>
+                parseFloat(b.final_price || b.price || 0) -
+                parseFloat(a.final_price || a.price || 0)
+            );
+            break;
+
+        case 'newest':
+            sorted.sort((a, b) =>
+                new Date(b.created_at || 0) -
+                new Date(a.created_at || 0)
+            );
+            break;
+
+        case 'popularity':
+            sorted.sort((a, b) =>
+                (b.popularity || 0) -
+                (a.popularity || 0)
+            );
+            break;
+
+        case 'rating':
+            sorted.sort((a, b) =>
+                (b.rating || 0) -
+                (a.rating || 0)
+            );
+            break;
+
+        case 'discount':
+            sorted.sort((a, b) => {
+                const dA =
+                    ((parseFloat(a.price || 0) -
+                      parseFloat(a.final_price || 0)) /
+                      parseFloat(a.price || 1)) * 100;
+
+                const dB =
+                    ((parseFloat(b.price || 0) -
+                      parseFloat(b.final_price || 0)) /
+                      parseFloat(b.price || 1)) * 100;
+
+                return dB - dA;
+            });
+            break;
+
+        default:
+            break;
+    }
+
+    renderProducts(sorted);
+    hideSortPopup();
+};
     window.showFilterPopup = function() {
         document.getElementById('filterPopupOverlay').classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -1563,7 +1822,120 @@ updateMobileLogo();
         titlesColumn.classList.remove('half-width');
         optionsColumn.style.display = 'none';
     };
+    async function fetchMultipleSubcategories(subIds) {
 
+    const grid =
+        document.getElementById('productsGrid');
+
+    try {
+
+        let allProducts = [];
+
+        for (const id of subIds) {
+
+            const res =
+                await fetch(
+                    `${API_BASE_URL}/categories/${id}/products`
+                );
+
+            const data = await res.json();
+
+            if (
+                data.success &&
+                data.data.products
+            ) {
+
+                allProducts =
+                    allProducts.concat(
+                        data.data.products
+                    );
+
+            }
+
+        }
+
+        /* remove duplicates */
+
+        allProducts = [
+            ...new Map(
+                allProducts.map(
+                    p => [p.id, p]
+                )
+            ).values()
+        ];
+
+        currentProducts = allProducts;
+        originalProducts = [...allProducts];
+
+        renderProducts(allProducts);
+
+        updateDesktopFiltersFromProducts(
+            allProducts
+        );
+
+    } catch (error) {
+
+        grid.innerHTML =
+            '<div class="loading">Error loading products</div>';
+
+    }
+
+}
+async function fetchMultipleSubcategoriesMobile(subIds) {
+
+    const grid =
+        document.getElementById('productsGrid');
+
+    try {
+
+        let allProducts = [];
+
+        for (const id of subIds) {
+
+            const res =
+                await fetch(
+                    `${API_BASE_URL}/categories/${id}/products`
+                );
+
+            const data = await res.json();
+
+            if (
+                data.success &&
+                data.data.products
+            ) {
+
+                allProducts =
+                    allProducts.concat(
+                        data.data.products
+                    );
+
+            }
+
+        }
+
+        /* remove duplicates */
+
+        allProducts = [
+            ...new Map(
+                allProducts.map(
+                    p => [p.id, p]
+                )
+            ).values()
+        ];
+
+        currentProducts = allProducts;
+        originalProducts = [...allProducts];
+
+        renderProducts(allProducts);
+
+    } catch (error) {
+
+        grid.innerHTML =
+            '<div class="loading">Error loading products</div>';
+
+    }
+
+}
     async function loadFilterOptions(filterType, container) {
         let options = [];
         
@@ -1601,16 +1973,44 @@ updateMobileLogo();
                 break;
                 
             case 'price':
-                options = [
-                    { value: '0-500', label: 'Below ₹500' },
-                    { value: '500-1000', label: '₹500 - ₹1000' },
-                    { value: '1000-2000', label: '₹1000 - ₹2000' },
-                    { value: '2000-3000', label: '₹2000 - ₹3000' },
-                    { value: '3000-5000', label: '₹3000 - ₹5000' },
-                    { value: '5000-999999', label: 'Above ₹5000' }
-                ];
-                break;
-                
+    const targetId2 = subcategoryId || categoryId;
+    if (targetId2) {
+        const res2 = await fetch(`${API_BASE_URL}/categories/${targetId2}/products`);
+        const data2 = await res2.json();
+
+        if (data2.success && data2.data.products && data2.data.products.length > 0) {
+
+            const prices = data2.data.products
+                .map(p => parseFloat(p.final_price || p.price))
+                .filter(p => !isNaN(p));
+
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+
+            const step = 500;
+
+            options = [];
+
+            for (let start = Math.floor(minPrice / step) * step; start < maxPrice; start += step) {
+
+                const end = start + step;
+
+                options.push({
+                    value: `${start}-${end}`,
+                    label: start === 0
+                        ? `Below ₹${end}`
+                        : `₹${start} - ₹${end}`
+                });
+
+            }
+
+            options.push({
+                value: `${maxPrice}-999999`,
+                label: `Above ₹${maxPrice}`
+            });
+        }
+    }
+    break;            
             case 'brand':
                 const targetId = subcategoryId || categoryId;
                 if (targetId) {
@@ -1628,15 +2028,86 @@ updateMobileLogo();
                 break;
                 
             case 'discount':
-                options = ['10%', '20%', '30%', '40%', '50%', '60%', '70%'].map(d => ({ 
-                    value: d, 
-                    label: `${d} & above` 
-                }));
+                const targetId1 = subcategoryId || categoryId;
+                if (targetId1) {
+                    const res1 = await fetch(`${API_BASE_URL}/categories/${targetId1}/products`);
+                    const data1 = await res1.json();
+
+                    if (data1.success && data1.data.products) {
+                        const discountSet = new Set();
+
+                        data1.data.products.forEach(p => {
+                            if (p.price && p.final_price) {
+                                const original = parseFloat(p.price);
+                                const final = parseFloat(p.final_price);
+
+                                if (original > final) {
+                                    const discount = Math.round(
+                                        ((original - final) / original) * 100
+                                    );
+
+                                    discountSet.add(discount);
+                                }
+                            }
+                        });
+
+                        options = Array.from(discountSet)
+                            .sort((a, b) => a - b)
+                            .map(d => ({
+                                value: d,
+                                label: `${d}% & above`
+                            }));
+                    }
+                }
                 break;
-                
             case 'size':
-                options = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'].map(s => ({ value: s, label: s }));
-                break;
+    const targetId3 = subcategoryId || categoryId;
+
+    if (targetId3) {
+
+        const res3 = await fetch(`${API_BASE_URL}/categories/${targetId3}/products`);
+        const data3 = await res3.json();
+
+        if (data3.success && data3.data.products) {
+
+            const sizeSet = new Set();
+
+            data3.data.products.forEach(product => {
+
+                if (Array.isArray(product.variants)) {
+
+                    product.variants.forEach(variant => {
+
+                        if (
+                            variant &&
+                            typeof variant.variant_type === 'string' &&
+                            variant.variant_type.toLowerCase() === 'size' &&
+                            variant.variant_value
+                        ) {
+                            sizeSet.add(
+                                String(variant.variant_value).trim()
+                            );
+                        }
+
+                    });
+
+                }
+
+            });
+
+            options = Array.from(sizeSet)
+                .filter(v => v)
+                .sort((a, b) => a.localeCompare(b))
+                .map(size => ({
+                    value: size,
+                    label: size
+                }));
+
+        }
+
+    }
+
+    break;
                 
             case 'color':
                 options = ['Red', 'Blue', 'Green', 'Black', 'White', 'Pink', 'Yellow', 'Purple'].map(c => ({ value: c, label: c }));
@@ -1694,7 +2165,7 @@ updateMobileLogo();
             });
         });
         
-        if (selected.category.length > 0) {
+       if (selected.category.length === 1) {
             const firstCategory = selected.category[0];
             if (firstCategory) {
                 window.changeSubcategory(firstCategory);
@@ -1702,6 +2173,8 @@ updateMobileLogo();
                     applyOtherFilters(selected);
                 }, 500);
             }
+        } else if (selected.category.length > 1) {
+            fetchMultipleSubcategoriesMobile(selected.category);
         } else {
             applyOtherFilters(selected);
         }
@@ -1963,7 +2436,6 @@ function updateCartCountBadge() {
 
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-    // count unique products (not qty)
     let totalItems = cart.length;
 
     const badge = document.getElementById('cart-count-badge');
@@ -2036,7 +2508,37 @@ setTimeout(function() {
         });
 }, 100);
     fetchData();
+    
 })();
+</script>
+<script>
+// Force cart count update every 2 seconds for app
+setInterval(function() {
+    try {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let totalItems = cart.length;
+        
+        const badge = document.getElementById('cart-count-badge');
+        if (badge && badge.textContent != totalItems) {
+            badge.textContent = totalItems;
+            if (totalItems > 0) {
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+        
+        const mobileBadge = document.querySelector('.cart-count-badge');
+        if (mobileBadge && mobileBadge.textContent != totalItems) {
+            mobileBadge.textContent = totalItems;
+            if (totalItems > 0) {
+                mobileBadge.style.display = 'flex';
+            } else {
+                mobileBadge.style.display = 'none';
+            }
+        }
+    } catch(e) {}
+}, 2000);
 </script>
 @include('components.footer')
 </body>
