@@ -695,7 +695,7 @@ function openRazorpay(data) {
         amount: Math.round(data.amount * 100),
         currency: data.currency,
         order_id: data.razorpay_order_id,
-        name: 'RAPID RETAIL',
+        name: 'RADIANT JEWEL',
         description: 'Order Payment',
 
         handler: function (response) {
