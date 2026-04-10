@@ -728,13 +728,11 @@ async renderPromotionalBanners() {
     const container1 = document.getElementById('mid-banner-1-container');
     const container2 = document.getElementById('mid-banner-2-container');
 
-    // ✅ Desktop/Mobile check add karo
     const isMobile = window.innerWidth < 768;
 
     if (banners.length > 0 && container1) {
         const b = banners[0];
         
-        // ✅ Image selection logic - same as hero banner
         let bannerImage;
         if (isMobile) {
             bannerImage = b.mobile_image || b.image;
