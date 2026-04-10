@@ -1,5 +1,7 @@
-/* ===== PRODUCT DETAIL PAGE - COMPLETE STYLE ===== */
-
+:root {
+    --primary: #440C2C;
+    --accent: #F4B94E;
+}
 * {
     margin: 0;
     padding: 0;
@@ -106,7 +108,7 @@ body {
     position: absolute;
     top: 16px;
     left: 16px;
-    background: #ff4d6d;
+    background: var(--primary);
     color: white;
     font-size: 12px;
     font-weight: 700;
@@ -144,13 +146,12 @@ body {
 }
 
 .pdp-wishlist.active {
-    color: #ff3f6c;
+    color: var(--primary); 
     background: white;
 }
 
 .pdp-wishlist.active svg {
-    fill: #ff3f6c;
-    stroke: #ff3f6c;
+    fill: var(--accent); stroke: var(--accent);
 }
 
 .pdp-wishlist:hover {
@@ -223,11 +224,8 @@ body {
     background-clip: padding-box;
 }
 
-.pdp-color-circle.active {
-    border-color: #ff3f6c;
-    transform: scale(1.2);
-    box-shadow: 0 0 0 2px white, 0 0 0 4px #ff3f6c;
-}
+.pdp-color-circle.active { border-color: var(--primary); box-shadow: 0 0 0 2px white, 0 0 0 4px var(--accent); }
+
 
 .pdp-color-more {
     font-size: 12px;
@@ -253,8 +251,8 @@ body {
 
 .pdp-color-count {
     font-size: 12px;
-    color: #ff3f6c;
-    background: #fff0f3;
+    color: var(--primary); 
+    background: #fff0f3; 
     padding: 2px 8px;
     border-radius: 12px;
     cursor: pointer;
@@ -300,7 +298,7 @@ body {
 .pdp-discount {
     font-size: 14px;
     font-weight: 600;
-    color: #ff3f6c;
+    color: var(--primary); 
     background: #ffe8f0;
     padding: 4px 10px;
     border-radius: 30px;
@@ -326,7 +324,7 @@ body {
 
 .pdp-size-chart {
     font-size: 13px;
-    color: #ff3f6c;
+     color: var(--primary);
     cursor: pointer;
 }
 
@@ -354,8 +352,8 @@ body {
 
 .pdp-size-btn.active {
     background: white;
-    color: #ff3f6c;
-    border-color: #ff3f6c;
+    color: var(--primary);
+    border-color: var(--primary);
     border-width: 2px;
 }
 
@@ -376,7 +374,7 @@ body {
 .pdp-add-to-cart {
     flex: 1;
     padding: 14px;
-    background: #ff3f6c;
+    background: var(--primary);
     color: white;
     border: none;
     border-radius: 4px;
@@ -388,8 +386,8 @@ body {
 .pdp-buy-now {
     flex: 1;
     padding: 14px;
-    background: #000;
-    color: white;
+    background: var(--accent);
+    color: var(--primary);
     border: none;
     border-radius: 4px;
     font-size: 15px;
@@ -458,7 +456,7 @@ body {
 
 .pdp-pincode button {
     padding: 12px 20px;
-    background: #ff3f6c;
+    background: var(--accent);
     color: white;
     border: none;
     border-radius: 4px;
@@ -513,6 +511,7 @@ body {
 .pdp-offer-card.bank-offer {
     background: #eaf3ff;
     border-color: #c2d9ff;
+    border-left: 4px solid var(--primary);
 }
 
 .pdp-offer-header {
@@ -525,22 +524,21 @@ body {
 .pdp-offer-badge {
     font-size: 12px;
     font-weight: 600;
-    color: #ff6b6b;
-    background: #ffdede;
+    background: var(--primary);
+    color: white;
     padding: 4px 10px;
     border-radius: 20px;
 }
 
 .bank-offer .pdp-offer-badge {
-    background: #d9e5ff;
-    color: #2c6bff;
+    background: #d9e5ff; color: var(--primary);
 }
 
 .pdp-offer-code {
     font-family: monospace;
     font-weight: 700;
     font-size: 14px;
-    color: #ff6b6b;
+    color: var(--primary);
     background: white;
     padding: 4px 12px;
     border-radius: 20px;
@@ -549,7 +547,7 @@ body {
 
 .bank-offer .pdp-offer-code {
     border-color: #99c2ff;
-    color: #2c6bff;
+    color: var(--accent);
 }
 
 .pdp-offer-desc {
@@ -560,7 +558,7 @@ body {
 
 .pdp-offer-tnc {
     font-size: 12px;
-    color: #999;
+    color: var(--primary);
     text-decoration: underline;
     cursor: pointer;
 }
@@ -568,7 +566,7 @@ body {
 .pdp-offer-more {
     margin-top: 12px;
     text-align: center;
-    color: #ff3f6c;
+    color: var(--primary);
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
@@ -740,7 +738,7 @@ body {
 }
 
 .pdp-size-error {
-    color: #ff3f6c;
+    color: var(--primary);
     font-size: 13px;
     margin-top: 8px;
     display: none;
@@ -781,7 +779,7 @@ body {
 .btn-home {
     display: inline-block;
     padding: 12px 24px;
-    background: #ff3f6c;
+    background: var(--accent);
     color: white;
     text-decoration: none;
     border-radius: 30px;
@@ -939,7 +937,7 @@ body {
 }
 
 .color-scroll-container::-webkit-scrollbar-thumb {
-    background: #ff3f6c;
+    background: var(--accent);
     border-radius: 10px;
 }
 
@@ -1038,7 +1036,7 @@ body {
 }
 
 .offers-count {
-    background: #ff3f6c;
+    background: var(--accent);
     color: white;
     font-size: 12px;
     padding: 2px 8px;
@@ -1081,7 +1079,7 @@ body {
 }
 
 .offers-tab.active {
-    background: #ff3f6c;
+    background: var(--accent);
     color: white;
 }
 
@@ -1102,11 +1100,11 @@ body {
 }
 
 .offers-popup-item.bank-offer {
-    border-left: 4px solid #ff3f6c;
+    border-left: 4px solid var(--accent);
 }
 
 .offers-popup-item.normal-offer {
-    border-left: 4px solid #27ae60;
+    border-left: 4px solid var(--accent);
 }
 
 .offers-popup-header-row {
@@ -1126,12 +1124,12 @@ body {
 
 .bank-offer .offers-popup-badge {
     background: #ffe8e8;
-    color: #ff3f6c;
+    color: var(--accent);
 }
 
 .normal-offer .offers-popup-badge {
     background: #e8f5e9;
-    color: #27ae60;
+    color: var(--accent);
 }
 
 .offers-popup-code {
@@ -1165,7 +1163,7 @@ body {
 }
 
 .offers-popup-tnc {
-    color: #ff3f6c;
+    color: var(--accent); 
     text-decoration: underline;
     cursor: pointer;
     font-weight: 500;
@@ -1275,7 +1273,7 @@ body {
     }
     
     .pdp-thumb:hover {
-        border-color: #ff3f6c;
+       border-color: var(--primary);
     }
     
     .pdp-gallery {
@@ -1377,16 +1375,17 @@ body {
     font-size: 14px;
     font-weight: 500;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    border-bottom: 3px solid #ff3f6c;
+    border-bottom: 3px solid var(--primary);
+
 }
 
 .top-toast-content svg {
     flex-shrink: 0;
-    stroke: #ff3f6c;
+    stroke: var(--primary);
 }
 
 .toast-action {
-    color: #ff3f6c;
+    color: var(--primary);
     font-weight: 600;
     margin-left: 4px;
 }
@@ -1629,7 +1628,7 @@ body {
 }
 
 .pdp-header-right button:hover svg {
-    stroke: #ff3f6c;
+    stroke: var(--accent); 
 }
 
 @media (max-width: 480px) {
@@ -1805,7 +1804,7 @@ html, body {
     }
     
     .offers-desktop-tab.active {
-        background: #ff3f6c;
+        background: var(--accent);
         color: white;
     }
     
@@ -1834,31 +1833,21 @@ html, body {
 
 .cart-badge {
     position: absolute;
-
     top: -4px;
     right: -4px;
-
-    background: #ff3f6c;
+    background: var(--accent);
     color: #fff;
-
     font-size: 10px;
     font-weight: 600;
-
     min-width: 16px;
     height: 16px;
-
     padding: 0 4px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     border-radius: 50%;
-
     border: 2px solid #fff;
-
     line-height: 1;
-
     z-index: 1000;
 }
 @media (min-width: 1024px) {
@@ -1928,7 +1917,7 @@ html, body {
     }
     
     .pdp-color-desktop-list::-webkit-scrollbar-thumb {
-        background: #ff3f6c;
+        background: var(--primary);
         border-radius: 4px;
     }
     
@@ -1945,12 +1934,12 @@ html, body {
     
     .pdp-color-desktop-item:hover {
         background: #fafafa;
-        border-color: #ff3f6c;
+        border-color: var(--primary);
     }
     
     .pdp-color-desktop-item.selected {
         background: #fff5f7;
-        border-color: #ff3f6c;
+        border-color: var(--primary);
     }
     
     .pdp-color-desktop-dot {
@@ -1969,7 +1958,7 @@ html, body {
     }
     
     .pdp-color-desktop-check {
-        color: #ff3f6c;
+        color: var(--primary);
         font-size: 16px;
         font-weight: bold;
     }
@@ -2057,18 +2046,13 @@ html, body {
     position: absolute;
     top: -6px;
     right: -8px;
-
-    background: #ff3f6c;
+    background: var(--accent);
     color: #fff;
-
     font-size: 10px;
     font-weight: 600;
-
     min-width: 16px;
     height: 16px;
-
     border-radius: 50%;
-
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2088,4 +2072,29 @@ html, body {
 
 .header-actions .action-link {
     color: #333 !important;
+}
+.pdp-return, .pdp-cod {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.pdp-return svg, .pdp-cod svg {
+    stroke: var(--primary);
+    flex-shrink: 0;
+}
+
+.pdp-pincode {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.pdp-pincode svg {
+    stroke: var(--primary);
+    flex-shrink: 0;
 }

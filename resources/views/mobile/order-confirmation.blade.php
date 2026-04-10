@@ -6,6 +6,16 @@
     <title>Order Details | RADIANT JEWEL</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #440C2C;
+            --accent: #F4B94E;
+            --white: #ffffff;
+            --gray-light: #f5f5f6;
+            --gray-mid: #eaeaec;
+            --gray-dark: #282c3f;
+            --text-muted: #696b79;
+            --success-green: #03a685;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -14,10 +24,9 @@
         }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f1f5f9;
-            color: #0f172a;
-            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+            background: var(--gray-light);
+            color: var(--gray-dark);
         }
 
         .order-app {
@@ -121,13 +130,13 @@
         .card-icon {
             width: 36px;
             height: 36px;
-            background: #ffe8f0;
+            background: #fff5f0;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 18px;
-            color: #ff3f6c;
+            color: var(--accent);
         }
 
         @media (min-width: 768px) {
@@ -206,7 +215,7 @@
         .order-id {
             font-size: 16px;
             font-weight: 800;
-            background: linear-gradient(135deg, #ff3f6c, #ff8a5c);
+            background: linear-gradient(135deg, var(--primary), var(--accent));
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
@@ -226,13 +235,13 @@
         }
 
         .payment-badge {
-            background: #fff0f3;
+            background: #fff5f0;
             padding: 4px 12px;
             border-radius: 40px;
             font-size: 11px;
             font-weight: 600;
-            border: 1px solid #ffe0e8;
-            color: #ff3f6c;
+            border: 1px solid #ffe0d9;
+            color: var(--accent);
         }
 
         @media (min-width: 768px) {
@@ -307,14 +316,14 @@
         }
 
         .step-dot.completed {
-            background: #ff3f6c;
-            color: white;
+            background: var(--accent);
+            color: var(--primary);
         }
 
         .step-dot.active {
-            background: #ff3f6c;
-            color: white;
-            box-shadow: 0 0 0 4px rgba(255, 63, 108, 0.2);
+            background: var(--accent);
+            color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(244, 185, 78, 0.2);
         }
 
         .step-connector-line {
@@ -328,7 +337,7 @@
         }
 
         .step-connector-line.completed {
-            background: #ff3f6c;
+            background: var(--accent);
         }
 
         .step-content-box {
@@ -483,7 +492,7 @@
         .price-current {
             font-weight: 800;
             font-size: 16px;
-            color: #ff3f6c;
+            color: var(--accent);
         }
 
         @media (min-width: 768px) {
@@ -552,7 +561,7 @@
         }
 
         .price-detail-row.total span:last-child {
-            color: #ff3f6c;
+            color: var(--accent);
         }
 
         @media (min-width: 768px) {
@@ -630,13 +639,13 @@
         }
 
         .btn-primary {
-            background: #ff3f6c;
-            color: white;
-            box-shadow: 0 4px 12px rgba(255, 63, 108, 0.2);
+            background: var(--accent);
+            color: var(--primary);
+            box-shadow: 0 4px 12px rgba(244, 185, 78, 0.2);
         }
 
         .btn-primary:hover {
-            background: #e6355a;
+            background: #e6a83b;
             transform: translateY(-2px);
         }
 
@@ -708,7 +717,7 @@
         }
 
         .savings-block {
-            background: #ffe8f0;
+            background: #fff5f0;
             border-radius: 40px;
             padding: 8px 16px;
             display: inline-flex;
@@ -716,7 +725,7 @@
             gap: 6px;
             font-weight: 600;
             font-size: 12px;
-            color: #ff3f6c;
+            color: var(--accent);
             margin-top: 14px;
         }
 
@@ -744,8 +753,8 @@
         .spinner {
             width: 44px;
             height: 44px;
-            border: 3px solid #ffe8f0;
-            border-top-color: #ff3f6c;
+            border: 3px solid #fff5f0;
+            border-top-color: var(--accent);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -1154,8 +1163,8 @@
             position: absolute;
             top: -6px;
             right: -8px;
-            background: #ff3f6c;
-            color: #fff;
+            background: var(--accent);
+            color: var(--primary);
             font-size: 10px;
             font-weight: 600;
             min-width: 16px;
@@ -1190,7 +1199,7 @@
         }
 
         .header-actions .action-link:hover .header-icon {
-            stroke: #ff3f6c;
+            stroke: var(--accent);
         }
         .web-header {
             padding: 0 !important;
@@ -1251,8 +1260,8 @@
     position: absolute;
     top: -6px;
     right: -8px;
-    background: #ff3f6c;
-    color: white;
+    background: var(--accent);
+    color: var(--primary);
     font-size: 10px;
     font-weight: 600;
     min-width: 16px;
@@ -1262,6 +1271,64 @@
     align-items: center;
     justify-content: center;
     padding: 0 4px;
+}
+/* Force header to match landing page */
+.site-header .header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.site-header .logo-search-container {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 8px;
+    background: #f5f5f6;
+    border-radius: 30px;
+    padding: 4px 4px 4px 12px;
+    border: 1px solid #e0e0e0;
+}
+
+.site-header .site-logo {
+    height: 32px !important;
+    width: auto !important;
+    max-width: 100px !important;
+    object-fit: contain;
+}
+
+.site-header .search-wrapper input {
+    font-size: 13px;
+    padding: 8px 0;
+    border: none;
+    background: none;
+    outline: none;
+}
+
+.site-header .header-icon-btn {
+    width: 36px;
+    height: 36px;
+    padding: 6px;
+}
+
+.site-header .header-icon-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: #333;
+}
+
+@media (max-width: 480px) {
+    .site-header .site-logo {
+        height: 28px !important;
+        max-width: 80px !important;
+    }
+    .site-header .header-logo {
+        display: none;
+    }
 }
     </style>
 </head>
@@ -1498,7 +1565,8 @@ function renderHeader() {
                         <div class="header-logo">
                             <a href="/">
                                 <img src="/images/logo.jpg" alt="RAPID RETAIL" class="site-logo" 
-                                    onerror="this.src='https://via.placeholder.com/100x35?text=RAPID'">
+    style="height:32px; width:auto;"
+    onerror="this.src='https://via.placeholder.com/100x35?text=RAPID'">
                             </a>
                         </div>
                         <div class="search-wrapper">

@@ -560,7 +560,11 @@ renderBottomNav() {
     const dots = document.getElementById('slider-dots');
     if (!slider) return;
 
-    const heroBanners = this.allBanners.filter(b => b.position === 'hero');
+    let heroBanners = this.allBanners.filter(b => b.position === 'hero');
+    
+    if (heroBanners.length === 0 && this.allBanners.length > 0) {
+        heroBanners = this.allBanners;
+    }
     
     if (heroBanners.length === 0) return;
     
@@ -690,7 +694,7 @@ async renderCategoryPills() {
      style="width:100%; height:100%; object-fit:cover; border-radius:50%;"
      onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=100&h=100&fit=crop'">
             </div>
-            <span>All Categories</span>
+            <span>All here Categories</span>
         </div>
     `;
     
@@ -1202,18 +1206,33 @@ async renderDynamicCategorySections() {
                         const products = data.data.products.slice(0, MAX_PRODUCTS);
                         
                         const sectionHtml = `
-                            <section class="section-container">
-                                <div class="container">
-                                    <div class="section-header">
-                                        <h2 class="section-title">${subcategory.name}</h2>
-                                        <a href="/products?subcategory=${subcategory.id}" class="view-all-link">View All →</a>
-                                    </div>
-                                    <div class="horizontal-scroll">
-                                        ${products.map(p => this.genProductCard(p)).join('')}
-                                    </div>
-                                </div>
-                            </section>
-                        `;
+    <section class="section-container style-category-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">${subcategory.name}</h2>
+                <a href="/products?subcategory=${subcategory.id}" class="view-all-link">View All →</a>
+            </div>
+            <div class="style-category-grid">
+                ${products.map(p => `
+                    <div class="style-category-card" onclick="window.location.href='/product/${p.slug}'">
+                        <div class="style-category-img">
+                            <img src="${this.resolveImage(p.image_url)}" alt="${p.name}">
+                        </div>
+                        <div class="style-category-info">
+                            <h4>${p.name}</h4>
+                            <p>${p.brand || 'Premium Collection'}</p>
+                            <div class="style-category-price">
+                                <span class="current">₹${p.final_price || p.price}</span>
+                                ${p.mrp ? `<span class="old">₹${p.mrp}</span>` : ''}
+                            </div>
+                            <button class="explore-btn" onclick="event.stopPropagation(); window.location.href='/product/${p.slug}'">EXPLORE →</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    </section>
+`;
                         
                         categoriesArray.push({
                             name: subcategory.name,

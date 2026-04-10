@@ -1162,12 +1162,30 @@ function renderOfferItems(type) {
             <div class="pdp-delivery">
                 <h3>Delivery Details</h3>
                 <div class="pdp-pincode">
-                    <input type="text" id="pincode" placeholder="Enter pincode" maxlength="6" value="${localStorage.getItem('lastPincode') || ''}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <input type="text" id="pincode" placeholder="Enter pincode" maxlength="6">
                     <button onclick="checkPincode()">Check</button>
                 </div>
                 <div class="pdp-delivery-info" id="deliveryInfo"></div>
-                <div class="pdp-return">↩️ 7 Days Return & Exchange</div>
-                <div class="pdp-cod">💳 Cash on Delivery is available</div>
+                <div class="pdp-return">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6M1 20v-6h6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>7 Days Return & Exchange</span>
+                </div>
+                <div class="pdp-cod">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="5" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="2" y1="10" x2="22" y2="10"/>
+                        <circle cx="7" cy="15" r="1.5" fill="currentColor"/>
+                        <circle cx="17" cy="15" r="1.5" fill="currentColor"/>
+                    </svg>
+                    <span>Cash on Delivery available</span>
+                </div>
             </div>
             <div class="pdp-offers">
                 <h3>Offers and Discounts</h3>

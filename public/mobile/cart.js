@@ -269,16 +269,26 @@ function getCartItemHTML(item, index, qty, price, itemTotal) {
                     <div class="cart-item-selectors">
                         ${selectorsHtml}
                     </div>
-
-                    <div class="delivery-info">
-                        <span class="info-icon">🚚</span>
-                        <span class="info-text">Delivery by <span class="delivery-date">${formattedDate}</span></span>
-                    </div>
-                    
-                    <div class="return-info">
-                        <span class="info-icon">🔄</span>
-                        <span class="info-text">7 Days Return & Exchange</span>
-                    </div>
+                        <div class="delivery-info">
+                            <span class="info-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+                                    <rect x="2" y="5" width="16" height="12" rx="2"/>
+                                    <circle cx="7" cy="17" r="2"/>
+                                    <circle cx="17" cy="17" r="2"/>
+                                    <path d="M18 9h4v6h-4"/>
+                                </svg>
+                            </span>
+                            <span class="info-text">Delivery by <span class="delivery-date">${formattedDate}</span></span>
+                        </div>
+                        <div class="return-info">
+                            <span class="info-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+                                    <path d="M23 4v6h-6M1 20v-6h6" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <span class="info-text">7 Days Return & Exchange</span>
+                        </div>
                 </div>
             </div>
             
@@ -1094,7 +1104,21 @@ function getCouponStickerHTML(coupon, cartTotal, isBank) {
     
     const stickerClass = isBank ? 'bank-sticker' : 'normal-sticker';
     const valueText = coupon.discount_type === 'PERCENT' ? `${coupon.value}%` : `₹${coupon.value}`;
-    const badgeText = isBank ? '🏦' : '🎫';
+    
+    const bankIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 9L12 3L21 9V20H3V9Z"/>
+    <path d="M8 20V12H16V20"/>
+    </svg>`;
+
+    const couponIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="6" width="18" height="12" rx="2"/>
+        <path d="M8 10h8M8 14h4"/>
+        <circle cx="17" cy="10" r="1.5" fill="currentColor"/>
+        <circle cx="17" cy="14" r="1.5" fill="currentColor"/>
+    </svg>`;
+
+    
+    const badgeText = isBank ? bankIcon : couponIcon;
     
     return `
         <div class="coupon-sticker ${stickerClass}" onclick="applyCoupon('${coupon.code}')">
