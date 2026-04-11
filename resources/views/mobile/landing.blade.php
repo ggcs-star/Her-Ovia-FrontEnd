@@ -102,7 +102,7 @@
         <section class="section-container">
             <div class="container">
                 <div class="section-header centered">
-                    <h2 class="section-title">Style Spotlight</h2>
+                    <div id="style-spotlight-grid"></div>
                 </div>
                 <div id="style-spotlight-grid" class="spotlight-grid"></div>
             </div>

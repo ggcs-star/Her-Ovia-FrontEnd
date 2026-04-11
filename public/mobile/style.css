@@ -599,8 +599,34 @@ body {
     animation: pulse 1s infinite;
 }
 
-/* ========== STYLE SPOTLIGHT - PERFECT GRID ========== */
-/* ========== STYLE SPOTLIGHT - HORIZONTAL SCROLL ONLY ========== */
+.spotlight-grid {
+    display: flex !important;
+    gap: 16px;
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 12px;
+}
+
+.spotlight-grid::-webkit-scrollbar {
+    height: 4px;
+}
+
+.spotlight-grid::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 10px;
+}
+
+.spotlight-grid::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 10px;
+}
+
+#style-spotlight-grid {
+    width: 100%;
+    overflow-x: auto;
+}
 .style-spotlight-section {
     padding: 30px 16px;
     background: #ffffff;
@@ -3311,15 +3337,16 @@ animation:loader-spin 1s linear infinite;
     object-fit: cover !important;
 }
 
-/* Mobile - set fixed height for better look */
 @media (max-width: 768px) {
+    /* YAHAN CHANGE KARO */
     .hero-slider {
-        height: 300px !important;
+        height: auto !important;  /* 300px hatake auto karo */
     }
     
     .slide-img-figma {
-        height: 100% !important;
-        object-fit: cover !important;
+        height: auto !important;  /* 100% hatake auto karo */
+        width: 100% !important;
+        object-fit: contain !important;  /* cover se contain karo */
     }
 }
 

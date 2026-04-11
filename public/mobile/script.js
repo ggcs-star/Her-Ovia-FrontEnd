@@ -33,16 +33,18 @@ class RapidRetailsEngine {
     this.initSearchRedirect();
     
     let resizeTimer;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => {
-            if (this.page === 'landing') {
-                this.renderPromotionalBanners();  
-                this.renderHeroSlider();          
-            }
-            this.renderHeader();
-        }, 250);
-    });
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (this.page === 'landing') {
+                    this.renderPromotionalBanners();  
+                    this.renderHeroSlider();
+                    this.renderStyleSpotlight();
+                    this.renderBrandsGrid();
+                }
+                this.renderHeader();
+            }, 250);
+        });
     
     let lastWidth = window.innerWidth;
     setInterval(() => {
@@ -537,6 +539,14 @@ renderBottomNav() {
     const realContent = document.getElementById('real-content');
     if (skeleton) skeleton.style.display = 'none';
     if (realContent) realContent.style.display = 'block';
+    window.addEventListener('resize', () => {
+    clearTimeout(this.styleResizeTimer);
+    this.styleResizeTimer = setTimeout(() => {
+        if (this.page === 'landing') {
+            this.renderStyleSpotlight();
+        }
+    }, 200);
+});
 }
     async fetchUserCategoryOrder() {
     try {
@@ -694,7 +704,7 @@ async renderCategoryPills() {
      style="width:100%; height:100%; object-fit:cover; border-radius:50%;"
      onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=100&h=100&fit=crop'">
             </div>
-            <span>All here Categories</span>
+            <span>All Categories</span>
         </div>
     `;
     
@@ -1089,21 +1099,22 @@ async renderStyleSpotlight() {
             image_url: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=200&auto=format&fit=crop"
         }
     ];
-
+    
     let displayItems = [];
-        if (items.length > 0) {
-            if (window.innerWidth >= 1025) {
-                displayItems = items.slice(0, 8);
-            }
-            else {
-                displayItems = items;
-            }
+    if (items.length > 0) {
+        if (window.innerWidth >= 1025) {
+            displayItems = items.slice(0, 8);
+        } else {
+            displayItems = items;
         }
-        else {
-            displayItems = fallbackItems;
+    } else {
+        displayItems = fallbackItems;
+        if (window.innerWidth >= 1025) {
+            displayItems = displayItems.slice(0, 8);
         }
+    }
 
-    container.innerHTML = displayItems.map(item => {
+    const itemsHtml = displayItems.map(item => {
         const brand = item.brand || 'Premium Brand';
         const name = item.name || 'Fashion Item';
         const rating = item.rating || (4 + Math.random()).toFixed(1);
@@ -1127,6 +1138,15 @@ async renderStyleSpotlight() {
             </div>
         `;
     }).join('');
+
+    const sectionHeader = `
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 class="section-title" style="font-size: 24px; font-weight: 700; color: #000; margin: 0;">Style Spotlight</h2>
+            <a href="/products?type=top-selling" class="view-all-link">View All →</a>
+        </div>
+    `;
+
+    container.innerHTML = sectionHeader + `<div class="spotlight-grid">${itemsHtml}</div>`;
 }
 
     async renderBrandsMarquee() {

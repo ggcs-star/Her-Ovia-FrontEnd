@@ -989,6 +989,51 @@
 .header-actions .action-link {
     font-size: 12px !important;
 }
+.web-header .top-bar {
+    background: linear-gradient(90deg, #440C2C, #F4B94E, #440C2C, #F4B94E, #440C2C);
+    background-size: 300% 100%;
+    animation: gradientMove 4s ease infinite;
+    color: white;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+#cart-count-badge, #web-cart-count-badge {
+    position: absolute;
+    top: -8px;
+    right: -12px;
+    background: #440C2C;
+    color: #F4B94E;
+    font-size: 10px;
+    font-weight: 600;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+}
+
+.cart-icon-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.web-header .nav-item:active,
+.web-header .nav-item:focus,
+.web-header .nav-item.active {
+    color: #333;
+    background: transparent;
+}
     </style>
 </head>
 <body data-page="products" data-subcategory-id="{{ request()->query('subcategory') }}" data-category-id="{{ request()->query('category') }}">
@@ -1356,6 +1401,13 @@
 
     async function fetchData() {
         try {
+             const urlParams = new URLSearchParams(window.location.search);
+                const type = urlParams.get('type');
+                
+                if (type === 'top-selling') {
+                    await fetchTopSellingProducts();
+                    return;
+                }
             const res = await fetch(`${API_BASE_URL}/categories`);
             const data = await res.json();
             
@@ -1452,8 +1504,17 @@ updateMobileLogo();
     const fallback = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
 
     grid.innerHTML = products.map(p => {
-        const price = parseFloat(p.final_price || p.price || 0);
-        const mrp = parseFloat(p.price || 0);
+        // const price = parseFloat(p.final_price || p.price || 0);
+        const price = parseFloat(
+        (p.product_price && p.product_price != "0.00")
+            ? p.product_price
+            : (p.final_price || p.price || 0)
+    );
+        const mrp = parseFloat(
+        (p.product_price && p.product_price != "0.00")
+            ? p.product_price
+            : (p.price || 0)
+    );
         const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
         const rating = 4.3;
         const full = Math.floor(rating);
@@ -1636,13 +1697,40 @@ if (discountContainer) {
     }
 
 };
+async function fetchTopSellingProducts() {
+    const grid = document.getElementById('productsGrid');
+    try {
+        const res = await fetch(`${API_BASE_URL}/products/top-selling`);
+        const data = await res.json();
+        
+        if (data.success && data.data) {
+            let products = Array.isArray(data.data) ? data.data : (data.data.products || []);
+            currentProducts = products;
+            originalProducts = [...products];
+            renderProducts(products);
+            
+            // Subs strip hide karo
+            const subStrip = document.getElementById('subStrip');
+            if (subStrip) subStrip.style.display = 'none';
+        } else {
+            grid.innerHTML = '<div class="loading">No products found</div>';
+        }
+    } catch (error) {
+        grid.innerHTML = '<div class="loading">Error loading products</div>';
+    }
+}
     window.applyDesktopPriceFilter = function() {
         const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
         const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
         
         let filtered = [...originalProducts];
         filtered = filtered.filter(p => {
-            const price = parseFloat(p.final_price || p.price || 0);
+            // const price = parseFloat(p.final_price || p.price || 0);
+            const price = parseFloat(
+                (p.product_price && p.product_price != "0.00")
+                    ? p.product_price
+                    : (p.final_price || p.price || 0)
+            );
             return price >= minPrice && price <= maxPrice;
         });
         
@@ -1699,19 +1787,40 @@ if (discountContainer) {
     switch (sortBy) {
 
         case 'price-low':
-            sorted.sort((a, b) =>
-                parseFloat(a.final_price || a.price || 0) -
-                parseFloat(b.final_price || b.price || 0)
-            );
+            sorted.sort((a, b) => {
+                const priceA = parseFloat(
+                    (a.product_price && a.product_price != "0.00")
+                        ? a.product_price
+                        : (a.final_price || a.price || 0)
+                );
+
+                const priceB = parseFloat(
+                    (b.product_price && b.product_price != "0.00")
+                        ? b.product_price
+                        : (b.final_price || b.price || 0)
+                );
+
+                return priceA - priceB;
+            });
             break;
 
         case 'price-high':
-            sorted.sort((a, b) =>
-                parseFloat(b.final_price || b.price || 0) -
-                parseFloat(a.final_price || a.price || 0)
-            );
-            break;
+            sorted.sort((a, b) => {
+                const priceA = parseFloat(
+                    (a.product_price && a.product_price != "0.00")
+                        ? a.product_price
+                        : (a.final_price || a.price || 0)
+                );
 
+                const priceB = parseFloat(
+                    (b.product_price && b.product_price != "0.00")
+                        ? b.product_price
+                        : (b.final_price || b.price || 0)
+                );
+
+                return priceB - priceA;
+            });
+            break;
         case 'newest':
             sorted.sort((a, b) =>
                 new Date(b.created_at || 0) -
@@ -2253,7 +2362,12 @@ async function fetchMultipleSubcategoriesMobile(subIds) {
             if (selected.price.length > 0) {
                 filterApplied = true;
                 filtered = filtered.filter(p => {
-                    const price = parseFloat(p.final_price || p.price || 0);
+                    // const price = parseFloat(p.final_price || p.price || 0);
+                    const price = parseFloat(
+                        (p.product_price && p.product_price != "0.00")
+                            ? p.product_price
+                            : (p.final_price || p.price || 0)
+                    );
                     return selected.price.some(range => {
                         const [min, max] = range.split('-').map(Number);
                         return price >= min && price <= max;
