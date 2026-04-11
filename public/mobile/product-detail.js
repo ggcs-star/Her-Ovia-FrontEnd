@@ -1009,15 +1009,19 @@ function renderOfferItems(type) {
         ];
     }
     let displayPrice = 0, originalPrice = 0, discountPercentage = 0;
-    if (allSizes.length > 0) {
-        const firstVariant = allSizes[0];
-        displayPrice = firstVariant.final_price;
-        originalPrice = firstVariant.price;
-        if (originalPrice > displayPrice) discountPercentage = Math.round(((originalPrice - displayPrice) / originalPrice) * 100);
-    } else {
-        displayPrice = parseFloat(product.final_price || product.price || 1200);
-        originalPrice = parseFloat(product.price || 1500);
-        if (originalPrice > displayPrice) discountPercentage = Math.round(((originalPrice - displayPrice) / originalPrice) * 100);
+
+    displayPrice = parseFloat(
+        (product.product_price && product.product_price != "0.00")
+            ? product.product_price
+            : (product.final_price || product.price || 0)
+    );
+
+    originalPrice = parseFloat(product.price || displayPrice);
+
+    if (originalPrice > displayPrice) {
+        discountPercentage = Math.round(
+            ((originalPrice - displayPrice) / originalPrice) * 100
+        );
     }
     const brand = product.brand || 'H&M';
     const name = product.name || 'Maxi Dress';

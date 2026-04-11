@@ -776,31 +776,32 @@ renderAllCategoriesPopup() {
         }
     }
     toggleSubcategory(categoryId) {
-
-    const dropdown =
-        document.getElementById(`sub-${categoryId}`);
-
-    if (!dropdown) return;
-
-    const parent =
-        dropdown.previousElementSibling;
-
-    const isOpen =
-        dropdown.style.display === "block";
-
-    document
-        .querySelectorAll(".subcategory-dropdown")
-        .forEach(el => el.style.display = "none");
-
-    document
-        .querySelectorAll(".category-parent")
-        .forEach(el => el.classList.remove("active"));
-
+    console.log("Toggling category:", categoryId);
+    
+    const dropdown = document.getElementById(`sub-${categoryId}`);
+    if (!dropdown) {
+        console.log("Dropdown not found for id:", `sub-${categoryId}`);
+        return;
+    }
+    
+    const parent = dropdown.previousElementSibling;
+    const isOpen = dropdown.style.display === "block";
+    
+    // Close all other dropdowns
+    document.querySelectorAll(".subcategory-dropdown").forEach(el => {
+        el.style.display = "none";
+    });
+    document.querySelectorAll(".category-parent").forEach(el => {
+        el.classList.remove("active");
+    });
+    
     if (!isOpen) {
         dropdown.style.display = "block";
-        parent.classList.add("active");
+        if (parent) parent.classList.add("active");
+        console.log("Opened dropdown for:", categoryId);
+    } else {
+        console.log("Closed dropdown for:", categoryId);
     }
-
 }
     toggleEditMode() {
         const btn = document.querySelector('.edit-categories-btn');
