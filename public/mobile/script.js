@@ -1118,7 +1118,10 @@ async renderStyleSpotlight() {
         const brand = item.brand || 'Premium Brand';
         const name = item.name || 'Fashion Item';
         const rating = item.rating || (4 + Math.random()).toFixed(1);
-        const current = item.current || item.final_price || item.price || '999';
+        const current =
+            (item.product_price && item.product_price != "0.00")
+            ? item.product_price
+            : (item.final_price || item.price || '999');
         const old = item.old || item.mrp || (Math.round(parseInt(current) * 1.3));
         
         return `
@@ -1204,88 +1207,83 @@ async renderDynamicCategorySections() {
 
     container.innerHTML = '';
     
-    let subcategoriesShown = 0;
-    const MAX_SUBCATEGORIES = 4;
-    const MAX_PRODUCTS = 5;
+    const MAX_SECTIONS = 4;
+    const MAX_PRODUCTS = 4;
+    let sectionsAdded = 0;
+    let sectionsHtml = [];
     
-    let categoriesArray = [];
-
-    for (let i = 0; i < this.allCategories.length && subcategoriesShown < MAX_SUBCATEGORIES; i++) {
+    for (let i = 0; i < this.allCategories.length && sectionsAdded < MAX_SECTIONS; i++) {
         const category = this.allCategories[i];
         
         if (category.children && category.children.length > 0) {
+            const firstSubcategory = category.children[0];
             
-            for (let j = 0; j < category.children.length && subcategoriesShown < MAX_SUBCATEGORIES; j++) {
-                const subcategory = category.children[j];
+            try {
+                const res = await fetch(APP_CONFIG.ENDPOINTS.CATEGORY_PRODUCTS(firstSubcategory.id));
+                const data = await res.json();
                 
-                try {
-                    const res = await fetch(APP_CONFIG.ENDPOINTS.CATEGORY_PRODUCTS(subcategory.id));
-                    const data = await res.json();
+                if (data.success && data.data && data.data.products && data.data.products.length > 0) {
+                    const products = data.data.products.slice(0, MAX_PRODUCTS);
                     
-                    if (data.success && data.data && data.data.products && data.data.products.length > 0) {
-                        const products = data.data.products.slice(0, MAX_PRODUCTS);
-                        
-                        const sectionHtml = `
-    <section class="section-container style-category-section">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">${subcategory.name}</h2>
-                <a href="/products?subcategory=${subcategory.id}" class="view-all-link">View All →</a>
-            </div>
-            <div class="style-category-grid">
-                ${products.map(p => `
-                    <div class="style-category-card" onclick="window.location.href='/product/${p.slug}'">
-                        <div class="style-category-img">
-                            <img src="${this.resolveImage(p.image_url)}" alt="${p.name}">
-                        </div>
-                        <div class="style-category-info">
-                            <h4>${p.name}</h4>
-                            <p>${p.brand || 'Premium Collection'}</p>
-                            <div class="style-category-price">
-                                <span class="current">₹${p.final_price || p.price}</span>
-                                ${p.mrp ? `<span class="old">₹${p.mrp}</span>` : ''}
+                    const sectionHtml = `
+                        <section class="section-container style-category-section">
+                            <div class="container">
+                                <div class="section-header">
+                                    <h2 class="section-title">${firstSubcategory.name}</h2>
+                                    <a href="/products?subcategory=${firstSubcategory.id}" class="view-all-link">View All →</a>
+                                </div>
+                                <div class="style-category-grid">
+                                    ${products.map(p => `
+                                        <div class="style-category-card" onclick="window.location.href='/product/${p.slug}'">
+                                            <div class="style-category-img">
+                                                <img src="${this.resolveImage(p.image_url)}" alt="${p.name}">
+                                            </div>
+                                            <div class="style-category-info">
+                                                <h4>${p.name.length > 22 ? p.name.substring(0, 22) + '...' : p.name}</h4>
+                                                <p>${p.brand || 'Premium Collection'}</p>
+                                                <div class="style-category-price">
+                                                    <span class="current">₹${
+                                                            (p.product_price && p.product_price != "0.00")
+                                                                ? p.product_price
+                                                                : (p.final_price || p.price || 0)
+                                                        }
+                                                    ${p.mrp ? `<span class="old">₹${p.mrp}</span>` : ''}
+                                                </div>
+                                                <button class="explore-btn" onclick="event.stopPropagation(); window.location.href='/product/${p.slug}'">EXPLORE →</button>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
                             </div>
-                            <button class="explore-btn" onclick="event.stopPropagation(); window.location.href='/product/${p.slug}'">EXPLORE →</button>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-    </section>
-`;
-                        
-                        categoriesArray.push({
-                            name: subcategory.name,
-                            html: sectionHtml
-                        });
-                        subcategoriesShown++;
-                    }
-                } catch (error) {
-                    console.error('Error fetching subcategory products:', error);
+                        </section>
+                    `;
+                    
+                    sectionsHtml.push(sectionHtml);
+                    sectionsAdded++;
                 }
+            } catch (error) {
+                console.error('Error fetching products for subcategory:', error);
             }
         }
     }
     
     let finalHtml = '';
-    for (let i = 0; i < categoriesArray.length; i++) {
-        if (categoriesArray[i].name === 'Full Bridal Sets') {
-            finalHtml += `<div id="brands-marquee-container"></div>`;
-        }
-        
-        finalHtml += categoriesArray[i].html;
-        
-        if (categoriesArray[i].name === 'Long Haar Necklace') {
+    
+    for (let i = 0; i < sectionsHtml.length; i++) {
+        if (i === 0) {
+            finalHtml += sectionsHtml[i];
             finalHtml += `
                 <section class="section-container">
                     <div class="container">
-                        <div class="section-header centered">
-                            <h2 class="section-title">Shop by Brands</h2>
-                        </div>
                         <div id="brands-grid" class="brands-grid-figma"></div>
                     </div>
                 </section>
             `;
+        } else if (i === 2) {
+            finalHtml += sectionsHtml[i];
+            finalHtml += `<div id="brands-marquee-container"></div>`;
+        } else {
+            finalHtml += sectionsHtml[i];
         }
     }
     
@@ -1293,8 +1291,6 @@ async renderDynamicCategorySections() {
     
     await this.renderBrandsGrid();
     await this.renderBrandsMarquee();
-    
-    console.log(`✅ Displayed ${categoriesArray.length} subcategories`);
 }
 
     genCircularItem(p) {
@@ -1304,7 +1300,13 @@ async renderDynamicCategorySections() {
                     <img src="${this.resolveImage(p.image_url)}">
                 </div>
                 <h4>${p.name}</h4>
-                <p>₹${p.final_price || p.price}</p>
+                <p>
+                    ₹${
+                        (p.product_price && p.product_price != "0.00")
+                            ? p.product_price
+                            : (p.final_price || p.price || 0)
+                    }
+                    </p>
             </div>
         `;
     }
@@ -1319,7 +1321,13 @@ async renderDynamicCategorySections() {
             <div class="product-info">
                 <h4>${p.name}</h4>
                 <div class="product-price">
-                    <span class="current">₹${p.final_price || p.price}</span>
+                    <span class="current">
+                            ₹${
+                                (p.product_price && p.product_price != "0.00")
+                                    ? p.product_price
+                                    : (p.final_price || p.price || 0)
+                            }
+                            </span>
                     ${p.mrp ? `<span class="old">₹${p.mrp}</span>` : ''}
                 </div>
             </div>

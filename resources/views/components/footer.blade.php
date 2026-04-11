@@ -131,7 +131,207 @@
 
     </div>
 </footer>
+<style>
+    /* ===== FOOTER STYLES - ACCENT COLOR #F4B94E ===== */
+.site-footer {
+    background: #ffffff;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 30px;
+    padding: 40px 0 30px;
+}
 
+.site-footer .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.footer-col h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    position: relative;
+    display: inline-block;
+}
+
+.footer-col h4:after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 30px;
+    height: 2px;
+    background: #F4B94E;
+}
+
+.footer-tagline {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    margin: 15px 0 20px;
+}
+
+.footer-location {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 0;
+    border-top: 1px solid #eaeaea;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.footer-location svg {
+    width: 18px;
+    height: 18px;
+    color: #F4B94E;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.footer-location span {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-col ul li {
+    margin-bottom: 12px;
+}
+
+.footer-col ul li a {
+    text-decoration: none;
+    color: #555;
+    font-size: 13px;
+    transition: color 0.2s ease;
+}
+
+.footer-col ul li a:hover {
+    color: #F4B94E;
+}
+
+.footer-support-list li {
+    font-size: 13px;
+    color: #555;
+    cursor: default;
+}
+
+.social-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.social-link-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.social-link-item:hover {
+    transform: translateX(5px);
+}
+
+.social-link-item:hover .social-icon {
+    background: #F4B94E;
+}
+
+.social-link-item:hover .social-icon svg {
+    stroke: #440C2C;
+}
+
+.social-link-item:hover span {
+    color: #F4B94E;
+}
+
+.social-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.social-icon svg {
+    width: 16px;
+    height: 16px;
+    stroke: #666;
+    transition: all 0.3s ease;
+}
+
+.social-link-item span {
+    font-size: 13px;
+    color: #555;
+    transition: color 0.2s ease;
+}
+
+.contact-info li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.contact-info li a {
+    text-decoration: none;
+    color: #555;
+    font-size: 13px;
+    word-break: break-all;
+}
+
+.contact-info li a:hover {
+    color: #F4B94E;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 30px;
+    border-top: 1px solid #eaeaea;
+}
+
+.footer-bottom p {
+    font-size: 12px;
+    color: #888;
+    margin: 0;
+}
+
+@media screen and (max-width: 1024px) {
+    .footer-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .site-footer {
+        display: none !important;
+    }
+}
+
+@media screen and (min-width: 1025px) {
+    .site-footer {
+        display: block !important;
+    }
+}
+</style>
 <script>
 async function initFooter() {
     try {

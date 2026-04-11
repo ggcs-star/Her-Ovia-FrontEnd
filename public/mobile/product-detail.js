@@ -250,6 +250,21 @@ function getColorNameFromCode(colorCode) {
         selectedVariant = null;
         document.querySelectorAll('.pdp-color-circle, .pdp-color-name-item').forEach(item => item.classList.remove('active'));
         currentImages = currentProduct.gallery_images && currentProduct.gallery_images.length ? currentProduct.gallery_images : [currentProduct.image_url];
+        const priceElement =
+    document.getElementById('currentPrice');
+
+const buyPriceElement =
+    document.getElementById('buyPrice');
+
+if (priceElement)
+    priceElement.textContent =
+        '₹' + Number(window.displayPrice)
+            .toLocaleString('en-IN');
+
+if (buyPriceElement)
+    buyPriceElement.textContent =
+        Number(window.displayPrice)
+            .toLocaleString('en-IN');
         currentImageIndex = 0;
         const mainImage = document.getElementById('mainImage');
         const counter = document.getElementById('currentImage');
@@ -275,18 +290,32 @@ function getColorNameFromCode(colorCode) {
         selectedSize = variant.value;
         const priceElement = document.getElementById('currentPrice');
         const buyPriceElement = document.getElementById('buyPrice');
-        if (priceElement) priceElement.textContent = '₹' + Number(variant.final_price || variant.price).toLocaleString('en-IN');
-        if (buyPriceElement) buyPriceElement.textContent = Number(variant.final_price || variant.price).toLocaleString('en-IN');
-        document.querySelectorAll('.pdp-size-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.textContent === variant.value) btn.classList.add('active');
-        });
-    }
-    if (imageTimer) {
-        clearInterval(imageTimer);
-        imageTimer = null;
-    }
-};
+        const price =
+            variant.final_price && variant.final_price != 0
+                ? variant.final_price
+                : (
+                    variant.price && variant.price != 0
+                        ? variant.price
+                        : window.displayPrice
+                );
+
+        if (priceElement)
+            priceElement.textContent =
+                '₹' + Number(price).toLocaleString('en-IN');
+
+        if (buyPriceElement)
+            buyPriceElement.textContent =
+                Number(price).toLocaleString('en-IN');
+                document.querySelectorAll('.pdp-size-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent === variant.value) btn.classList.add('active');
+                });
+            }
+            if (imageTimer) {
+                clearInterval(imageTimer);
+                imageTimer = null;
+            }
+        };
 
     window.selectScrollColor = function(colorCode, imageUrl, colorName) {
         document.querySelectorAll('.pdp-color-circle').forEach((circle, index) => {
@@ -999,15 +1028,15 @@ function renderOfferItems(type) {
             });
         }
     });
-    if (allSizes.length === 0) {
-        const defaultPrice = parseFloat(product.final_price || product.price || 1200);
-        allSizes = [
-            { value: 'S', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
-            { value: 'M', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
-            { value: 'L', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
-            { value: 'XL', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color }
-        ];
-    }
+    // if (allSizes.length === 0) {
+    //     const defaultPrice = parseFloat(product.final_price || product.price || 1200);
+    //     allSizes = [
+    //         { value: 'S', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
+    //         { value: 'M', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
+    //         { value: 'L', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
+    //         { value: 'XL', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color }
+    //     ];
+    // }
     let displayPrice = 0, originalPrice = 0, discountPercentage = 0;
 
     displayPrice = parseFloat(
