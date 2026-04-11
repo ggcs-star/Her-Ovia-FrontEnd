@@ -543,10 +543,10 @@ body {
     white-space: normal;
 }
 .shop-now-link {
-    font-size: 13px;  /* 11px → 13px */
+    font-size: 13px;
     font-weight: 600;
-    color: var(--accent) !important;
-    border-bottom: 1px solid var(--accent) !important;
+    color: var(--primary) !important;           /* primary kar do */
+    border-bottom: 1px solid var(--primary) !important;  /* primary kar do */
     text-transform: uppercase;
     letter-spacing: 0.3px;
     text-decoration: none;
@@ -1226,7 +1226,7 @@ body {
     font-size: 20px;
 }
 
-@media screen and (min-width: 1025px) {
+/* @media screen and (min-width: 1025px) {
     .site-footer {
         background: #ffffff;
         padding: 50px 0 30px;
@@ -1414,7 +1414,7 @@ body {
     .site-footer {
         display: none !important;
     }
-}
+} */
 
 @media (max-width: 480px) {
     .trending-card {
@@ -4191,4 +4191,68 @@ animation:loader-spin 1s linear infinite;
 .nav-item-figma.active svg,
 .nav-item.active svg {
     stroke: var(--primary) !important;
+}
+.trust-strip-figma {
+    gap: 8px !important;
+    margin: 15px auto !important;
+    padding: 0 12px !important;
+}
+
+.trust-card-figma {
+    gap: 4px !important;
+}
+
+.trust-icon-circle {
+    width: 50px !important;
+    height: 50px !important;
+}
+
+.trust-icon-circle svg {
+    width: 24px !important;
+    height: 24px !important;
+}
+
+.trust-card-figma h4 {
+    font-size: 12px !important;
+    margin: 0 !important;
+}
+
+.trust-card-figma p {
+    font-size: 10px !important;
+    margin: 0 !important;
+}
+
+.site-footer {
+    margin-top: 15px !important;
+    padding-top: 20px !important;
+}
+
+@media (max-width: 768px) {
+    .trust-strip-figma {
+        gap: 8px !important;
+        margin: 15px auto !important;
+    }
+    
+    .trust-icon-circle {
+        width: 45px !important;
+        height: 45px !important;
+    }
+    
+    .trust-icon-circle svg {
+        width: 22px !important;
+        height: 22px !important;
+    }
+    
+    .trust-card-figma h4 {
+        font-size: 11px !important;
+    }
+    
+    .trust-card-figma p {
+        font-size: 9px !important;
+    }
+    
+    .site-footer {
+        margin-top: 15px !important;
+        padding-top: 20px !important;
+    }
 }
