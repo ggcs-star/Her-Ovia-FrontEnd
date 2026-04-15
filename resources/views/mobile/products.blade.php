@@ -1185,15 +1185,9 @@
         </div>
 
         <div class="desktop-filter-section">
-            <div class="desktop-filter-title">PRICE</div>
-            <div class="filter-options">
-                <div class="price-range-inputs">
-                    <input type="number" class="price-input" id="minPrice" placeholder="Min" step="1">
-                    <input type="number" class="price-input" id="maxPrice" placeholder="Max" step="1">
-                </div>
-                <button class="apply-price-btn" onclick="applyDesktopPriceFilter()">Apply</button>
-            </div>
-        </div>
+    <div class="desktop-filter-title">PRICE</div>
+    <div class="filter-options" id="desktopPriceFilters"></div>
+</div>
 
         <div class="desktop-filter-section">
             <div class="desktop-filter-title">BRANDS</div>
@@ -1578,6 +1572,39 @@ updateMobileLogo();
             </label>
         `).join('');
     }
+    // PRICE RANGES - Dynamic (App jaisa)
+const priceContainer = document.getElementById('desktopPriceFilters');
+if (priceContainer && products.length > 0) {
+    const prices = products.map(p => parseFloat(
+        (p.product_price && p.product_price != "0.00") 
+            ? p.product_price 
+            : (p.final_price || p.price || 0)
+    )).filter(p => !isNaN(p));
+    
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const step = Math.ceil((maxPrice - minPrice) / 4);
+    const ranges = [];
+    let current = minPrice;
+    
+    for (let i = 0; i < 4; i++) {
+        if (i === 0) {
+            ranges.push({ min: 0, max: current + step, label: `Below ₹${(current + step).toFixed(0)}` });
+        } else if (i === 3) {
+            ranges.push({ min: current, max: maxPrice, label: `Above ₹${current.toFixed(0)}` });
+        } else {
+            ranges.push({ min: current, max: current + step, label: `₹${current.toFixed(0)} - ₹${(current + step).toFixed(0)}` });
+        }
+        current += step;
+    }
+    
+    priceContainer.innerHTML = ranges.map(range => `
+        <label class="desktop-filter-option">
+            <input type="checkbox" class="desktop-price-filter" value="${range.min}-${range.max}" onchange="applyDesktopFilters()"> 
+            ${range.label}
+        </label>
+    `).join('');
+}
     
     const discountContainer = document.getElementById('desktopDiscountFilters');
 
@@ -1659,7 +1686,22 @@ if (discountContainer) {
 
         return;
     }
-
+// Price Filter
+const selectedPriceRanges = Array.from(document.querySelectorAll('.desktop-price-filter:checked')).map(cb => cb.value);
+if (selectedPriceRanges.length > 0) {
+    filterApplied = true;
+    filtered = filtered.filter(p => {
+        const price = parseFloat(
+            (p.product_price && p.product_price != "0.00")
+                ? p.product_price
+                : (p.final_price || p.price || 0)
+        );
+        return selectedPriceRanges.some(range => {
+            const [min, max] = range.split('-').map(Number);
+            return price >= min && price <= max;
+        });
+    });
+}
     /* BRAND FILTER */
 
     const selectedBrands =
@@ -1738,11 +1780,9 @@ async function fetchTopSellingProducts() {
     };
 
     window.resetDesktopFilters = function() {
-        document.querySelectorAll('.desktop-category-filter, .desktop-brand-filter, .desktop-discount-filter, .desktop-size-filter, .desktop-color-filter').forEach(cb => cb.checked = false);
-        document.getElementById('minPrice').value = '';
-        document.getElementById('maxPrice').value = '';
-        renderProducts(originalProducts);
-    };
+    document.querySelectorAll('.desktop-category-filter, .desktop-brand-filter, .desktop-discount-filter, .desktop-price-filter').forEach(cb => cb.checked = false);
+    renderProducts(originalProducts);
+};
 
     window.toggleWish = function(btn, product) {
         event.stopPropagation();

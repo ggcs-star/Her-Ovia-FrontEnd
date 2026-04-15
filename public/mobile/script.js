@@ -1242,11 +1242,7 @@ async renderDynamicCategorySections() {
                                                 <h4>${p.name.length > 22 ? p.name.substring(0, 22) + '...' : p.name}</h4>
                                                 <p>${p.brand || 'Premium Collection'}</p>
                                                 <div class="style-category-price">
-                                                    <span class="current">₹${
-                                                            (p.product_price && p.product_price != "0.00")
-                                                                ? p.product_price
-                                                                : (p.final_price || p.price || 0)
-                                                        }
+                                                    <span class="current">₹${(p.product_price && p.product_price != "0.00") ? p.product_price : (p.final_price || p.price || 0)}</span>
                                                     ${p.mrp ? `<span class="old">₹${p.mrp}</span>` : ''}
                                                 </div>
                                                 <button class="explore-btn" onclick="event.stopPropagation(); window.location.href='/product/${p.slug}'">EXPLORE →</button>
@@ -1270,8 +1266,28 @@ async renderDynamicCategorySections() {
     let finalHtml = '';
     
     for (let i = 0; i < sectionsHtml.length; i++) {
-        if (i === 0) {
-            finalHtml += sectionsHtml[i];
+        finalHtml += sectionsHtml[i];
+        
+        if (i === 1) {
+            finalHtml += `
+                <section class="trending-reels-section web-only" id="trending-reels-section">
+                    <div class="container">
+                        <div class="section-header centered">
+                            <h2 class="section-title">Trending Reels</h2>
+                        </div>
+                        <div class="reels-container">
+                            <div class="reels-slider-wrapper">
+                                <button class="reels-nav reels-prev">◀</button>
+                                <div class="reels-slider" id="reels-slider"></div>
+                                <button class="reels-nav reels-next">▶</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+        
+        if (i === 2) {
             finalHtml += `
                 <section class="section-container">
                     <div class="container">
@@ -1279,20 +1295,251 @@ async renderDynamicCategorySections() {
                     </div>
                 </section>
             `;
-        } else if (i === 2) {
-            finalHtml += sectionsHtml[i];
-            finalHtml += `<div id="brands-marquee-container"></div>`;
-        } else {
-            finalHtml += sectionsHtml[i];
         }
     }
     
     container.innerHTML = finalHtml;
     
+    this.loadTrendingReels();
+    
     await this.renderBrandsGrid();
-    await this.renderBrandsMarquee();
+}
+async loadTrendingReels() {
+    const slider = document.getElementById('reels-slider');
+    if (!slider) return;
+    
+    if (window.innerWidth < 1025) return;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/reels?status=1`);
+        const data = await response.json();
+        
+        let reels = [];
+        
+        if (data.status === true && data.data) {
+            reels = data.data;  // Direct array hai
+        }
+        
+        if (!reels.length) return;
+        
+        this.renderReelsSlider(reels);
+        
+    } catch (error) {
+        console.error('Reels API error:', error);
+    }
 }
 
+renderReelsSlider(reels) {
+    const slider = document.getElementById('reels-slider');
+    if (!slider) return;
+    
+    let currentIndex = 2;
+    
+    const getVisibleCards = () => {
+        const total = reels.length;
+        const cards = [];
+        for (let i = -2; i <= 2; i++) {
+            let idx = (currentIndex + i) % total;
+            if (idx < 0) idx += total;
+            cards.push({ ...reels[idx], originalIndex: idx, position: i + 3 });
+        }
+        return cards;
+    };
+    
+    const updateSlider = () => {
+        const visibleCards = getVisibleCards();
+        let html = '';
+        
+        visibleCards.forEach((card) => {
+            const posClass = `position-${card.position}`;
+            const videoUrl = card.video || '';
+            
+            html += `
+                <div class="reel-card ${posClass}" data-index="${card.originalIndex}">
+                    <div class="reel-video-wrapper">
+                        <video 
+                            class="reel-video" 
+                            ${card.position === 3 ? 'autoplay' : ''}
+                            muted 
+                            loop 
+                            preload="auto"
+                            playsinline
+                            webkit-playsinline
+                            style="background: #f5f5f5; width:100%; height:100%; object-fit:cover;"
+                        >
+                            <source src="${videoUrl}" type="video/mp4">
+                        </video>
+                        <div class="reel-controls">
+                            <button class="reel-control-btn play-pause-btn">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="white">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </button>
+                            <button class="reel-control-btn sound-btn">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="white">
+                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="reel-info-overlay">
+                            <div class="reel-title-overlay">${card.title || ''}</div>
+                        </div>
+                        <div class="play-overlay">
+                            <button class="play-reel-btn">▶</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        slider.innerHTML = `<div class="reels-track" style="display: flex; justify-content: center; align-items: center; gap: 12px;">${html}</div>`;
+        
+        setTimeout(() => {
+            const centerVideo = document.querySelector('.reel-card.position-3 .reel-video');
+            if (centerVideo) {
+                const playPromise = centerVideo.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {});
+                }
+            }
+        }, 100);
+        
+        attachReelControlEvents();
+    };
+    
+    const attachReelControlEvents = () => {
+        document.querySelectorAll('.reel-card .reel-video').forEach(video => {
+            const card = video.closest('.reel-card');
+            const playPauseBtn = card.querySelector('.play-pause-btn');
+            const soundBtn = card.querySelector('.sound-btn');
+            
+            if (playPauseBtn) {
+                playPauseBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (video.paused) {
+                        video.play();
+                        playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+                    } else {
+                        video.pause();
+                        playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>`;
+                    }
+                };
+            }
+            
+            if (soundBtn) {
+                soundBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    video.muted = !video.muted;
+                    soundBtn.innerHTML = video.muted 
+                        ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`
+                        : `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>`;
+                };
+            }
+        });
+    };
+    
+    updateSlider();
+    
+    const prevBtn = document.querySelector('.reels-prev');
+    const nextBtn = document.querySelector('.reels-next');
+    
+    if (prevBtn) {
+        prevBtn.onclick = () => {
+            currentIndex = (currentIndex - 1 + reels.length) % reels.length;
+            updateSlider();
+        };
+    }
+    
+    if (nextBtn) {
+        nextBtn.onclick = () => {
+            currentIndex = (currentIndex + 1) % reels.length;
+            updateSlider();
+        };
+    }
+}
+
+initReelEvents(reels, currentIndex, updateSlider) {
+    const prevBtn = document.querySelector('.reels-prev');
+    const nextBtn = document.querySelector('.reels-next');
+    
+    let currentIdx = currentIndex;
+    
+    const update = () => {
+        let html = '';
+        
+        for (let i = 0; i < reels.length; i++) {
+            const reel = reels[i];
+            const isCenter = (i === currentIdx);
+            const videoUrl = reel.video ? `https://inventorydata-s3-bucket.s3.amazonaws.com/${reel.video}` : '';
+            
+            html += `
+                <div class="reel-card ${isCenter ? 'center' : 'normal'}" data-index="${i}">
+                    <div class="reel-video-wrapper">
+                        ${videoUrl ? `
+                            <video class="reel-video" muted loop preload="metadata">
+                                <source src="${videoUrl}" type="video/mp4">
+                            </video>
+                            <div class="play-overlay">
+                                <button class="play-reel-btn">▶</button>
+                            </div>
+                        ` : `
+                            <div class="reel-placeholder">${reel.title || 'Reel'}</div>
+                        `}
+                    </div>
+                    <div class="reel-info">
+                        <div class="reel-title">${reel.title || ''}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        const slider = document.getElementById('reels-slider');
+        if (slider) {
+            slider.innerHTML = `
+                <div class="reels-track" style="display: flex; justify-content: center; align-items: center; gap: 20px;">
+                    ${html}
+                </div>
+            `;
+        }
+        
+        this.attachReelVideoEvents();
+    };
+    
+    if (prevBtn) {
+        prevBtn.onclick = () => {
+            if (currentIdx > 0) {
+                currentIdx--;
+                update();
+            }
+        };
+    }
+    
+    if (nextBtn) {
+        nextBtn.onclick = () => {
+            if (currentIdx < reels.length - 1) {
+                currentIdx++;
+                update();
+            }
+        };
+    }
+}
+
+attachReelVideoEvents() {
+    document.querySelectorAll('.reel-card').forEach(card => {
+        const video = card.querySelector('.reel-video');
+        const playBtn = card.querySelector('.play-reel-btn');
+        
+        if (video && playBtn) {
+            card.onmouseenter = () => { video.play(); };
+            card.onmouseleave = () => { video.pause(); video.currentTime = 0; };
+            playBtn.onclick = (e) => {
+                e.stopPropagation();
+                if (video.paused) video.play();
+                else video.pause();
+            };
+        }
+    });
+}
     genCircularItem(p) {
         return `
             <div class="circular-item" onclick="window.location.href='/product/${p.slug}'">
@@ -1410,6 +1657,7 @@ window.addEventListener("DOMContentLoaded", function () {
         loader.style.display = "none";
     }
 })
+
 function updateCartCountBadge() {
 
     let cart = JSON.parse(localStorage.getItem('cart')) || [];

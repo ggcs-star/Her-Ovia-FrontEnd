@@ -20,27 +20,45 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
     
+    const buyNowProduct = sessionStorage.getItem('buy_now_product');
+    if (buyNowProduct) {
+        const product = JSON.parse(buyNowProduct);
+        const cart = [{
+            id: product.product_id,
+            variantId: product.variant_id,
+            quantity: 1,
+            price: product.price,
+            name: product.name,
+            image: product.image
+        }];
+        localStorage.setItem('cart', JSON.stringify(cart));
+        sessionStorage.removeItem('buy_now_product');
+    }
+
     syncCartWithServer().then(() => {
         loadCheckoutSummary();
         loadUserAddresses();
     });
+    
 });
 
 async function syncCartWithServer() {
-
     const token = localStorage.getItem('token');
     const localCart = JSON.parse(localStorage.getItem('cart')) || [];
 
-    try {
+    if (localCart.length === 0) {
+        return true;
+    }
 
-        const res = await fetch(`${API_BASE_URL}/cart`, {
+    try {
+        const getRes = await fetch(`${API_BASE_URL}/cart`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Accept': 'application/json'
             }
         });
 
-        const data = await res.json();
+        const data = await getRes.json();
         const serverItems = data?.data?.items || [];
 
         for (const item of serverItems) {
@@ -53,35 +71,43 @@ async function syncCartWithServer() {
             });
         }
 
-        if (localCart.length > 0) {
-
-            const items = localCart.map(item => ({
-            product_id: item.id,
-            variant_id: item.variantId,
-            quantity: item.quantity,
-            price: item.price,
-            image: item.image || ''
-        }))
-
-            await fetch(`${API_BASE_URL}/cart/add`, {
+        for (const item of localCart) {
+            let variantId = item.variantId;
+            
+            if (!variantId || variantId === null || variantId === 'null') {
+                variantId = item.id;
+            }
+            
+            const payload = {
+                product_id: item.id,
+                variant_id: variantId,
+                quantity: item.quantity,
+                price: Number(item.price) || Number(item.product_price) || 0
+            };
+            
+            const addRes = await fetch(`${API_BASE_URL}/cart/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ items })
+                body: JSON.stringify({ items: [payload] })
             });
+            
+            if (!addRes.ok) {
+                console.error('Add failed for product', item.id);
+                return false;
+            }
         }
 
+        await new Promise(resolve => setTimeout(resolve, 1000));
         return true;
-
     } catch (error) {
         console.warn('Cart sync failed', error);
-        return true;
+        return false;
     }
 }
-
 function loadCheckoutSummary() {
     const summaryContainer = document.getElementById('checkout-summary');
     if (!summaryContainer) return;
@@ -94,6 +120,8 @@ function loadCheckoutSummary() {
         url += `?coupon_code=${encodeURIComponent(couponCode)}`;
     }
     
+    console.log('Fetching summary from:', url);
+    
     fetch(url, {
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -102,15 +130,47 @@ function loadCheckoutSummary() {
     })
     .then(res => res.json())
     .then(response => {
-        if (response.success) {
+        console.log('Full checkout summary response:', response);
+        
+        if (response.success && response.data && response.data.cart) {
+            console.log('Cart data:', response.data.cart);
+            console.log('Items in server cart:', response.data.cart.items);
+            console.log('Tax value:', response.data.cart.tax);
+            console.log('Shipping value:', response.data.cart.shipping);
+            console.log('Platform fee:', response.data.cart.platform_fee);
             renderCheckoutSummary(response.data.cart);
+        } else {
+            console.log('Response success false or no cart data');
+            let localCart = JSON.parse(localStorage.getItem('cart')) || [];
+            let localSubtotal = 0;
+            for(let item of localCart) {
+                let price = Number(item.product_price) || Number(item.price) || 0;
+                localSubtotal += price * (item.quantity || 1);
+            }
+            
+            let tax = response.data?.cart?.tax || 0;
+            let shipping = response.data?.cart?.shipping || 0;
+            let platformFee = response.data?.cart?.platform_fee || 0;
+            
+            let total = localSubtotal + tax + shipping + platformFee;
+            
+            summaryContainer.innerHTML = `
+                <div class="order-details">
+                    <h3 class="price-details-title">Price Details (${localCart.length} Items)</h3>
+                    <div class="detail-row"><span>Product Price</span><span>₹${localSubtotal.toFixed(2)}</span></div>
+                    <div class="detail-row"><span>Tax (GST)</span><span>₹${tax.toFixed(2)}</span></div>
+                    <div class="detail-row"><span>Delivery Fee</span><span>₹${shipping.toFixed(2)}</span></div>
+                    <div class="detail-row"><span>Platform Fee</span><span>₹${platformFee.toFixed(2)}</span></div>
+                    <div class="detail-row final-total"><span>Final Total</span><span>₹${total.toFixed(2)}</span></div>
+                </div>
+            `;
         }
     })
     .catch(error => {
         console.error('Error:', error);
+        summaryContainer.innerHTML = '<div class="error-message">Failed to load summary</div>';
     });
 }
-
 function renderCheckoutSummary(cart) {
     const summaryContainer = document.getElementById('checkout-summary');
     if (!summaryContainer) return;

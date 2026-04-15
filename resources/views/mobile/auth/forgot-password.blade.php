@@ -46,11 +46,7 @@ body{
     left:0;
     width:100%;
     height:100%;
-    background:linear-gradient(
-        135deg,
-        rgba(0,0,0,0.6),
-        rgba(255,63,108,0.6)
-    );
+    background:linear-gradient(135deg, rgba(68,12,44,0.7), rgba(68,12,44,0.85));
     z-index:1;
 }
 
@@ -82,7 +78,7 @@ body{
 .right h2{
     font-size:24px;
     margin-bottom:8px;
-    color:#ff3f6c;
+    color: #440C2C;
 }
 
 .subtitle{
@@ -128,9 +124,9 @@ input{
 }
 
 input:focus{
-    border-color:#ff3f6c;
+    border-color: #F4B94E;
     outline:none;
-    box-shadow:0 0 0 3px rgba(255,63,108,0.15);
+    box-shadow:0 0 0 3px rgba(244,185,78,0.15);
 }
 
 button{
@@ -138,7 +134,7 @@ button{
     padding:14px;
     border:none;
     border-radius:10px;
-    background:#ff3f6c;
+    background: #440C2C;
     color:white;
     font-weight:600;
     cursor:pointer;
@@ -149,7 +145,7 @@ button{
 }
 
 button:hover{
-    background:#e6395e;
+    background: #5a1038;
     transform:translateY(-2px);
 }
 
@@ -161,19 +157,20 @@ button:disabled{
 
 .links{
     display:flex;
-    justify-content:space-between;
+    justify-content:center;
     font-size:13px;
     margin-top:12px;
 }
 
 .links a{
-    color:#ff3f6c;
+    color: #F4B94E;
     text-decoration:none;
     font-weight:500;
 }
 
 .links a:hover{
     text-decoration:underline;
+    color: #d4a13e;
 }
 
 @media(max-width:768px){
@@ -207,11 +204,7 @@ button:disabled{
     }
 
     .left::before{
-        background:linear-gradient(
-            135deg,
-            rgba(0,0,0,0.6),
-            rgba(255,63,108,0.6)
-        );
+        background:linear-gradient(135deg, rgba(68,12,44,0.7), rgba(68,12,44,0.85));
     }
 
     .left-content{
@@ -250,6 +243,7 @@ button:disabled{
         font-size:24px;
         text-align:center;
         margin-bottom:8px;
+        color: #440C2C;
     }
     
     .subtitle{
@@ -272,6 +266,8 @@ button:disabled{
 
     input:focus{
         background:#ffffff;
+        border-color: #F4B94E;
+        box-shadow:0 0 0 3px rgba(244,185,78,0.15);
     }
 
     button{
@@ -279,11 +275,20 @@ button:disabled{
         font-size:16px;
         border-radius:12px;
         margin-top:20px;
+        background: #440C2C;
+    }
+
+    button:hover{
+        background: #5a1038;
     }
 
     .links{
         justify-content:center;
         gap:20px;
+    }
+    
+    .links a{
+        color: #F4B94E;
     }
 }
 
@@ -311,6 +316,78 @@ button:disabled{
     
     .right h2{
         font-size:22px;
+    }
+}
+
+@media(max-width:360px){
+    .left{
+        min-height:280px;
+    }
+    .left-content{
+        padding:40px 15px;
+    }
+    .left h1{
+        font-size:24px;
+    }
+    .left p{
+        font-size:14px;
+    }
+    .right{
+        padding:25px 15px 35px 15px;
+    }
+}
+
+/* Web Version - Full Page Center */
+@media(min-width: 769px){
+    body{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        background: #f5f7fb;
+    }
+    .wrapper{
+        max-width: 1300px;
+        width: 100%;
+        border-radius: 32px;
+        overflow: hidden;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+    }
+    .left{
+        flex: 0 0 45%;
+        padding: 60px 50px;
+    }
+    .right{
+        flex: 0 0 55%;
+        padding: 60px 50px;
+    }
+}
+/* Sirf Web Mein Height Badhao */
+@media(min-width: 769px){
+    .wrapper{
+        max-width: 1300px;
+        width: 100%;
+        min-height: 650px;
+        border-radius: 32px;
+        overflow: hidden;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+    }
+    .left{
+        flex: 0 0 45%;
+        padding: 80px 50px;
+        min-height: 650px;
+    }
+    .right{
+        flex: 0 0 55%;
+        padding: 80px 50px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .form-container{
+        max-width: 450px;
+        margin: 0 auto;
+        width: 100%;
     }
 }
 </style>

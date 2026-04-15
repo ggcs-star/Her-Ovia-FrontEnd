@@ -2088,10 +2088,14 @@ window.addEventListener('resize', () => {
             let itemsHtml = '';
             if (order.items && order.items.length) {
                 order.items.forEach(item => {
-                    let imgUrl = item.image || '';
-                    if (imgUrl && !imgUrl.startsWith('http')) {
-                        imgUrl = `https://inventorydata-s3-bucket.s3.amazonaws.com/${imgUrl}`;
-                    }
+                let imgUrl = item.variant?.image_url 
+                    || item.product?.image_url 
+                    || item.image 
+                    || '';
+
+                if (imgUrl && !imgUrl.startsWith('http')) {
+                    imgUrl = `https://inventorydata-s3-bucket.s3.amazonaws.com/${imgUrl}`;
+                }
                     const variantText = item.variant ? 
                         `${item.variant.variant?.name || ''}: ${item.variant.value?.value || ''}` : '';
                     const itemPrice = parseFloat(item.price) || 0;

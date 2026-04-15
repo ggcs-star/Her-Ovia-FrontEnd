@@ -57,21 +57,30 @@ function renderOrders(orders) {
         });
         
         const orderStatus = order.status || 'pending';
-        const paymentStatus = order.payment_status || 'pending';
-        
         const items = order.items || [];
         const firstItem = items[0] || {};
         const itemCount = items.length;
         const moreItems = itemCount - 1;
         
-        let image = firstItem.image || '';
         
-        const imageHtml = image ? 
-            `<img src="${image}" alt="${firstItem.product_name || 'Product'}" 
-                  style="width:80px;height:80px;object-fit:cover;border-radius:8px;"
-                  onerror="this.style.display='none'; this.parentNode.innerHTML+='<div style=\\'width:80px;height:80px;background:#f0f0f0;border-radius:8px;\\'></div>';">` : 
-            '<div style="width:80px;height:80px;background:#f0f0f0;border-radius:8px;"></div>';
-    
+        let image = firstItem.variant?.image_url     
+            || firstItem.product?.image_url         
+            || firstItem.image                        
+            || '';
+
+        if (image && !image.startsWith('http')) {
+            image = `https://inventorydata-s3-bucket.s3.amazonaws.com/${image}`;
+        }
+        const placeholderImage = 'https://placehold.co/80x80?text=No+Image';
+        
+        // Agar image URL valid hai to use karo
+        const finalImage = (image && image.startsWith('http')) ? image : placeholderImage;
+        
+        const imageHtml = `<img src="${finalImage}"
+                               alt="${firstItem.product_name || 'Product'}"
+                               style="width:80px;height:80px;object-fit:cover;border-radius:8px;"
+                               onerror="this.src='${placeholderImage}'">`;
+        
         const price = firstItem.price ? parseFloat(firstItem.price) : 0;
         const itemQuantity = firstItem.quantity ? parseInt(firstItem.quantity) : 1;
 
