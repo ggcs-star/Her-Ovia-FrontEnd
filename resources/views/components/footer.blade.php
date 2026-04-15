@@ -292,13 +292,14 @@
 
 .contact-info li a {
     text-decoration: none;
-    color: #555;
+    color: #F4B94E;  /* ← Gold color */
     font-size: 13px;
     word-break: break-all;
+    transition: color 0.2s ease;
 }
 
 .contact-info li a:hover {
-    color: #F4B94E;
+    color: #d4a13e;  /* ← Darker Gold on hover */
 }
 
 .footer-bottom {

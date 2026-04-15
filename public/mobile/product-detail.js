@@ -97,9 +97,15 @@ const API_BASE_URL = window.API_BASE_URL;
             selectedVariant = product.variants[0];
         }
     }
-
-    const finalPrice = selectedVariant ? parseFloat(selectedVariant.final_price) : (parseFloat(product.final_price) || 0);
-    const originalPrice = selectedVariant ? parseFloat(selectedVariant.price) : (parseFloat(product.price) || 0);
+    let finalPrice = 0;
+    let originalPrice = 0;
+    if (selectedVariant && selectedColor) {
+        finalPrice = parseFloat(selectedVariant.final_price) || parseFloat(selectedVariant.price) || 0;
+        originalPrice = parseFloat(selectedVariant.price) || finalPrice;
+    } else {
+        finalPrice = parseFloat(product.product_price) || 0;
+        originalPrice = finalPrice;
+    }    
     const variantType = selectedVariant?.variant_type || 'Size';
     const variantValue = selectedVariant?.variant_value || 'S';
     const variantId = selectedVariant?.id || null;
@@ -130,6 +136,7 @@ const API_BASE_URL = window.API_BASE_URL;
         price: finalPrice,
         mrp: originalPrice,
         originalPrice: originalPrice,
+        product_price: product.product_price,  
         image: imageUrl,
         slug: product.slug,
         variantType: variantType,
@@ -173,33 +180,48 @@ const API_BASE_URL = window.API_BASE_URL;
                 errorDiv.style.cssText = 'color: #ff3f6c; font-size: 13px; margin-top: 8px; display: block;';
                 errorDiv.textContent = 'Please select a size';
                 sizeSection.appendChild(errorDiv);
-                
-                setTimeout(() => {
-                    errorDiv.style.display = 'none';
-                }, 3000);
+                setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
             }
         }
-        
         document.querySelector('.pdp-size-options')?.classList.add('size-error-shake');
-        setTimeout(() => {
-            document.querySelector('.pdp-size-options')?.classList.remove('size-error-shake');
-        }, 500);
-        
+        setTimeout(() => { document.querySelector('.pdp-size-options')?.classList.remove('size-error-shake'); }, 500);
         return;
+    }
+    
+    // Price logic
+    let finalPriceToUse = 0;
+    
+    if (selectedVariant) {
+        // Color/image select kiya hai - variant price lo
+        finalPriceToUse = parseFloat(selectedVariant.final_price) || parseFloat(selectedVariant.price) || 0;
+    } else {
+        // Sirf size select kiya hai - product price lo
+        finalPriceToUse = parseFloat(currentProduct?.final_price) || parseFloat(currentProduct?.price) || parseFloat(currentProduct?.product_price) || 0;
     }
     
     const product = {
         id: currentProduct?.id,
         name: currentProduct?.name,
         brand: currentProduct?.brand,
-        price: parseFloat(currentProduct?.price || 0),
-        final_price: parseFloat(currentProduct?.final_price || currentProduct?.price || 0),
+        price: finalPriceToUse,
+        final_price: finalPriceToUse,
+        product_price: currentProduct?.product_price,
         image_url: document.getElementById('mainImage')?.src || currentProduct?.image_url,
         slug: currentProduct?.slug,
         category: currentProduct?.category,
         variants: currentProduct?.variants,
         gallery_images: currentProduct?.gallery_images
     };
+    
+    if (selectedVariant) {
+        product.variantValue = selectedVariant.value;
+        product.variantId = selectedVariant.id;
+        product.variantType = selectedVariant.type;
+    } else if (selectedSize) {
+        product.variantValue = selectedSize;
+        product.variantId = null;
+        product.variantType = 'Size';
+    }
     
     window.addToBag(product);
 }
@@ -286,18 +308,15 @@ if (buyPriceElement)
     }
     const variant = allSizes.find(v => v.color === colorCode);
     if (variant) {
-        selectedVariant = variant;
-        selectedSize = variant.value;
-        const priceElement = document.getElementById('currentPrice');
-        const buyPriceElement = document.getElementById('buyPrice');
-        const price =
-            variant.final_price && variant.final_price != 0
-                ? variant.final_price
-                : (
-                    variant.price && variant.price != 0
-                        ? variant.price
-                        : window.displayPrice
-                );
+    selectedVariant = variant;
+    window.selectedVariant = variant;  // ← YEH LINE ADD KARO
+    selectedSize = variant.value;
+    const priceElement = document.getElementById('currentPrice');
+    const buyPriceElement = document.getElementById('buyPrice');
+    const price = variant.final_price && variant.final_price != 0
+        ? variant.final_price
+        : (variant.price && variant.price != 0 ? variant.price : window.displayPrice);
+
 
         if (priceElement)
             priceElement.textContent =
@@ -328,20 +347,28 @@ if (buyPriceElement)
     }
     
     window.selectVariant = function(btn, price, variantId, variantType) {
-        document.querySelectorAll('.pdp-size-btn:not(.disabled)').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        selectedSize = btn.textContent;
-        const sizeError = document.querySelector('.pdp-size-error');
-        if (sizeError) sizeError.style.display = 'none';
-        const variant = allSizes.find(v => v.id == variantId);
-        if (variant) {
-            selectedVariant = variant;
-            const priceElement = document.getElementById('currentPrice');
-            const buyPriceElement = document.getElementById('buyPrice');
-            if (priceElement) priceElement.textContent = '₹' + Number(variant.final_price || variant.price).toLocaleString('en-IN');
-            if (buyPriceElement) buyPriceElement.textContent = Number(variant.final_price || variant.price).toLocaleString('en-IN');
-        }
-    };
+    document.querySelectorAll('.pdp-size-btn:not(.disabled)').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedSize = btn.textContent;
+    const sizeError = document.querySelector('.pdp-size-error');
+    if (sizeError) sizeError.style.display = 'none';
+    const variant = allSizes.find(v => v.id == variantId);
+    if (variant) {
+        // ✅ COMMENT OUT - selectedVariant set mat karo
+        // selectedVariant = variant;
+        // window.selectedVariant = variant;
+        
+        // ✅ Sirf selectedSize store karo
+        window.selectedSizeOnly = variant;
+        
+        // ✅ Product price dikhao (variant price nahi)
+        const priceElement = document.getElementById('currentPrice');
+        const buyPriceElement = document.getElementById('buyPrice');
+        if (priceElement) priceElement.textContent = '₹' + Number(window.displayPrice).toLocaleString('en-IN');
+        if (buyPriceElement) buyPriceElement.textContent = Number(window.displayPrice).toLocaleString('en-IN');
+    }
+};
+
     
     window.changeImage = function(index) {
         const mainImage = document.getElementById('mainImage');
@@ -1019,24 +1046,23 @@ function renderOfferItems(type) {
     allColors = Array.from(colorMap.values());
     if (allColors.length === 0) allColors = [{ color: '#000000', name: 'Black', image: product.image_url || currentImages[0] }];
     allSizes = [];
+    
     variants.forEach(v => {
-        if (v.variant_value) {
-            allSizes.push({
-                id: v.id, type: v.variant_type || 'Size', value: v.variant_value,
-                price: parseFloat(v.price || 0), final_price: parseFloat(v.final_price || v.price || 0),
-                stock: v.quantity || 5, color: v.color, inStock: v.in_stock !== false
-            });
+    if (v.variant_value) {
+        let variantPrice = parseFloat(v.final_price) || parseFloat(v.price) || 0;
+        if (variantPrice === 0) {
+            variantPrice = parseFloat(product.product_price) || 0;
         }
-    });
-    // if (allSizes.length === 0) {
-    //     const defaultPrice = parseFloat(product.final_price || product.price || 1200);
-    //     allSizes = [
-    //         { value: 'S', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
-    //         { value: 'M', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
-    //         { value: 'L', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color },
-    //         { value: 'XL', price: defaultPrice, final_price: defaultPrice, stock: 5, color: allColors[0]?.color }
-    //     ];
-    // }
+        allSizes.push({
+            id: v.id, type: v.variant_type || 'Size', value: v.variant_value,
+            price: variantPrice,
+            final_price: variantPrice,
+            stock: v.quantity || 5, color: v.color, inStock: v.in_stock !== false
+        });
+    }
+});
+const hasRealVariants = allSizes.length > 0 && !(allSizes.length === 1 && allSizes[0].value === 'Standard');
+   
     let displayPrice = 0, originalPrice = 0, discountPercentage = 0;
 
     displayPrice = parseFloat(
@@ -1340,106 +1366,120 @@ function renderOfferItems(type) {
     }
     
     async function fetchSimilarProducts() {
-        const similarSection = document.querySelector('.pdp-similar');
-        const grid = document.getElementById('similarGrid');
-        if (!grid || !similarSection) return;
-        try {
-            const categoryId = currentProduct?.category?.id;
-            if (!categoryId) { similarSection.style.display = 'none'; return; }
-            const res = await fetch(`${API_BASE_URL}/categories/${categoryId}/products`);
-            const data = await res.json();
-            if (data.success && data.data?.products) {
-                const otherProducts = data.data.products.filter(p => p.id != currentProduct.id);
-                if (otherProducts.length > 0) {
-                    similarSection.style.display = 'block';
-                    grid.innerHTML = otherProducts.map(p => `
+    const similarSection = document.querySelector('.pdp-similar');
+    const grid = document.getElementById('similarGrid');
+    if (!grid || !similarSection) return;
+    try {
+        const categoryId = currentProduct?.category?.id;
+        if (!categoryId) { similarSection.style.display = 'none'; return; }
+        const res = await fetch(`${API_BASE_URL}/categories/${categoryId}/products`);
+        const data = await res.json();
+        if (data.success && data.data?.products) {
+            const otherProducts = data.data.products.filter(p => p.id != currentProduct.id);
+            if (otherProducts.length > 0) {
+                similarSection.style.display = 'block';
+                grid.innerHTML = otherProducts.map(p => {
+                    let currentPrice = parseFloat(p.product_price) || parseFloat(p.final_price) || parseFloat(p.price) || 0;
+                    let originalPrice = parseFloat(p.price) || 0;
+                    return `
                         <div class="pdp-similar-card" onclick="window.location.href='/product/${p.slug}'">
                             <img src="${p.image_url || ''}" class="pdp-similar-image" onerror="this.style.display='none'">
                             <div class="pdp-similar-brand">${p.brand || 'Brand'}</div>
                             <div class="pdp-similar-name">${p.name}</div>
                             <div class="pdp-similar-price">
-                                <span class="pdp-similar-current">₹${parseFloat(p.final_price || p.price).toLocaleString('en-IN')}</span>
-                                ${p.price > p.final_price ? '<span class="pdp-similar-original">₹' + parseFloat(p.price).toLocaleString('en-IN') + '</span>' : ''}
+                                <span class="pdp-similar-current">₹${currentPrice.toLocaleString('en-IN')}</span>
+                                ${originalPrice > currentPrice ? '<span class="pdp-similar-original">₹' + originalPrice.toLocaleString('en-IN') + '</span>' : ''}
                             </div>
                         </div>
-                    `).join('');
-                } else {
-                    similarSection.style.display = 'none';
-                }
+                    `;
+                }).join('');
             } else {
                 similarSection.style.display = 'none';
             }
-        } catch (error) {
-            console.error('Error fetching similar products:', error);
+        } else {
             similarSection.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error fetching similar products:', error);
+        similarSection.style.display = 'none';
+    }
+}
+    
+    window.buyNow = function() {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (!token || !user.id) {
+        sessionStorage.setItem('redirect_after_login', '/checkout/shipping');
+        window.location.href = '/login';
+        return;
+    }
+    
+    const hasRealVariants = window.hasRealVariants || (allSizes.length > 0 && !(allSizes.length === 1 && allSizes[0]?.value === 'Standard'));
+
+    if (hasRealVariants && !selectedSize && allSizes.length > 0) {
+        const sizeSection = document.querySelector('.pdp-size');
+        if (sizeSection) {
+            let sizeError = document.querySelector('.pdp-size-error');
+            if (!sizeError) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'pdp-size-error';
+                errorDiv.style.cssText = 'color: #ff3f6c; font-size: 13px; margin-top: 8px; display: block;';
+                errorDiv.textContent = 'Please select a size';
+                sizeSection.appendChild(errorDiv);
+                setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
+            } else {
+                sizeError.style.display = 'block';
+            }
+        }
+        document.querySelector('.pdp-size-options')?.classList.add('size-error-shake');
+        setTimeout(() => { document.querySelector('.pdp-size-options')?.classList.remove('size-error-shake'); }, 500);
+        return;
+    }
+    
+    const activeBtn = document.querySelector('.pdp-size-btn.active');
+    let selectedVariant = null;
+    
+    if (currentProduct?.variants && currentProduct.variants.length > 0) {
+        if (activeBtn) {
+            const variantId = activeBtn.dataset.variantId;
+            selectedVariant = currentProduct.variants.find(v => v.id == variantId);
+        }
+        if (!selectedVariant) {
+            selectedVariant = currentProduct.variants[0];
         }
     }
     
-    window.buyNow = function() {
-        const token = localStorage.getItem('token');
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (!token || !user.id) {
-            sessionStorage.setItem('redirect_after_login', '/checkout/shipping');
-            sessionStorage.setItem('login_message', 'Please login to continue checkout');
-            window.location.href = '/login';
-            return;
-        }
-        if (!selectedSize && allSizes.length > 0) {
-            const sizeError = document.querySelector('.pdp-size-error');
-            if (sizeError) {
-                sizeError.style.display = 'block';
-            } else {
-                const sizeSection = document.querySelector('.pdp-size');
-                if (sizeSection) {
-                    const errorDiv = document.createElement('div');
-                    errorDiv.className = 'pdp-size-error';
-                    errorDiv.style.cssText = 'color: #ff3f6c; font-size: 13px; margin-top: 8px; display: block;';
-                    errorDiv.textContent = 'Please select a size';
-                    sizeSection.appendChild(errorDiv);
-                    setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
-                }
-            }
-            document.querySelector('.pdp-size-options')?.classList.add('size-error-shake');
-            setTimeout(() => { document.querySelector('.pdp-size-options')?.classList.remove('size-error-shake'); }, 500);
-            return;
-        }
-        const originalCart = localStorage.getItem('cart');
-        if (originalCart) sessionStorage.setItem('buy_now_original_cart', originalCart);
-        const activeBtn = document.querySelector('.pdp-size-btn.active');
-        let selectedVariant = null;
-        if (currentProduct?.variants && currentProduct.variants.length > 0) {
-            if (activeBtn) {
-                const variantId = activeBtn.dataset.variantId;
-                selectedVariant = currentProduct.variants.find(v => v.id == variantId);
-            }
-            if (!selectedVariant) selectedVariant = currentProduct.variants[0];
-        }
-        const finalPrice = selectedVariant ? parseFloat(selectedVariant.final_price) : (parseFloat(currentProduct?.final_price) || 0);
-        const originalPrice = selectedVariant ? parseFloat(selectedVariant.price) : (parseFloat(currentProduct?.price) || 0);
-        const variantType = selectedVariant?.variant_type || 'Size';
-        const variantValue = selectedVariant?.variant_value || 'S';
-        const variantId = selectedVariant?.id || null;
-        const availableVariants = currentProduct?.variants ? currentProduct.variants.map(v => ({
-            id: v.id, value: v.variant_value, price: parseFloat(v.final_price) || 0, originalPrice: parseFloat(v.price) || 0
-        })) : [];
-        let imageUrl = '';
-        const mainImage = document.getElementById('mainImage');
-        if (mainImage && mainImage.src) imageUrl = mainImage.src;
-        else if (selectedVariant?.image_url) imageUrl = selectedVariant.image_url;
-        else if (currentProduct?.image_url) imageUrl = currentProduct.image_url;
-        else if (currentProduct?.gallery_images && currentProduct.gallery_images.length > 0) imageUrl = currentProduct.gallery_images[0];
-        const cartItem = {
-            id: currentProduct?.id, name: currentProduct?.name, brand: currentProduct?.brand || '',
-            price: finalPrice, mrp: originalPrice, originalPrice: originalPrice, image: imageUrl,
-            slug: currentProduct?.slug, variantType: variantType, variantValue: variantValue, variantId: variantId,
-            categoryId: currentProduct?.category?.id, quantity: 1, availableVariants: availableVariants,
-            rating: currentProduct?.rating || 4.5, reviewCount: currentProduct?.review_count || 33
-        };
-        const buyNowCart = [cartItem];
-        localStorage.setItem('cart', JSON.stringify(buyNowCart));
-        updateCartBadge();
-        window.location.href = '/checkout/shipping';
+    let finalPrice = parseFloat(currentProduct?.product_price) || 0;
+    let variantId = selectedVariant?.id || null;
+    
+    let imageUrl = '';
+    const mainImage = document.getElementById('mainImage');
+    if (mainImage && mainImage.src) {
+        imageUrl = mainImage.src;
+    } else if (currentProduct?.image_url) {
+        imageUrl = currentProduct.image_url;
+    } else if (currentProduct?.gallery_images && currentProduct.gallery_images.length > 0) {
+        imageUrl = currentProduct.gallery_images[0];
+    }
+    
+    const cartItem = {
+        id: currentProduct?.id,
+        name: currentProduct?.name,
+        brand: currentProduct?.brand || '',
+        price: finalPrice,
+        product_price: finalPrice,
+        image: imageUrl,
+        slug: currentProduct?.slug,
+        variantId: variantId,
+        quantity: 1
     };
+    
+    localStorage.setItem('cart', JSON.stringify([cartItem]));
+    updateCartBadge();
+    
+    window.location.href = '/checkout/shipping';
+};
     async function fetchAppSettingsForProductPage() {
     try {
         const response = await fetch(`${API_BASE_URL}/app-settings`)
