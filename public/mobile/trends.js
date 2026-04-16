@@ -1,138 +1,100 @@
 const API_BASE_URL = window.API_BASE_URL;
+
 document.addEventListener("DOMContentLoaded", () => {
     loadTrendingReels();
 });
 
-
-/* LOAD REELS */
-
-function loadTrendingReels(){
-
+function loadTrendingReels() {
     const container = document.getElementById("trendsContainer");
-    if(!container) return;
+    if (!container) return;
 
     container.innerHTML = '<div class="loading">Loading reels...</div>';
 
     fetch(API_BASE_URL + "/reels")
-    .then(res => res.json()) 
-    .then(res => {
-
-        if(!res || !res.data){
-            showError();
-            return;
-        }
-
-        renderReels(res.data);
-
-    })
-    .catch(showError);
-
+        .then(res => res.json())
+        .then(res => {
+            if (!res || !res.data) {
+                showError();
+                return;
+            }
+            renderReels(res.data);
+        })
+        .catch(showError);
 }
 
-
-
-/* RENDER REELS */
-
-function renderReels(reels){
-
+function renderReels(reels) {
     const container = document.getElementById("trendsContainer");
     let html = "";
 
-    reels.forEach((reel,index)=>{
-
+    reels.forEach((reel, index) => {
         const media = reel.video;
         const product = reel.product || {};
 
         html += `
 <div class="reel-card">
-
     <div class="reel-video">
-<video
-src="${media}"
-autoplay
-muted
-loop
-playsinline
-preload="auto"
-class="reel-video-player"
-data-id="${reel.id}"
-id="video-${index}">
-</video>
+        <video
+            src="${media}"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto"
+            class="reel-video-player"
+            data-id="${reel.id}"
+            id="video-${index}">
+        </video>
     </div>
-
     <div class="reel-gradient"></div>
-
     <div class="reel-info">
-
         <div class="reel-product">
-
             <h3>${product.name ?? "Trending Product"}</h3>
-
             <p id="desc-${index}" class="reel-desc">
                 ${reel.description ?? ""}
             </p>
-
             <span class="reel-more" onclick="toggleDesc(${index})">
                 More
             </span>
-
             <a href="/product/${product.slug ?? ""}" class="reel-buy">
                 Buy at ₹${product.price ?? "999"}
             </a>
-
         </div>
-
     </div>
-    
-
-<div class="reel-actions">
-
-<div class="reel-action-item">
-
-<button class="reel-icon-btn like-btn" id="like-${reel.id}">
-<i class="bi bi-heart"></i>
-</button>
-
-<span class="reel-count" id="like-count-${reel.id}">
-${reel.likes ?? 0}
-</span>
-<button class="reel-icon-btn comment-btn" data-id="${reel.id}">
-<i class="bi bi-chat"></i>
-</button>
-
-<span class="reel-count" id="comment-count-${reel.id}">
-${reel.comments ?? 0}
-</span>
-</div>
-
-<div class="reel-action-item">
-
-<button class="reel-icon-btn share-btn" data-id="${reel.id}">
-<i class="bi bi-send"></i>
-</button>
-
-<span class="reel-count" id="share-count-${reel.id}">
-${reel.shares ?? 0}
-</span>
-
-</div>
-
-</div>
-
-<div class="reel-progress">
-<div class="reel-progress-bar" id="progress-${index}"></div>
-</div>
-
-</div>
-`;
+    <div class="reel-actions">
+        <div class="reel-action-item">
+            <button class="reel-icon-btn like-btn" id="like-${reel.id}">
+                <i class="bi bi-heart"></i>
+            </button>
+            <span class="reel-count" id="like-count-${reel.id}">
+                ${reel.likes ?? 0}
+            </span>
+            <button class="reel-icon-btn comment-btn" data-id="${reel.id}">
+                <i class="bi bi-chat"></i>
+            </button>
+            <span class="reel-count" id="comment-count-${reel.id}">
+                ${reel.comments ?? 0}
+            </span>
+        </div>
+        <div class="reel-action-item">
+            <button class="reel-icon-btn share-btn" data-id="${reel.id}">
+                <i class="bi bi-send"></i>
+            </button>
+            <span class="reel-count" id="share-count-${reel.id}">
+                ${reel.shares ?? 0}
+            </span>
+        </div>
+    </div>
+    <div class="reel-progress">
+        <div class="reel-progress-bar" id="progress-${index}"></div>
+    </div>
+</div>`;
     });
 
     container.innerHTML = html;
 
     initLikeButtons();
     initShareButtons();
-        initCommentButtons(); 
-
+    initCommentButtons();
     checkDescriptions();
     setupObserver();
     enableDoubleTap();
@@ -140,76 +102,64 @@ ${reel.shares ?? 0}
 
 let currentReelId = null;
 
-/* init buttons */
-function initCommentButtons(){
-
-    document.querySelectorAll(".comment-btn").forEach(btn=>{
-
-        btn.addEventListener("click",function(){
-
+function initCommentButtons() {
+    document.querySelectorAll(".comment-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
             const id = btn.dataset.id;
             openComments(id);
-
         });
-
     });
-
 }
 
-/* open modal */
-function openComments(id){
 
+function openComments(id) {
     currentReelId = id;
-
     document.getElementById("commentModal").style.display = "block";
-
     loadComments(id);
 
     // 🔥 ADD THIS
-    setTimeout(()=>{
+    setTimeout(() => {
         document.getElementById("commentInput").focus();
-    },300);
+    }, 300);
 }
 
-/* load comments - WITH CORRECT TIME FORMAT */
-function loadComments(id){
+function loadComments(id) {
     const list = document.getElementById("commentList");
     list.innerHTML = '<div style="text-align:center;padding:20px;">Loading comments...</div>';
 
     const timestamp = new Date().getTime();
-    
+
     fetch(API_BASE_URL + "/reels/" + id + "/comments?_=" + timestamp, {
-        headers:{
+        headers: {
             "Accept": "application/json",
             "Cache-Control": "no-cache, no-store, must-revalidate",
             "Pragma": "no-cache"
         }
     })
-    .then(res => res.json())
-    .then(res => {
-        let html = "";
-        
-        console.log("📝 API Response:", res);
-        
-        if(!res.data || res.data.length === 0){
-            html = '<div style="text-align:center;padding:20px;color:#888;">No comments yet. Be the first to comment!</div>';
-        } else {
-            res.data.forEach(c => {
+        .then(res => res.json())
+        .then(res => {
+            let html = "";
 
-                let timeValue = '';
-                
-                if(c.time) timeValue = c.time;
-                else if(c.created_at) timeValue = c.created_at;
-                else if(c.createdAt) timeValue = c.createdAt;
-                else if(c.timestamp) timeValue = c.timestamp;
-                else if(c.date) timeValue = c.date;
-                
-                const formattedTime = formatTimeProperly(timeValue);
-                
-                const userName = c.user?.name || c.user?.username || 'User';
-                const userAvatar = c.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=ff2c6d&color=fff`;
-                
-                html += `
+            console.log("📝 API Response:", res);
+
+            if (!res.data || res.data.length === 0) {
+                html = '<div style="text-align:center;padding:20px;color:#888;">No comments yet. Be the first to comment!</div>';
+            } else {
+                res.data.forEach(c => {
+                    let timeValue = '';
+
+                    if (c.time) timeValue = c.time;
+                    else if (c.created_at) timeValue = c.created_at;
+                    else if (c.createdAt) timeValue = c.createdAt;
+                    else if (c.timestamp) timeValue = c.timestamp;
+                    else if (c.date) timeValue = c.date;
+
+                    const formattedTime = formatTimeProperly(timeValue);
+
+                    const userName = c.user?.name || c.user?.username || 'User';
+                    const userAvatar = c.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=ff2c6d&color=fff`;
+
+                    html += `
                 <div class="comment-item insta-comment">
                     <img src="${userAvatar}" class="comment-avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=ff2c6d&color=fff'"/>
                     <div class="comment-content">
@@ -223,74 +173,72 @@ function loadComments(id){
                     </div>
                 </div>
                 `;
-            });
-        }
-        
-        list.innerHTML = html;
-        list.scrollTop = list.scrollHeight;
-    })
-    .catch(err => {
-        console.error("Comments error:", err);
-        list.innerHTML = '<div style="text-align:center;padding:20px;color:#ff3f6c;">Failed to load comments. <span onclick="loadComments(' + id + ')" style="text-decoration:underline;">Retry</span></div>';
-    });
-}
+                });
+            }
 
+            list.innerHTML = html;
+            list.scrollTop = list.scrollHeight;
+        })
+        .catch(err => {
+            console.error("Comments error:", err);
+            list.innerHTML = '<div style="text-align:center;padding:20px;color:#ff3f6c;">Failed to load comments. <span onclick="loadComments(' + id + ')" style="text-decoration:underline;">Retry</span></div>';
+        });
+}
 function formatTimeProperly(dateValue) {
-    if(!dateValue) return 'just now';
-    
+    if (!dateValue) return 'just now';
+
     try {
-        if(typeof dateValue === 'string' && (dateValue.includes('ago') || dateValue.includes('just now'))) {
+        if (typeof dateValue === 'string' && (dateValue.includes('ago') || dateValue.includes('just now'))) {
             return dateValue;
         }
-        
+
         let date = new Date(dateValue);
-        
-        if(isNaN(date.getTime())) {
+
+        if (isNaN(date.getTime())) {
             return 'just now';
         }
-        
+
         const now = new Date();
         const seconds = Math.floor((now - date) / 1000);
-        
-        if(seconds < 5) return 'just now';
-        if(seconds < 60) return `${seconds}s ago`;
-        
+
+        if (seconds < 5) return 'just now';
+        if (seconds < 60) return `${seconds}s ago`;
+
         const minutes = Math.floor(seconds / 60);
-        if(minutes < 60) return `${minutes}m ago`;
-        
+        if (minutes < 60) return `${minutes}m ago`;
+
         const hours = Math.floor(minutes / 60);
-        if(hours < 24) return `${hours}h ago`;
-        
+        if (hours < 24) return `${hours}h ago`;
+
         const days = Math.floor(hours / 24);
-        if(days < 7) return `${days}d ago`;
-        
-        if(days < 30) return `${Math.floor(days / 7)}w ago`;
-        
+        if (days < 7) return `${days}d ago`;
+
+        if (days < 30) return `${Math.floor(days / 7)}w ago`;
+
         const months = Math.floor(days / 30);
-        if(months < 12) return `${months}mo ago`;
-        
+        if (months < 12) return `${months}mo ago`;
+
         const years = Math.floor(days / 365);
         return `${years}y ago`;
-        
-    } catch(e) {
+
+    } catch (e) {
         console.error("Time format error:", e);
         return 'just now';
     }
 }
 
 function escapeHtml(text) {
-    if(!text) return '';
+    if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
-
 function postComment() {
     const input = document.getElementById("commentInput");
     const text = input.value.trim();
-    
+
     if (!text) return;
-    
+
     const token = localStorage.getItem("token");
     const isLoggedIn = token && token !== "null" && token !== "undefined";
 
@@ -298,12 +246,12 @@ function postComment() {
         showLoginRequiredModal();
         return;
     }
-    
+
     const postBtn = document.querySelector(".comment-input-box button");
     const originalText = postBtn.innerText;
     postBtn.disabled = true;
     postBtn.innerText = "Posting...";
-    
+
     const list = document.getElementById("commentList");
     const tempId = 'temp_' + Date.now();
     const tempComment = `
@@ -320,63 +268,63 @@ function postComment() {
             </div>
         </div>
     `;
-    
+
     if (list.innerHTML.includes("No comments yet")) {
         list.innerHTML = tempComment;
     } else {
         list.innerHTML += tempComment;
     }
     list.scrollTop = list.scrollHeight;
-    
+
     let headers = {
         "Content-Type": "application/json",
         "Accept": "application/json"
     };
-    
+
     if (isLoggedIn) {
         headers["Authorization"] = "Bearer " + token;
     }
-    
+
     fetch(API_BASE_URL + "/reels/" + currentReelId + "/comment", {
         method: "POST",
         headers: headers,
         body: JSON.stringify({ comment: text })
     })
-    .then(async res => {
-        const data = await res.json();
-        
-        if (res.status === 401) {
-            document.getElementById(tempId)?.remove();
-            showLoginRequiredModal();
-            return;
-        }
-        
-        if (!data.status) {
-            document.getElementById(tempId)?.remove();
-            showToast(data.message || "Error");
-            return;
-        }
-        
-        input.value = "";
-        document.getElementById(tempId)?.remove();
-        
-        const freshTimestamp = new Date().getTime();
-        fetch(API_BASE_URL + "/reels/" + currentReelId + "/comments?_=" + freshTimestamp, {
-            headers: {
-                "Accept": "application/json",
-                "Cache-Control": "no-cache, no-store, must-revalidate"
+        .then(async res => {
+            const data = await res.json();
+
+            if (res.status === 401) {
+                document.getElementById(tempId)?.remove();
+                showLoginRequiredModal();
+                return;
             }
-        })
-        .then(res => res.json())
-        .then(res => {
-            let html = "";
-            if (res.data && res.data.length > 0) {
-                res.data.forEach(c => {
-                    let timeValue = c.time || c.created_at || c.createdAt || '';
-                    const formattedTime = formatTimeProperly(timeValue);
-                    const userName = c.user?.name || c.user?.username || 'User';
-                    const userAvatar = c.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=ff2c6d&color=fff`;
-                    html += `
+
+            if (!data.status) {
+                document.getElementById(tempId)?.remove();
+                showToast(data.message || "Error");
+                return;
+            }
+
+            input.value = "";
+            document.getElementById(tempId)?.remove();
+
+            const freshTimestamp = new Date().getTime();
+            fetch(API_BASE_URL + "/reels/" + currentReelId + "/comments?_=" + freshTimestamp, {
+                headers: {
+                    "Accept": "application/json",
+                    "Cache-Control": "no-cache, no-store, must-revalidate"
+                }
+            })
+                .then(res => res.json())
+                .then(res => {
+                    let html = "";
+                    if (res.data && res.data.length > 0) {
+                        res.data.forEach(c => {
+                            let timeValue = c.time || c.created_at || c.createdAt || '';
+                            const formattedTime = formatTimeProperly(timeValue);
+                            const userName = c.user?.name || c.user?.username || 'User';
+                            const userAvatar = c.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=ff2c6d&color=fff`;
+                            html += `
                     <div class="comment-item insta-comment">
                         <img src="${userAvatar}" class="comment-avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=ff2c6d&color=fff'"/>
                         <div class="comment-content">
@@ -387,41 +335,40 @@ function postComment() {
                             <div class="comment-text">${escapeHtml(c.comment)}</div>
                         </div>
                     </div>`;
+                        });
+                    } else {
+                        html = '<div style="text-align:center;padding:20px;color:#888;">No comments yet. Be the first to comment!</div>';
+                    }
+                    list.innerHTML = html;
+                    list.scrollTop = list.scrollHeight;
                 });
-            } else {
-                html = '<div style="text-align:center;padding:20px;color:#888;">No comments yet. Be the first to comment!</div>';
+
+            const count = document.getElementById("comment-count-" + currentReelId);
+            if (count) {
+                count.innerText = parseInt(count.innerText) + 1;
             }
-            list.innerHTML = html;
-            list.scrollTop = list.scrollHeight;
+
+            showToast("Comment posted!");
+        })
+        .catch(err => {
+            console.error("Comment error:", err);
+            document.getElementById(tempId)?.remove();
+            showToast("Network error. Please try again");
+        })
+        .finally(() => {
+            postBtn.disabled = false;
+            postBtn.innerText = originalText;
+            input.focus();
         });
-        
-        const count = document.getElementById("comment-count-" + currentReelId);
-        if (count) {
-            count.innerText = parseInt(count.innerText) + 1;
-        }
-        
-        showToast("Comment posted!");
-    })
-    .catch(err => {
-        console.error("Comment error:", err);
-        document.getElementById(tempId)?.remove();
-        showToast("Network error. Please try again");
-    })
-    .finally(() => {
-        postBtn.disabled = false;
-        postBtn.innerText = originalText;
-        input.focus();
-    });
 }
 
-
-function closeComments(){
+function closeComments() {
     document.getElementById("commentModal").style.display = "none";
 }
 
 function showLoginRequiredModal() {
     if (document.getElementById("loginRequiredModal")) return;
-    
+
     const modal = document.createElement("div");
     modal.id = "loginRequiredModal";
     modal.className = "comment-modal";
@@ -465,9 +412,9 @@ function showLoginRequiredModal() {
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
-    
+
     modal.addEventListener("click", function(e) {
         if (e.target === modal) {
             closeLoginModal();
@@ -488,7 +435,7 @@ function redirectToLogin() {
 function showToast(message, duration = 3000) {
     const existingToast = document.querySelector(".custom-toast");
     if (existingToast) existingToast.remove();
-    
+
     const toast = document.createElement("div");
     toast.className = "custom-toast";
     toast.innerHTML = message;
@@ -509,9 +456,9 @@ function showToast(message, duration = 3000) {
         box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         border: 1px solid rgba(255,255,255,0.1);
     `;
-    
+
     document.body.appendChild(toast);
-    
+
     setTimeout(() => {
         if (toast && toast.remove) {
             toast.style.animation = "slideDownToast 0.3s ease";
@@ -519,277 +466,186 @@ function showToast(message, duration = 3000) {
         }
     }, duration);
 }
-function setupObserver(){
 
+function setupObserver() {
     const videos = document.querySelectorAll(".reel-video-player");
 
     const observer = new IntersectionObserver(entries => {
-
         entries.forEach(entry => {
-
             const video = entry.target;
-
-            if(entry.isIntersecting){
-
-                video.play().catch(()=>{});
-
+            if (entry.isIntersecting) {
+                video.play().catch(() => {});
                 const reelId = video.dataset.id;
-
                 increaseView(reelId);
                 animateProgress(video);
-
-            }else{
-
+            } else {
                 video.pause();
-
             }
-
         });
-
-    },{ threshold:0.75 });
+    }, { threshold: 0.75 });
 
     videos.forEach(video => observer.observe(video));
-
 }
 
 const viewed = new Set();
 
-function increaseView(id){
-
-    if(viewed.has(id)) return; 
-
+function increaseView(id) {
+    if (viewed.has(id)) return;
     viewed.add(id);
-
-    fetch(API_BASE_URL + "/reels/" + id + "/view",{
-        method:"POST"
-    }).catch(()=>{});
+    fetch(API_BASE_URL + "/reels/" + id + "/view", {
+        method: "POST"
+    }).catch(() => {});
 }
 
 document.addEventListener("play", function(e) {
-
-if(e.target.tagName === "VIDEO"){
-e.target.style.opacity = 1;
-}
-
+    if (e.target.tagName === "VIDEO") {
+        e.target.style.opacity = 1;
+    }
 }, true);
 
-
-function animateProgress(video){
-
+function animateProgress(video) {
     const index = video.id.split("-")[1];
     const bar = document.getElementById("progress-" + index);
 
-    function update(){
-
-        if(!video.duration) return;
-
+    function update() {
+        if (!video.duration) return;
         const percent = (video.currentTime / video.duration) * 100;
-
-        if(bar){
+        if (bar) {
             bar.style.width = percent + "%";
         }
-
         requestAnimationFrame(update);
     }
-
     requestAnimationFrame(update);
-
 }
 
-function checkDescriptions(){
-
+function checkDescriptions() {
     document.querySelectorAll(".reel-desc").forEach(desc => {
-
         const moreBtn = desc.nextElementSibling;
-
-        if(desc.scrollHeight > desc.clientHeight){
+        if (desc.scrollHeight > desc.clientHeight) {
             moreBtn.style.display = "inline-block";
-        }else{
+        } else {
             moreBtn.style.display = "none";
         }
-
     });
-
 }
 
-function toggleDesc(index){
-
+function toggleDesc(index) {
     const desc = document.getElementById("desc-" + index);
     const btn = desc.nextElementSibling;
-
-    if(desc.classList.contains("expanded")){
+    if (desc.classList.contains("expanded")) {
         desc.classList.remove("expanded");
         btn.innerText = "More";
-    }else{
+    } else {
         desc.classList.add("expanded");
         btn.innerText = "Less";
     }
-
 }
 
 
-function initLikeButtons(){
-
-    document.querySelectorAll(".like-btn").forEach(btn=>{
-
-        btn.addEventListener("click",function(){
-
-            const id = btn.id.replace("like-","");
-            likeReel(id,btn);
-
+function initLikeButtons() {
+    document.querySelectorAll(".like-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const id = btn.id.replace("like-", "");
+            likeReel(id, btn);
         });
-
     });
-
 }
 
-function likeReel(id,btn){
-
-fetch(API_BASE_URL + "/reels/" + id + "/like",{
-method:"POST"
-})
-.then(res=>res.json())
-.then(res=>{
-
-const icon = btn.querySelector("i");
-const count = document.getElementById("like-count-"+id);
-
-if(res.liked){
-
-btn.classList.add("liked");
-icon.classList.remove("bi-heart");
-icon.classList.add("bi-heart-fill");
-
-}else{
-
-btn.classList.remove("liked");
-icon.classList.remove("bi-heart-fill");
-icon.classList.add("bi-heart");
-
+function likeReel(id, btn) {
+    fetch(API_BASE_URL + "/reels/" + id + "/like", {
+        method: "POST"
+    })
+        .then(res => res.json())
+        .then(res => {
+            const icon = btn.querySelector("i");
+            const count = document.getElementById("like-count-" + id);
+            if (res.liked) {
+                btn.classList.add("liked");
+                icon.classList.remove("bi-heart");
+                icon.classList.add("bi-heart-fill");
+            } else {
+                btn.classList.remove("liked");
+                icon.classList.remove("bi-heart-fill");
+                icon.classList.add("bi-heart");
+            }
+            if (count) {
+                count.innerText = res.likes;
+            }
+        })
+        .catch(() => {});
 }
 
-if(count){
-count.innerText = res.likes;
+function enableDoubleTap() {
+    let lastTap = 0;
+    document.querySelectorAll(".reel-video-player").forEach(video => {
+        video.addEventListener("click", function(e) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0) {
+                const reelId = video.dataset.id;
+                const btn = document.getElementById("like-" + reelId);
+                if (btn && !btn.classList.contains("liked")) {
+                    showGlobalHeart();
+                    likeReel(reelId, btn);
+                }
+                e.preventDefault();
+            }
+            lastTap = currentTime;
+        });
+    });
 }
 
-})
-.catch(()=>{});
-
-}
-
-function enableDoubleTap(){
-
-let lastTap = 0;
-
-document.querySelectorAll(".reel-video-player").forEach(video=>{
-
-video.addEventListener("click",function(e){
-
-const currentTime = new Date().getTime();
-const tapLength = currentTime - lastTap;
-
-if(tapLength < 300 && tapLength > 0){
-
-const reelId = video.dataset.id;
-
-const btn = document.getElementById("like-"+reelId);
-
-if(btn && !btn.classList.contains("liked")){
-
-showGlobalHeart();
-likeReel(reelId,btn);
-
-}
-
-e.preventDefault();
-
-}
-
-lastTap = currentTime;
-
-});
-
-});
-
-}
-
-
-function showGlobalHeart(){
-
+function showGlobalHeart() {
     const heart = document.getElementById("global-like-heart");
-
-    if(!heart) return;
-
+    if (!heart) return;
     heart.classList.add("show");
-
-    setTimeout(()=>{
+    setTimeout(() => {
         heart.classList.remove("show");
-    },700);
-
+    }, 700);
 }
 
-
-function initShareButtons(){
-
-    document.querySelectorAll(".share-btn").forEach(btn=>{
-
-        btn.addEventListener("click",function(){
-
+function initShareButtons() {
+    document.querySelectorAll(".share-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
             const id = btn.dataset.id;
             shareReel(id);
+        });
+    });
+}
 
+function shareReel(id) {
+    const reelUrl = window.location.origin + "/reel/" + id;
+    const message = "🔥 Check this reel\n" + reelUrl;
+
+    fetch(API_BASE_URL + "/reels/" + id + "/share", { method: "POST" })
+        .then(res => res.json())
+        .then(res => {
+            const count = document.getElementById("share-count-" + id);
+            if (count) {
+                count.innerText = res.shares;
+            }
         });
 
-    });
-
-}
-
-function shareReel(id){
-
-const reelUrl = window.location.origin + "/reel/" + id;
-const message = "🔥 Check this reel\n" + reelUrl;
-
-fetch(API_BASE_URL + "/reels/" + id + "/share",{method:"POST"})
-.then(res=>res.json())
-.then(res=>{
-
-const count = document.getElementById("share-count-"+id);
-
-if(count){
-count.innerText = res.shares;
-}
-
-});
-
-if(navigator.share){
-
-navigator.share({
-title:"Trending Product",
-text:message,
-url:reelUrl
-}).catch(()=>{});
-
-}else{
-
-const whatsapp = "https://wa.me/?text=" + encodeURIComponent(message);
-window.open(whatsapp,"_blank");
-
-}
-
+    if (navigator.share) {
+        navigator.share({
+            title: "Trending Product",
+            text: message,
+            url: reelUrl
+        }).catch(() => {});
+    } else {
+        const whatsapp = "https://wa.me/?text=" + encodeURIComponent(message);
+        window.open(whatsapp, "_blank");
+    }
 }
 
 
-
-function showError(){
-
+function showError() {
     const container = document.getElementById("trendsContainer");
-
-    if(container){
+    if (container) {
         container.innerHTML = '<div class="error">Failed to load reels</div>';
     }
-    
-
 }
+
 
 window.postComment = postComment;
 window.closeComments = closeComments;

@@ -4564,22 +4564,22 @@ animation:loader-spin 1s linear infinite;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 15px;
     position: relative;
 }
 
 .reels-slider {
     overflow: visible;
-    width: 100%;
+    width: auto;
+    flex: 1;
 }
 
 .reels-track {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 24px;
+    gap: 20px;
 }
-
 .reel-card {
     transition: all 0.3s ease;
     cursor: pointer;
@@ -4725,27 +4725,30 @@ animation:loader-spin 1s linear infinite;
 }
 
 .reels-nav {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: #440C2C;
     color: #F4B94E;
     border: none;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 18px;
     transition: all 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 20;
+    flex-shrink: 0;
 }
 
 .reels-nav:hover {
     background: #5a1038;
-    transform: scale(1.03);
+    transform: scale(1.05);
 }
+
 .reel-card.position-1,
 .reel-card.position-5 {
-    width: 160px;
+    width: 180px;
     transform: translateY(0);
     opacity: 0.8;
 }
@@ -4753,12 +4756,12 @@ animation:loader-spin 1s linear infinite;
 .reel-card.position-1 .reel-video-wrapper,
 .reel-card.position-5 .reel-video-wrapper {
     aspect-ratio: 4 / 5;
-    min-height: 200px;
+    min-height: 225px;
 }
 
 .reel-card.position-2,
 .reel-card.position-4 {
-    width: 180px;
+    width: 210px;
     transform: translateY(0);
     opacity: 0.9;
 }
@@ -4766,11 +4769,11 @@ animation:loader-spin 1s linear infinite;
 .reel-card.position-2 .reel-video-wrapper,
 .reel-card.position-4 .reel-video-wrapper {
     aspect-ratio: 4 / 5;
-    min-height: 225px;
+    min-height: 262px;
 }
 
 .reel-card.position-3 {
-    width: 200px;
+    width: 240px;
     transform: translateY(-8px);
     z-index: 10;
     opacity: 1;
@@ -4778,7 +4781,15 @@ animation:loader-spin 1s linear infinite;
 
 .reel-card.position-3 .reel-video-wrapper {
     aspect-ratio: 4 / 5;
-    min-height: 250px;
+    min-height: 300px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
     border: 2px solid #F4B94E;
+}
+.reel-video-wrapper video {
+    pointer-events: none;
+} 
+
+ .reel-controls,
+.play-overlay {
+    pointer-events: none;
 }
