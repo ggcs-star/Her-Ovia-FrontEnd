@@ -257,12 +257,10 @@ function getColorNameFromCode(colorCode) {
 
     const lowerColor = colorCode.toLowerCase();
 
-    // agar mapping mile to name return karo
     if (colorMap[lowerColor]) {
         return colorMap[lowerColor];
     }
 
-    // warna code show na ho — generic text show karo
     return 'Color';
 }
     
@@ -354,11 +352,9 @@ if (buyPriceElement)
     if (sizeError) sizeError.style.display = 'none';
     const variant = allSizes.find(v => v.id == variantId);
     if (variant) {
-        // ✅ COMMENT OUT - selectedVariant set mat karo
         // selectedVariant = variant;
         // window.selectedVariant = variant;
         
-        // ✅ Sirf selectedSize store karo
         window.selectedSizeOnly = variant;
         
         // ✅ Product price dikhao (variant price nahi)
