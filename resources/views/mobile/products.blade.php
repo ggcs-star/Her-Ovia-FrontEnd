@@ -267,7 +267,7 @@
             align-items: center;
             gap: 2px;
             font-size: 11px;
-            color: #666;
+            color: #000000;
             cursor: pointer;
         }
         .nav-item.active { color: var(--accent); }
@@ -435,12 +435,10 @@
                 border-bottom: 1px solid #f0f0f0;
             }
             
-            /* Bottom nav hidden on desktop (use normal navigation) */
             .bottom-nav {
                 display: none;
             }
             
-            /* Card hover effect on desktop */
             .card {
                 transition: transform 0.2s, box-shadow 0.2s;
             }
@@ -449,13 +447,12 @@
                 transform: translateY(-4px);
                 box-shadow: 0 8px 24px rgba(0,0,0,0.12);
             }
-            /* Desktop Filter Sections - Collapsible */
             .desktop-filter-section .filter-options {
-                display: none; /* Pehle band rahega */
+                display: none; 
             }
 
             .desktop-filter-section .filter-options.open {
-                display: block; /* Jab open class ho tab dikhe */
+                display: block; 
             }
 
             .desktop-filter-section .desktop-filter-title {
@@ -475,15 +472,11 @@
             .desktop-filter-section.open .desktop-filter-title::after {
                 content: '−';
             }
-            
-            /* Hide mobile filter popup on desktop */
             .filter-popup-overlay,
             .sort-popup-overlay {
                 display: none !important;
             }
         }
-        
-        /* Tablet view - 2 columns */
         @media screen and (min-width: 768px) and (max-width: 1023px) {
             .products {
                 grid-template-columns: repeat(2, 1fr);
@@ -494,8 +487,6 @@
                 display: none;
             }
         }
-        
-        /* Mobile view - NO CHANGES, keep original layout */
         @media screen and (max-width: 767px) {
             .desktop-filters-sidebar {
                 display: none;
@@ -1034,6 +1025,19 @@
     color: #333;
     background: transparent;
 }
+@media screen and (max-width: 1024px) {
+    .desktop-filters-sidebar {
+        display: none !important;
+    }
+    
+    .products-page-wrapper {
+        display: block !important;
+    }
+    
+    .desktop-products-area {
+        width: 100% !important;
+    }
+}
     </style>
 </head>
 <body data-page="products" data-subcategory-id="{{ request()->query('subcategory') }}" data-category-id="{{ request()->query('category') }}">
@@ -1197,14 +1201,14 @@
             <div class="desktop-filter-title">DISCOUNT</div>
             <div class="filter-options" id="desktopDiscountFilters"></div>
         </div>
-        <div class="desktop-filter-section">
+        <!-- <div class="desktop-filter-section">
             <div class="desktop-filter-title">SIZE</div>
             <div class="filter-options" id="desktopSizeFilters"></div>
         </div>
         <div class="desktop-filter-section">
             <div class="desktop-filter-title">COLOR</div>
             <div class="filter-options" id="desktopColorFilters"></div>
-        </div>
+        </div> -->
                 
         <button class="desktop-reset-filters" onclick="resetDesktopFilters()">Reset All Filters</button>
     </aside>
@@ -1559,6 +1563,13 @@ updateMobileLogo();
         }
     }
     function updateDesktopFiltersFromProducts(products) {
+        const urlParams = new URLSearchParams(window.location.search);
+    const type = urlParams.get('type');
+    
+    if (type === 'top-selling') {
+        const categorySection = document.querySelector('#desktopCategoryFilters')?.closest('.desktop-filter-section');
+        if (categorySection) categorySection.style.display = 'none';
+    }
     const brands = new Set();
     products.forEach(p => {
         if (p.brand) brands.add(p.brand);
@@ -1751,9 +1762,26 @@ async function fetchTopSellingProducts() {
             originalProducts = [...products];
             renderProducts(products);
             
-            // Subs strip hide karo
             const subStrip = document.getElementById('subStrip');
             if (subStrip) subStrip.style.display = 'none';
+            
+            const desktopFiltersSidebar = document.getElementById('desktopFiltersSidebar');
+            if (desktopFiltersSidebar) {
+                desktopFiltersSidebar.style.display = 'block';
+            }
+            
+            updateDesktopFiltersFromProducts(products);
+            
+            const desktopCategoryContainer = document.getElementById('desktopCategoryFilters');
+            if (desktopCategoryContainer) {
+                desktopCategoryContainer.innerHTML = '';
+                const categoryHeader = desktopCategoryContainer.closest('.desktop-filter-section');
+                if (categoryHeader) categoryHeader.style.display = 'none';
+            }
+            
+            // ⭐ YEH LINE ADD KARO ⭐
+            initDesktopFiltersToggle();
+            
         } else {
             grid.innerHTML = '<div class="loading">No products found</div>';
         }
@@ -2062,7 +2090,73 @@ async function fetchMultipleSubcategoriesMobile(subIds) {
         const urlParams = new URLSearchParams(window.location.search);
         const categoryId = urlParams.get('category');
         const subcategoryId = urlParams.get('subcategory');
-        
+        const type = urlParams.get('type');
+         if (type === 'top-selling') {
+            if (filterType === 'price') {
+                const prices = currentProducts.map(p => parseFloat(
+                    (p.product_price && p.product_price != "0.00") 
+                        ? p.product_price 
+                        : (p.final_price || p.price || 0)
+                )).filter(p => !isNaN(p));
+                
+                const minPrice = Math.min(...prices);
+                const maxPrice = Math.max(...prices);
+                const step = Math.ceil((maxPrice - minPrice) / 4);
+                const ranges = [];
+                let current = minPrice;
+                
+                for (let i = 0; i < 4; i++) {
+                    if (i === 0) {
+                        ranges.push({ min: 0, max: current + step, label: `Below ₹${(current + step).toFixed(0)}` });
+                    } else if (i === 3) {
+                        ranges.push({ min: current, max: maxPrice, label: `Above ₹${current.toFixed(0)}` });
+                    } else {
+                        ranges.push({ min: current, max: current + step, label: `₹${current.toFixed(0)} - ₹${(current + step).toFixed(0)}` });
+                    }
+                    current += step;
+                }
+                
+                options = ranges.map(range => ({
+                    value: `${range.min}-${range.max}`,
+                    label: range.label
+                }));
+            }
+            else if (filterType === 'brand') {
+                const brands = new Set();
+                currentProducts.forEach(p => {
+                    if (p.brand) brands.add(p.brand);
+                });
+                options = Array.from(brands).map(b => ({ value: b, label: b }));
+            }
+            else if (filterType === 'discount') {
+                const discountSet = new Set();
+                currentProducts.forEach(p => {
+                    if (p.price && p.final_price) {
+                        const original = parseFloat(p.price);
+                        const final = parseFloat(p.final_price);
+                        if (original > final) {
+                            const discount = Math.round(((original - final) / original) * 100);
+                            discountSet.add(discount);
+                        }
+                    }
+                });
+                options = Array.from(discountSet).sort((a, b) => a - b).map(d => ({
+                    value: d,
+                    label: `${d}% & above`
+                }));
+            }
+            
+            if (options.length > 0) {
+                container.innerHTML = options.map(opt => `
+                    <label class="filter-checkbox">
+                        <input type="checkbox" class="filter-${filterType}" value="${opt.value}"> ${opt.label}
+                    </label>
+                `).join('');
+            } else {
+                container.innerHTML = '<div style="padding: 20px; color: #999;">No options available</div>';
+            }
+            return;  
+        }
         switch(filterType) {
             case 'category':
                 try {

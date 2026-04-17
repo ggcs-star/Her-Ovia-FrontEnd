@@ -1532,6 +1532,29 @@
     color: #333;
     background: transparent;
 }
+#web-search-suggestions {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    width: 100% !important;
+    background: white !important;
+    border: 1px solid #ccc !important;
+    z-index: 99999 !important;
+    display: none;
+}
+.search-box,
+.search-area,
+.web-header .search-box,
+.web-header .search-area {
+    overflow: visible !important;
+}
+
+.web-header,
+.main-header,
+.logo-area,
+.nav-menu {
+    overflow: visible !important;
+}
     </style>
 </head>
 <body>
@@ -1593,23 +1616,9 @@ function renderHeader() {
                                 </div>
                                 <div class="search-area">
                                     <div class="search-box" style="position:relative;">
-                                    <span id="web-clear-btn" style="
-                                        position:absolute;
-                                        right:10px;
-                                        top:50%;
-                                        transform:translateY(-50%);
-                                        cursor:pointer;
-                                        display:none;
-                                        font-size:16px;
-                                    ">✕</span>
-
-                                    <div
-                                        id="web-search-suggestions"
-                                        class="web-search-suggestions"
-                                        style="display:none;"
-                                    ></div>
                                         <input type="text" placeholder="Search for products, brands..." id="web-search-input">
-                                        
+                                        <span id="web-clear-btn" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; display:none; font-size:16px;"></span>
+                                        <div id="web-search-suggestions" class="web-search-suggestions" style="display:none;"></div>
                                     </div>
                                 </div>
                             <div class="header-actions">
@@ -1694,7 +1703,11 @@ function renderHeader() {
                         </div>
                         <div class="all-categories-popup" id="allCategoriesPopup" style="display:none;"></div>
                     `;
-                    setTimeout(initWebSearchDropdown, 100);
+                    setTimeout(function() {
+                            if (window.innerWidth >= 1025) {
+                                initWebSearchDropdown();
+                            }
+                        }, 300);
                     setTimeout(() => {
                         const webLogo = document.getElementById('site-logo');
                         if (webLogo) {
@@ -1847,12 +1860,15 @@ setTimeout(() => {
     updateCartCountForOrderPage();
 }, 800);
 function initWebSearchDropdown() {
-
     const input = document.getElementById("web-search-input");
     const box = document.getElementById("web-search-suggestions");
     const clearBtn = document.getElementById("web-clear-btn");
 
-    if (!input) return;
+    if (!input) {
+        console.log("Search input not found, retrying...");
+        setTimeout(initWebSearchDropdown, 500);
+        return;
+    }
 
     let timer;
 
@@ -1923,8 +1939,9 @@ function initWebSearchDropdown() {
             box.style.display = "none";
         }
     });
-
+console.log("Web search dropdown initialized successfully");
 }
+
 setTimeout(() => {
     applyAppSettingsForOrderPage();
 }, 100);
@@ -1934,7 +1951,12 @@ window.addEventListener('resize', () => {
 
     setTimeout(() => {
         applyAppSettingsForOrderPage();
-    }, 100);
+
+        if (window.innerWidth >= 1025) {
+            initWebSearchDropdown();
+        }
+
+    }, 300);
 });
     function goBack() {
             window.history.back();
@@ -2386,6 +2408,15 @@ window.addEventListener('resize', () => {
         renderHeader();
         fetchOrderData();
         startAutoRefresh();
+        // Initialize web search dropdown after DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        if (typeof initWebSearchDropdown === 'function') {
+            initWebSearchDropdown();
+            console.log('Web search initialized on order confirmation page');
+        }
+    }, 500);
+});
     </script>
 </body>
 </html>
