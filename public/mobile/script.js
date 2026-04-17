@@ -1346,47 +1346,6 @@ renderReelsSlider(reels) {
         return cards;
     };
     
-    const attachReelControlEvents = () => {
-        document.querySelectorAll('.reel-card').forEach(card => {
-            const video = card.querySelector('.reel-video');
-            if (!video) return;
-            
-            const playPauseBtn = card.querySelector('.play-pause-btn');
-            const soundBtn = card.querySelector('.sound-btn');
-            
-            // Remove old listeners
-            const newPlayBtn = playPauseBtn?.cloneNode(true);
-            const newSoundBtn = soundBtn?.cloneNode(true);
-            
-            if (playPauseBtn && newPlayBtn) {
-                playPauseBtn.parentNode.replaceChild(newPlayBtn, playPauseBtn);
-                newPlayBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    if (video.paused) {
-                        video.play().catch(() => {});
-                        newPlayBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-                    } else {
-                        video.pause();
-                        newPlayBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>`;
-                    }
-                };
-            }
-            
-            if (soundBtn && newSoundBtn) {
-                soundBtn.parentNode.replaceChild(newSoundBtn, soundBtn);
-                newSoundBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    video.muted = !video.muted;
-                    newSoundBtn.innerHTML = video.muted 
-                        ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`
-                        : `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>`;
-                };
-            }
-        });
-    };
-    
     const updateSlider = () => {
         const visibleCards = getVisibleCards();
         let html = '';
@@ -1397,41 +1356,28 @@ renderReelsSlider(reels) {
             const productSlug = card.product?.slug || card.slug || `reel-${card.id}`;
             
             html += `
-                <div class="reel-card ${posClass}" 
-                    data-index="${card.originalIndex}" 
-                    data-slug="${productSlug}"
-                    style="cursor:pointer;">
+                <div class="reel-card ${posClass}" data-index="${card.originalIndex}" data-slug="${productSlug}">
                     <div class="reel-video-wrapper">
-                        <video 
-                            class="reel-video" 
-                            ${card.position === 3 ? 'autoplay' : ''}
-                            muted 
-                            loop 
-                            preload="auto"
-                            playsinline
-                            webkit-playsinline
-                            style="background: #f5f5f5; width:100%; height:100%; object-fit:cover;"
-                            
-                        >
+                        <video class="reel-video" ${card.position === 3 ? 'autoplay' : ''} muted loop preload="auto" playsinline webkit-playsinline style="background: #f5f5f5; width:100%; height:100%; object-fit:cover;">
                             <source src="${videoUrl}" type="video/mp4">
                         </video>
-                        <div class="reel-controls" onclick="event.stopPropagation()">
-                            <button class="reel-control-btn play-pause-btn" onclick="event.stopPropagation()">
+                        <div class="reel-controls">
+                            <button class="reel-control-btn play-pause-btn">
                                 <svg viewBox="0 0 24 24" width="14" height="14" fill="white">
                                     <path d="M8 5v14l11-7z"/>
                                 </svg>
                             </button>
-                            <button class="reel-control-btn sound-btn" onclick="event.stopPropagation()">
+                            <button class="reel-control-btn sound-btn">
                                 <svg viewBox="0 0 24 24" width="14" height="14" fill="white">
                                     <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
                                 </svg>
                             </button>
                         </div>
-                        <div class="reel-info-overlay" onclick="event.stopPropagation(); window.location.href='/product/${productSlug}'">
+                        <div class="reel-info-overlay">
                             <div class="reel-title-overlay">${card.title || ''}</div>
                         </div>
-                        <div class="play-overlay" onclick="event.stopPropagation()">
-                            <button class="play-reel-btn" onclick="event.stopPropagation()">
+                        <div class="play-overlay">
+                            <button class="play-reel-btn">
                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#440C2C">
                                     <path d="M8 5v14l11-7z"/>
                                 </svg>
@@ -1444,31 +1390,92 @@ renderReelsSlider(reels) {
         
         slider.innerHTML = `<div class="reels-track" style="display: flex; justify-content: center; align-items: center; gap: 20px;">${html}</div>`;
         
-        setTimeout(() => {
-            const centerVideo = document.querySelector('.reel-card.position-3 .reel-video');
-            if (centerVideo) {
-                centerVideo.play().catch(() => {});
+        const track = document.querySelector('.reels-track');
+        if (track) {
+            track.removeEventListener('click', handleTrackClick);
+            track.addEventListener('click', handleTrackClick);
+        }
+    };
+    
+    const handleTrackClick = (e) => {
+        const playBtn = e.target.closest('.play-pause-btn');
+        if (playBtn) {
+            e.stopPropagation();
+            const wrapper = playBtn.closest('.reel-video-wrapper');
+            const video = wrapper?.querySelector('.reel-video');
+            if (video) {
+                if (video.paused) {
+                    video.play();
+                    playBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+                } else {
+                    video.pause();
+                    playBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>`;
+                }
             }
-        }, 100);
+            return;
+        }
         
-        attachReelControlEvents();
+        const soundBtn = e.target.closest('.sound-btn');
+        if (soundBtn) {
+            e.stopPropagation();
+            const wrapper = soundBtn.closest('.reel-video-wrapper');
+            const video = wrapper?.querySelector('.reel-video');
+            if (video) {
+                video.muted = !video.muted;
+                soundBtn.innerHTML = video.muted 
+                    ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`
+                    : `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>`;
+            }
+            return;
+        }
+        
+        const playOverlayBtn = e.target.closest('.play-reel-btn');
+        if (playOverlayBtn) {
+            e.stopPropagation();
+            const wrapper = playOverlayBtn.closest('.reel-video-wrapper');
+            const video = wrapper?.querySelector('.reel-video');
+            const playPauseBtn = wrapper?.querySelector('.play-pause-btn');
+            if (video && playPauseBtn) {
+                if (video.paused) {
+                    video.play();
+                    playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+                } else {
+                    video.pause();
+                    playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>`;
+                }
+            }
+            return;
+        }
+        
+        const card = e.target.closest('.reel-card');
+        if (card && !e.target.closest('button')) {
+            const slug = card.dataset.slug;
+            if (slug) {
+                window.location.href = '/product/' + slug;
+            }
+        }
     };
     
     updateSlider();
-    setupReelRedirect();
     
     const prevBtn = document.querySelector('.reels-prev');
     const nextBtn = document.querySelector('.reels-next');
     
     if (prevBtn) {
-        prevBtn.onclick = () => {
+        const newPrev = prevBtn.cloneNode(true);
+        prevBtn.parentNode.replaceChild(newPrev, prevBtn);
+        newPrev.onclick = (e) => {
+            e.stopPropagation();
             currentIndex = (currentIndex - 1 + reels.length) % reels.length;
             updateSlider();
         };
     }
     
     if (nextBtn) {
-        nextBtn.onclick = () => {
+        const newNext = nextBtn.cloneNode(true);
+        nextBtn.parentNode.replaceChild(newNext, nextBtn);
+        newNext.onclick = (e) => {
+            e.stopPropagation();
             currentIndex = (currentIndex + 1) % reels.length;
             updateSlider();
         };
@@ -1741,21 +1748,15 @@ document.addEventListener('DOMContentLoaded', function() {
     fetchCategoriesForFooter();
 });
 document.addEventListener("click", (e) => {
-
     const box =
         document.querySelector(".search-box");
-
     const suggestions =
         document.getElementById(
             "web-search-suggestions"
         );
-
     if (!box || !suggestions) return;
-
     if (!box.contains(e.target)) {
-
         suggestions.style.display = "none";
-
     }
 
 });
@@ -1763,7 +1764,7 @@ function setupReelRedirect() {
     document.querySelectorAll('.reel-card').forEach(card => {
         card.onclick = (e) => {
             if (e.target.closest('button')) return;
-            if (e.target.closest('.reel-controls')) return;
+            // if (e.target.closest('.reel-controls')) return;
             if (e.target.closest('.play-overlay')) return;
             
             const slug = card.dataset.slug;

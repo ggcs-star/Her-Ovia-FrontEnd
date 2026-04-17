@@ -4789,7 +4789,16 @@ animation:loader-spin 1s linear infinite;
     pointer-events: none;
 } 
 
- .reel-controls,
+.reel-controls {
+    pointer-events: auto;
+}
+
 .play-overlay {
-    pointer-events: none;
+    pointer-events: auto;
+}
+
+.reel-controls button,
+.play-reel-btn {
+    pointer-events: auto;
+    cursor: pointer;
 }
