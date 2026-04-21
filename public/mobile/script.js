@@ -262,21 +262,13 @@ initWebSearchDropdown() {
 
             return;
         }
-
-        /* ⭐ baaki typing pe smooth delay */
-
         timer = setTimeout(async () => {
-
             try {
-
                 const res = await fetch(
                     `${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`
                 );
-
                 const data = await res.json();
-
                 if (!data.success) return;
-
                 const products = data.data.products || [];
 
                 let html = "";
@@ -742,18 +734,47 @@ async renderPromotionalBanners() {
     const container1 = document.getElementById('mid-banner-1-container');
     const container2 = document.getElementById('mid-banner-2-container');
 
-    const isMobile = window.innerWidth < 768;
+    if (!banners.length) return;
 
-    if (banners.length > 0 && container1) {
-        const b = banners[0];
-        
-        let bannerImage;
-        if (isMobile) {
-            bannerImage = b.mobile_image || b.image;
-        } else {
-            bannerImage = b.image || b.mobile_image;
+    if (banners.length > 1) {
+        if (container1) {
+            let bannersHtml = `
+                <div class="mid-banner-carousel" id="midBannerCarousel">
+                    <div class="mid-banner-track" id="midBannerTrack">
+            `;
+
+            banners.forEach(b => {
+                const isMobile = window.innerWidth < 768;
+                let bannerImage = isMobile ? (b.mobile_image || b.image) : (b.image || b.mobile_image);
+                const hasText = b.title || b.subtitle || b.button_text;
+                
+                bannersHtml += `
+                    <div class="mid-banner-slide">
+                        <img src="${this.resolveImage(bannerImage)}" class="mid-banner-img">
+                        ${hasText ? `
+                            <div class="mid-banner-overlay">
+                                ${b.title ? `<h3>${b.title}</h3>` : ''}
+                                ${b.subtitle ? `<p>${b.subtitle}</p>` : ''}
+                                ${b.button_text ? `<button onclick="window.location.href='${b.button_link || '#'}'">${b.button_text}</button>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            bannersHtml += `</div></div>`;
+            container1.innerHTML = bannersHtml;
+            
+            this.startMidBannerAutoScroll();
         }
-        
+        if (container2) container2.innerHTML = '';
+        return;
+    }
+
+    if (banners.length >= 1 && container1) {
+        const b = banners[0];
+        const isMobile = window.innerWidth < 768;
+        let bannerImage = isMobile ? (b.mobile_image || b.image) : (b.image || b.mobile_image);
         const hasText = b.title || b.subtitle || b.button_text;
         
         container1.innerHTML = `
@@ -771,17 +792,10 @@ async renderPromotionalBanners() {
         `;
     }
 
-    if (banners.length > 1 && container2) {
+    if (banners.length === 2 && container2) {
         const b = banners[1];
-        
-        // ✅ Same for second banner
-        let bannerImage;
-        if (isMobile) {
-            bannerImage = b.mobile_image || b.image;
-        } else {
-            bannerImage = b.image || b.mobile_image;
-        }
-        
+        const isMobile = window.innerWidth < 768;
+        let bannerImage = isMobile ? (b.mobile_image || b.image) : (b.image || b.mobile_image);
         const hasText = b.title || b.subtitle || b.button_text;
         
         container2.innerHTML = `
@@ -797,6 +811,64 @@ async renderPromotionalBanners() {
             </div>
         `;
     }
+}
+
+startMidBannerAutoScroll() {
+    const track = document.getElementById('midBannerTrack');
+    if (!track) return;
+    
+    let autoScrollInterval;
+    let isHovering = false;
+    
+    const slides = document.querySelectorAll('.mid-banner-slide');
+    if (slides.length <= 1) return;
+    
+    function autoScroll() {
+        if (isHovering) return;
+        
+        const scrollAmount = track.scrollLeft + track.clientWidth;
+        const maxScroll = track.scrollWidth - track.clientWidth;
+        
+        if (track.scrollLeft + 10 >= maxScroll) {
+            track.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+            track.scrollBy({ left: track.clientWidth * 0.8, behavior: 'smooth' });
+        }
+    }
+    
+    function startScroll() {
+        if (autoScrollInterval) clearInterval(autoScrollInterval);
+        autoScrollInterval = setInterval(autoScroll, 3000);
+    }
+    
+    function stopScroll() {
+        if (autoScrollInterval) {
+            clearInterval(autoScrollInterval);
+            autoScrollInterval = null;
+        }
+    }
+    
+    track.addEventListener('mouseenter', () => {
+        isHovering = true;
+        stopScroll();
+    });
+    
+    track.addEventListener('mouseleave', () => {
+        isHovering = false;
+        startScroll();
+    });
+    
+    track.addEventListener('touchstart', () => {
+        isHovering = true;
+        stopScroll();
+    });
+    
+    track.addEventListener('touchend', () => {
+        isHovering = false;
+        startScroll();
+    });
+    
+    startScroll();
 }
 showCategoryPopup(category) {
     let popup = document.getElementById('category-popup-overlay');
@@ -1059,97 +1131,127 @@ async renderStyleSpotlight() {
 
     const fallbackItems = [
         {
-            brand: "FashionHub",
-            name: "Women's Cotton T-Shirt",
-            rating: "4.5",
-            current: "1260",
-            old: "1638",
-            image_url: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop"
-        },
-        {
-            brand: "TechPro",
-            name: "Smartphone Pro",
-            rating: "4.8",
-            current: "49800",
-            old: "64740",
-            image_url: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=200&auto=format&fit=crop"
-        },
-        {
-            brand: "AudioMax",
-            name: "Wireless Buds",
+            brand: "Aurumelle",
+            name: "Royal Diamond Maang Tikka",
             rating: "4.6",
-            current: "4999",
-            old: "7999",
-            image_url: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=200&auto=format&fit=crop"
+            current: "300",
+            old: "399",
+            image_url: "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=200&h=200&fit=crop"
         },
         {
-            brand: "SportLife",
-            name: "Running Shoes",
-            rating: "4.7",
-            current: "3500",
-            old: "5000",
-            image_url: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=200&auto=format&fit=crop"
+            brand: "Jewelique",
+            name: "Royal Kundan Chandbali Earrings",
+            rating: "4.5",
+            current: "350",
+            old: "455",
+            image_url: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=200&h=200&fit=crop"
         },
         {
-            brand: "WatchWorld",
-            name: "Smart Watch",
+            brand: "Vaibhav Jewels",
+            name: "Royal Sapphire Elegance Bridal Set",
+            rating: "4.3",
+            current: "1099",
+            old: "1429",
+            image_url: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=200&h=200&fit=crop"
+        },
+        {
+            brand: "Aurumelle",
+            name: "Royal Kundan Pearl Necklace",
             rating: "4.4",
-            current: "2999",
-            old: "4500",
-            image_url: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=200&auto=format&fit=crop"
+            current: "799",
+            old: "1039",
+            image_url: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=200&h=200&fit=crop"
+        },
+        {
+            brand: "Aurumelle",
+            name: "Royal Diamond Maang Tikka",
+            rating: "4.6",
+            current: "300",
+            old: "399",
+            image_url: "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=200&h=200&fit=crop"
+        },
+        {
+            brand: "Jewelique",
+            name: "Royal Kundan Chandbali Earrings",
+            rating: "4.5",
+            current: "350",
+            old: "455",
+            image_url: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=200&h=200&fit=crop"
+        },
+        {
+            brand: "Vaibhav Jewels",
+            name: "Royal Sapphire Elegance Bridal Set",
+            rating: "4.3",
+            current: "1099",
+            old: "1429",
+            image_url: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=200&h=200&fit=crop"
+        },
+        {
+            brand: "Aurumelle",
+            name: "Royal Kundan Pearl Necklace",
+            rating: "4.4",
+            current: "799",
+            old: "1039",
+            image_url: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=200&h=200&fit=crop"
         }
     ];
     
     let displayItems = [];
-    if (items.length > 0) {
-        if (window.innerWidth >= 1025) {
+        if (items.length > 0) {
             displayItems = items.slice(0, 8);
         } else {
-            displayItems = items;
+            displayItems = fallbackItems.slice(0, 8);
         }
-    } else {
-        displayItems = fallbackItems;
-        if (window.innerWidth >= 1025) {
-            displayItems = displayItems.slice(0, 8);
-        }
-    }
 
     const itemsHtml = displayItems.map(item => {
         const brand = item.brand || 'Premium Brand';
         const name = item.name || 'Fashion Item';
         const rating = item.rating || (4 + Math.random()).toFixed(1);
-        const current =
-            (item.product_price && item.product_price != "0.00")
-            ? item.product_price
-            : (item.final_price || item.price || '999');
-        const old = item.old || item.mrp || (Math.round(parseInt(current) * 1.3));
+        const current = (item.product_price && item.product_price != "0.00") ? item.product_price : (item.final_price || item.price || '999');
+        const old = item.mrp || (Math.round(parseInt(current) * 1.3));
+        const discount = Math.round(((old - current) / old) * 100);
         
         return `
-            <div class="spotlight-item" onclick="window.location.href='/product/${item.slug || '#'}'">
-                <div class="spotlight-img-wrap">
+            <div class="spotlight-card" onclick="window.location.href='/product/${item.slug || '#'}'">
+               
+                <div class="spotlight-card-img">
                     <img src="${this.resolveImage(item.image_url)}" onerror="this.src='${APP_CONFIG.FALLBACK_IMAGE}'">
-                    <div class="spotlight-rating">${rating}</div>
-                </div>
-                <div class="spotlight-info">
-                    <h4>${brand}</h4>
-                    <div class="product-name">${name}</div>
-                    <div class="spotlight-price">
-                        <span class="current">₹${current}</span>
-                        <span class="old">₹${old}</span>
+                    <div class="rating-badge">
+                        ★ <span>${rating}</span>
                     </div>
+                </div>
+                <div class="spotlight-card-info">
+                    <div class="card-brand">${brand}</div>
+                    <div class="card-title">${name.length > 35 ? name.substring(0, 35) + '...' : name}</div>
+                    <div class="card-price">
+                        <span class="current-price">₹${current}</span>
+                        <span class="old-price">₹${old}</span>
+                        <span class="discount-badge">(${discount}% off)</span>
+                    </div>
+                    <button class="add-to-cart" onclick="event.stopPropagation(); window.location.href='/product/${item.slug}'">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M1 1H5L7.68 14.39C7.77144 14.8504 8.02191 15.264 8.38755 15.5583C8.75318 15.8526 9.2107 16.009 9.68 16H19.4C19.8693 16.009 20.3268 15.8526 20.6925 15.5583C21.0581 15.264 21.3086 14.8504 21.4 14.39L23 6H6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="9" cy="21" r="1.5" fill="currentColor"/>
+                            <circle cx="20" cy="21" r="1.5" fill="currentColor"/>
+                        </svg>
+                        Explore
+                    </button>
                 </div>
             </div>
         `;
     }).join('');
 
-    const sectionHeader = `
-        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 class="section-title" style="font-size: 24px; font-weight: 700; color: #000; margin: 0;">Style Spotlight</h2>
-            <a href="/products?type=top-selling" class="view-all-link">View All →</a>
+    container.innerHTML = `
+        <div class="style-spotlight-section">
+            <div class="spotlight-header">
+                <h2>Style Spotlight</h2>
+                <a href="/products?type=top-selling" class="spotlight-viewall">View All →</a>
+            </div>
+            <div class="spotlight-grid">
+                ${itemsHtml}
+            </div>
         </div>
     `;
-
-    container.innerHTML = sectionHeader + `<div class="spotlight-grid">${itemsHtml}</div>`;
 }
 
     async renderBrandsMarquee() {
@@ -1224,34 +1326,40 @@ async renderDynamicCategorySections() {
                 
                 if (data.success && data.data && data.data.products && data.data.products.length > 0) {
                     const products = data.data.products.slice(0, MAX_PRODUCTS);
+                    const sectionId = `dual-scroll-${sectionsAdded}`;
                     
                     const sectionHtml = `
-                        <section class="section-container style-category-section">
-                            <div class="container">
-                                <div class="section-header">
-                                    <h2 class="section-title">${firstSubcategory.name}</h2>
-                                    <a href="/products?subcategory=${firstSubcategory.id}" class="view-all-link">View All →</a>
+                        <div class="landscape-dual-section">
+                            <div class="landscape-dual-box">
+                                <div class="landscape-dual-left">
+                                    <img src="${this.resolveImage(firstSubcategory.image_url || category.image_url)}" alt="${firstSubcategory.name}">
+                                    <div class="landscape-dual-overlay">
+                                        <h3>${firstSubcategory.name}</h3>
+                                        <a href="/products?subcategory=${firstSubcategory.id}" class="landscape-dual-btn">SHOP NOW →</a>
+                                    </div>
                                 </div>
-                                <div class="style-category-grid">
-                                    ${products.map(p => `
-                                        <div class="style-category-card" onclick="window.location.href='/product/${p.slug}'">
-                                            <div class="style-category-img">
-                                                <img src="${this.resolveImage(p.image_url)}" alt="${p.name}">
-                                            </div>
-                                            <div class="style-category-info">
-                                                <h4>${p.name.length > 22 ? p.name.substring(0, 22) + '...' : p.name}</h4>
-                                                <p>${p.brand || 'Premium Collection'}</p>
-                                                <div class="style-category-price">
-                                                    <span class="current">₹${(p.product_price && p.product_price != "0.00") ? p.product_price : (p.final_price || p.price || 0)}</span>
-                                                    ${p.mrp ? `<span class="old">₹${p.mrp}</span>` : ''}
+                                <div class="landscape-dual-right">
+                                    <div class="landscape-dual-scroll" id="${sectionId}">
+                                        ${products.map(p => `
+                                            <div class="landscape-dual-card" onclick="window.location.href='/product/${p.slug}'">
+                                                <div class="landscape-dual-img">
+                                                    <img src="${this.resolveImage(p.image_url)}" alt="${p.name}">
                                                 </div>
-                                                <button class="explore-btn" onclick="event.stopPropagation(); window.location.href='/product/${p.slug}'">EXPLORE →</button>
+                                                <div class="landscape-dual-name">${p.name.length > 22 ? p.name.substring(0, 22) + '...' : p.name}</div>
+                                                <div class="landscape-dual-price">₹${(p.product_price && p.product_price != "0.00") ? p.product_price : (p.final_price || p.price || 0)}</div>
                                             </div>
+                                        `).join('')}
+                                    </div>
+                                    <div class="landscape-dual-bottom">
+                                        <div class="landscape-dual-nav">
+                                            <button class="landscape-nav-btn prev-btn" data-scroll="${sectionId}">◀</button>
+                                            <button class="landscape-nav-btn next-btn" data-scroll="${sectionId}">▶</button>
                                         </div>
-                                    `).join('')}
+                                        <a href="/products?subcategory=${firstSubcategory.id}" class="landscape-viewall">View All →</a>
+                                    </div>
                                 </div>
                             </div>
-                        </section>
+                        </div>
                     `;
                     
                     sectionsHtml.push(sectionHtml);
@@ -1299,6 +1407,27 @@ async renderDynamicCategorySections() {
     }
     
     container.innerHTML = finalHtml;
+    
+    // Attach scroll buttons functionality
+    document.querySelectorAll('.prev-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const scrollId = btn.dataset.scroll;
+            const scrollDiv = document.getElementById(scrollId);
+            if (scrollDiv) {
+                scrollDiv.scrollBy({ left: -180, behavior: 'smooth' });
+            }
+        });
+    });
+    
+    document.querySelectorAll('.next-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const scrollId = btn.dataset.scroll;
+            const scrollDiv = document.getElementById(scrollId);
+            if (scrollDiv) {
+                scrollDiv.scrollBy({ left: 180, behavior: 'smooth' });
+            }
+        });
+    });
     
     this.loadTrendingReels();
     

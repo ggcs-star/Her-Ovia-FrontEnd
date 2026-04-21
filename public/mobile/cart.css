@@ -2538,3 +2538,31 @@ body.cart-page .site-header {
     line-height: 1;
     z-index: 1000;
 }
+body.cart-page {
+    padding-bottom: 0 !important;
+}
+
+body.cart-page .site-footer {
+    position: relative !important;
+    margin-top: 30px !important;
+    clear: both !important;
+}
+
+body.cart-page .page-content {
+    padding-bottom: 0 !important;
+    min-height: auto !important;
+}
+
+@media (min-width: 768px) {
+    body.cart-page {
+        padding-bottom: 0 !important;
+    }
+    
+    body.cart-page .site-footer {
+        position: relative !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        margin-top: 40px !important;
+    }
+}
