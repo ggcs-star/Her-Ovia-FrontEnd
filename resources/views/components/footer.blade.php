@@ -3,22 +3,12 @@
         <div class="footer-grid">
 
             <div class="footer-col">
-
                 <div style="display:flex; align-items:center; gap:10px;">
-
-                    <img id="footer-logo"
-                         src=""
-                         alt="Logo"
-                         class="site-logo"
-                         style="height:40px;"
-                         onerror="this.src='https://placehold.co/120x40?text=LOGO'">
-
+                    <img id="footer-logo" src="" alt="Logo" class="site-logo" style="height:40px;" onerror="this.src='https://placehold.co/120x40?text=LOGO'">
                 </div>
-
                 <p class="footer-tagline">
                     Your one-stop destination for fashion and lifestyle.
                 </p>
-
                 <div class="footer-location">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -30,7 +20,6 @@
                         Ahmedabad, Gujarat 380005
                     </span>
                 </div>
-
             </div>
 
             <div class="footer-col">
@@ -55,7 +44,6 @@
             <div class="footer-col">
                 <h4>Join Us</h4>
                 <div class="social-links">
-
                     <div class="social-link-item">
                         <div class="social-icon">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -66,7 +54,6 @@
                         </div>
                         <span>Instagram</span>
                     </div>
-
                     <div class="social-link-item">
                         <div class="social-icon">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -75,7 +62,6 @@
                         </div>
                         <span>Facebook</span>
                     </div>
-
                     <div class="social-link-item">
                         <div class="social-icon">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -84,7 +70,6 @@
                         </div>
                         <span>Twitter</span>
                     </div>
-
                     <div class="social-link-item">
                         <div class="social-icon">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -94,7 +79,6 @@
                         </div>
                         <span>YouTube</span>
                     </div>
-
                     <div class="social-link-item">
                         <div class="social-icon">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -104,7 +88,6 @@
                         </div>
                         <span>Pinterest</span>
                     </div>
-
                 </div>
             </div>
 
@@ -112,33 +95,46 @@
                 <h4>Contact Information</h4>
                 <ul class="contact-info">
                     <li>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
                         <a href="mailto:info@radiantjewel.com">info@radiantjewel.com</a>
                     </li>
                     <li>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
                         <a href="tel:+918866373077">+91 8866373077</a>
                     </li>
                 </ul>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:15px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span style="font-size:12px; color:#666;">Mon-Sat: 10AM - 7PM</span>
+                </div>
             </div>
 
         </div>
 
         <div class="footer-bottom">
-            <p>
-                © <span id="footerYear"></span>
-                All Rights Reserved.
-            </p>
+            <p>© <span id="footerYear"></span> All Rights Reserved.</p>
+           
         </div>
 
     </div>
 </footer>
+
 <style>
-    /* ===== FOOTER STYLES - ACCENT COLOR #F4B94E ===== */
 .site-footer {
-    background: #ffffff;
+    background: #FAF6F5;
     border-top: 1px solid #f0f0f0;
     margin-top: 30px;
     padding: 40px 0 30px;
 }
+
 
 .site-footer .container {
     max-width: 1200px;
@@ -156,7 +152,7 @@
 .footer-col h4 {
     font-size: 16px;
     font-weight: 700;
-    color: #1a1a1a;
+    color: #440C2C;
     margin-bottom: 20px;
     position: relative;
     display: inline-block;
@@ -191,7 +187,7 @@
 .footer-location svg {
     width: 18px;
     height: 18px;
-    color: #F4B94E;
+    stroke: #F4B94E;
     flex-shrink: 0;
     margin-top: 2px;
 }
@@ -226,7 +222,12 @@
 .footer-support-list li {
     font-size: 13px;
     color: #555;
-    cursor: default;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.footer-support-list li:hover {
+    color: #F4B94E;
 }
 
 .social-links {
@@ -290,22 +291,34 @@
     margin-bottom: 15px;
 }
 
+.contact-info li svg {
+    stroke: #F4B94E;
+    flex-shrink: 0;
+}
+
 .contact-info li a {
     text-decoration: none;
-    color: #F4B94E;  /* ← Gold color */
+    color: #555;
     font-size: 13px;
-    word-break: break-all;
     transition: color 0.2s ease;
 }
 
 .contact-info li a:hover {
-    color: #d4a13e;  /* ← Darker Gold on hover */
+    color: #F4B94E !important;
+}
+
+.contact-info li a:hover {
+    color: #F4B94E;
 }
 
 .footer-bottom {
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding-top: 30px;
     border-top: 1px solid #eaeaea;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .footer-bottom p {
@@ -332,7 +345,39 @@
         display: block !important;
     }
 }
+
+@media screen and (max-width: 640px) {
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+.contact-info li a,
+.contact-info li a:link,
+.contact-info li a:visited,
+.contact-info li a:active,
+.contact-info li a:focus {
+    color: #555 !important;
+    text-decoration: none !important;
+}
+
+.contact-info li a:hover {
+    color: #F4B94E !important;
+    text-decoration: none !important;
+}
+
+/* Email and phone specific */
+.contact-info li a[href^="mailto"],
+.contact-info li a[href^="tel"] {
+    color: #555 !important;
+}
+
+.contact-info li a[href^="mailto"]:hover,
+.contact-info li a[href^="tel"]:hover {
+    color: #F4B94E !important;
+}
 </style>
+
 <script>
 async function initFooter() {
     try {
@@ -343,9 +388,7 @@ async function initFooter() {
 
         if (settingsData.success) {
             const logo = settingsData.data.header_logo;
-
             const footerLogo = document.getElementById('footer-logo');
-
             if (footerLogo && logo) {
                 footerLogo.src = logo;
             }
@@ -357,7 +400,6 @@ async function initFooter() {
         if (catData.success) {
             const list = document.getElementById('footerCategoriesList');
             const categories = catData.data.slice(0, 6);
-
             if (list) {
                 list.innerHTML = categories.map(cat => `
                     <li>

@@ -82,11 +82,13 @@
         </section>
 
         <section class="categories-pills-section">
-            <div class="container">
-                <div id="categories-pills" class="categories-pills"></div>
-            </div>
-        </section>
-
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Wrapped with love</h2>
+        </div>
+        <div id="categories-pills" class="categories-pills"></div>
+    </div>
+</section>
         <section class="trending-section">
             <div class="container">
                 <div class="section-header centered">

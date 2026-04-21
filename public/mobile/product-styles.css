@@ -1689,6 +1689,7 @@ body {
         height: 18px;
     }
 }
+/* PRODUCT DETAIL PAGE - FULL WIDTH */
 body.product-detail-page,
 body.product-detail-page .page-content,
 body.product-detail-page .pdp-main {
@@ -1698,11 +1699,83 @@ body.product-detail-page .pdp-main {
     padding: 0 !important;
 }
 
-html, body {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-    background: #fff;
+@media (max-width: 1023px) {
+    body.product-detail-page .container,
+    body.product-detail-page .page-content {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .pdp-gallery {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+    
+    .pdp-main-image {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 3/4 !important;
+        object-fit: cover !important;
+    }
+    
+    .pdp-right {
+        width: 100% !important;
+        padding: 0 16px !important;
+    }
+    
+    .pdp-info, .pdp-size, .pdp-actions {
+        padding: 12px 0 !important;
+        width: 100% !important;
+    }
+    
+    .pdp-bottom {
+        padding: 0 16px !important;
+        width: 100% !important;
+    }
+    
+    .pdp-details, .pdp-delivery, .pdp-offers, .pdp-ratings, .pdp-similar {
+        width: 100% !important;
+        margin: 0 0 16px 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    .pdp-similar-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+        width: 100% !important;
+    }
+    
+    .pdp-similar-card {
+        width: 100% !important;
+        min-width: auto !important;
+    }
+}
+
+@media (min-width: 1024px) {
+    .pdp-main {
+        max-width: 1400px !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        padding: 24px !important;
+    }
+    
+    .pdp-gallery {
+        width: 100% !important;
+        max-width: 500px !important;
+    }
+    
+    .pdp-bottom {
+        max-width: 1400px !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        padding: 0 24px !important;
+    }
 }
 
 @media (max-width: 1023px) {
