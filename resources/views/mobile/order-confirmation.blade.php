@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Order Details | RADIANT JEWEL</title>
-
-  <style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
         :root {
             --primary: #440C2C;
             --accent: #F4B94E;
@@ -793,9 +793,10 @@
         }
 
         .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 12px 16px;
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 12px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -1095,9 +1096,9 @@
         }
         
         .main-header {
-            max-width: 1200px !important;
+            max-width: 100% !important;
             margin: 0 auto !important;
-            padding: 12px 20px !important;
+            padding: 12px 50px !important;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -1554,6 +1555,66 @@
 .logo-area,
 .nav-menu {
     overflow: visible !important;
+}
+@media (min-width: 1025px) {
+    .site-header .container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .web-header {
+        width: 100% !important;
+    }
+    
+    .main-header {
+        padding-left: 50px !important;
+        padding-right: 50px !important;
+    }
+}
+body, .site-header, .web-header, .main-header, .header-container, .header-actions, .action-link, .nav-item, .search-wrapper input, .search-wrapper input::placeholder, .btn, .card-title, .product-name, .price-detail-row, .step-label-text, .order-id, .payment-badge, .order-total {
+    font-family: 'Inter', sans-serif !important;
+}
+/* Order Confirmation Page - Categories Menu Fix */
+.order-app .web-header .nav-menu {
+    gap: 12px !important;
+}
+
+.order-app .web-header .nav-item {
+    font-size: 11px !important;
+    padding: 0 !important;
+}
+
+.order-app .web-header .main-header {
+    padding: 8px 50px !important;
+}
+
+.order-app .web-header .logo-area {
+    gap: 15px !important;
+}
+
+.order-app .web-header .logo img {
+    height: 28px !important;
+}
+
+@media (max-width: 1024px) {
+    .order-app .web-header .nav-item {
+        font-size: 10px !important;
+    }
+    
+    .order-app .web-header .nav-menu {
+        gap: 8px !important;
+    }
+}
+
+@media (min-width: 1025px) {
+    .order-app .web-header .nav-menu {
+        gap: 10px !important;
+    }
+    
+    .order-app .web-header .nav-item {
+        font-size: 10px !important;
+    }
 }
     </style>
 </head>

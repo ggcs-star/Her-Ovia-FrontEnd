@@ -25,26 +25,21 @@ const API_BASE_URL = window.API_BASE_URL;
     }
     
     function updateCartBadge() {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let totalItems = cart.length;
 
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const appBadge = document.querySelector('.cart-badge');
+        if (appBadge) {
+            appBadge.textContent = totalItems;
+            appBadge.style.display = 'flex';  // Always show, 0 dikhega
+        }
 
-    let totalItems = cart.length;
-
-    const appBadge = document.querySelector('.cart-badge');
-
-    if (appBadge) {
-        appBadge.textContent = totalItems;
-        appBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+        const webBadge = document.getElementById('cart-count-badge');
+        if (webBadge) {
+            webBadge.textContent = totalItems;
+            webBadge.style.display = 'flex';  // Always show, 0 dikhega
+        }
     }
-
-    const webBadge = document.getElementById('cart-count-badge');
-
-    if (webBadge) {
-        webBadge.textContent = totalItems;
-        webBadge.style.display = totalItems > 0 ? 'flex' : 'none';
-    }
-
-}
     
     function showConfirmation(productName) {
     const existingToast = document.querySelector('.top-toast-message');
