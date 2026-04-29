@@ -668,3 +668,29 @@ body {
         padding-bottom: 0;
     }
 }
+/* PROFILE PAGE - WEB HEADER FONTS LIKE PRODUCT DETAIL PAGE */
+.profile-page .web-header .nav-item {
+    color: #555555 !important;
+    font-weight: 500 !important;
+    font-size: 12px !important;
+}
+
+.profile-page .web-header .nav-item:hover {
+    color: var(--accent) !important;
+}
+
+.profile-page .header-actions .action-link {
+    color: #555555 !important;
+    font-weight: 500 !important;
+    font-size: 12px !important;
+}
+
+.profile-page .header-actions .action-link:hover {
+    color: var(--accent) !important;
+}
+
+.profile-page .main-header .logo {
+    color: #1a1a1a !important;
+    font-weight: 800 !important;
+    font-size: 20px !important;
+}

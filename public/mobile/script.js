@@ -1310,7 +1310,7 @@ async renderDynamicCategorySections() {
     container.innerHTML = '';
     
     const MAX_SECTIONS = 4;
-    const MAX_PRODUCTS = 4;
+    const MAX_PRODUCTS = 8;
     let sectionsAdded = 0;
     let sectionsHtml = [];
     
@@ -1330,6 +1330,7 @@ async renderDynamicCategorySections() {
                     
                     const sectionHtml = `
                         <div class="landscape-dual-section">
+                        <div class="container">
                             <div class="landscape-dual-box">
                                 <div class="landscape-dual-left">
                                     <img src="${this.resolveImage(firstSubcategory.image_url || category.image_url)}" alt="${firstSubcategory.name}">
@@ -1359,6 +1360,7 @@ async renderDynamicCategorySections() {
                                     </div>
                                 </div>
                             </div>
+                        </div>
                         </div>
                     `;
                     
@@ -1408,30 +1410,48 @@ async renderDynamicCategorySections() {
     
     container.innerHTML = finalHtml;
     
-    // Attach scroll buttons functionality
-    document.querySelectorAll('.prev-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const scrollId = btn.dataset.scroll;
-            const scrollDiv = document.getElementById(scrollId);
-            if (scrollDiv) {
-                scrollDiv.scrollBy({ left: -180, behavior: 'smooth' });
-            }
-        });
+// CAROUSEL - 8 products mein se 4 dikhenge, Next/Prev se shift honge
+document.querySelectorAll('.prev-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const scrollId = btn.dataset.scroll;
+        const container = document.getElementById(scrollId);
+        const cards = container.querySelectorAll('.landscape-dual-card');
+        const totalCards = cards.length;
+        
+        console.log("Prev clicked - Total cards:", totalCards);  // Debug
+        
+        if (totalCards <= 4) return;
+        
+        // Last 2 cards ko front mein lao (for 8 products)
+        for(let i = 0; i < 2; i++) {
+            const lastCard = cards[cards.length - 1];
+            container.insertBefore(lastCard, cards[0]);
+        }
     });
-    
-    document.querySelectorAll('.next-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const scrollId = btn.dataset.scroll;
-            const scrollDiv = document.getElementById(scrollId);
-            if (scrollDiv) {
-                scrollDiv.scrollBy({ left: 180, behavior: 'smooth' });
-            }
-        });
+});
+
+document.querySelectorAll('.next-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const scrollId = btn.dataset.scroll;
+        const container = document.getElementById(scrollId);
+        const cards = container.querySelectorAll('.landscape-dual-card');
+        const totalCards = cards.length;
+        
+        console.log("Next clicked - Total cards:", totalCards);  
+        
+        if (totalCards <= 4) return;
+        
+        for(let i = 0; i < 2; i++) {
+            const firstCard = cards[0];
+            container.appendChild(firstCard);
+        }
     });
+});
     
     this.loadTrendingReels();
     
     await this.renderBrandsGrid();
+    
 }
 async loadTrendingReels() {
     const slider = document.getElementById('reels-slider');

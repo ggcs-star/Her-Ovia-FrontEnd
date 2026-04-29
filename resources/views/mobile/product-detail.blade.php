@@ -48,9 +48,7 @@
             </div>
             <div class="header-actions">
 
-    <!-- Profile -->
-    <a href="/profile" class="action-link">
-
+    <a href="javascript:void(0)" class="action-link" onclick="localStorage.getItem('token') ? window.location.href='/profile' : window.location.href='/login'">
         <svg class="header-icon"
              viewBox="0 0 24 24"
              width="18"
@@ -58,7 +56,6 @@
              fill="none"
              stroke="#333"
              stroke-width="2">
-
             <circle cx="12" cy="7" r="4"/>
             <path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>
 

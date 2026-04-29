@@ -2171,3 +2171,7 @@ body.product-detail-page .pdp-main {
     stroke: var(--primary);
     flex-shrink: 0;
 }
+.cart-badge,
+#cart-count-badge {
+    display: flex !important;
+}

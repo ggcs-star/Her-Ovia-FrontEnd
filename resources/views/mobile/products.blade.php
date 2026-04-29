@@ -1099,11 +1099,7 @@
             </div>
             <div class="header-actions">
 
-    <!-- Profile -->
-    <a href="/profile"
-       class="action-link">
-
-        <svg class="header-icon"
+        <a href="javascript:void(0)" onclick="window.location.href=localStorage.getItem('token') ? '/profile' : '/login'" class="action-link">        <svg class="header-icon"
              width="18"
              height="18"
              viewBox="0 0 24 24"

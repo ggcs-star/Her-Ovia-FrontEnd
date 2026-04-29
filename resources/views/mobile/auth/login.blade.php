@@ -371,7 +371,6 @@ button:active {
 .toggle-password.active .closed-eye {
     display: inline;
 }
-/* SIRF WEB - FULL PAGE CENTER, BACKGROUND WHITE */
 @media(min-width: 769px){
     body{
         display: flex;
