@@ -701,8 +701,8 @@ async renderCategoryPills() {
     `;
     
     categoriesHtml += categoriesToShow.map(cat => `
-        <div class="pill-item"
-        onclick="window.app.showCategoryPopupById(${cat.id})">
+    <div class="pill-item"
+        onclick="redirectToSubcategory(${cat.id})">
             <div class="pill-img-wrap">
                 <img src="${this.resolveImage(cat.image_url)}"
                 onerror="this.src='${APP_CONFIG.FALLBACK_IMAGE}'">
@@ -1453,6 +1453,7 @@ document.querySelectorAll('.next-btn').forEach(btn => {
     await this.renderBrandsGrid();
     
 }
+
 async loadTrendingReels() {
     const slider = document.getElementById('reels-slider');
     if (!slider) return;
@@ -1773,6 +1774,28 @@ attachReelVideoEvents() {
     async initProductDetail() {}
 }
 
+async function redirectToSubcategory(categoryId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/categories`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const category = data.data.find(c => c.id == categoryId);
+            // Agar subcategories hain toh first subcategory pe jao
+            if (category && category.children && category.children.length > 0) {
+                window.location.href = `/products?subcategory=${category.children[0].id}`;
+            } else {
+                // Nahi toh category pe hi jao
+                window.location.href = `/products?category=${categoryId}`;
+            }
+        } else {
+            window.location.href = `/products?category=${categoryId}`;
+        }
+    } catch (error) {
+        console.error('Redirect error:', error);
+        window.location.href = `/products?category=${categoryId}`;
+    }
+}
 window.goBack = function() {
     const currentPath = window.location.pathname;
     const token = localStorage.getItem('token');

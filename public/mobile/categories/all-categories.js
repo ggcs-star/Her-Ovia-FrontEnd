@@ -679,7 +679,7 @@ renderAllCategoriesPopup() {
         <div class="category-card" 
             style="background: ${bgColor}"
             data-id="${cat.id}"
-            onclick="showCategoryPopupById(${cat.id})">
+            onclick="redirectToSubcategory(${cat.id})">
 
             <div class="category-info">
                 <h3>${cat.name}</h3>
@@ -922,4 +922,26 @@ function updateCartCountBadge() {
     if (!badge) return;
     badge.style.display = 'flex';
     badge.textContent = totalItems;
+}
+async function redirectToSubcategory(categoryId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/categories`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const category = data.data.find(c => c.id == categoryId);
+            // Agar subcategories hain toh first subcategory pe jao
+            if (category && category.children && category.children.length > 0) {
+                window.location.href = `/products?subcategory=${category.children[0].id}`;
+            } else {
+                // Nahi toh category pe hi jao
+                window.location.href = `/products?category=${categoryId}`;
+            }
+        } else {
+            window.location.href = `/products?category=${categoryId}`;
+        }
+    } catch (error) {
+        console.error('Redirect error:', error);
+        window.location.href = `/products?category=${categoryId}`;
+    }
 }
