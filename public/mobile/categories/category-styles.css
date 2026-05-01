@@ -690,12 +690,12 @@
 }
 
 @media screen and (min-width:1024px) {
-    .categories-layout-web {
+     .categories-layout-web {
         max-width: 1400px;
         margin: 0 auto 16px;
-        padding: 30px 24px;
+        padding: 10px 24px;  
         display: flex !important;
-        justify-content: flex-end;
+        justify-content: space-between;
         gap: 30px;
         align-items: flex-start
     }
@@ -705,10 +705,10 @@
         flex-shrink: 0;
         background: #fff;
         border-radius: 16px;
-        padding: 24px;
+        padding: 16px 20px; 
         border: 1px solid #eaeaea;
         position: sticky;
-        top: 100px;
+        top: 60px;
         height: fit-content;
         display: block !important
     }
@@ -755,7 +755,8 @@
         grid-template-columns: repeat(3, 1fr) !important;
         gap: 24px !important;
         padding: 0 !important;
-        margin: 0 !important
+        margin: 0 !important;
+        align-self: flex-start;  
     }
 
     .all-categories-grid .category-card {

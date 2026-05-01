@@ -2566,3 +2566,13 @@ body.cart-page .page-content {
         margin-top: 40px !important;
     }
 }
+@media (max-width: 767px) {
+    body.cart-page .page-content {
+        padding-bottom: 80px !important;
+        margin-bottom: 0 !important;
+    }
+    
+    .cart-right {
+        margin-bottom: 80px !important;
+    }
+}
