@@ -612,69 +612,73 @@ class RapidRetailsEngine {
     }
 
     async renderPromotionalBanners() {
-        const banners = this.allBanners.filter(b => b.position === 'mid');
-        const container1 = document.getElementById('mid-banner-1-container');
-        const container2 = document.getElementById('mid-banner-2-container');
+    const banners = this.allBanners.filter(b => b.position === 'mid');
+    const container1 = document.getElementById('mid-banner-1-container');
+    const container2 = document.getElementById('mid-banner-2-container');
+    
+    if (!banners.length) return;
+    
+    const isMobile = window.innerWidth < 768;
+    
+    const createBannerHTML = (b) => {
+        const bannerImage = this.getBannerImage(b, isMobile);
+        const hasText = b.title || b.subtitle || b.button_text;
+        return `
+            <div style="position: relative; border-radius: 16px; overflow: hidden; background: #f5f5f5; height: 100%;">
+                <img src="${this.resolveImage(bannerImage)}" style="width: 100%; height: auto; display: block;">
+                ${hasText ? `
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); padding: 20px; color: white;">
+                        ${b.title ? `<h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">${b.title}</h3>` : ''}
+                        ${b.subtitle ? `<p style="font-size: 12px; margin-bottom: 8px;">${b.subtitle}</p>` : ''}
+                        ${b.button_text ? `<button onclick="window.location.href='${b.button_link || '#'}'" style="background: #fff; color: #000; border: none; padding: 6px 16px; border-radius: 30px; font-size: 12px; font-weight: 600; cursor: pointer;">${b.button_text}</button>` : ''}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    };
+    
+    if (banners.length === 2) {
+        const b1 = banners[0];
+        const b2 = banners[1];
         
-        if (!banners.length) return;
-        
-        const isMobile = window.innerWidth < 768;
-        
-        const createBannerHTML = (b) => {
-            const bannerImage = this.getBannerImage(b, isMobile);
-            const hasText = b.title || b.subtitle || b.button_text;
-            return `<img src="${this.resolveImage(bannerImage)}" class="mid-banner-img">
-                    ${hasText ? `<div class="mid-banner-overlay">
-                        ${b.title ? `<h3>${b.title}</h3>` : ''}
-                        ${b.subtitle ? `<p>${b.subtitle}</p>` : ''}
-                        ${b.button_text ? `<button onclick="window.location.href='${b.button_link || '#'}'">${b.button_text}</button>` : ''}
-                    </div>` : ''}`;
-        };
-        
-        if (banners.length > 1) {
-            if (container1) {
-                let bannersHtml = `<div class="mid-banner-carousel" id="midBannerCarousel">
-                    <div class="mid-banner-track" id="midBannerTrack">`;
-                
-                banners.forEach(b => {
-                    bannersHtml += `<div class="mid-banner-slide">${createBannerHTML(b)}</div>`;
-                });
-                
-                bannersHtml += `</div></div>`;
-                container1.innerHTML = bannersHtml;
-                this.startMidBannerAutoScroll();
-            }
-            if (container2) container2.innerHTML = '';
-            return;
+        if (container1) {
+            container1.innerHTML = `
+                <div style="display: flex; gap: 16px; width: 100%; margin: 20px 0;">
+                    <div style="flex: 1; min-width: 0;">${createBannerHTML(b1)}</div>
+                    <div style="flex: 1; min-width: 0;">${createBannerHTML(b2)}</div>
+                </div>
+            `;
         }
-        
-        if (banners.length >= 1 && container1) {
-            const b = banners[0];
-            const hasText = b.title || b.subtitle || b.button_text;
-            container1.innerHTML = `<div class="spring-bloom-banner">
-                <img src="${this.resolveImage(this.getBannerImage(b, isMobile))}" alt="${b.title || 'Banner'}">
-                ${hasText ? `<div>
-                    <span class="banner-tag-script">${b.subtitle || 'Special Offer'}</span>
-                    <h3>${b.title || 'HOLI OFFER'}</h3>
-                    <p>${b.subtitle || ''}</p>
-                    <button class="code-btn-figma" onclick="window.location.href='${b.button_link || '#'}'">${b.button_text || 'SHOP NOW'}</button>
-                </div>` : ''}
-            </div>`;
-        }
-        
-        if (banners.length === 2 && container2) {
-            const b = banners[1];
-            const hasText = b.title || b.subtitle || b.button_text;
-            container2.innerHTML = `<div class="home-upgrade-banner" style="background: transparent;">
-                <img src="${this.resolveImage(this.getBannerImage(b, isMobile))}" style="width:100%; height:auto; display:block;">
-                ${hasText ? `<div>
-                    <h3>${b.title || 'Special Offer'}</h3>
-                    <p>${b.subtitle || ''}</p>
-                    <span class="price-tag-figma" onclick="window.location.href='${b.button_link || '#'}'">${b.button_text || 'Shop Now'}</span>
-                </div>` : ''}
-            </div>`;
-        }
+        if (container2) container2.innerHTML = '';
+        return;
     }
+    
+    if (banners.length > 2) {
+        if (container1) {
+            let bannersHtml = `<div class="mid-banner-carousel" id="midBannerCarousel">
+                <div class="mid-banner-track" id="midBannerTrack" style="display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 8px 0;">`;
+            
+            banners.forEach(b => {
+                bannersHtml += `<div class="mid-banner-slide" style="flex: 0 0 85%; scroll-snap-align: start; min-width: 85%;">${createBannerHTML(b)}</div>`;
+            });
+            
+            bannersHtml += `</div></div>`;
+            container1.innerHTML = bannersHtml;
+            this.startMidBannerAutoScroll();
+        }
+        if (container2) container2.innerHTML = '';
+        return;
+    }
+    
+    if (banners.length === 1) {
+        const b = banners[0];
+        if (container1) {
+            container1.innerHTML = createBannerHTML(b);
+        }
+        if (container2) container2.innerHTML = '';
+        return;
+    }
+}
 
     startMidBannerAutoScroll() {
         const track = document.getElementById('midBannerTrack');
