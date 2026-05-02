@@ -81,18 +81,18 @@
             <div class="slider-dots" id="slider-dots"></div>
         </section>
 
-        <section class="categories-pills-section">
+        <!-- <section class="categories-pills-section">
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">Wrapped with love</h2>
         </div>
         <div id="categories-pills" class="categories-pills"></div>
     </div>
-</section>
+</section> -->
         <section class="trending-section">
             <div class="container">
                 <div class="section-header centered">
-                    <h2 class="section-title">What's Trending</h2>
+                    <h2 class="section-title">Categories</h2>
                 </div>
                 
                 <div class="trending-slider-container">

@@ -1392,16 +1392,85 @@
     let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
     let currentProducts = [];
     let originalProducts = [];
+    
+    function getProductPrice(p) {
+        return parseFloat(
+            (p.product_price && p.product_price != "0.00")
+                ? p.product_price
+                : (p.final_price || p.price || 0)
+        );
+    }
 
+    function getProductMrp(p) {
+        return parseFloat(
+            (p.product_price && p.product_price != "0.00")
+                ? p.product_price
+                : (p.price || 0)
+        );
+    }
+    
+    function renderProducts(products) {
+        const grid = document.getElementById('productsGrid');
+        if (!grid) return;
+        if (!products.length) { 
+            grid.innerHTML = '<div class="loading">No products found</div>'; 
+            return; 
+        }
+        
+        const latestWishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+        const fallback = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
+
+        grid.innerHTML = products.map(p => {
+            const price = getProductPrice(p);
+            const mrp = getProductMrp(p);
+            const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
+            const rating = 4.3;
+            const full = Math.floor(rating);
+            const half = (rating % 1) >= 0.3;
+            let stars = '';
+            for (let i = 0; i < full; i++) stars += '★';
+            if (half) stars += '½';
+            for (let i = stars.length; i < 5; i++) stars += '☆';
+            
+            const inWish = latestWishlist.some(item => item.id == p.id);
+            const isBest = discount > 20;
+            
+            return `<div class="card">
+                <div class="img-box" onclick="window.location.href='/product/${p.slug}'">
+                    <img src="${p.image_url || fallback}" onerror="this.src='${fallback}'">
+                    ${isBest ? '<span class="badge">Best Seller</span>' : ''}
+                    <button class="wishlist ${inWish ? 'active' : ''}" 
+                            onclick="event.stopPropagation(); toggleWish(this, ${JSON.stringify({
+                                id: p.id, name: p.name, price: price,
+                                image: p.image_url, brand: p.brand, slug: p.slug
+                            }).replace(/"/g, '&quot;')})">
+                        ${inWish ? '❤️' : '♡'}
+                    </button>
+                </div>
+                <div class="info" onclick="window.location.href='/product/${p.slug}'">
+                    <div class="brand">${p.brand || 'RAPID RETAIL'}</div>
+                    <div class="name">${p.name}</div>
+                    <div class="rating"><span class="stars">${stars}</span> | ${Math.floor(Math.random() * 50) + 10}</div>
+                    <div class="price">
+                        <span class="current">₹${price.toLocaleString('en-IN')}</span>
+                        ${mrp > price ? `<span class="original">₹${mrp.toLocaleString('en-IN')}</span>` : ''}
+                        ${discount > 0 ? `<span class="off">${discount}% Off</span>` : ''}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+    
     async function fetchData() {
         try {
-             const urlParams = new URLSearchParams(window.location.search);
-                const type = urlParams.get('type');
-                
-                if (type === 'top-selling') {
-                    await fetchTopSellingProducts();
-                    return;
-                }
+            const urlParams = new URLSearchParams(window.location.search);
+            const type = urlParams.get('type');
+            
+            if (type === 'top-selling') {
+                await fetchTopSellingProducts();
+                return;
+            }
+            
             const res = await fetch(`${API_BASE_URL}/categories`);
             const data = await res.json();
             
@@ -1416,9 +1485,7 @@
                 if (mainCat) {
                     allSubs = mainCat.children || [];
                     renderSubs();
-                    if (currentSub) {
-                        fetchProducts(currentSub);
-                    }
+                    if (currentSub) fetchProducts(currentSub);
                     loadDesktopFilters(mainCat);
                     initDesktopFiltersToggle();
                 }
@@ -1428,22 +1495,32 @@
         }
     }
 
-    async function updateMobileLogo() {
-    try {
-        const res = await fetch(`${API_BASE_URL}/app-settings`);
-        const data = await res.json();
-        if (data.success) {
-            const logo = data.data.header_logo || data.data.app_logo;
-            const img = document.getElementById('mobileHeaderLogo');
-            if (img && logo) img.src = logo;
+    async function fetchProducts(subId) {
+        const grid = document.getElementById('productsGrid');
+        try {
+            const res = await fetch(`${API_BASE_URL}/categories/${subId}/products`);
+            const data = await res.json();
+            
+            if (data.success && data.data.products) {
+                currentProducts = data.data.products;
+                originalProducts = [...data.data.products];
+                renderProducts(currentProducts);
+                updateDesktopFiltersFromProducts(currentProducts);
+            } else {
+                grid.innerHTML = '<div class="loading">No products found</div>';
+            }
+        } catch (error) {
+            grid.innerHTML = '<div class="loading">Error loading products</div>';
         }
-    } catch(e) { console.log(e); }
-}
-updateMobileLogo();
+    }
+    
     function renderSubs() {
         const strip = document.getElementById('subStrip');
         if (!strip) return;
-        if (!allSubs.length) { strip.style.display = 'none'; return; }
+        if (!allSubs.length) { 
+            strip.style.display = 'none'; 
+            return; 
+        }
         
         const fallback = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
         
@@ -1467,90 +1544,31 @@ updateMobileLogo();
         url.searchParams.set('subcategory', newSubId);
         window.history.pushState({}, '', url);
     };
-
-    async function fetchProducts(subId) {
+    
+    async function fetchMultipleSubcategoriesCommon(subIds) {
         const grid = document.getElementById('productsGrid');
-        
         try {
-            const res = await fetch(`${API_BASE_URL}/categories/${subId}/products`);
-            const data = await res.json();
-            
-            if (data.success && data.data.products) {
-                currentProducts = data.data.products;
-                originalProducts = [...data.data.products];
-                renderProducts(currentProducts);
-                updateDesktopFiltersFromProducts(currentProducts);
-            } else {
-                grid.innerHTML = '<div class="loading">No products found</div>';
+            let allProducts = [];
+            for (const id of subIds) {
+                const res = await fetch(`${API_BASE_URL}/categories/${id}/products`);
+                const data = await res.json();
+                if (data.success && data.data.products) {
+                    allProducts = allProducts.concat(data.data.products);
+                }
             }
+            allProducts = [...new Map(allProducts.map(p => [p.id, p])).values()];
+            currentProducts = allProducts;
+            originalProducts = [...allProducts];
+            renderProducts(allProducts);
+            updateDesktopFiltersFromProducts(allProducts);
         } catch (error) {
             grid.innerHTML = '<div class="loading">Error loading products</div>';
         }
     }
-
-    function renderProducts(products) {
-    const grid = document.getElementById('productsGrid');
-    if (!grid) return;
-    if (!products.length) { grid.innerHTML = '<div class="loading">No products found</div>'; return; }
     
-    const latestWishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-
-    const fallback = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
-
-    grid.innerHTML = products.map(p => {
-        // const price = parseFloat(p.final_price || p.price || 0);
-        const price = parseFloat(
-        (p.product_price && p.product_price != "0.00")
-            ? p.product_price
-            : (p.final_price || p.price || 0)
-    );
-        const mrp = parseFloat(
-        (p.product_price && p.product_price != "0.00")
-            ? p.product_price
-            : (p.price || 0)
-    );
-        const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
-        const rating = 4.3;
-        const full = Math.floor(rating);
-        const half = (rating % 1) >= 0.3;
-        let stars = '';
-        for (let i = 0; i < full; i++) stars += '★';
-        if (half) stars += '½';
-        for (let i = stars.length; i < 5; i++) stars += '☆';
-        
-        const inWish = latestWishlist.some(item => item.id == p.id);
-        const isBest = discount > 20;
-        
-        return `
-            <div class="card">
-                <div class="img-box" onclick="window.location.href='/product/${p.slug}'">
-                    <img src="${p.image_url || fallback}" onerror="this.src='${fallback}'">
-                    ${isBest ? '<span class="badge">Best Seller</span>' : ''}
-                    <button class="wishlist ${inWish ? 'active' : ''}" 
-                            onclick="event.stopPropagation(); toggleWish(this, ${JSON.stringify({
-                                id: p.id, name: p.name, price: price,
-                                image: p.image_url, brand: p.brand, slug: p.slug
-                            }).replace(/"/g, '&quot;')})">
-                        ${inWish ? '❤️' : '♡'}
-                    </button>
-                </div>
-                <div class="info" onclick="window.location.href='/product/${p.slug}'">
-                    <div class="brand">${p.brand || 'RAPID RETAIL'}</div>
-                    <div class="name">${p.name}</div>
-                    <div class="rating"><span class="stars">${stars}</span> | ${Math.floor(Math.random() * 50) + 10}</div>
-                    <div class="price">
-                        <span class="current">₹${price.toLocaleString('en-IN')}</span>
-                        ${mrp > price ? `<span class="original">₹${mrp.toLocaleString('en-IN')}</span>` : ''}
-                        ${discount > 0 ? `<span class="off">${discount}% Off</span>` : ''}
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
     function loadDesktopFilters(mainCategory) {
         const categoryContainer = document.getElementById('desktopCategoryFilters');
-        if (categoryContainer && mainCategory.children && mainCategory.children.length) {
+        if (categoryContainer && mainCategory.children?.length) {
             categoryContainer.innerHTML = mainCategory.children.map(child => `
                 <label class="desktop-filter-option">
                     <input type="checkbox" class="desktop-category-filter" value="${child.id}" onchange="applyDesktopFilters()"> ${child.name}
@@ -1558,276 +1576,377 @@ updateMobileLogo();
             `).join('');
         }
     }
+
     function updateDesktopFiltersFromProducts(products) {
         const urlParams = new URLSearchParams(window.location.search);
-    const type = urlParams.get('type');
-    
-    if (type === 'top-selling') {
-        const categorySection = document.querySelector('#desktopCategoryFilters')?.closest('.desktop-filter-section');
-        if (categorySection) categorySection.style.display = 'none';
-    }
-    const brands = new Set();
-    products.forEach(p => {
-        if (p.brand) brands.add(p.brand);
-    });
-    
-    const brandContainer = document.getElementById('desktopBrandFilters');
-    if (brandContainer) {
-        brandContainer.innerHTML = Array.from(brands).map(brand => `
-            <label class="desktop-filter-option">
-                <input type="checkbox" class="desktop-brand-filter" value="${brand}" onchange="applyDesktopFilters()"> ${brand}
-            </label>
-        `).join('');
-    }
-    // PRICE RANGES - Dynamic (App jaisa)
-const priceContainer = document.getElementById('desktopPriceFilters');
-if (priceContainer && products.length > 0) {
-    const prices = products.map(p => parseFloat(
-        (p.product_price && p.product_price != "0.00") 
-            ? p.product_price 
-            : (p.final_price || p.price || 0)
-    )).filter(p => !isNaN(p));
-    
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-    const step = Math.ceil((maxPrice - minPrice) / 4);
-    const ranges = [];
-    let current = minPrice;
-    
-    for (let i = 0; i < 4; i++) {
-        if (i === 0) {
-            ranges.push({ min: 0, max: current + step, label: `Below ₹${(current + step).toFixed(0)}` });
-        } else if (i === 3) {
-            ranges.push({ min: current, max: maxPrice, label: `Above ₹${current.toFixed(0)}` });
-        } else {
-            ranges.push({ min: current, max: current + step, label: `₹${current.toFixed(0)} - ₹${(current + step).toFixed(0)}` });
+        const type = urlParams.get('type');
+        
+        if (type === 'top-selling') {
+            const categorySection = document.querySelector('#desktopCategoryFilters')?.closest('.desktop-filter-section');
+            if (categorySection) categorySection.style.display = 'none';
         }
-        current += step;
-    }
-    
-    priceContainer.innerHTML = ranges.map(range => `
-        <label class="desktop-filter-option">
-            <input type="checkbox" class="desktop-price-filter" value="${range.min}-${range.max}" onchange="applyDesktopFilters()"> 
-            ${range.label}
-        </label>
-    `).join('');
-}
-    
-    const discountContainer = document.getElementById('desktopDiscountFilters');
-
-if (discountContainer) {
-
-    const discountSet = new Set();
-
-    products.forEach(p => {
-
-        if (p.price && p.final_price) {
-
-            const original = parseFloat(p.price);
-            const final = parseFloat(p.final_price);
-
-            if (original > final) {
-
-                const discount =
-                    Math.round(
-                        ((original - final) / original) * 100
-                    );
-
-                discountSet.add(discount);
-
+        
+        const brands = new Set();
+        products.forEach(p => { if (p.brand) brands.add(p.brand); });
+        const brandContainer = document.getElementById('desktopBrandFilters');
+        if (brandContainer) {
+            brandContainer.innerHTML = Array.from(brands).map(brand => `
+                <label class="desktop-filter-option">
+                    <input type="checkbox" class="desktop-brand-filter" value="${brand}" onchange="applyDesktopFilters()"> ${brand}
+                </label>
+            `).join('');
+        }
+        
+        const priceContainer = document.getElementById('desktopPriceFilters');
+        if (priceContainer && products.length > 0) {
+            const prices = products.map(p => getProductPrice(p)).filter(p => !isNaN(p));
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            const step = Math.ceil((maxPrice - minPrice) / 4);
+            const ranges = [];
+            let current = minPrice;
+            
+            for (let i = 0; i < 4; i++) {
+                if (i === 0) ranges.push({ min: 0, max: current + step, label: `Below ₹${(current + step).toFixed(0)}` });
+                else if (i === 3) ranges.push({ min: current, max: maxPrice, label: `Above ₹${current.toFixed(0)}` });
+                else ranges.push({ min: current, max: current + step, label: `₹${current.toFixed(0)} - ₹${(current + step).toFixed(0)}` });
+                current += step;
             }
-
+            
+            priceContainer.innerHTML = ranges.map(range => `
+                <label class="desktop-filter-option">
+                    <input type="checkbox" class="desktop-price-filter" value="${range.min}-${range.max}" onchange="applyDesktopFilters()"> ${range.label}
+                </label>
+            `).join('');
         }
+        
+        const discountContainer = document.getElementById('desktopDiscountFilters');
+        if (discountContainer) {
+            const discountSet = new Set();
+            products.forEach(p => {
+                if (p.price && p.final_price) {
+                    const original = parseFloat(p.price);
+                    const final = parseFloat(p.final_price);
+                    if (original > final) discountSet.add(Math.round(((original - final) / original) * 100));
+                }
+            });
+            const sortedDiscounts = Array.from(discountSet).sort((a, b) => a - b);
+            discountContainer.innerHTML = sortedDiscounts.map(d => `
+                <label class="desktop-filter-option">
+                    <input type="checkbox" class="desktop-discount-filter" value="${d}" onchange="applyDesktopFilters()"> ${d}% & above
+                </label>
+            `).join('');
+        }
+    }
 
-    });
-
-    const sortedDiscounts =
-        Array.from(discountSet)
-            .sort((a, b) => a - b);
-
-    discountContainer.innerHTML =
-        sortedDiscounts.map(d => `
-
-            <label class="desktop-filter-option">
-                <input
-                    type="checkbox"
-                    class="desktop-discount-filter"
-                    value="${d}"
-                    onchange="applyDesktopFilters()"
-                >
-                ${d}% & above
-            </label>
-
-        `).join('');
-
-}
-}
     window.applyDesktopFilters = function() {
+        let filtered = [...currentProducts];
+        let filterApplied = false;
 
-    let filtered = [...currentProducts];
-    let filterApplied = false;
+        const selectedCategories = Array.from(document.querySelectorAll('.desktop-category-filter:checked')).map(cb => cb.value);
 
-    const selectedCategories =
-        Array.from(
-            document.querySelectorAll(
-                '.desktop-category-filter:checked'
-            )
-        ).map(cb => cb.value);
-
-    /* MULTIPLE SUBCATEGORY SUPPORT */
-
-    if (selectedCategories.length === 1) {
-
-        changeSubcategory(
-            selectedCategories[0]
-        );
-
-        return;
-    }
-
-    if (selectedCategories.length > 1) {
-
-        fetchMultipleSubcategories(
-            selectedCategories
-        );
-
-        return;
-    }
-// Price Filter
-const selectedPriceRanges = Array.from(document.querySelectorAll('.desktop-price-filter:checked')).map(cb => cb.value);
-if (selectedPriceRanges.length > 0) {
-    filterApplied = true;
-    filtered = filtered.filter(p => {
-        const price = parseFloat(
-            (p.product_price && p.product_price != "0.00")
-                ? p.product_price
-                : (p.final_price || p.price || 0)
-        );
-        return selectedPriceRanges.some(range => {
-            const [min, max] = range.split('-').map(Number);
-            return price >= min && price <= max;
-        });
-    });
-}
-    /* BRAND FILTER */
-
-    const selectedBrands =
-        Array.from(
-            document.querySelectorAll(
-                '.desktop-brand-filter:checked'
-            )
-        ).map(cb => cb.value);
-
-    if (selectedBrands.length > 0) {
-
-        filterApplied = true;
-
-        filtered = filtered.filter(p =>
-            selectedBrands.includes(p.brand)
-        );
-
-    }
-
-    if (!filterApplied) {
-
-        renderProducts(currentProducts);
-
-    }
-    else if (filtered.length > 0) {
-
-        renderProducts(filtered);
-
-    }
-    else {
-
-        document.getElementById('productsGrid').innerHTML =
-            '<div class="loading">No products match your filters</div>';
-
-    }
-
-};
-async function fetchTopSellingProducts() {
-    const grid = document.getElementById('productsGrid');
-    try {
-        const res = await fetch(`${API_BASE_URL}/products/top-selling`);
-        const data = await res.json();
-        
-        if (data.success && data.data) {
-            let products = Array.isArray(data.data) ? data.data : (data.data.products || []);
-            currentProducts = products;
-            originalProducts = [...products];
-            renderProducts(products);
-            
-            const subStrip = document.getElementById('subStrip');
-            if (subStrip) subStrip.style.display = 'none';
-            
-            const desktopFiltersSidebar = document.getElementById('desktopFiltersSidebar');
-            if (desktopFiltersSidebar) {
-                desktopFiltersSidebar.style.display = 'block';
-            }
-            
-            updateDesktopFiltersFromProducts(products);
-            
-            const desktopCategoryContainer = document.getElementById('desktopCategoryFilters');
-            if (desktopCategoryContainer) {
-                desktopCategoryContainer.innerHTML = '';
-                const categoryHeader = desktopCategoryContainer.closest('.desktop-filter-section');
-                if (categoryHeader) categoryHeader.style.display = 'none';
-            }
-            
-            // ⭐ YEH LINE ADD KARO ⭐
-            initDesktopFiltersToggle();
-            
-        } else {
-            grid.innerHTML = '<div class="loading">No products found</div>';
+        if (selectedCategories.length === 1) {
+            changeSubcategory(selectedCategories[0]);
+            return;
         }
-    } catch (error) {
-        grid.innerHTML = '<div class="loading">Error loading products</div>';
-    }
-}
-    window.applyDesktopPriceFilter = function() {
-        const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
-        const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
-        
-        let filtered = [...originalProducts];
-        filtered = filtered.filter(p => {
-            // const price = parseFloat(p.final_price || p.price || 0);
-            const price = parseFloat(
-                (p.product_price && p.product_price != "0.00")
-                    ? p.product_price
-                    : (p.final_price || p.price || 0)
-            );
-            return price >= minPrice && price <= maxPrice;
-        });
-        
-        renderProducts(filtered);
+        if (selectedCategories.length > 1) {
+            fetchMultipleSubcategoriesCommon(selectedCategories);
+            return;
+        }
+
+        const selectedPriceRanges = Array.from(document.querySelectorAll('.desktop-price-filter:checked')).map(cb => cb.value);
+        if (selectedPriceRanges.length > 0) {
+            filterApplied = true;
+            filtered = filtered.filter(p => {
+                const price = getProductPrice(p);
+                return selectedPriceRanges.some(range => {
+                    const [min, max] = range.split('-').map(Number);
+                    return price >= min && price <= max;
+                });
+            });
+        }
+
+        const selectedBrands = Array.from(document.querySelectorAll('.desktop-brand-filter:checked')).map(cb => cb.value);
+        if (selectedBrands.length > 0) {
+            filterApplied = true;
+            filtered = filtered.filter(p => selectedBrands.includes(p.brand));
+        }
+
+        if (!filterApplied) {
+            renderProducts(currentProducts);
+        } else if (filtered.length > 0) {
+            renderProducts(filtered);
+        } else {
+            document.getElementById('productsGrid').innerHTML = '<div class="loading">No products match your filters</div>';
+        }
     };
 
     window.resetDesktopFilters = function() {
-    document.querySelectorAll('.desktop-category-filter, .desktop-brand-filter, .desktop-discount-filter, .desktop-price-filter').forEach(cb => cb.checked = false);
-    renderProducts(originalProducts);
-};
-
-    window.toggleWish = function(btn, product) {
-        event.stopPropagation();
-        let currentWishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-        const exists = currentWishlist.some(item => item.id == product.id);
-        if (exists) {
-            currentWishlist = currentWishlist.filter(item => item.id != product.id);
-            btn.innerHTML = '♡';
-            btn.classList.remove('active');
-        } else {
-            currentWishlist.push(product);
-            btn.innerHTML = '❤️';
-            btn.classList.add('active');
-        }
-        localStorage.setItem('wishlist', JSON.stringify(currentWishlist));
-        window.wishlist = currentWishlist;
-        
-        // ✅ Force re-render by calling renderProducts with currentProducts
-        renderProducts(currentProducts);
+        document.querySelectorAll('.desktop-category-filter, .desktop-brand-filter, .desktop-discount-filter, .desktop-price-filter').forEach(cb => cb.checked = false);
+        renderProducts(originalProducts);
     };
+    
+    async function fetchMultipleSubcategoriesMobile(subIds) {
+        const grid = document.getElementById('productsGrid');
+        try {
+            let allProducts = [];
+            for (const id of subIds) {
+                const res = await fetch(`${API_BASE_URL}/categories/${id}/products`);
+                const data = await res.json();
+                if (data.success && data.data.products) {
+                    allProducts = allProducts.concat(data.data.products);
+                }
+            }
+            allProducts = [...new Map(allProducts.map(p => [p.id, p])).values()];
+            currentProducts = allProducts;
+            originalProducts = [...allProducts];
+            renderProducts(allProducts);
+        } catch (error) {
+            grid.innerHTML = '<div class="loading">Error loading products</div>';
+        }
+    }
+
+    async function loadFilterOptions(filterType, container) {
+        let options = [];
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryId = urlParams.get('category');
+        const subcategoryId = urlParams.get('subcategory');
+        const type = urlParams.get('type');
         
+        if (type === 'top-selling') {
+            if (filterType === 'price') {
+                const prices = currentProducts.map(p => getProductPrice(p)).filter(p => !isNaN(p));
+                const minPrice = Math.min(...prices);
+                const maxPrice = Math.max(...prices);
+                const step = Math.ceil((maxPrice - minPrice) / 4);
+                const ranges = [];
+                let current = minPrice;
+                for (let i = 0; i < 4; i++) {
+                    if (i === 0) ranges.push({ min: 0, max: current + step, label: `Below ₹${(current + step).toFixed(0)}` });
+                    else if (i === 3) ranges.push({ min: current, max: maxPrice, label: `Above ₹${current.toFixed(0)}` });
+                    else ranges.push({ min: current, max: current + step, label: `₹${current.toFixed(0)} - ₹${(current + step).toFixed(0)}` });
+                    current += step;
+                }
+                options = ranges.map(range => ({ value: `${range.min}-${range.max}`, label: range.label }));
+            } else if (filterType === 'brand') {
+                const brands = new Set();
+                currentProducts.forEach(p => { if (p.brand) brands.add(p.brand); });
+                options = Array.from(brands).map(b => ({ value: b, label: b }));
+            } else if (filterType === 'discount') {
+                const discountSet = new Set();
+                currentProducts.forEach(p => {
+                    if (p.price && p.final_price && parseFloat(p.price) > parseFloat(p.final_price)) {
+                        discountSet.add(Math.round(((parseFloat(p.price) - parseFloat(p.final_price)) / parseFloat(p.price)) * 100));
+                    }
+                });
+                options = Array.from(discountSet).sort((a, b) => a - b).map(d => ({ value: d, label: `${d}% & above` }));
+            }
+            
+            if (options.length > 0) {
+                container.innerHTML = options.map(opt => `<label class="filter-checkbox"><input type="checkbox" class="filter-${filterType}" value="${opt.value}"> ${opt.label}</label>`).join('');
+            } else {
+                container.innerHTML = '<div style="padding: 20px; color: #999;">No options available</div>';
+            }
+            return;
+        }
+        
+        if (filterType === 'category') {
+            try {
+                const res = await fetch(`${API_BASE_URL}/categories`);
+                const data = await res.json();
+                if (data.success) {
+                    let targetCategory = null;
+                    if (categoryId) targetCategory = data.data.find(c => c.id == categoryId);
+                    else if (subcategoryId) targetCategory = data.data.find(c => c.children?.some(child => child.id == subcategoryId));
+                    if (targetCategory?.children?.length) {
+                        options = targetCategory.children.map(child => ({ value: child.id, label: child.name }));
+                    }
+                }
+            } catch (error) { console.error('Error loading categories:', error); }
+        }
+        
+        else if (filterType === 'price') {
+            const targetId = subcategoryId || categoryId;
+            if (targetId) {
+                const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
+                const data = await res.json();
+                if (data.success && data.data.products?.length) {
+                    const prices = data.data.products.map(p => parseFloat(p.final_price || p.price)).filter(p => !isNaN(p));
+                    const minPrice = Math.min(...prices);
+                    const maxPrice = Math.max(...prices);
+                    const step = 500;
+                    for (let start = Math.floor(minPrice / step) * step; start < maxPrice; start += step) {
+                        const end = start + step;
+                        options.push({ value: `${start}-${end}`, label: start === 0 ? `Below ₹${end}` : `₹${start} - ₹${end}` });
+                    }
+                    options.push({ value: `${maxPrice}-999999`, label: `Above ₹${maxPrice}` });
+                }
+            }
+        }
+        else if (filterType === 'brand') {
+            const targetId = subcategoryId || categoryId;
+            if (targetId) {
+                const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
+                const data = await res.json();
+                if (data.success && data.data.products) {
+                    const brands = new Set();
+                    data.data.products.forEach(p => { if (p.brand) brands.add(p.brand); });
+                    options = Array.from(brands).map(b => ({ value: b, label: b }));
+                }
+            }
+        }
+        else if (filterType === 'discount') {
+            const targetId = subcategoryId || categoryId;
+            if (targetId) {
+                const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
+                const data = await res.json();
+                if (data.success && data.data.products) {
+                    const discountSet = new Set();
+                    data.data.products.forEach(p => {
+                        if (p.price && p.final_price && parseFloat(p.price) > parseFloat(p.final_price)) {
+                            discountSet.add(Math.round(((parseFloat(p.price) - parseFloat(p.final_price)) / parseFloat(p.price)) * 100));
+                        }
+                    });
+                    options = Array.from(discountSet).sort((a, b) => a - b).map(d => ({ value: d, label: `${d}% & above` }));
+                }
+            }
+        } else if (filterType === 'size') {
+            const targetId = subcategoryId || categoryId;
+            if (targetId) {
+                const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
+                const data = await res.json();
+                if (data.success && data.data.products) {
+                    const sizeSet = new Set();
+                    data.data.products.forEach(product => {
+                        if (Array.isArray(product.variants)) {
+                            product.variants.forEach(variant => {
+                                if (variant?.variant_type?.toLowerCase() === 'size' && variant.variant_value) {
+                                    sizeSet.add(String(variant.variant_value).trim());
+                                }
+                            });
+                        }
+                    });
+                    options = Array.from(sizeSet).filter(v => v).sort((a, b) => a.localeCompare(b)).map(size => ({ value: size, label: size }));
+                }
+            }
+        } else if (filterType === 'color') {
+            options = ['Red', 'Blue', 'Green', 'Black', 'White', 'Pink', 'Yellow', 'Purple'].map(c => ({ value: c, label: c }));
+        } else if (filterType === 'fabric') {
+            options = ['Cotton', 'Polyester', 'Linen', 'Denim', 'Silk', 'Wool', 'Nylon'].map(f => ({ value: f, label: f }));
+        } else if (filterType === 'occasion') {
+            options = ['Casual', 'Formal', 'Party', 'Wedding', 'Sports', 'Travel'].map(o => ({ value: o, label: o }));
+        } else if (filterType === 'rating') {
+            options = ['4★', '3★', '2★', '1★'].map(r => ({ value: r, label: `${r} & above` }));
+        }
+        
+        if (options.length > 0) {
+            container.innerHTML = options.map(opt => `<label class="filter-checkbox"><input type="checkbox" class="filter-${filterType}" value="${opt.value}"> ${opt.label}</label>`).join('');
+        } else {
+            container.innerHTML = '<div style="padding: 20px; color: #999;">No options available</div>';
+        }
+    }
+
+    function applyOtherFilters(selected) {
+        let filtered = [...currentProducts];
+        let filterApplied = false;
+        
+        if (selected.price.length > 0) {
+            filterApplied = true;
+            filtered = filtered.filter(p => {
+                const price = getProductPrice(p);
+                return selected.price.some(range => {
+                    const [min, max] = range.split('-').map(Number);
+                    return price >= min && price <= max;
+                });
+            });
+        }
+        
+        if (selected.brand.length > 0) {
+            filterApplied = true;
+            filtered = filtered.filter(p => selected.brand.includes(p.brand));
+        }
+        
+        if (selected.discount.length > 0) {
+            filterApplied = true;
+            filtered = filtered.filter(p => {
+                if (p.price && p.final_price && parseFloat(p.price) > parseFloat(p.final_price)) {
+                    const discount = Math.round(((parseFloat(p.price) - parseFloat(p.final_price)) / parseFloat(p.price)) * 100);
+                    return selected.discount.some(d => discount >= parseInt(d.replace('%', '')));
+                }
+                return false;
+            });
+        }
+        
+        if (filterApplied) {
+            filtered.length > 0 ? renderProducts(filtered) : document.getElementById('productsGrid').innerHTML = '<div class="loading" style="grid-column:1/-1; padding:40px; text-align:center; color:#999;">No products match your filters</div>';
+        }
+    }
+
+    window.applyFilters = function() {
+        const selected = { category: [], price: [], brand: [], size: [], color: [], fabric: [], occasion: [], discount: [], rating: [] };
+        
+        document.querySelectorAll('.filter-checkbox input:checked').forEach(cb => {
+            const classes = Array.from(cb.classList);
+            classes.forEach(cls => {
+                if (cls.startsWith('filter-')) {
+                    const filterType = cls.replace('filter-', '');
+                    if (selected[filterType]) selected[filterType].push(cb.value);
+                }
+            });
+        });
+        
+        if (selected.category.length === 1) {
+            const firstCategory = selected.category[0];
+            if (firstCategory) {
+                window.changeSubcategory(firstCategory);
+                setTimeout(() => applyOtherFilters(selected), 500);
+            }
+        } else if (selected.category.length > 1) {
+            fetchMultipleSubcategoriesMobile(selected.category);
+        } else {
+            applyOtherFilters(selected);
+        }
+        hideFilterPopup();
+    };
+
+    window.resetFilters = function() {
+        document.querySelectorAll('.filter-checkbox input').forEach(cb => cb.checked = false);
+        if (currentSub) fetchProducts(currentSub);
+        else {
+            const urlParams = new URLSearchParams(window.location.search);
+            const subId = urlParams.get('subcategory');
+            if (subId) fetchProducts(subId);
+        }
+    };
+    
+    async function fetchTopSellingProducts() {
+        const grid = document.getElementById('productsGrid');
+        try {
+            const res = await fetch(`${API_BASE_URL}/products/top-selling`);
+            const data = await res.json();
+            if (data.success && data.data) {
+                let products = Array.isArray(data.data) ? data.data : (data.data.products || []);
+                currentProducts = products;
+                originalProducts = [...products];
+                renderProducts(products);
+                const subStrip = document.getElementById('subStrip');
+                if (subStrip) subStrip.style.display = 'none';
+                updateDesktopFiltersFromProducts(products);
+                const desktopCategoryContainer = document.getElementById('desktopCategoryFilters');
+                if (desktopCategoryContainer) {
+                    desktopCategoryContainer.innerHTML = '';
+                    const categoryHeader = desktopCategoryContainer.closest('.desktop-filter-section');
+                    if (categoryHeader) categoryHeader.style.display = 'none';
+                }
+                initDesktopFiltersToggle();
+            } else {
+                grid.innerHTML = '<div class="loading">No products found</div>';
+            }
+        } catch (error) {
+            grid.innerHTML = '<div class="loading">Error loading products</div>';
+        }
+    }
+    
     window.showSortPopup = function() {
         document.getElementById('sortPopupOverlay').classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -1839,96 +1958,34 @@ async function fetchTopSellingProducts() {
     };
 
     window.applySort = function() {
-    const selected = document.querySelector('input[name="sort"]:checked');
-    if (!selected) {
-        alert('Please select a sort option');
-        return;
-    }
+        const selected = document.querySelector('input[name="sort"]:checked');
+        if (!selected) { alert('Please select a sort option'); return; }
 
-    const sortBy = selected.value;
-    let sorted = [...currentProducts];
+        const sortBy = selected.value;
+        let sorted = [...currentProducts];
 
-    switch (sortBy) {
-
-        case 'price-low':
-            sorted.sort((a, b) => {
-                const priceA = parseFloat(
-                    (a.product_price && a.product_price != "0.00")
-                        ? a.product_price
-                        : (a.final_price || a.price || 0)
-                );
-
-                const priceB = parseFloat(
-                    (b.product_price && b.product_price != "0.00")
-                        ? b.product_price
-                        : (b.final_price || b.price || 0)
-                );
-
-                return priceA - priceB;
-            });
-            break;
-
-        case 'price-high':
-            sorted.sort((a, b) => {
-                const priceA = parseFloat(
-                    (a.product_price && a.product_price != "0.00")
-                        ? a.product_price
-                        : (a.final_price || a.price || 0)
-                );
-
-                const priceB = parseFloat(
-                    (b.product_price && b.product_price != "0.00")
-                        ? b.product_price
-                        : (b.final_price || b.price || 0)
-                );
-
-                return priceB - priceA;
-            });
-            break;
-        case 'newest':
-            sorted.sort((a, b) =>
-                new Date(b.created_at || 0) -
-                new Date(a.created_at || 0)
-            );
-            break;
-
-        case 'popularity':
-            sorted.sort((a, b) =>
-                (b.popularity || 0) -
-                (a.popularity || 0)
-            );
-            break;
-
-        case 'rating':
-            sorted.sort((a, b) =>
-                (b.rating || 0) -
-                (a.rating || 0)
-            );
-            break;
-
-        case 'discount':
-            sorted.sort((a, b) => {
-                const dA =
-                    ((parseFloat(a.price || 0) -
-                      parseFloat(a.final_price || 0)) /
-                      parseFloat(a.price || 1)) * 100;
-
-                const dB =
-                    ((parseFloat(b.price || 0) -
-                      parseFloat(b.final_price || 0)) /
-                      parseFloat(b.price || 1)) * 100;
-
-                return dB - dA;
-            });
-            break;
-
-        default:
-            break;
-    }
-
-    renderProducts(sorted);
-    hideSortPopup();
-};
+        switch (sortBy) {
+            case 'price-low':
+                sorted.sort((a, b) => getProductPrice(a) - getProductPrice(b));
+                break;
+            case 'price-high':
+                sorted.sort((a, b) => getProductPrice(b) - getProductPrice(a));
+                break;
+            case 'rating':
+                sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                break;
+            case 'discount':
+                sorted.sort((a, b) => {
+                    const dA = ((parseFloat(a.price || 0) - parseFloat(a.final_price || 0)) / parseFloat(a.price || 1)) * 100;
+                    const dB = ((parseFloat(b.price || 0) - parseFloat(b.final_price || 0)) / parseFloat(b.price || 1)) * 100;
+                    return dB - dA;
+                });
+                break;
+        }
+        renderProducts(sorted);
+        hideSortPopup();
+    };
+    
     window.showFilterPopup = function() {
         document.getElementById('filterPopupOverlay').classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -1946,12 +2003,7 @@ async function fetchTopSellingProducts() {
         const optionsContent = document.getElementById('filterOptionsContent');
         const titleElement = document.querySelector('.options-title');
         
-        let displayTitle = filterType.toUpperCase();
-        if (filterType === 'category') {
-            displayTitle = 'SUBCATEGORIES';
-        }
-        titleElement.textContent = displayTitle;
-        
+        titleElement.textContent = filterType === 'category' ? 'SUBCATEGORIES' : filterType.toUpperCase();
         optionsContent.innerHTML = '<div style="padding: 20px; color: #999;">Loading...</div>';
         loadFilterOptions(filterType, optionsContent);
         
@@ -1960,774 +2012,193 @@ async function fetchTopSellingProducts() {
     };
 
     window.hideFilterOptions = function() {
-        const titlesColumn = document.querySelector('.filter-titles-column');
-        const optionsColumn = document.getElementById('filterOptionsColumn');
-        
-        titlesColumn.classList.remove('half-width');
-        optionsColumn.style.display = 'none';
+        document.querySelector('.filter-titles-column').classList.remove('half-width');
+        document.getElementById('filterOptionsColumn').style.display = 'none';
     };
-    async function fetchMultipleSubcategories(subIds) {
-
-    const grid =
-        document.getElementById('productsGrid');
-
-    try {
-
-        let allProducts = [];
-
-        for (const id of subIds) {
-
-            const res =
-                await fetch(
-                    `${API_BASE_URL}/categories/${id}/products`
-                );
-
-            const data = await res.json();
-
-            if (
-                data.success &&
-                data.data.products
-            ) {
-
-                allProducts =
-                    allProducts.concat(
-                        data.data.products
-                    );
-
-            }
-
-        }
-
-        /* remove duplicates */
-
-        allProducts = [
-            ...new Map(
-                allProducts.map(
-                    p => [p.id, p]
-                )
-            ).values()
-        ];
-
-        currentProducts = allProducts;
-        originalProducts = [...allProducts];
-
-        renderProducts(allProducts);
-
-        updateDesktopFiltersFromProducts(
-            allProducts
-        );
-
-    } catch (error) {
-
-        grid.innerHTML =
-            '<div class="loading">Error loading products</div>';
-
-    }
-
-}
-async function fetchMultipleSubcategoriesMobile(subIds) {
-
-    const grid =
-        document.getElementById('productsGrid');
-
-    try {
-
-        let allProducts = [];
-
-        for (const id of subIds) {
-
-            const res =
-                await fetch(
-                    `${API_BASE_URL}/categories/${id}/products`
-                );
-
-            const data = await res.json();
-
-            if (
-                data.success &&
-                data.data.products
-            ) {
-
-                allProducts =
-                    allProducts.concat(
-                        data.data.products
-                    );
-
-            }
-
-        }
-
-        /* remove duplicates */
-
-        allProducts = [
-            ...new Map(
-                allProducts.map(
-                    p => [p.id, p]
-                )
-            ).values()
-        ];
-
-        currentProducts = allProducts;
-        originalProducts = [...allProducts];
-
-        renderProducts(allProducts);
-
-    } catch (error) {
-
-        grid.innerHTML =
-            '<div class="loading">Error loading products</div>';
-
-    }
-
-}
-    async function loadFilterOptions(filterType, container) {
-        let options = [];
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const categoryId = urlParams.get('category');
-        const subcategoryId = urlParams.get('subcategory');
-        const type = urlParams.get('type');
-         if (type === 'top-selling') {
-            if (filterType === 'price') {
-                const prices = currentProducts.map(p => parseFloat(
-                    (p.product_price && p.product_price != "0.00") 
-                        ? p.product_price 
-                        : (p.final_price || p.price || 0)
-                )).filter(p => !isNaN(p));
-                
-                const minPrice = Math.min(...prices);
-                const maxPrice = Math.max(...prices);
-                const step = Math.ceil((maxPrice - minPrice) / 4);
-                const ranges = [];
-                let current = minPrice;
-                
-                for (let i = 0; i < 4; i++) {
-                    if (i === 0) {
-                        ranges.push({ min: 0, max: current + step, label: `Below ₹${(current + step).toFixed(0)}` });
-                    } else if (i === 3) {
-                        ranges.push({ min: current, max: maxPrice, label: `Above ₹${current.toFixed(0)}` });
-                    } else {
-                        ranges.push({ min: current, max: current + step, label: `₹${current.toFixed(0)} - ₹${(current + step).toFixed(0)}` });
-                    }
-                    current += step;
-                }
-                
-                options = ranges.map(range => ({
-                    value: `${range.min}-${range.max}`,
-                    label: range.label
-                }));
-            }
-            else if (filterType === 'brand') {
-                const brands = new Set();
-                currentProducts.forEach(p => {
-                    if (p.brand) brands.add(p.brand);
-                });
-                options = Array.from(brands).map(b => ({ value: b, label: b }));
-            }
-            else if (filterType === 'discount') {
-                const discountSet = new Set();
-                currentProducts.forEach(p => {
-                    if (p.price && p.final_price) {
-                        const original = parseFloat(p.price);
-                        const final = parseFloat(p.final_price);
-                        if (original > final) {
-                            const discount = Math.round(((original - final) / original) * 100);
-                            discountSet.add(discount);
-                        }
-                    }
-                });
-                options = Array.from(discountSet).sort((a, b) => a - b).map(d => ({
-                    value: d,
-                    label: `${d}% & above`
-                }));
-            }
-            
-            if (options.length > 0) {
-                container.innerHTML = options.map(opt => `
-                    <label class="filter-checkbox">
-                        <input type="checkbox" class="filter-${filterType}" value="${opt.value}"> ${opt.label}
-                    </label>
-                `).join('');
-            } else {
-                container.innerHTML = '<div style="padding: 20px; color: #999;">No options available</div>';
-            }
-            return;  
-        }
-        switch(filterType) {
-            case 'category':
-                try {
-                    const res = await fetch(`${API_BASE_URL}/categories`);
-                    const data = await res.json();
-                    
-                    if (data.success) {
-                        let targetCategory = null;
-                        
-                        if (categoryId) {
-                            targetCategory = data.data.find(c => c.id == categoryId);
-                        } else if (subcategoryId) {
-                            targetCategory = data.data.find(c => 
-                                c.children?.some(child => child.id == subcategoryId)
-                            );
-                        }
-                        
-                        if (targetCategory && targetCategory.children && targetCategory.children.length > 0) {
-                            options = targetCategory.children.map(child => ({ 
-                                value: child.id, 
-                                label: child.name 
-                            }));
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error loading categories:', error);
-                }
-                break;
-                
-            case 'price':
-    const targetId2 = subcategoryId || categoryId;
-    if (targetId2) {
-        const res2 = await fetch(`${API_BASE_URL}/categories/${targetId2}/products`);
-        const data2 = await res2.json();
-
-        if (data2.success && data2.data.products && data2.data.products.length > 0) {
-
-            const prices = data2.data.products
-                .map(p => parseFloat(p.final_price || p.price))
-                .filter(p => !isNaN(p));
-
-            const minPrice = Math.min(...prices);
-            const maxPrice = Math.max(...prices);
-
-            const step = 500;
-
-            options = [];
-
-            for (let start = Math.floor(minPrice / step) * step; start < maxPrice; start += step) {
-
-                const end = start + step;
-
-                options.push({
-                    value: `${start}-${end}`,
-                    label: start === 0
-                        ? `Below ₹${end}`
-                        : `₹${start} - ₹${end}`
-                });
-
-            }
-
-            options.push({
-                value: `${maxPrice}-999999`,
-                label: `Above ₹${maxPrice}`
-            });
-        }
-    }
-    break;            
-            case 'brand':
-                const targetId = subcategoryId || categoryId;
-                if (targetId) {
-                    const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
-                    const data = await res.json();
-                    
-                    if (data.success && data.data.products) {
-                        const brands = new Set();
-                        data.data.products.forEach(p => {
-                            if (p.brand) brands.add(p.brand);
-                        });
-                        options = Array.from(brands).map(b => ({ value: b, label: b }));
-                    }
-                }
-                break;
-                
-            case 'discount':
-                const targetId1 = subcategoryId || categoryId;
-                if (targetId1) {
-                    const res1 = await fetch(`${API_BASE_URL}/categories/${targetId1}/products`);
-                    const data1 = await res1.json();
-
-                    if (data1.success && data1.data.products) {
-                        const discountSet = new Set();
-
-                        data1.data.products.forEach(p => {
-                            if (p.price && p.final_price) {
-                                const original = parseFloat(p.price);
-                                const final = parseFloat(p.final_price);
-
-                                if (original > final) {
-                                    const discount = Math.round(
-                                        ((original - final) / original) * 100
-                                    );
-
-                                    discountSet.add(discount);
-                                }
-                            }
-                        });
-
-                        options = Array.from(discountSet)
-                            .sort((a, b) => a - b)
-                            .map(d => ({
-                                value: d,
-                                label: `${d}% & above`
-                            }));
-                    }
-                }
-                break;
-            case 'size':
-    const targetId3 = subcategoryId || categoryId;
-
-    if (targetId3) {
-
-        const res3 = await fetch(`${API_BASE_URL}/categories/${targetId3}/products`);
-        const data3 = await res3.json();
-
-        if (data3.success && data3.data.products) {
-
-            const sizeSet = new Set();
-
-            data3.data.products.forEach(product => {
-
-                if (Array.isArray(product.variants)) {
-
-                    product.variants.forEach(variant => {
-
-                        if (
-                            variant &&
-                            typeof variant.variant_type === 'string' &&
-                            variant.variant_type.toLowerCase() === 'size' &&
-                            variant.variant_value
-                        ) {
-                            sizeSet.add(
-                                String(variant.variant_value).trim()
-                            );
-                        }
-
-                    });
-
-                }
-
-            });
-
-            options = Array.from(sizeSet)
-                .filter(v => v)
-                .sort((a, b) => a.localeCompare(b))
-                .map(size => ({
-                    value: size,
-                    label: size
-                }));
-
-        }
-
-    }
-
-    break;
-                
-            case 'color':
-                options = ['Red', 'Blue', 'Green', 'Black', 'White', 'Pink', 'Yellow', 'Purple'].map(c => ({ value: c, label: c }));
-                break;
-                
-            case 'fabric':
-                options = ['Cotton', 'Polyester', 'Linen', 'Denim', 'Silk', 'Wool', 'Nylon'].map(f => ({ value: f, label: f }));
-                break;
-                
-            case 'occasion':
-                options = ['Casual', 'Formal', 'Party', 'Wedding', 'Sports', 'Travel'].map(o => ({ value: o, label: o }));
-                break;
-                
-            case 'rating':
-                options = ['4★', '3★', '2★', '1★'].map(r => ({ 
-                    value: r, 
-                    label: `${r} & above` 
-                }));
-                break;
-        }
-        
-        if (options.length > 0) {
-            container.innerHTML = options.map(opt => `
-                <label class="filter-checkbox">
-                    <input type="checkbox" class="filter-${filterType}" value="${opt.value}"> ${opt.label}
-                </label>
-            `).join('');
+    
+    window.toggleWish = function(btn, product) {
+        event.stopPropagation();
+        let currentWishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+        const exists = currentWishlist.some(item => item.id == product.id);
+        if (exists) {
+            currentWishlist = currentWishlist.filter(item => item.id != product.id);
+            btn.innerHTML = '♡';
+            btn.classList.remove('active');
         } else {
-            container.innerHTML = '<div style="padding: 20px; color: #999;">No options available</div>';
+            currentWishlist.push(product);
+            btn.innerHTML = '❤️';
+            btn.classList.add('active');
         }
+        localStorage.setItem('wishlist', JSON.stringify(currentWishlist));
+        window.wishlist = currentWishlist;
+        renderProducts(currentProducts);
+    };
+    
+    async function loadProductDesktopHeader() {
+        const navMenu = document.getElementById('productNavMenu');
+        const popup = document.getElementById('productAllCategoriesPopup');
+        if (!navMenu) return;
+        
+        try {
+            const res = await fetch(`${API_BASE_URL}/categories`);
+            const data = await res.json();
+            if (data.success) {
+                const categories = data.data.slice(0, 5);
+                navMenu.innerHTML = categories.map(cat => `<a href="/category/${cat.id}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`).join('');
+                
+                const navItems = document.querySelectorAll('#productNavMenu .nav-item');
+                const showPopup = () => { if (popup) { renderProductAllCategoriesPopup(data.data); popup.style.display = 'block'; } };
+                const hidePopup = () => { if (popup) setTimeout(() => popup.style.display = 'none', 200); };
+                
+                navItems.forEach(item => {
+                    item.addEventListener('mouseenter', showPopup);
+                    item.addEventListener('mouseleave', hidePopup);
+                });
+                if (popup) {
+                    popup.addEventListener('mouseenter', () => popup.style.display = 'block');
+                    popup.addEventListener('mouseleave', hidePopup);
+                }
+            }
+        } catch (error) { console.error('Error loading categories:', error); }
     }
 
-    window.applyFilters = function() {
-        const selected = {
-            category: [],
-            price: [],
-            brand: [],
-            size: [],
-            color: [],
-            fabric: [],
-            occasion: [],
-            discount: [],
-            rating: []
-        };
-        
-        document.querySelectorAll('.filter-checkbox input:checked').forEach(cb => {
-            const classes = Array.from(cb.classList);
-            classes.forEach(cls => {
-                if (cls.startsWith('filter-')) {
-                    const filterType = cls.replace('filter-', '');
-                    if (selected[filterType]) {
-                        selected[filterType].push(cb.value);
+    function renderProductAllCategoriesPopup(categories) {
+        const popup = document.getElementById('productAllCategoriesPopup');
+        if (!popup) return;        
+        const columnSize = Math.ceil(categories.length / 5);
+        const columns = [];
+        for (let i = 0; i < 5; i++) columns.push(categories.slice(i * columnSize, (i + 1) * columnSize));        
+        let html = `<div style="max-width:1200px; margin:0 auto; padding:30px; display:grid; grid-template-columns:repeat(5,1fr); gap:25px;">`;
+        columns.forEach(col => {
+            if (col.length) {
+                html += `<div>`;
+                col.forEach(cat => {
+                    html += `<div style="margin-bottom:20px;">
+                        <h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">${cat.name}</h3>
+                        <ul style="list-style:none; padding:0; margin-top:12px;">`;
+                    if (cat.children?.length) {
+                        cat.children.slice(0, 6).forEach(sub => {
+                            html += `<li style="margin-bottom:8px;"><a href="/category/${sub.id}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
+                        });
+                        if (cat.children.length > 6) {
+                            html += `<li style="margin-top:5px;"><a href="/category/${cat.id}" style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">+${cat.children.length - 6} more →</a></li>`;
+                        }
                     }
-                }
-            });
+                    html += `</ul></div>`;
+                });
+                html += `</div>`;
+            }
         });
-        
-       if (selected.category.length === 1) {
-            const firstCategory = selected.category[0];
-            if (firstCategory) {
-                window.changeSubcategory(firstCategory);
-                setTimeout(() => {
-                    applyOtherFilters(selected);
-                }, 500);
+        popup.innerHTML = html + `</div>`;
+    }
+    function initDesktopFiltersToggle() {
+        document.querySelectorAll('.desktop-filter-section').forEach(section => {
+            const title = section.querySelector('.desktop-filter-title');
+            const options = section.querySelector('.filter-options');
+            if (title && options) {
+                options.classList.remove('open');
+                title.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    section.classList.toggle('open');
+                    options.classList.toggle('open');
+                });
             }
-        } else if (selected.category.length > 1) {
-            fetchMultipleSubcategoriesMobile(selected.category);
-        } else {
-            applyOtherFilters(selected);
-        }
-        
-        hideFilterPopup();
-    };
+        });
+    }
     function initWebSearchDropdown() {
-
         setTimeout(() => {
-
             const input = document.getElementById("web-search-input");
             if (!input) return;
-
-            let suggestionsBox =
-                document.getElementById("web-search-suggestions");
-
+            let suggestionsBox = document.getElementById("web-search-suggestions");
             let timer;
-
-            input.addEventListener("input", async (e) => {
-
-                clearTimeout(timer);
-
-                const q = e.target.value.trim();
-
-                if (q.length === 0) {
-                    suggestionsBox.style.display = "none";
-                    suggestionsBox.innerHTML = "";
-                    return;
-                }
-
-                try {
-
-                    /* first letter instant */
-
-                    if (q.length === 1) {
-
-                        const res = await fetch(
-                            `${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`
-                        );
-
-                        const data = await res.json();
-
-                        if (!data.success) return;
-
-                        renderSuggestions(data.data.products);
-
-                        return;
-                    }
-
-                    /* smooth delay */
-
-                    timer = setTimeout(async () => {
-
-                        const res = await fetch(
-                            `${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`
-                        );
-
-                        const data = await res.json();
-
-                        if (!data.success) return;
-
-                        renderSuggestions(data.data.products);
-
-                    }, 200);
-
-                } catch (err) {
-                    console.log(err);
-                }
-
-            });
-
-            document.addEventListener("click", (e) => {
-                if (
-                    !input.contains(e.target) &&
-                    !suggestionsBox.contains(e.target)
-                ) {
-                    suggestionsBox.style.display = "none";
-                }
-            });
-
-            function renderSuggestions(products) {
-
-                let html = "";
-
-                products.forEach(p => {
-                    html += `<div class="web-suggestion-item" onclick="window.location.href='/product/${p.slug}'">${p.name}</div>`;
-                });
-
-                if (html === "") {
-                    html = `<div class="web-suggestion-item">No results found</div>`;
-                }
-
+            const renderSuggestions = (products) => {
+                let html = products.length ? products.map(p => `<div class="web-suggestion-item" onclick="window.location.href='/product/${p.slug}'">${p.name}</div>`).join('') : '<div class="web-suggestion-item">No results found</div>';
                 suggestionsBox.innerHTML = html;
                 suggestionsBox.style.display = "block";
-            }
-
+            };
+            input.addEventListener("input", async (e) => {
+                clearTimeout(timer);
+                const q = e.target.value.trim();
+                if (q.length === 0) { suggestionsBox.style.display = "none"; suggestionsBox.innerHTML = ""; return; }
+                try {
+                    if (q.length === 1) {
+                        const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`);
+                        const data = await res.json();
+                        if (data.success) renderSuggestions(data.data.products);
+                        return;
+                    }
+                    timer = setTimeout(async () => {
+                        const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`);
+                        const data = await res.json();
+                        if (data.success) renderSuggestions(data.data.products);
+                    }, 200);
+                } catch (err) { console.log(err); }
+            });
+            document.addEventListener("click", (e) => {
+                if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) suggestionsBox.style.display = "none";
+            });
         }, 300);
-
     }
-        
-    function applyOtherFilters(selected) {
-            let filtered = [...currentProducts];
-            let filterApplied = false;
-            
-            if (selected.price.length > 0) {
-                filterApplied = true;
-                filtered = filtered.filter(p => {
-                    // const price = parseFloat(p.final_price || p.price || 0);
-                    const price = parseFloat(
-                        (p.product_price && p.product_price != "0.00")
-                            ? p.product_price
-                            : (p.final_price || p.price || 0)
-                    );
-                    return selected.price.some(range => {
-                        const [min, max] = range.split('-').map(Number);
-                        return price >= min && price <= max;
-                    });
-                });
+    async function fetchAppSettingsForProducts() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/app-settings`);
+            const data = await response.json();
+            if (data.success) {
+                const headerLogo = data.data.header_logo || data.data.app_logo;
+                const desktopLogoEl = document.getElementById('desktopHeaderLogo');
+                if (desktopLogoEl && headerLogo) desktopLogoEl.src = headerLogo;
             }
-            
-            if (selected.brand.length > 0) {
-                filterApplied = true;
-                filtered = filtered.filter(p => selected.brand.includes(p.brand));
-            }
-            
-            if (selected.discount.length > 0) {
-                filterApplied = true;
-                filtered = filtered.filter(p => {
-                    if (p.price && p.final_price) {
-                        const original = parseFloat(p.price);
-                        const final = parseFloat(p.final_price);
-                        if (original > final) {
-                            const discount = Math.round(((original - final) / original) * 100);
-                            return selected.discount.some(d => {
-                                const discountVal = parseInt(d.replace('%', ''));
-                                return discount >= discountVal;
-                            });
-                        }
-                    }
-                    return false;
-                });
-            }
-            
-            if (filterApplied) {
-                if (filtered.length > 0) {
-                    renderProducts(filtered);
-                } else {
-                    document.getElementById('productsGrid').innerHTML = '<div class="loading" style="grid-column:1/-1; padding:40px; text-align:center; color:#999;">No products match your filters</div>';
-                }
-            }
-        }
-
-
-    window.resetFilters = function() {
-        document.querySelectorAll('.filter-checkbox input').forEach(cb => cb.checked = false);
-        
-        if (currentSub) {
-            fetchProducts(currentSub);
-        } else {
-            const urlParams = new URLSearchParams(window.location.search);
-            const subId = urlParams.get('subcategory');
-            if (subId) {
-                fetchProducts(subId);
-            }
-        }
-    };
-    // Load categories for product page desktop header
-async function loadProductDesktopHeader() {
-    const navMenu = document.getElementById('productNavMenu');
-    const popup = document.getElementById('productAllCategoriesPopup');
-    
-    if (!navMenu) return;
-    
-    try {
-        const res = await fetch(`${API_BASE_URL}/categories`);
-        const data = await res.json();
-        
-        if (data.success) {
-            const categories = data.data.slice(0, 5);
-            
-            navMenu.innerHTML = categories.map(cat => 
-                `<a href="/category/${cat.id}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`
-            ).join('');
-            
-            // Setup hover popup
-            const navItems = document.querySelectorAll('#productNavMenu .nav-item');
-            
-            const showPopup = () => {
-                if (!popup) return;
-                renderProductAllCategoriesPopup(data.data);
-                popup.style.display = 'block';
-            };
-            
-            const hidePopup = () => {
-                if (!popup) return;
-                setTimeout(() => {
-                    popup.style.display = 'none';
-                }, 200);
-            };
-            
-            navItems.forEach(item => {
-                item.addEventListener('mouseenter', showPopup);
-                item.addEventListener('mouseleave', hidePopup);
-            });
-            
-            if (popup) {
-                popup.addEventListener('mouseenter', () => {
-                    popup.style.display = 'block';
-                });
-                popup.addEventListener('mouseleave', hidePopup);
-            }
-        }
-    } catch (error) {
-        console.error('Error loading categories:', error);
+        } catch (error) { console.error('Error fetching app settings:', error); }
     }
-}
-
-function renderProductAllCategoriesPopup(categories) {
-    const popup = document.getElementById('productAllCategoriesPopup');
-    if (!popup) return;
-    
-    const allMainCategories = categories;
-    const columnSize = Math.ceil(allMainCategories.length / 5);
-    const columns = [];
-    
-    for (let i = 0; i < 5; i++) {
-        columns.push(allMainCategories.slice(i * columnSize, (i + 1) * columnSize));
+    function updateCartCountBadge() {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let totalItems = cart.length;
+        const badge = document.getElementById('cart-count-badge');
+        if (badge) { badge.style.display = 'flex'; badge.textContent = totalItems; }
     }
-    
-    let html = `<div style="max-width:1200px; margin:0 auto; padding:30px; display:grid; grid-template-columns:repeat(5,1fr); gap:25px;">`;
-    
-    columns.forEach(col => {
-        if (col.length > 0) {
-            html += `<div>`;
-            col.forEach(cat => {
-                html += `
-                    <div style="margin-bottom:20px;">
-                        <h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">${cat.name}</h3>
-                        <ul style="list-style:none; padding:0; margin-top:12px;">
-                `;
-                
-                if (cat.children && cat.children.length > 0) {
-                    cat.children.slice(0, 6).forEach(sub => {
-                        html += `<li style="margin-bottom:8px;"><a href="/category/${sub.id}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
-                    });
-                    if (cat.children.length > 6) {
-                        html += `<li style="margin-top:5px;"><a href="/category/${cat.id}" style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">+${cat.children.length - 6} more →</a></li>`;
-                    }
-                }
-                
-                html += `</ul></div>`;
-            });
-            html += `</div>`;
-        }
-    });
-    
-    html += `</div>`;
-    popup.innerHTML = html;
-}
-document.addEventListener('DOMContentLoaded', function () {
-    updateCartCountBadge();
-});
-function updateCartCountBadge() {
-
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-    let totalItems = cart.length;
-
-    const badge = document.getElementById('cart-count-badge');
-
-    if (!badge) return;
-
-    badge.style.display = 'flex';
-    badge.textContent = totalItems;
-}
-async function fetchAppSettingsForProducts() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/app-settings`);
-        const data = await response.json();
-        if (data.success) {
-            const appName = data.data.app_name;
-            const headerLogo = data.data.header_logo || data.data.app_logo;
-            
-            const desktopLogoEl = document.getElementById('desktopHeaderLogo');
-            if (desktopLogoEl && headerLogo) {
-                desktopLogoEl.src = headerLogo;
-            }
-            
-            const mobileLogoEl = document.getElementById('mobileHeaderLogo');
-if (mobileLogoEl) {
-    mobileLogoEl.style.height = '28px';
-    mobileLogoEl.style.width = 'auto';
-    mobileLogoEl.src = headerLogo;
-}}
-    } catch (error) {
-        console.error('Error fetching app settings:', error);
-    }
-}
-// Call this function when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    fetchAppSettingsForProducts();
-    loadProductDesktopHeader();
-    initWebSearchDropdown();
-
-});
-function initDesktopFiltersToggle() {
-    document.querySelectorAll('.desktop-filter-section').forEach(section => {
-        const title = section.querySelector('.desktop-filter-title');
-        const options = section.querySelector('.filter-options');
-        
-        if (title && options) {
-            // Initially closed
-            options.classList.remove('open');
-            
-            // Add click handler
-            title.addEventListener('click', function(e) {
-                e.preventDefault();
-                section.classList.toggle('open');
-                options.classList.toggle('open');
-            });
-        }
-    });
-}
-setTimeout(function() {
-    fetch(`${API_BASE_URL}/app-settings`)
-        .then(r => r.json())
-        .then(data => {
+    async function updateMobileLogo() {
+        try {
+            const res = await fetch(`${API_BASE_URL}/app-settings`);
+            const data = await res.json();
             if (data.success) {
                 const logo = data.data.header_logo || data.data.app_logo;
                 const img = document.getElementById('mobileHeaderLogo');
-                if (img && logo) {
-                    img.src = logo;
-                    img.style.display = 'block';
-                }
+                if (img && logo) img.src = logo;
+            }
+        } catch(e) { console.log(e); }
+    }    
+    updateMobileLogo();
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartCountBadge();
+        fetchAppSettingsForProducts();
+        loadProductDesktopHeader();
+        initWebSearchDropdown();
+    });    
+    setTimeout(function() {
+        fetch(`${API_BASE_URL}/app-settings`).then(r => r.json()).then(data => {
+            if (data.success) {
+                const logo = data.data.header_logo || data.data.app_logo;
+                const img = document.getElementById('mobileHeaderLogo');
+                if (img && logo) { img.src = logo; img.style.display = 'block'; }
             }
         });
-}, 100);
+    }, 100);   
     fetchData();
+    setInterval(function() {
+        try {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            let totalItems = cart.length;
+            const badge = document.getElementById('cart-count-badge');
+            if (badge && badge.textContent != totalItems) {
+                badge.textContent = totalItems;
+                badge.style.display = totalItems > 0 ? 'flex' : 'none';
+            }
+        } catch(e) {}
+    }, 2000);
     
 })();
 </script>
 <script>
-// Force cart count update every 2 seconds for app
 setInterval(function() {
     try {
         let cart = JSON.parse(localStorage.getItem('cart')) || [];

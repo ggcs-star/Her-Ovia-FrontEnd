@@ -234,3 +234,21 @@
         font-size: 20px;
     }
 }
+.web-header .top-bar {
+    background: linear-gradient(90deg, #440c2c, #f4b94e, #440c2c, #f4b94e, #440c2c);
+    background-size: 300% 100%;
+    animation: 4s infinite gradientMove;
+    color: #fff;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 12px;
+    font-weight: 500;
+}
+.top-bar {
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary), var(--accent), var(--primary));
+    background-size: 300% 100%;
+    animation: 4s infinite gradientMove;
+    color: #fff;
+    padding: 8px;
+    font-size: 12px;
+}

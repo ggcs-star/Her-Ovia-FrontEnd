@@ -516,15 +516,15 @@ body {
     width: 300px;
     min-width: 300px;
     height: auto;
-    min-height: 130px;
+    min-height: 200px;  /* 130px se 200px karo */
     background: linear-gradient(135deg, #fff8f0, #fff) !important;
     border: 1px solid rgba(0, 0, 0, .08) !important;
     border-radius: 16px;
-    padding: 16px 16px 16px 20px;
+    padding: 24px 20px 24px 24px;  /* padding badhao */
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 15px;
     box-shadow: none !important;
     transition: .2s
 }
@@ -1175,26 +1175,26 @@ body {
     .trending-card {
         width: 280px;
         min-width: 280px;
-        height: 120px;
-        padding: 14px 14px 14px 18px
+        height: 160px;  /* height fix karo */
+        padding: 18px 18px 18px 20px;
     }
-
+    
     .trending-main {
         font-size: 18px;
-        -webkit-line-clamp: 2
     }
-
+    
     .trending-sub {
         font-size: 13px;
-        margin-bottom: 8px
+        margin-bottom: 10px;
+    }
+    
+    .trending-img-wrap {
+        width: 85px;
+        height: 85px;
+        min-width: 85px;
+        padding: 8px;
     }
 
-    .trending-img-wrap {
-        width: 75px;
-        height: 75px;
-        min-width: 75px;
-        padding: 6px
-    }
 
     .shop-now-link {
         font-size: 12px
@@ -1225,7 +1225,29 @@ body {
         max-width: 180px !important
     }
 }
-
+@media (max-width:480px) {
+    .trending-card {
+        width: 280px;
+        min-width: 280px;
+        min-height: 180px;  /* 120px se 180px karo */
+        padding: 20px 16px 20px 20px;
+    }
+    
+    .trending-main {
+        font-size: 18px;
+    }
+    
+    .trending-sub {
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+    
+    .trending-img-wrap {
+        width: 85px;
+        height: 85px;
+        min-width: 85px;
+    }
+}
 @media (min-width:1400px) {
     .trending-card {
         width: 300px;
@@ -5045,5 +5067,125 @@ body {
     .landscape-dual-right {
         flex: 0 0 100% !important;
         width: 100% !important
+    }
+}
+/* Categories Pills ko Trending Cards jaisa banane ke liye */
+.categories-pills {
+    display: flex !important;
+    gap: 20px !important;
+    overflow-x: auto !important;
+    padding: 10px 0 20px !important;
+    scrollbar-width: none;
+}
+
+.categories-pills::-webkit-scrollbar {
+    display: none;
+}
+
+/* Pill Item ko Trending Card style mein convert kar do */
+.pill-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+    min-width: 130px !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #fff, #fafafa);
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid #f0f0f0;
+}
+
+.pill-item:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent);
+    box-shadow: 0 8px 20px rgba(68, 12, 44, 0.1);
+}
+
+/* Image wrapper - Trending jaisa */
+.pill-img-wrap {
+    width: 100px !important;
+    height: 100px !important;
+    border-radius: 12px !important;
+    overflow: hidden;
+    background: #f8f8f8;
+}
+
+.pill-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.pill-item:hover .pill-img-wrap img {
+    transform: scale(1.05);
+}
+
+/* Category Name */
+.pill-item span {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #282c3f !important;
+    text-align: center;
+}
+
+.pill-item:hover span {
+    color: var(--accent) !important;
+}
+
+/* All Categories special card */
+.all-categories-pill {
+    background: linear-gradient(135deg, #440c2c, #6b1a45);
+    border-color: #440c2c;
+}
+
+.all-categories-pill span {
+    color: white !important;
+}
+
+/* Card ki height width adjust - Trending se thoda bada */
+@media (max-width: 768px) {
+    .pill-img-wrap {
+        width: 80px !important;
+        height: 80px !important;
+    }
+    
+    .pill-item {
+        min-width: 110px !important;
+        padding: 8px;
+    }
+    
+    .pill-item span {
+        font-size: 12px !important;
+    }
+}
+
+@media (min-width: 1025px) {
+    .pill-img-wrap {
+        width: 120px !important;
+        height: 120px !important;
+    }
+    
+    .pill-item {
+        min-width: 150px !important;
+        padding: 16px;
+    }
+}
+@media (min-width:1025px) {
+    .trending-card {
+        min-height: 220px;  /* desktop me aur badhao */
+        padding: 28px 24px 28px 28px;
+    }
+    
+    .trending-main {
+        font-size: 22px;
+    }
+    
+    .trending-img-wrap {
+        width: 100px;
+        height: 100px;
+        min-width: 100px;
     }
 }
