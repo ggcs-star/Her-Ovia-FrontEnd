@@ -26,6 +26,8 @@
     </script>
     <script src="{{ asset('mobile/script.js') }}"></script>
     <script src="{{ asset('mobile/profile.js') }}"></script>
+    @include('mobile.auth.auth')
+
     @include('components.footer')
 </body>
 </html>

@@ -221,6 +221,8 @@ function renderBottomNav() {
     `;
 }
 </script>
+@include('mobile.auth.auth')
+
 @include('components.footer')
 </body>
 </html>

@@ -2479,5 +2479,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 500);
 });
     </script>
+    @include('mobile.auth.auth')
+
 </body>
 </html>

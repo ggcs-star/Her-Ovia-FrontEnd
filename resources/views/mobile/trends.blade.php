@@ -63,6 +63,7 @@ Loading reels...
 </div>
 <script src="{{ asset('mobile/script.js') }}"></script>
 <script src="{{ asset('mobile/trends.js') }}"></script>
+@include('mobile.auth.auth')
 
 </body>
 </html>

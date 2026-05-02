@@ -513,8 +513,8 @@ button:hover{
         <button type="submit">Create Account</button>
 
         <div class="login-link">
-            Already have an account? <a href="/login">Login</a>
-        </div>
+    Already have an account? <a href="javascript:void(0)" onclick="showLoginPopup()">Login</a>
+</div>
     </form>
 </div>
 <script>
@@ -606,6 +606,139 @@ function clearFieldError(inputId) {
     input.style.borderColor = '';
 }
 document.addEventListener("DOMContentLoaded", function () {
+    // ========== YE NAYA CODE ADD KARO (POPUP KE LIYE) ==========
+// Check if user is already logged in? Agar nahi hai toh popup dikhao
+function isLoggedIn() {
+    return !!localStorage.getItem('token');
+}
+
+function showLoginPopup() {
+    // Agar pehle se popup exist karta hai toh close karke new open karo
+    let existingPopup = document.getElementById('global-auth-popup');
+    if(existingPopup) existingPopup.remove();
+    
+    const popupHTML = `
+    <div id="global-auth-popup" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:99999; display:flex; align-items:center; justify-content:center; font-family:'Inter',sans-serif;">
+        <div style="background:white; max-width:400px; width:90%; border-radius:28px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.3); position:relative;">
+            <span onclick="document.getElementById('global-auth-popup').remove()" style="position:absolute; top:12px; right:18px; font-size:28px; cursor:pointer; color:#999;">&times;</span>
+            <div style="padding:32px 24px 28px;">
+                <h2 style="color:#440C2C; text-align:center;">Welcome Back</h2>
+                <p style="text-align:center; color:#666; font-size:14px;">Login to continue</p>
+                <div style="margin-top:20px;">
+                    <input type="email" id="popup-email" placeholder="Email Address" style="width:100%; padding:12px; border-radius:12px; border:1px solid #ddd; margin-bottom:12px;">
+                    <input type="password" id="popup-password" placeholder="Password" style="width:100%; padding:12px; border-radius:12px; border:1px solid #ddd; margin-bottom:20px;">
+                    <button id="popup-login-btn" style="width:100%; background:#440C2C; color:white; padding:14px; border:none; border-radius:12px; font-weight:600; cursor:pointer;">Login</button>
+                    <div style="text-align:center; margin-top:16px;">
+                        <span style="font-size:13px;">Don't have an account? </span>
+                        <a href="#" id="popup-show-register" style="color:#F4B94E; font-weight:600;">Create one</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    
+    document.body.insertAdjacentHTML('beforeend', popupHTML);
+    
+    // Login button event
+    document.getElementById('popup-login-btn')?.addEventListener('click', async () => {
+        const email = document.getElementById('popup-email').value;
+        const password = document.getElementById('popup-password').value;
+        if(!email || !password) {
+            alert("Please fill email and password");
+            return;
+        }
+        try {
+            const res = await fetch(BASE_URL + "/user/login", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({email, password})
+            });
+            const data = await res.json();
+            if(res.ok && data.token) {
+                localStorage.setItem("token", data.token);
+                if(data.user) localStorage.setItem("user", JSON.stringify(data.user));
+                alert("Login Successful!");
+                document.getElementById('global-auth-popup').remove();
+                window.location.reload();
+            } else {
+                alert(data.message || "Login failed");
+            }
+        } catch(err) {
+            alert("Server error");
+        }
+    });
+    
+    // Register link
+    document.getElementById('popup-show-register')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('global-auth-popup').remove();
+        showRegisterPopup();
+    });
+}
+
+function showRegisterPopup() {
+    let existingPopup = document.getElementById('global-auth-popup');
+    if(existingPopup) existingPopup.remove();
+    
+    const popupHTML = `
+    <div id="global-auth-popup" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:99999; display:flex; align-items:center; justify-content:center;">
+        <div style="background:white; max-width:400px; width:90%; border-radius:28px; overflow:hidden; position:relative;">
+            <span onclick="document.getElementById('global-auth-popup').remove()" style="position:absolute; top:12px; right:18px; font-size:28px; cursor:pointer;">&times;</span>
+            <div style="padding:32px 24px 28px;">
+                <h2 style="color:#440C2C; text-align:center;">Create Account</h2>
+                <div style="margin-top:20px;">
+                    <input type="text" id="popup-name" placeholder="Full Name" style="width:100%; padding:12px; border-radius:12px; border:1px solid #ddd; margin-bottom:12px;">
+                    <input type="email" id="popup-email" placeholder="Email" style="width:100%; padding:12px; border-radius:12px; border:1px solid #ddd; margin-bottom:12px;">
+                    <input type="password" id="popup-password" placeholder="Password" style="width:100%; padding:12px; border-radius:12px; border:1px solid #ddd; margin-bottom:20px;">
+                    <button id="popup-register-btn" style="width:100%; background:#440C2C; color:white; padding:14px; border:none; border-radius:12px; font-weight:600; cursor:pointer;">Register</button>
+                    <div style="text-align:center; margin-top:16px;">
+                        <span>Already have account? </span>
+                        <a href="#" id="popup-show-login" style="color:#F4B94E;">Login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    
+    document.body.insertAdjacentHTML('beforeend', popupHTML);
+    
+    document.getElementById('popup-register-btn')?.addEventListener('click', async () => {
+        const name = document.getElementById('popup-name').value;
+        const email = document.getElementById('popup-email').value;
+        const password = document.getElementById('popup-password').value;
+        if(!name || !email || !password) {
+            alert("All fields required");
+            return;
+        }
+        try {
+            const res = await fetch(BASE_URL + "/user/register", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({name, email, password, password_confirmation: password})
+            });
+            const data = await res.json();
+            if(res.ok && data.success) {
+                alert("Registration successful! Please login");
+                document.getElementById('global-auth-popup').remove();
+                showLoginPopup();
+            } else {
+                alert(data.message || "Registration failed");
+            }
+        } catch(err) {
+            alert("Server error");
+        }
+    });
+    
+    document.getElementById('popup-show-login')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('global-auth-popup').remove();
+        showLoginPopup();
+    });
+}
+
+// Make popup functions global
+window.showLoginPopup = showLoginPopup;
+window.showRegisterPopup = showRegisterPopup;
     const formElement = document.getElementById("registerForm");
     const nameInput = document.querySelector("input[name='name']");
     const emailInput = document.querySelector("input[name='email']");

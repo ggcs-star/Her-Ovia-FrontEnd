@@ -625,8 +625,17 @@ const API_BASE_URL = window.API_BASE_URL;
     
     window.buyNow = function() {
         const token = localStorage.getItem('token');
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (!token || !user.id) { sessionStorage.setItem('redirect_after_login', '/checkout/shipping'); window.location.href = '/login'; return; }
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!token || !user.id) { 
+        sessionStorage.setItem('redirect_after_login', '/checkout/shipping'); 
+        if (typeof showLoginPopup === 'function') {
+            showLoginPopup();
+        } else {
+            window.location.href = '/login';
+        }
+        return; 
+    }
+
         
         const hasRealVariants = window.hasRealVariants || (allSizes.length > 0 && !(allSizes.length === 1 && allSizes[0]?.value === 'Standard'));
         if (hasRealVariants && !selectedSize && allSizes.length > 0) {

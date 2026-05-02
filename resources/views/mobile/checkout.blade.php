@@ -155,6 +155,7 @@
         </div>
     </div>
 </div>
+@include('mobile.auth.auth')
 
 </body>
 </html>

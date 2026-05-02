@@ -7,10 +7,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
     if (!token || !user.id) {
-        sessionStorage.setItem('redirect_after_login', '/checkout/shipping');
-        window.location.href = '/user/login';
-        return;
+    sessionStorage.setItem('redirect_after_login', '/checkout/shipping');
+    if (typeof showLoginPopup === 'function') {
+        showLoginPopup();
+    } else {
+        window.location.href = '/login';
     }
+    return;
+}
 
     const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
 

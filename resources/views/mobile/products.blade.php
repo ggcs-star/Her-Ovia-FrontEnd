@@ -1099,7 +1099,8 @@
             </div>
             <div class="header-actions">
 
-        <a href="javascript:void(0)" onclick="window.location.href=localStorage.getItem('token') ? '/profile' : '/login'" class="action-link">        <svg class="header-icon"
+        <a href="javascript:void(0)" class="action-link" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }">    
+            <svg class="header-icon"
              width="18"
              height="18"
              viewBox="0 0 24 24"
@@ -1284,7 +1285,7 @@
         </div>
         <span>Cart</span>
     </a>
-    <a href="/profile" class="nav-item-figma">
+    <a href="javascript:void(0)" class="nav-item-figma" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }">
         <div class="nav-icon-box">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -1382,7 +1383,31 @@
 
 
 <script>
-    
+    async function loadHoverImage(imgElement, slug) {
+    if (imgElement.dataset.hoverLoaded === 'true') return;
+    if (imgElement.dataset.loading === 'true') return;
+    imgElement.dataset.loading = 'true';
+    try {
+        const response = await fetch(`${API_BASE_URL}/products/${slug}`);
+        const data = await response.json();
+        if (data.success && data.data) {
+            const galleryImages = data.data.gallery_images || [];
+            let hoverImage = galleryImages[1] || galleryImages[0];
+            if (hoverImage && hoverImage !== imgElement.dataset.main) {
+                const tempImg = new Image();
+                tempImg.src = hoverImage;
+                tempImg.onload = () => {
+                    imgElement.src = hoverImage;
+                    imgElement.dataset.hoverLoaded = 'true';
+                };
+            } else {
+                imgElement.dataset.hoverLoaded = 'true';
+            }
+        }
+    } catch (error) { console.error(error); }
+    finally { imgElement.dataset.loading = 'false'; }
+}
+
 (function() {
     const subId = document.body.dataset.subcategoryId;
     const catId = document.body.dataset.categoryId;
@@ -1408,60 +1433,70 @@
                 : (p.price || 0)
         );
     }
-    
-    function renderProducts(products) {
-        const grid = document.getElementById('productsGrid');
-        if (!grid) return;
-        if (!products.length) { 
-            grid.innerHTML = '<div class="loading">No products found</div>'; 
-            return; 
-        }
-        
-        const latestWishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-        const fallback = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
 
-        grid.innerHTML = products.map(p => {
-            const price = getProductPrice(p);
-            const mrp = getProductMrp(p);
-            const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
-            const rating = 4.3;
-            const full = Math.floor(rating);
-            const half = (rating % 1) >= 0.3;
-            let stars = '';
-            for (let i = 0; i < full; i++) stars += '★';
-            if (half) stars += '½';
-            for (let i = stars.length; i < 5; i++) stars += '☆';
-            
-            const inWish = latestWishlist.some(item => item.id == p.id);
-            const isBest = discount > 20;
-            
-            return `<div class="card">
-                <div class="img-box" onclick="window.location.href='/product/${p.slug}'">
-                    <img src="${p.image_url || fallback}" onerror="this.src='${fallback}'">
-                    ${isBest ? '<span class="badge">Best Seller</span>' : ''}
-                    <button class="wishlist ${inWish ? 'active' : ''}" 
-                            onclick="event.stopPropagation(); toggleWish(this, ${JSON.stringify({
-                                id: p.id, name: p.name, price: price,
-                                image: p.image_url, brand: p.brand, slug: p.slug
-                            }).replace(/"/g, '&quot;')})">
-                        ${inWish ? '❤️' : '♡'}
-                    </button>
-                </div>
-                <div class="info" onclick="window.location.href='/product/${p.slug}'">
-                    <div class="brand">${p.brand || 'RAPID RETAIL'}</div>
-                    <div class="name">${p.name}</div>
-                    <div class="rating"><span class="stars">${stars}</span> | ${Math.floor(Math.random() * 50) + 10}</div>
-                    <div class="price">
-                        <span class="current">₹${price.toLocaleString('en-IN')}</span>
-                        ${mrp > price ? `<span class="original">₹${mrp.toLocaleString('en-IN')}</span>` : ''}
-                        ${discount > 0 ? `<span class="off">${discount}% Off</span>` : ''}
-                    </div>
-                </div>
-            </div>`;
-        }).join('');
+function renderProducts(products) {
+    const grid = document.getElementById('productsGrid');
+    if (!grid) return;
+    if (!products.length) { 
+        grid.innerHTML = '<div class="loading">No products found</div>'; 
+        return; 
     }
     
-    async function fetchData() {
+    const latestWishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+    const fallback = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
+
+    grid.innerHTML = products.map(p => {
+        const price = getProductPrice(p);
+        const mrp = getProductMrp(p);
+        const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
+        const rating = 4.3;
+        const full = Math.floor(rating);
+        const half = (rating % 1) >= 0.3;
+        let stars = '';
+        for (let i = 0; i < full; i++) stars += '★';
+        if (half) stars += '½';
+        for (let i = stars.length; i < 5; i++) stars += '☆';
+        
+        const inWish = latestWishlist.some(item => item.id == p.id);
+        const isBest = discount > 20;
+        
+        // Main image from listing API
+        const mainImage = p.image_url || fallback;
+        
+        return `<div class="card" data-product-id="${p.id}" data-product-slug="${p.slug}">
+            <div class="img-box" onclick="window.location.href='/product/${p.slug}'">
+                <img class="product-img-${p.id}" 
+                    src="${mainImage}" 
+                    data-main="${mainImage}"
+                    data-hover-loaded="false"
+                    onmouseenter="loadHoverImage(this, '${p.slug}')"
+                    onmouseleave="this.src=this.dataset.main; this.dataset.hoverLoaded='false'"
+                    onerror="this.src='${fallback}'">
+                ${isBest ? '<span class="badge">Best Seller</span>' : ''}
+                <button class="wishlist ${inWish ? 'active' : ''}" 
+                        onclick="event.stopPropagation(); toggleWish(this, ${JSON.stringify({
+                            id: p.id, name: p.name, price: price,
+                            image: mainImage, brand: p.brand, slug: p.slug
+                        }).replace(/"/g, '&quot;')})">
+                    ${inWish ? '❤️' : '♡'}
+                </button>
+            </div>
+            <div class="info" onclick="window.location.href='/product/${p.slug}'">
+                <div class="brand">${p.brand || 'RAPID RETAIL'}</div>
+                <div class="name">${p.name}</div>
+                <div class="rating"><span class="stars">${stars}</span> | ${Math.floor(Math.random() * 50) + 10}</div>
+                <div class="price">
+                    <span class="current">₹${price.toLocaleString('en-IN')}</span>
+                    ${mrp > price ? `<span class="original">₹${mrp.toLocaleString('en-IN')}</span>` : ''}
+                    ${discount > 0 ? `<span class="off">${discount}% Off</span>` : ''}
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+
+async function fetchData() {
         try {
             const urlParams = new URLSearchParams(window.location.search);
             const type = urlParams.get('type');
@@ -2226,6 +2261,8 @@ setInterval(function() {
     } catch(e) {}
 }, 2000);
 </script>
+@include('mobile.auth.auth')
+
 @include('components.footer')
 </body>
 </html>

@@ -48,8 +48,7 @@
             </div>
             <div class="header-actions">
 
-    <a href="javascript:void(0)" class="action-link" onclick="localStorage.getItem('token') ? window.location.href='/profile' : window.location.href='/login'">
-        <svg class="header-icon"
+<a href="javascript:void(0)" class="action-link" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }">        <svg class="header-icon"
              viewBox="0 0 24 24"
              width="18"
              height="18"
@@ -236,6 +235,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
+@include('mobile.auth.auth')
+
 @include('components.footer')
+
 </body>
 </html>
