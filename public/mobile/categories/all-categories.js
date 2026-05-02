@@ -120,7 +120,7 @@ class AllCategoriesPage {
                             </div>
                         </div>
                         <div class="header-actions">
-                            <a href="${this.isLoggedIn ? '/profile' : '/login'}" class="action-link">
+                            <a href="javascript:void(0)" class="action-link" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }">
                                 <svg class="header-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2">
                                     <circle cx="12" cy="7" r="4"/>
                                     <path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>
@@ -381,7 +381,7 @@ class AllCategoriesPage {
                 </div>
                 <span>Cart</span>
             </a>
-            <a href="/profile" class="nav-item-figma ${activePage === 'profile' ? 'active' : ''}">
+            <a href="javascript:void(0)" class="nav-item-figma ${activePage === 'profile' ? 'active' : ''}" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }">
                 <div class="nav-icon-box">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>

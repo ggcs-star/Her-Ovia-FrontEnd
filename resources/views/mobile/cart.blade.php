@@ -110,6 +110,7 @@
 <script src="{{ asset('mobile/script.js') }}"></script>
 <script src="{{ asset('mobile/cart.js') }}"></script>
 <script src="{{ asset('mobile/wishlist.js') }}"></script>
+@include('mobile.auth.auth')
 
 </body>
 </html>

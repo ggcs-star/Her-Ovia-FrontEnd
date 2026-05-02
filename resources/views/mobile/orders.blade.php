@@ -31,5 +31,7 @@
     </script>
     <script src="{{ asset('mobile/script.js') }}"></script>
     <script src="{{ asset('mobile/orders.js') }}"></script>
+    @include('mobile.auth.auth')
+
 </body>
 </html>

@@ -29,6 +29,7 @@
 </script>
 
 <script src="{{ asset('mobile/categories/all-categories.js') }}"></script>
+@include('mobile.auth.auth')
 
 </body>
 </html>

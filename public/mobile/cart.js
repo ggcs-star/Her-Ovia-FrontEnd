@@ -789,15 +789,20 @@ function proceedToCheckout() {
         return;
     }
     
-    const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token');
     if (!token) {
         sessionStorage.setItem('guest_checkout_cart', JSON.stringify(cart));
         sessionStorage.setItem('redirect_after_login', '/checkout/shipping');
-        window.location.href = '/login';
+        if (typeof showLoginPopup === 'function') {
+            showLoginPopup();
+        } else {
+            window.location.href = '/login';
+        }
         return;
     }
     window.location.href = '/checkout/shipping';
 }
+
 
 function closeEmptyCartPopup() {
     document.querySelector('.empty-cart-popup')?.remove();

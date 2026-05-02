@@ -148,5 +148,7 @@
         window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
     </script>
     <script src="/mobile/search.js"></script>
+    @include('mobile.auth.auth')
+
 </body>
 </html>
