@@ -263,9 +263,13 @@
 .social-link-item:hover {
     transform: translateX(5px);
 }
-
 .social-link-item:hover .social-icon {
-    background: #F4B94E;
+    background: rgba(244, 185, 78, 0.08);
+    border-color: #F4B94E;
+}
+
+.social-link-item:hover .social-icon svg {
+    stroke: #F4B94E;
 }
 
 .social-link-item:hover .social-icon svg {
@@ -275,22 +279,18 @@
 .social-link-item:hover span {
     color: #F4B94E;
 }
-
 .social-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: #f5f5f5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
+    background: transparent !important;
+    border: none !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
 }
 
 .social-icon svg {
     width: 16px;
     height: 16px;
-    stroke: #666;
+    stroke: #F4B94E;
     transition: all 0.3s ease;
 }
 
@@ -426,9 +426,9 @@ async function initFooter() {
             const categories = catData.data.slice(0, 6);
             if (list) {
                 list.innerHTML = categories.map(cat => {
-                    // Agar category ke children hain toh pehle child pe jao, warna category page pe
                     const hasChildren = cat.children && cat.children.length > 0;
-                    const linkUrl = hasChildren ? `/products?subcategory=${cat.children[0].id}` : `/category/${cat.id}`;
+                    const slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                    const linkUrl = `/collection/${slug}`;
                     
                     return `
                         <li>

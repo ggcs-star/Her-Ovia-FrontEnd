@@ -16,28 +16,29 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
 }
 
-    const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
-
-    if (cartItems.length === 0) {
-        alert('Your cart is empty. Please add items to continue.');
-        window.location.href = '/';
-        return;
-    }
-    
     const buyNowProduct = sessionStorage.getItem('buy_now_product');
-    if (buyNowProduct) {
-        const product = JSON.parse(buyNowProduct);
-        const cart = [{
-            id: product.product_id,
-            variantId: product.variant_id,
-            quantity: 1,
-            price: product.price,
-            name: product.name,
-            image: product.image
-        }];
-        localStorage.setItem('cart', JSON.stringify(cart));
-        sessionStorage.removeItem('buy_now_product');
-    }
+
+if (buyNowProduct) {
+    const product = JSON.parse(buyNowProduct);
+    const cart = [{
+        id: product.product_id,
+        variantId: product.variant_id,
+        quantity: 1,
+        price: product.price,
+        name: product.name,
+        image: product.image
+    }];
+    localStorage.setItem('cart', JSON.stringify(cart));
+    sessionStorage.removeItem('buy_now_product');
+}
+
+const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+
+if (cartItems.length === 0) {
+    alert('Your cart is empty. Please add items to continue.');
+    window.location.href = '/';
+    return;
+}
 
     syncCartWithServer().then(() => {
         loadCheckoutSummary();

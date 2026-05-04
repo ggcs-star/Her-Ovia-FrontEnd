@@ -64,10 +64,12 @@ Route::get('/category', function () {
 Route::get('/search', function () {
     return view('mobile.search');
 });
-Route::get('/products', function () {
+Route::get('/collection/{categorySlug}', function ($categorySlug) {
     return view('mobile.products');
 });
-
+Route::get('/collection/{categorySlug}/{subcategorySlug}', function ($categorySlug, $subcategorySlug) {
+    return view('mobile.products');
+});
 Route::get('/all-products', function () {
     return view('mobile.all-products');
 })->name('all.products');

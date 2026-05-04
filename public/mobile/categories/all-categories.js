@@ -302,7 +302,8 @@ class AllCategoriesPage {
 
                     if (cat.children?.length) {
                         cat.children.slice(0, 6).forEach(sub => {
-                            html += `<li style="margin-bottom:8px;"><a href="/category/${sub.id}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
+                            let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
                         });
                         if (cat.children.length > 6) {
                             html += `<li style="margin-top:5px;"><a href="/category/${cat.id}" style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">+${cat.children.length - 6} more →</a></li>`;
@@ -607,24 +608,24 @@ function updateCartCountBadge() {
         badge.textContent = totalItems;
     }
 }
-
-async function redirectToSubcategory(categoryId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/categories`);
-        const data = await response.json();
-
-        if (data.success) {
-            const category = data.data.find(c => c.id == categoryId);
-            if (category?.children?.length) {
-                window.location.href = `/products?subcategory=${category.children[0].id}`;
+function redirectToSubcategory(categoryId) {
+    fetch(`${API_BASE_URL}/categories`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const category = data.data.find(c => c.id == categoryId);
+                if (category && category.children && category.children.length > 0) {
+                    const slug = category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                    window.location.href = `/collection/${slug}`;
+                } else {
+                    window.location.href = `/products?category=${categoryId}`;
+                }
             } else {
                 window.location.href = `/products?category=${categoryId}`;
             }
-        } else {
+        })
+        .catch(error => {
+            console.error('Redirect error:', error);
             window.location.href = `/products?category=${categoryId}`;
-        }
-    } catch (error) {
-        console.error('Redirect error:', error);
-        window.location.href = `/products?category=${categoryId}`;
-    }
+        });
 }

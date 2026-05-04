@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Order Details | RADIANT JEWEL</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -1804,7 +1806,8 @@ function renderHeader() {
                                                 col.forEach(cat => {
                                                     html += `<div style="margin-bottom:20px;"><h3 style="font-size:14px; font-weight:700; border-bottom:2px solid #ff3f6c; display:inline-block; margin-bottom:12px;">${cat.name}</h3><ul style="list-style:none; margin-top:12px;">`;
                                                     cat.children.slice(0,6).forEach(sub => {
-                                                        html += `<li style="margin-bottom:8px;"><a href="/category/${sub.id}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
+                                                        let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
                                                     });
                                                     if (cat.children.length > 6) {
                                                         html += `<li><a href="/category/${cat.id}" style="color:#ff3f6c; font-size:11px;">+${cat.children.length-6} more →</a></li>`;

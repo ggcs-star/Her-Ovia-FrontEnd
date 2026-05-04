@@ -627,7 +627,7 @@ const API_BASE_URL = window.API_BASE_URL;
         const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (!token || !user.id) { 
-        sessionStorage.setItem('redirect_after_login', '/checkout/shipping'); 
+        sessionStorage.setItem('redirect_after_login', window.location.href);
         if (typeof showLoginPopup === 'function') {
             showLoginPopup();
         } else {
@@ -663,7 +663,9 @@ const API_BASE_URL = window.API_BASE_URL;
             if (!selectedVariant) selectedVariant = currentProduct.variants[0];
         }
         
-        let finalPrice = getProductPrice(currentProduct);
+        let finalPrice = selectedVariant 
+            ? (parseFloat(selectedVariant.final_price) || parseFloat(selectedVariant.price) || 0)
+            : getProductPrice(currentProduct);
         let imageUrl = '';
         const mainImage = document.getElementById('mainImage');
         if (mainImage && mainImage.src) imageUrl = mainImage.src;
@@ -812,7 +814,8 @@ const API_BASE_URL = window.API_BASE_URL;
                     html += `<div style="margin-bottom:20px;"><h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">${cat.name}</h3><ul style="list-style:none; padding:0; margin-top:12px;">`;
                     if (cat.children && cat.children.length > 0) {
                         cat.children.slice(0, 6).forEach(sub => {
-                            html += `<li style="margin-bottom:8px;"><a href="/category/${sub.id}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
+                            let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
                         });
                         if (cat.children.length > 6) html += `<li style="margin-top:5px;"><a href="/category/${cat.id}" style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">+${cat.children.length - 6} more →</a></li>`;
                     }

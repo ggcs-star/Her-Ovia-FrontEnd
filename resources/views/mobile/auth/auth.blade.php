@@ -1,3 +1,4 @@
+
 <script>
 window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
 const BASE_URL = window.API_BASE_URL;
@@ -503,60 +504,62 @@ function showRegisterPopup() {
     }
     
     document.getElementById('registerBtn')?.addEventListener('click', async () => {
-        clearError('reg-name-error');
-        clearError('reg-email-error');
-        clearError('reg-password-error');
-        clearError('reg-confirm-error');
+    clearError('reg-name-error');
+    clearError('reg-email-error');
+    clearError('reg-password-error');
+    clearError('reg-confirm-error');
+    
+    const name = nameInp?.value.trim() || '';
+    const email = emailInp?.value.trim() || '';
+    const password = passInp?.value || '';
+    const confirm = confirmInp?.value || '';
+    
+    const nameRes = validateName(name);
+    if(!nameRes.valid) { showError('reg-name-error', nameRes.message); return; }
+    const emailRes = validateEmail(email);
+    if(!emailRes.valid) { showError('reg-email-error', emailRes.message); return; }
+    const passRes = validatePassword(password);
+    if(!passRes.valid) { showError('reg-password-error', passRes.message); return; }
+    if(password !== confirm) { showError('reg-confirm-error', 'Passwords do not match'); return; }
+    
+    try {
+        const res = await fetch(BASE_URL + "/user/register", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({name, email, password, password_confirmation: confirm})
+        });
+        const data = await res.json();
         
-        const name = nameInp?.value.trim() || '';
-        const email = emailInp?.value.trim() || '';
-        const password = passInp?.value || '';
-        const confirm = confirmInp?.value || '';
+        console.log('Register status:', res.status);
+        console.log('Register data:', data);
         
-        const nameRes = validateName(name);
-        if(!nameRes.valid) { showError('reg-name-error', nameRes.message); return; }
-        const emailRes = validateEmail(email);
-        if(!emailRes.valid) { showError('reg-email-error', emailRes.message); return; }
-        const passRes = validatePassword(password);
-        if(!passRes.valid) { showError('reg-password-error', passRes.message); return; }
-        if(password !== confirm) { showError('reg-confirm-error', 'Passwords do not match'); return; }
-        
-        try {
-            const res = await fetch(BASE_URL + "/user/register", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({name, email, password, password_confirmation: confirm})
-            });
-            const data = await res.json();
-            if(res.ok && data.success) {
-                localStorage.setItem("verify_email", email);
-                showPopupMessage('register-msg-container', 'Registration successful! Please verify OTP.', 'success');
-                setTimeout(() => {
-                    document.getElementById('auth-popup').remove();
-                    showVerifyPopup(email, false);
-                }, 1500);
-            } else {
-                let errMsg = data.message || "Registration failed";
-                
-                // Check for email validation errors
-                if(data.errors?.email) {
-                    errMsg = data.errors.email[0];
-                }
-                else if(data.message) {
-                    errMsg = data.message;
-                }
-                
-                // If duplicate email
-                if(errMsg.toLowerCase().includes('already been taken') || 
-                errMsg.toLowerCase().includes('already registered') ||
-                errMsg.toLowerCase().includes('unique')) {
-                    errMsg = "This email is already registered. Please login instead.";
-                }
-                
-                showPopupMessage('register-msg-container', errMsg, 'error');
+        if(res.ok && data.success) {
+            localStorage.setItem("verify_email", email);
+            showPopupMessage('register-msg-container', 'Registration successful! Please verify OTP.', 'success');
+            setTimeout(() => {
+                document.getElementById('auth-popup').remove();
+                showVerifyPopup(email, false);
+            }, 1500);
+        } 
+        else {
+            let errMsg = "Registration failed";
+            
+            if(data && data.message) {
+                errMsg = data.message;
             }
-        } catch(err) { showPopupMessage('register-msg-container', 'Server error', 'error'); }
-    });
+            if(data?.errors?.email) {
+                errMsg = data.errors.email[0];
+            }
+            
+            errMsg = "This email is already registered. Please login instead.";
+            
+            showPopupMessage('register-msg-container', errMsg, 'error');
+        }
+    } catch(err) { 
+        console.error('Register error:', err);
+        showPopupMessage('register-msg-container', 'This email is already registered. Please login instead.', 'error'); 
+    }
+});
 }
 
 // ========== FORGOT PASSWORD POPUP ==========
@@ -629,8 +632,62 @@ function showForgotPopup() {
     });
 }
 
-// Make functions global
 window.showLoginPopup = showLoginPopup;
 window.showRegisterPopup = showRegisterPopup;
 window.showForgotPopup = showForgotPopup;
 </script>
+
+<style>
+    @media (max-width: 768px) {
+
+    #auth-popup {
+        padding: 20px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow-y: auto !important;
+    }
+
+    #auth-popup > div {
+        width: 100% !important;
+        max-width: 340px !important;
+        max-height: 85vh !important;
+        border-radius: 20px !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+    }
+
+    #auth-popup > div > div:first-of-type {
+        display: none !important;
+    }
+    #auth-popup > div > div:last-of-type {
+        width: 100% !important;
+        padding: 22px 18px !important;
+        overflow-y: auto !important;
+    }
+
+    #auth-popup h2 {
+        font-size: 20px !important;
+        text-align: center !important;
+    }
+
+    #auth-popup input {
+        width: 100% !important;
+        font-size: 16px !important;
+        padding: 12px !important;
+    }
+
+    #auth-popup button {
+        width: 100% !important;
+        font-size: 15px !important;
+        padding: 13px !important;
+    }
+
+    #auth-popup > div > span {
+        top: 10px !important;
+        right: 10px !important;
+        width: 30px !important;
+        height: 30px !important;
+    }
+}
+</style>
