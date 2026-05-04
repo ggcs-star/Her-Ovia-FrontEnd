@@ -322,7 +322,8 @@ class RapidRetailsEngine {
                     
                     if (cat.children && cat.children.length > 0) {
                         cat.children.slice(0, 6).forEach(sub => {
-                            html += `<li style="margin-bottom:8px;"><a href="/category/${sub.id}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
+                            let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
                         });
                         if (cat.children.length > 6) {
                             html += `<li style="margin-top:5px;"><a href="/category/${cat.id}" style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">+${cat.children.length - 6} more →</a></li>`;
@@ -436,7 +437,7 @@ class RapidRetailsEngine {
         if (this.isLoggedIn) await this.fetchUserCategoryOrder();
         
         await this.renderHeroSlider();
-        await this.renderCategoryPills();
+        // await this.renderCategoryPills();
         await this.renderTrending();
         await this.renderPromotionalBanners();
         await this.renderStyleSpotlight();
@@ -567,33 +568,33 @@ class RapidRetailsEngine {
         if (this.appSettings.app_name) document.title = this.appSettings.app_name;
     }
 
-    async renderCategoryPills() {
-        const container = document.getElementById('categories-pills');
-        if (!container) return;
+    // async renderCategoryPills() {
+    //     const container = document.getElementById('categories-pills');
+    //     if (!container) return;
 
-        const categoriesToShow = (this.isLoggedIn && this.userCategories.length > 0) ? this.userCategories : this.allCategories;
-        if (!categoriesToShow.length) return;
+    //     const categoriesToShow = (this.isLoggedIn && this.userCategories.length > 0) ? this.userCategories : this.allCategories;
+    //     if (!categoriesToShow.length) return;
 
-        let categoriesHtml = `<div class="pill-item" onclick="window.location.href='/categories'">
-            <div class="pill-img-wrap all-categories-pill">
-                <img src="https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=100&h=100&fit=crop" 
-                     style="width:100%; height:100%; object-fit:cover; border-radius:50%;"
-                     onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=100&h=100&fit=crop'">
-            </div>
-            <span>All Categories</span>
-        </div>`;
+    //     let categoriesHtml = `<div class="pill-item" onclick="window.location.href='/categories'">
+    //         <div class="pill-img-wrap all-categories-pill">
+    //             <img src="https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=100&h=100&fit=crop" 
+    //                  style="width:100%; height:100%; object-fit:cover; border-radius:50%;"
+    //                  onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=100&h=100&fit=crop'">
+    //         </div>
+    //         <span>All Categories</span>
+    //     </div>`;
         
-        categoriesHtml += categoriesToShow.map(cat => `
-            <div class="pill-item" onclick="redirectToSubcategory(${cat.id})">
-                <div class="pill-img-wrap">
-                    <img src="${this.resolveImage(cat.image_url)}" onerror="this.src='${APP_CONFIG.FALLBACK_IMAGE}'">
-                </div>
-                <span>${cat.name}</span>
-            </div>
-        `).join('');
+    //     categoriesHtml += categoriesToShow.map(cat => `
+    //         <div class="pill-item" onclick="redirectToSubcategory(${cat.id})">
+    //             <div class="pill-img-wrap">
+    //                 <img src="${this.resolveImage(cat.image_url)}" onerror="this.src='${APP_CONFIG.FALLBACK_IMAGE}'">
+    //             </div>
+    //             <span>${cat.name}</span>
+    //         </div>
+    //     `).join('');
         
-        container.innerHTML = categoriesHtml;
-    }
+    //     container.innerHTML = categoriesHtml;
+    // }
 
     startTrendingAutoScroll(container) {
         let scrollAmount = 0;
@@ -803,7 +804,7 @@ class RapidRetailsEngine {
         const categoryName = cat.name;
         const imageUrl = this.resolveImage(cat.image_url) || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
         
-        return `<div class="trending-card" style="background: ${bgGradient.bg} !important; border: 1px solid ${bgGradient.border} !important;" onclick="window.location.href='/category/${cat.id}'">
+        return `<div class="trending-card" style="background: ${bgGradient.bg} !important; border: 1px solid ${bgGradient.border} !important;" onclick="redirectToSubcategory(${cat.id})">
             <div class="trending-card-content">
                 <div class="trending-main">${categoryName}</div>
                 <div class="trending-sub">Shop Collection</div>
@@ -1361,24 +1362,26 @@ class RapidRetailsEngine {
     async initProductDetail() {}
 }
 
-async function redirectToSubcategory(categoryId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/categories`);
-        const data = await response.json();
-        if (data.success) {
-            const category = data.data.find(c => c.id == categoryId);
-            if (category && category.children && category.children.length > 0) {
-                window.location.href = `/products?subcategory=${category.children[0].id}`;
+function redirectToSubcategory(categoryId) {
+    fetch(`${API_BASE_URL}/categories`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const category = data.data.find(c => c.id == categoryId);
+                if (category && category.children && category.children.length > 0) {
+                    const slug = category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                    window.location.href = `/collection/${slug}`;
+                } else {
+                    window.location.href = `/products?category=${categoryId}`;
+                }
             } else {
                 window.location.href = `/products?category=${categoryId}`;
             }
-        } else {
+        })
+        .catch(error => {
+            console.error('Redirect error:', error);
             window.location.href = `/products?category=${categoryId}`;
-        }
-    } catch (error) {
-        console.error('Redirect error:', error);
-        window.location.href = `/products?category=${categoryId}`;
-    }
+        });
 }
 
 window.goBack = function() {

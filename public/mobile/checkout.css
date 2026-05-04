@@ -22,6 +22,7 @@
     --transition: all 0.3s ease;
 }
 
+
 .checkout-page {
     background: var(--light-bg);
     padding-top: max(12px, var(--safe-area-inset-top));
@@ -1100,4 +1101,19 @@
 
 .confirm-modal-confirm:hover {
     background: #e6a83b;
+}
+.top-bar {
+    background: linear-gradient(270deg, #440C2C, #F4B94E, #440C2C, #F4B94E);
+    background-size: 400% 400%;
+    animation: gradientMove 4s linear infinite;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
 }

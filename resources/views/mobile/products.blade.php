@@ -1040,8 +1040,7 @@
 }
     </style>
 </head>
-<body data-page="products" data-subcategory-id="{{ request()->query('subcategory') }}" data-category-id="{{ request()->query('category') }}">
-
+<body data-page="products" data-subcategory-id="{{ request()->query('subcategory') }}" data-category-id="{{ request()->query('category') }}" data-category-slug="{{ request()->route('categorySlug') }}">
 <div class="header">
         <div class="header-left">
         <span class="back-btn" onclick="goBack()">←</span>
@@ -1497,39 +1496,70 @@ function renderProducts(products) {
 
 
 async function fetchData() {
-        try {
-            const urlParams = new URLSearchParams(window.location.search);
-            const type = urlParams.get('type');
-            
-            if (type === 'top-selling') {
-                await fetchTopSellingProducts();
-                return;
-            }
-            
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const type = urlParams.get('type');
+        
+        if (type === 'top-selling') {
+            await fetchTopSellingProducts();
+            return;
+        }
+        
+        let targetSubId = null;
+        const path = window.location.pathname;
+        const collectionMatch = path.match(/\/collection\/([^\/]+)/);
+        
+        if (collectionMatch && collectionMatch[1]) {
+            const categorySlug = collectionMatch[1];
             const res = await fetch(`${API_BASE_URL}/categories`);
             const data = await res.json();
-            
             if (data.success) {
-                let mainCat;
-                mainCat = data.data.find(c => c.id == subId);
-                if (mainCat) {
-                    currentSub = mainCat.children?.length ? mainCat.children[0].id : null;
-                } else {
-                    mainCat = data.data.find(c => c.children?.some(child => child.id == subId));
-                }
-                if (mainCat) {
-                    allSubs = mainCat.children || [];
-                    renderSubs();
-                    if (currentSub) fetchProducts(currentSub);
-                    loadDesktopFilters(mainCat);
-                    initDesktopFiltersToggle();
+                for (let cat of data.data) {
+                    if (cat.children && cat.children.length) {
+                        let mainSlug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        if (mainSlug === categorySlug) {
+                            targetSubId = cat.children[0].id;
+                            break;
+                        }
+                        for (let sub of cat.children) {
+                            let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                            if (subSlug === categorySlug) {
+                                targetSubId = sub.id;
+                                break;
+                            }
+                        }
+                    }
+                    if (targetSubId) break;
                 }
             }
-        } catch (error) {
-            console.error('Error:', error);
+        } else {
+            targetSubId = document.body.dataset.subcategoryId;
         }
+        
+        if (!targetSubId) return;
+        
+        const res = await fetch(`${API_BASE_URL}/categories`);
+        const data = await res.json();
+        
+        if (data.success) {
+            let mainCat;
+            mainCat = data.data.find(c => c.id == targetSubId);
+            if (!mainCat) {
+                mainCat = data.data.find(c => c.children?.some(child => child.id == targetSubId));
+            }
+            if (mainCat) {
+                allSubs = mainCat.children || [];
+                renderSubs();
+                currentSub = targetSubId;
+                fetchProducts(currentSub);
+                loadDesktopFilters(mainCat);
+                initDesktopFiltersToggle();
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
     }
-
+}
     async function fetchProducts(subId) {
         const grid = document.getElementById('productsGrid');
         try {
@@ -1575,9 +1605,16 @@ async function fetchData() {
             item.classList.toggle('active', item.dataset.subid == newSubId);
         });
         fetchProducts(newSubId);
-        const url = new URL(window.location);
-        url.searchParams.set('subcategory', newSubId);
-        window.history.pushState({}, '', url);
+        
+        let subSlug = newSubId;
+        const activeSub = allSubs.find(s => s.id == newSubId);
+        if (activeSub) {
+            subSlug = activeSub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        }
+        
+        
+        const categorySlug = document.body.dataset.categorySlug || 'necklace';
+        window.history.pushState({}, '', `/collection/${categorySlug}/${subSlug}`);
     };
     
     async function fetchMultipleSubcategoriesCommon(subIds) {
@@ -2113,7 +2150,8 @@ async function fetchData() {
                         <ul style="list-style:none; padding:0; margin-top:12px;">`;
                     if (cat.children?.length) {
                         cat.children.slice(0, 6).forEach(sub => {
-                            html += `<li style="margin-bottom:8px;"><a href="/category/${sub.id}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
+                            let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
                         });
                         if (cat.children.length > 6) {
                             html += `<li style="margin-top:5px;"><a href="/category/${cat.id}" style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">+${cat.children.length - 6} more →</a></li>`;
