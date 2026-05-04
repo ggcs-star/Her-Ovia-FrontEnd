@@ -270,71 +270,6 @@ function renderProfile(user) {
                     <span>Join Our Team</span>
                     <span class="menu-arrow">›</span>
                 </div>
-            </div>
-            
-            <div class="menu-card">
-                <h3>Wallet & Rewards</h3>
-                <div class="menu-item" onclick="return false;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                    <span>Invite Friends & Earn</span>
-                    <span class="badge-promo">₹100 SuperCash</span>
-                    <span class="menu-arrow">›</span>
-                </div>
-                <div class="menu-item" onclick="return false;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <rect x="2" y="4" width="20" height="16" rx="2"/>
-                        <path d="M12 8v8"/>
-                        <path d="M8 12h8"/>
-                    </svg>
-                    <span>Add Gift Card</span>
-                    <span class="menu-arrow">›</span>
-                </div>
-                <div class="menu-item" onclick="return false;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <rect x="2" y="6" width="20" height="14" rx="2" ry="2"/>
-                        <circle cx="16" cy="14" r="2"/>
-                        <path d="M22 10h-4a4 4 0 0 0-8 0H2"/>
-                    </svg>
-                    <span>Rapid Wallet</span>
-                    <span class="menu-arrow">›</span>
-                </div>
-                <div class="menu-item" onclick="return false;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                        <line x1="1" y1="10" x2="23" y2="10"/>
-                    </svg>
-                    <span>Saved Cards</span>
-                    <span class="menu-arrow">›</span>
-                </div>
-                <div class="menu-item" onclick="return false;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <circle cx="12" cy="8" r="7"/>
-                        <polyline points="8 21 12 17 16 21"/>
-                    </svg>
-                    <span>My Rewards</span>
-                    <span class="menu-arrow">›</span>
-                </div>
-                <div class="menu-item" onclick="return false;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                        <circle cx="12" cy="10" r="3"/>
-                    </svg>
-                    <span>Address</span>
-                    <span class="menu-arrow">›</span>
-                </div>
-                <div class="menu-item" onclick="return false;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                    </svg>
-                    <span>Notifications</span>
-                    <span class="menu-arrow">›</span>
-                </div>
                 <div class="menu-item logout-btn" onclick="handleLogout()">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -344,7 +279,8 @@ function renderProfile(user) {
                     <span>Logout</span>
                 </div>
             </div>
-        </div>
+            
+            
         
         <div class="promo-banner" onclick="window.location.href='/summer-sale'">
             <h4>🔥 Summer Sale Live!</h4>

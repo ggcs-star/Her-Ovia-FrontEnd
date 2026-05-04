@@ -2,6 +2,7 @@
     <div class="container">
         <div class="footer-grid">
 
+            <!-- Column 1: Logo + Address -->
             <div class="footer-col">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <img id="footer-logo" src="" alt="Logo" class="site-logo" style="height:40px;" onerror="this.src='https://placehold.co/120x40?text=LOGO'">
@@ -22,6 +23,7 @@
                 </div>
             </div>
 
+            <!-- Column 2: Categories -->
             <div class="footer-col">
                 <h4>Categories</h4>
                 <ul id="footerCategoriesList">
@@ -29,6 +31,16 @@
                 </ul>
             </div>
 
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <ul class="quick-links-list">
+                <li>About Us</li>
+                <li><a href="/categories">All Categories</a></li>
+                <li>Blog</li>
+            </ul>
+        </div>
+
+            <!-- Column 4: Support -->
             <div class="footer-col">
                 <h4>Support</h4>
                 <ul class="footer-support-list">
@@ -41,6 +53,7 @@
                 </ul>
             </div>
 
+            <!-- Column 5: Join Us (Social Media) -->
             <div class="footer-col">
                 <h4>Join Us</h4>
                 <div class="social-links">
@@ -91,8 +104,9 @@
                 </div>
             </div>
 
+            <!-- Column 6: Contact Information (Now in line with others) -->
             <div class="footer-col">
-                <h4>Contact Information</h4>
+                <h4>Contact Us</h4>
                 <ul class="contact-info">
                     <li>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -120,13 +134,11 @@
         </div>
 
         <div class="footer-bottom">
-            <p>© <span id="footerYear"></span> All Rights Reserved.</p>
-           
+            <p>© <span id="footerYear"></span> Radiant Jewel. All Rights Reserved.</p>
         </div>
 
     </div>
 </footer>
-
 <style>
 .site-footer {
     background: #FAF6F5;
@@ -134,7 +146,6 @@
     margin-top: 30px;
     padding: 40px 0 30px;
 }
-
 
 .site-footer .container {
     max-width: 1200px;
@@ -144,7 +155,7 @@
 
 .footer-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 30px;
     margin-bottom: 40px;
 }
@@ -217,6 +228,11 @@
 
 .footer-col ul li a:hover {
     color: #F4B94E;
+}
+
+/* Quick Links specific styling */
+.quick-links-list li a {
+    display: inline-block;
 }
 
 .footer-support-list li {
@@ -307,10 +323,6 @@
     color: #F4B94E !important;
 }
 
-.contact-info li a:hover {
-    color: #F4B94E;
-}
-
 .footer-bottom {
     display: flex;
     justify-content: space-between;
@@ -352,6 +364,8 @@
         gap: 20px;
     }
 }
+
+
 .contact-info li a,
 .contact-info li a:link,
 .contact-info li a:visited,
@@ -366,7 +380,6 @@
     text-decoration: none !important;
 }
 
-/* Email and phone specific */
 .contact-info li a[href^="mailto"],
 .contact-info li a[href^="tel"] {
     color: #555 !important;
@@ -375,6 +388,17 @@
 .contact-info li a[href^="mailto"]:hover,
 .contact-info li a[href^="tel"]:hover {
     color: #F4B94E !important;
+}
+.quick-links-list li {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.quick-links-list li:hover {
+    color: #F4B94E;
 }
 </style>
 
@@ -401,13 +425,19 @@ async function initFooter() {
             const list = document.getElementById('footerCategoriesList');
             const categories = catData.data.slice(0, 6);
             if (list) {
-                list.innerHTML = categories.map(cat => `
-                    <li>
-                        <a href="/category/${cat.id}">
-                            ${cat.name}
-                        </a>
-                    </li>
-                `).join('');
+                list.innerHTML = categories.map(cat => {
+                    // Agar category ke children hain toh pehle child pe jao, warna category page pe
+                    const hasChildren = cat.children && cat.children.length > 0;
+                    const linkUrl = hasChildren ? `/products?subcategory=${cat.children[0].id}` : `/category/${cat.id}`;
+                    
+                    return `
+                        <li>
+                            <a href="${linkUrl}">
+                                ${cat.name}
+                            </a>
+                        </li>
+                    `;
+                }).join('');
             }
         }
 

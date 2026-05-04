@@ -694,3 +694,48 @@ body {
     font-weight: 800 !important;
     font-size: 20px !important;
 }
+/* ========== FIX: WALLET HATANE KE BAAD RIGHT SIDE KHALI JAGAH ========== */
+
+/* Grid ko 1 column mein kar do taaki Customer Care poora width le */
+.profile-menu {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    margin-bottom: 30px !important;
+}
+
+/* Dono cards ko full width mein dikhao */
+.menu-card:first-child,
+.menu-card:last-child {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Desktop view mein bhi 1 column */
+@media (min-width: 768px) {
+    .profile-menu {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 20px !important;
+    }
+    
+    .menu-card:first-child,
+    .menu-card:last-child {
+        width: 100% !important;
+        flex: none !important;
+    }
+}
+
+/* Mobile view mein bhi same */
+@media (max-width: 767px) {
+    .profile-menu {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 20px !important;
+    }
+    
+    .menu-card:first-child,
+    .menu-card:last-child {
+        width: 100% !important;
+    }
+}
