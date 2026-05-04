@@ -537,7 +537,22 @@ function showRegisterPopup() {
                 }, 1500);
             } else {
                 let errMsg = data.message || "Registration failed";
-                if(data.errors?.email) errMsg = data.errors.email[0];
+                
+                // Check for email validation errors
+                if(data.errors?.email) {
+                    errMsg = data.errors.email[0];
+                }
+                else if(data.message) {
+                    errMsg = data.message;
+                }
+                
+                // If duplicate email
+                if(errMsg.toLowerCase().includes('already been taken') || 
+                errMsg.toLowerCase().includes('already registered') ||
+                errMsg.toLowerCase().includes('unique')) {
+                    errMsg = "This email is already registered. Please login instead.";
+                }
+                
                 showPopupMessage('register-msg-container', errMsg, 'error');
             }
         } catch(err) { showPopupMessage('register-msg-container', 'Server error', 'error'); }
