@@ -1,17 +1,59 @@
 const API_BASE_URL = window.API_BASE_URL;
 
+if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
+    console.log = console.debug = console.info = console.warn = function() {};
+}
+
+const CONFIG = {
+    CACHE_DURATION: 5 * 60 * 1000,
+    FALLBACK_IMAGE: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop'
+};
+
 class AllCategoriesPage {
     constructor() {
         this.allCategories = [];
         this.isLoggedIn = !!localStorage.getItem('token');
         this.userCategories = [];
-        this.isDragging = false;
         this.appSettings = null;
+        this.sortable = null;
+        this.apiCache = new Map();
+        this.domCache = new Map();
         this.init();
+        
+        let resizeTimer;
         window.addEventListener('resize', () => {
-            this.renderHeader();
-            this.renderWebSidebar();
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                this.renderHeader();
+                this.renderWebSidebar();
+            }, 200);
         });
+    }
+
+    getElement(id) {
+        if (!this.domCache.has(id)) {
+            this.domCache.set(id, document.getElementById(id));
+        }
+        return this.domCache.get(id);
+    }
+
+    async cachedFetch(url, options = {}) {
+        const cacheKey = `${url}_${JSON.stringify(options)}`;
+        const cached = this.apiCache.get(cacheKey);
+        
+        if (cached && (Date.now() - cached.timestamp) < CONFIG.CACHE_DURATION) {
+            return cached.data;
+        }
+        
+        try {
+            const response = await fetch(url, options);
+            const data = await response.json();
+            this.apiCache.set(cacheKey, { data, timestamp: Date.now() });
+            return data;
+        } catch (error) {
+            console.error('Fetch error:', error);
+            return null;
+        }
     }
 
     async init() {
@@ -24,11 +66,10 @@ class AllCategoriesPage {
         this.renderCategories();
         this.renderWebSidebar();
         this.renderBottomNav();
-        this.createPopup();
     }
 
     showSkeletonLoader() {
-        const container = document.getElementById('all-categories-grid');
+        const container = this.getElement('all-categories-grid');
         if (!container) return;
 
         const skeletons = Array(6).fill().map(() => `
@@ -41,7 +82,7 @@ class AllCategoriesPage {
     }
 
     showSidebarSkeleton() {
-        const sidebar = document.getElementById('categoriesWebSidebarList');
+        const sidebar = this.getElement('categoriesWebSidebarList');
         if (!sidebar || window.innerWidth < 1024) return;
 
         const skeleton = Array(6).fill().map(() => `
@@ -55,24 +96,17 @@ class AllCategoriesPage {
     }
 
     async fetchCategories() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/categories`);
-            const data = await response.json();
-            if (data.success) {
-                this.allCategories = data.data;
-                console.log('Categories loaded:', this.allCategories);
-            }
-        } catch (error) {
-            console.error('Error fetching categories:', error);
+        const data = await this.cachedFetch(`${API_BASE_URL}/categories`);
+        if (data?.success && data.data?.length) {
+            this.allCategories = data.data;
+        } else {
             this.allCategories = [
-                { id: 10, name: "Jewellery", image_url: null, children: [{ id: 11, name: "Necklace", image_url: null }] },
-                { id: 1, name: "Electronics", image_url: null, children: [] },
-                { id: 12, name: "Men's Shaving & Face Care", image_url: null, children: [] },
-                { id: 14, name: "Western Wear", image_url: null, children: [] },
-                { id: 4, name: "T-Shirts", image_url: null, children: [] },
-                { id: 7, name: "Books", image_url: null, children: [] },
-                { id: 8, name: "Home & Furniture", image_url: null, children: [] },
-                { id: 9, name: "Beauty & Personal Care", image_url: null, children: [] }
+                { id: 1, name: "Jewellery", image_url: null, children: [] },
+                { id: 2, name: "Necklaces", image_url: null, children: [] },
+                { id: 3, name: "Earrings", image_url: null, children: [] },
+                { id: 4, name: "Maang Tikka", image_url: null, children: [] },
+                { id: 5, name: "Bridal Sets", image_url: null, children: [] },
+                { id: 6, name: "Bangles", image_url: null, children: [] }
             ];
         }
     }
@@ -86,21 +120,30 @@ class AllCategoriesPage {
                 }
             });
             const data = await response.json();
-            if (data.success && data.data.length > 0) this.userCategories = data.data;
+            if (data.success && data.data.length) {
+                this.userCategories = data.data;
+            }
         } catch (error) {
             console.error('Error fetching user categories:', error);
         }
     }
 
+    async fetchAppSettings() {
+        const data = await this.cachedFetch(`${API_BASE_URL}/app-settings`);
+        if (data?.success) {
+            this.appSettings = data.data;
+        }
+    }
+
     renderHeader() {
-        const header = document.getElementById('site-header');
+        const header = this.getElement('site-header');
         if (!header) return;
 
         const isDesktop = window.innerWidth >= 1025;
 
         if (isDesktop) {
             const categoriesHtml = this.allCategories.slice(0, 5).map(cat => 
-                `<a href="/category/${cat.id}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`
+                `<a href="/category/${cat.id}" class="nav-item" data-cat-id="${cat.id}">${escapeHtml(cat.name.toUpperCase())}</a>`
             ).join('');
 
             header.innerHTML = `
@@ -109,33 +152,41 @@ class AllCategoriesPage {
                     <div class="main-header">
                         <div class="logo-area">
                             <a href="/" class="logo">
-                                <img src="${this.appSettings?.header_logo || 'https://placehold.co/120x40?text=LOGO'}" alt="Logo" id="site-logo" class="site-logo" onerror="this.src='https://placehold.co/120x40?text=LOGO'">
+                                <img src="${this.appSettings?.header_logo || 'https://placehold.co/120x40?text=LOGO'}" alt="Radiante Jewel Logo" id="site-logo" class="site-logo" onerror="this.src='https://placehold.co/120x40?text=LOGO'">
                             </a>
                             <nav class="nav-menu" id="navMenu">${categoriesHtml}</nav>
                         </div>
-                        <div class="search-area">
-                            <div class="search-box" style="position:relative;">
-                                <input type="text" id="web-search-input" placeholder="Search for products, brands..." autocomplete="off">
-                                <div id="web-search-suggestions" class="web-search-suggestions" style="display:none;"></div>
-                            </div>
+                       
+                            <div class="search-area">
+                                <div class="search-box" style="position:relative;">
+                                    <input type="text" id="web-search-input" placeholder="Search for " autocomplete="off" aria-label="Search products">
+                                    <button class="search-icon-btn" aria-label="Search">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="10" cy="10" r="7"/>
+                                            <line x1="21" y1="21" x2="15" y2="15"/>
+                                        </svg>
+                                    </button>
+                                    <div id="web-search-suggestions" class="web-search-suggestions" style="display:none;"></div>
+                                </div>
+                            
                         </div>
                         <div class="header-actions">
-                            <a href="javascript:void(0)" class="action-link" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }">
-                                <svg class="header-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2">
+                            <a href="javascript:void(0)" class="action-link" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }" aria-label="Profile">
+                                <svg class="header-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" aria-hidden="true">
                                     <circle cx="12" cy="7" r="4"/>
                                     <path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>
                                 </svg>
                                 Profile
                             </a>
-                            <a href="/wishlist" class="action-link">
-                                <svg class="header-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2">
-                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0 L12 5.67l-1.06-1.06 a5.5 5.5 0 0 0-7.78 7.78 l1.06 1.06L12 21.23 l7.78-7.78 1.06-1.06 a5.5 5.5 0 0 0 0-7.78z"/>
+                            <a href="/wishlist" class="action-link" aria-label="Wishlist">
+                                <svg class="header-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" aria-hidden="true">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                                 </svg>
                                 Wishlist
                             </a>
-                            <a href="/cart" class="action-link cart-link">
+                            <a href="/cart" class="action-link cart-link" aria-label="Cart">
                                 <span class="cart-icon-wrapper">
-                                    <svg class="header-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2">
+                                    <svg class="header-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" aria-hidden="true">
                                         <circle cx="9" cy="21" r="1.5"/>
                                         <circle cx="18" cy="21" r="1.5"/>
                                         <path d="M2 2h3l3 12h11l2-8H6"/>
@@ -152,21 +203,22 @@ class AllCategoriesPage {
 
             this.setupAllCategoriesPopup();
             this.initWebSearchDropdown();
-            updateCartCountBadge();
+            if (typeof updateCartCountBadge === 'function') updateCartCountBadge();
         } else {
             header.innerHTML = `
                 <div class="container">
                     <div class="header-container">
+                        <button class="back-btn-header" onclick="goBack()" aria-label="Go back">←</button>
                         <div class="logo-search-container">
                             <div class="header-logo">
-                                <a href="/">
-                                    <img src="${this.appSettings?.header_logo || this.appSettings?.app_logo || '/images/logo.jpg'}" alt="RAPID RETAIL" class="site-logo" onerror="this.src='https://via.placeholder.com/100x35?text=RAPID'">
+                                <a href="/" aria-label="Home">
+                                    <img src="${this.appSettings?.header_logo || '/images/logo.jpg'}" alt="Radiante Jewel Logo" class="site-logo" onerror="this.src='https://via.placeholder.com/100x35?text=RAPID'">
                                 </a>
                             </div>
                             <div class="search-wrapper">
-                                <input type="text" placeholder="Search for Category, Product ..." onclick="window.location.href='/search'">
-                                <button class="search-icon-btn" onclick="window.location.href='/search'" style="background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center;">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <input type="text" placeholder="Search for Category, Product ..." onclick="window.location.href='/search'" aria-label="Search">
+                                <button class="search-icon-btn" onclick="window.location.href='/search'" aria-label="Search" style="background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                         <circle cx="10" cy="10" r="7"/>
                                         <line x1="21" y1="21" x2="15" y2="15"/>
                                     </svg>
@@ -174,8 +226,8 @@ class AllCategoriesPage {
                             </div>
                         </div>
                         <div class="header-icons">
-                            <button class="header-icon-btn" onclick="window.location.href='/wishlist'">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2">
+                            <button class="header-icon-btn" onclick="window.location.href='/wishlist'" aria-label="Wishlist">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2" aria-hidden="true">
                                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                                 </svg>
                             </button>
@@ -193,10 +245,11 @@ class AllCategoriesPage {
 
             const suggestionsBox = document.getElementById("web-search-suggestions");
             let timer;
+            let currentController = null;
 
             const renderSuggestions = (products) => {
                 const html = products.length ? 
-                    products.map(p => `<div class="web-suggestion-item" onclick="window.location.href='/product/${p.slug}'">${p.name}</div>`).join('') :
+                    products.map(p => `<div class="web-suggestion-item" role="button" tabindex="0" onclick="window.location.href='/product/${p.slug}'" onkeypress="if(event.key==='Enter') window.location.href='/product/${p.slug}'">${escapeHtml(p.name)}</div>`).join('') :
                     `<div class="web-suggestion-item">No results found</div>`;
                 suggestionsBox.innerHTML = html;
                 suggestionsBox.style.display = "block";
@@ -212,21 +265,21 @@ class AllCategoriesPage {
                     return;
                 }
 
-                try {
-                    if (q.length === 1) {
-                        const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`);
-                        const data = await res.json();
-                        if (data.success) renderSuggestions(data.data.products);
-                        return;
-                    }
+                if (currentController) currentController.abort();
+                currentController = new AbortController();
 
+                try {
                     timer = setTimeout(async () => {
-                        const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`);
+                        const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`, {
+                            signal: currentController.signal
+                        });
                         const data = await res.json();
-                        if (data.success) renderSuggestions(data.data.products);
-                    }, 200);
+                        if (data.success && data.data?.products) {
+                            renderSuggestions(data.data.products);
+                        }
+                    }, 300);
                 } catch (err) {
-                    console.log(err);
+                    if (err.name !== 'AbortError') console.log(err);
                 }
             });
 
@@ -238,19 +291,9 @@ class AllCategoriesPage {
         }, 300);
     }
 
-    async fetchAppSettings() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/app-settings`);
-            const data = await response.json();
-            if (data.success) this.appSettings = data.data;
-        } catch (error) {
-            console.error('Error fetching app settings:', error);
-        }
-    }
-
     setupAllCategoriesPopup() {
         const navItems = document.querySelectorAll('.nav-item');
-        const popup = document.getElementById('allCategoriesPopup');
+        const popup = this.getElement('allCategoriesPopup');
         if (!navItems.length || !popup) return;
 
         let hideTimeout = null;
@@ -278,7 +321,7 @@ class AllCategoriesPage {
     }
 
     renderAllCategoriesPopup() {
-        const popup = document.getElementById('allCategoriesPopup');
+        const popup = this.getElement('allCategoriesPopup');
         if (!popup) return;
 
         if (!this.allCategories?.length) {
@@ -297,13 +340,13 @@ class AllCategoriesPage {
                 html += `<div>`;
                 col.forEach(cat => {
                     html += `<div style="margin-bottom:20px;">
-                        <h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">${cat.name}</h3>
+                        <h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">${escapeHtml(cat.name)}</h3>
                         <ul style="list-style:none; padding:0; margin-top:12px;">`;
 
                     if (cat.children?.length) {
                         cat.children.slice(0, 6).forEach(sub => {
                             let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
+                            html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px;">${escapeHtml(sub.name)}</a></li>`;
                         });
                         if (cat.children.length > 6) {
                             html += `<li style="margin-top:5px;"><a href="/category/${cat.id}" style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">+${cat.children.length - 6} more →</a></li>`;
@@ -318,7 +361,7 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
     }
 
     renderBottomNav() {
-        const nav = document.getElementById('mobile-bottom-nav');
+        const nav = this.getElement('mobile-bottom-nav');
         if (!nav) return;
 
         const currentPath = window.location.pathname;
@@ -334,35 +377,18 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         let activePage = activePageMap[currentPath] || (currentPath.includes('/profile') ? 'profile' : '');
 
         nav.innerHTML = `
-            <a href="/" class="nav-item-figma ${activePage === 'landing' ? 'active' : ''}">
+            <a href="/" class="nav-item-figma ${activePage === 'landing' ? 'active' : ''}" aria-label="Home">
                 <div class="nav-icon-box">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </div>
                 <span>Home</span>
             </a>
-             <!--
-            <a href="/trends" class="nav-item-figma ${activePage === 'trends' ? 'active' : ''}">
+            <a href="/categories" class="nav-item-figma ${activePage === 'all-categories' ? 'active' : ''}" aria-label="Categories">
                 <div class="nav-icon-box">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
-                        <line x1="7" y1="2" x2="7" y2="22"/>
-                        <line x1="17" y1="2" x2="17" y2="22"/>
-                        <line x1="2" y1="12" x2="22" y2="12"/>
-                        <line x1="2" y1="7" x2="7" y2="7"/>
-                        <line x1="2" y1="17" x2="7" y2="17"/>
-                        <line x1="17" y1="17" x2="22" y2="17"/>
-                        <line x1="17" y1="7" x2="22" y2="7"/>
-                    </svg>
-                </div>
-                <span>Trends</span>
-            </a>
-        --!>
-            <a href="/categories" class="nav-item-figma ${activePage === 'all-categories' ? 'active' : ''}">
-                <div class="nav-icon-box">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" stroke-width="2"/>
                         <rect x="13" y="3" width="8" height="8" rx="2" stroke="currentColor" stroke-width="2"/>
                         <rect x="3" y="13" width="8" height="8" rx="2" stroke="currentColor" stroke-width="2"/>
@@ -371,10 +397,10 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
                 </div>
                 <span>Categories</span>
             </a>
-            <a href="/cart" class="nav-item-figma ${activePage === 'cart' ? 'active' : ''}">
+            <a href="/cart" class="nav-item-figma ${activePage === 'cart' ? 'active' : ''}" aria-label="Cart">
                 <div class="nav-icon-box">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M1 1H5L7.68 14.39 C7.77144 14.8504 8.02191 15.264 8.38755 15.5583 C8.75318 15.8526 9.2107 16.009 9.68 16 H19.4 C19.8693 16.009 20.3268 15.8526 20.6925 15.5583 C21.0581 15.264 21.3086 14.8504 21.4 14.39 L23 6H6"/>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M1 1H5L7.68 14.39C7.77144 14.8504 8.02191 15.264 8.38755 15.5583C8.75318 15.8526 9.2107 16.009 9.68 16H19.4C19.8693 16.009 20.3268 15.8526 20.6925 15.5583C21.0581 15.264 21.3086 14.8504 21.4 14.39L23 6H6"/>
                         <circle cx="9" cy="21" r="1.5"/>
                         <circle cx="20" cy="21" r="1.5"/>
                     </svg>
@@ -382,9 +408,9 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
                 </div>
                 <span>Cart</span>
             </a>
-            <a href="javascript:void(0)" class="nav-item-figma ${activePage === 'profile' ? 'active' : ''}" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }">
+            <a href="javascript:void(0)" class="nav-item-figma ${activePage === 'profile' ? 'active' : ''}" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }" aria-label="Profile">
                 <div class="nav-icon-box">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
                     </svg>
@@ -392,11 +418,11 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
                 <span>Profile</span>
             </a>
         `;
-        updateCartCountBadge();
+        if (typeof updateCartCountBadge === 'function') updateCartCountBadge();
     }
 
     renderCategories() {
-        const container = document.getElementById('all-categories-grid');
+        const container = this.getElement('all-categories-grid');
         if (!container) return;
 
         const fallbackImages = [
@@ -419,8 +445,8 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
 
         const editButtonHtml = this.isLoggedIn ? `
             <div class="categories-header">
-                <button class="edit-categories-btn" onclick="window.allCategoriesPage.toggleEditMode()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <button class="edit-categories-btn" onclick="window.allCategoriesPage.toggleEditMode()" aria-label="Edit categories order">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
                         <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" stroke-width="2"/>
                         <polygon points="18 2 22 6 12 16 8 16 8 12 18 2" stroke-width="2"/>
                     </svg>
@@ -432,9 +458,9 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         container.innerHTML = editButtonHtml + categoriesToShow.map((cat, index) => {
             const imageUrl = cat.image_url || fallbackImages[index % fallbackImages.length];
             const bgColor = colors[index % colors.length];
-            return `<div class="category-card" style="background: ${bgColor}" data-id="${cat.id}" onclick="redirectToSubcategory(${cat.id})">
-                <div class="category-info"><h3>${cat.name}</h3></div>
-                <div class="category-image-box"><img src="${imageUrl}"></div>
+            return `<div class="category-card ${this.isLoggedIn ? 'draggable' : ''}" style="background: ${bgColor}" data-id="${cat.id}" onclick="redirectToSubcategory(${cat.id})" role="button" tabindex="0" aria-label="View ${escapeHtml(cat.name)} category">
+                <div class="category-info"><h3>${escapeHtml(cat.name)}</h3></div>
+                <div class="category-image-box"><img src="${imageUrl}" alt="${escapeHtml(cat.name)}" loading="lazy" width="60" height="60" decoding="async"></div>
             </div>`;
         }).join('');
 
@@ -443,7 +469,7 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
     }
 
     renderWebSidebar() {
-        const sidebar = document.getElementById('categoriesWebSidebarList');
+        const sidebar = this.getElement('categoriesWebSidebarList');
         if (!sidebar || window.innerWidth < 1024) return;
 
         const categoriesToShow = this.userCategories.length ? this.userCategories : this.allCategories;
@@ -452,44 +478,26 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
             const hasChildren = cat.children?.length;
             const subHtml = hasChildren ? `
                 <ul class="subcategory-dropdown" id="sub-${cat.id}" style="display:none;">
-                    ${cat.children.map(sub => `<li><a href="/products?subcategory=${sub.id}">${sub.name}</a></li>`).join('')}
+                    ${cat.children.map(sub => {
+                        let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        return `<li><a href="/collection/${subSlug}">${escapeHtml(sub.name)}</a></li>`;
+                    }).join('')}
                 </ul>
             ` : '';
 
             return `<li class="category-item">
-                <div class="category-parent" onclick="window.allCategoriesPage.toggleSubcategory(${cat.id})">
-                    ${cat.name}
-                    ${hasChildren ? `<span class="arrow">▸</span>` : ''}
+                <div class="category-parent" onclick="window.allCategoriesPage.toggleSubcategory(${cat.id})" role="button" tabindex="0" aria-label="Toggle ${escapeHtml(cat.name)} subcategories">
+                    ${escapeHtml(cat.name)}
+                    ${hasChildren ? `<span class="arrow" aria-hidden="true">▸</span>` : ''}
                 </div>
                 ${subHtml}
             </li>`;
         }).join('');
     }
 
-    createPopup() {
-        if (!document.getElementById('popup-overlay')) {
-            const popupHTML = `
-                <div class="popup-overlay" id="popup-overlay" onclick="hideCategoryPopup()">
-                    <div class="popup-content" onclick="event.stopPropagation()">
-                        <div class="popup-header">
-                            <h2 id="popup-title">Category</h2>
-                            <span class="popup-close" onclick="hideCategoryPopup()">×</span>
-                        </div>
-                        <div class="popup-body" id="popup-body"></div>
-                    </div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', popupHTML);
-        }
-    }
-
     toggleSubcategory(categoryId) {
-        console.log("Toggling category:", categoryId);
         const dropdown = document.getElementById(`sub-${categoryId}`);
-        if (!dropdown) {
-            console.log("Dropdown not found for id:", `sub-${categoryId}`);
-            return;
-        }
+        if (!dropdown) return;
 
         const parent = dropdown.previousElementSibling;
         const isOpen = dropdown.style.display === "block";
@@ -500,17 +508,16 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         if (!isOpen) {
             dropdown.style.display = "block";
             if (parent) parent.classList.add("active");
-            console.log("Opened dropdown for:", categoryId);
         }
     }
 
     toggleEditMode() {
         const btn = document.querySelector('.edit-categories-btn');
-        const grid = document.getElementById('all-categories-grid');
+        const grid = this.getElement('all-categories-grid');
 
         if (btn.classList.contains('done')) {
             btn.classList.remove('done');
-            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
                 <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" stroke-width="2"/>
                 <polygon points="18 2 22 6 12 16 8 16 8 12 18 2" stroke-width="2"/>
             </svg> Edit`;
@@ -519,11 +526,13 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         } else {
             btn.classList.add('done');
             btn.innerHTML = `Save`;
-            this.sortable = new Sortable(grid, {
-                animation: 200,
-                ghostClass: "dragging",
-                draggable: ".category-card"
-            });
+            if (typeof Sortable !== 'undefined') {
+                this.sortable = new Sortable(grid, {
+                    animation: 200,
+                    ghostClass: "dragging",
+                    draggable: ".category-card"
+                });
+            }
         }
     }
 
@@ -540,74 +549,24 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         })
         .then(res => res.json())
         .then(data => {
-            if (data.success) {
-                console.log('Order saved successfully');
+            if (data.success && typeof showToast === 'function') {
                 showToast('Category order saved', 'success');
             }
         })
-        .catch(err => {
-            console.error('Error saving order:', err);
-            showToast('Could not save order', 'error');
-        });
-    }
-
-    openFilterModal() {
-        alert('Filter modal - coming soon');
+        .catch(err => console.error('Error saving order:', err));
     }
 }
 
-function showCategoryPopupById(categoryId) {
-    const cat = window.allCategoriesPage.allCategories.find(c => c.id == categoryId);
-    if (cat) showCategoryPopup(cat);
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
 }
 
-function showCategoryPopup(cat) {
-    const popup = document.getElementById('popup-overlay');
-    const title = document.getElementById('popup-title');
-    const body = document.getElementById('popup-body');
-    if (!popup || !title || !body) return;
-
-    title.textContent = cat.name;
-    const fallbackImage = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
-
-    body.innerHTML = cat.children?.length ? 
-        cat.children.map(child => `
-            <div class="subcategory-card" onclick="window.location.href='/products?subcategory=${child.id}'">
-                <div class="subcategory-image">
-                    <img src="${child.image_url || fallbackImage}" onerror="this.src='${fallbackImage}'" alt="${child.name}">
-                </div>
-                <div class="subcategory-name">${child.name}</div>
-            </div>
-        `).join('') :
-        '<div class="popup-empty">No subcategories</div>';
-
-    popup.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-function hideCategoryPopup() {
-    const popup = document.getElementById('popup-overlay');
-    if (popup) {
-        popup.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.body.dataset.page === 'all-categories') {
-        window.allCategoriesPage = new AllCategoriesPage();
-    }
-});
-
-function updateCartCountBadge() {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    const totalItems = cart.length;
-    const badge = document.getElementById('cart-count-badge');
-    if (badge) {
-        badge.style.display = 'flex';
-        badge.textContent = totalItems;
-    }
-}
 function redirectToSubcategory(categoryId) {
     fetch(`${API_BASE_URL}/categories`)
         .then(response => response.json())
@@ -624,8 +583,99 @@ function redirectToSubcategory(categoryId) {
                 window.location.href = `/products?category=${categoryId}`;
             }
         })
-        .catch(error => {
-            console.error('Redirect error:', error);
-            window.location.href = `/products?category=${categoryId}`;
-        });
+        .catch(() => window.location.href = `/products?category=${categoryId}`);
 }
+
+window.goBack = function() {
+    window.history.back();
+};
+
+function showCategoryPopupById(categoryId) {
+    const cat = window.allCategoriesPage?.allCategories.find(c => c.id == categoryId);
+    if (cat) showCategoryPopup(cat);
+}
+
+function showCategoryPopup(cat) {
+    const popup = document.getElementById('popup-overlay');
+    const title = document.getElementById('popup-title');
+    const body = document.getElementById('popup-body');
+    if (!popup || !title || !body) return;
+
+    title.textContent = cat.name;
+    const fallbackImage = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
+
+    body.innerHTML = cat.children?.length ? 
+        cat.children.map(child => `
+            <div class="subcategory-card" onclick="window.location.href='/products?subcategory=${child.id}'" role="button" tabindex="0">
+                <div class="subcategory-image">
+                    <img src="${child.image_url || fallbackImage}" onerror="this.src='${fallbackImage}'" alt="${escapeHtml(child.name)}" loading="lazy" width="200" height="200">
+                </div>
+                <div class="subcategory-name">${escapeHtml(child.name)}</div>
+            </div>
+        `).join('') :
+        '<div class="popup-empty">No subcategories</div>';
+
+    popup.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function hideCategoryPopup() {
+    const popup = document.getElementById('popup-overlay');
+    if (popup) {
+        popup.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+function updateCartCountBadge() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const totalItems = cart.length;
+    const badge = document.getElementById('cart-count-badge');
+    if (badge) {
+        badge.style.display = 'flex';
+        badge.textContent = totalItems;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.body.dataset.page === 'all-categories') {
+        window.allCategoriesPage = new AllCategoriesPage();
+    }
+});
+// Dynamic search placeholder for all categories page
+setTimeout(function() {
+    let categories = ['Necklace', 'Earrings', 'Maang Tikka', 'Bridal Sets', 'Bangles'];
+    let index = 0;
+    let isRotating = false;
+    let intervalId = null;
+    const input = document.getElementById('web-search-input');
+    
+    if (!input) return;
+    
+    async function fetchCategories() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/categories`);
+            const data = await response.json();
+            if (data.success && data.data.length > 0) {
+                categories = data.data.map(cat => cat.name);
+                if (!isRotating) startRotation();
+            } else {
+                if (!isRotating) startRotation();
+            }
+        } catch(e) {
+            if (!isRotating) startRotation();
+        }
+    }
+    
+    function startRotation() {
+        if (isRotating) return;
+        isRotating = true;
+        input.placeholder = 'Search for ' + categories[0];
+        intervalId = setInterval(function() {
+            input.placeholder = 'Search for ' + categories[index];
+            index = (index + 1) % categories.length;
+        }, 3000);
+    }
+    
+    fetchCategories();
+}, 2000);

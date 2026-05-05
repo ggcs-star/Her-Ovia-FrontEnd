@@ -668,10 +668,9 @@ body {
         padding-bottom: 0;
     }
 }
-/* PROFILE PAGE - WEB HEADER FONTS LIKE PRODUCT DETAIL PAGE */
 .profile-page .web-header .nav-item {
-    color: #555555 !important;
-    font-weight: 500 !important;
+    color: #000000 !important;
+    font-weight: 700 !important;
     font-size: 12px !important;
 }
 
@@ -694,9 +693,7 @@ body {
     font-weight: 800 !important;
     font-size: 20px !important;
 }
-/* ========== FIX: WALLET HATANE KE BAAD RIGHT SIDE KHALI JAGAH ========== */
 
-/* Grid ko 1 column mein kar do taaki Customer Care poora width le */
 .profile-menu {
     display: flex !important;
     flex-direction: column !important;
@@ -704,14 +701,12 @@ body {
     margin-bottom: 30px !important;
 }
 
-/* Dono cards ko full width mein dikhao */
 .menu-card:first-child,
 .menu-card:last-child {
     width: 100% !important;
     max-width: 100% !important;
 }
 
-/* Desktop view mein bhi 1 column */
 @media (min-width: 768px) {
     .profile-menu {
         display: flex !important;
@@ -726,7 +721,6 @@ body {
     }
 }
 
-/* Mobile view mein bhi same */
 @media (max-width: 767px) {
     .profile-menu {
         display: flex !important;
@@ -738,4 +732,45 @@ body {
     .menu-card:last-child {
         width: 100% !important;
     }
+}
+/* Remove ALL hover effects from headers in profile page - NO background, NO color change */
+.profile-page .icon-btn,
+.profile-page .icon-btn:hover,
+.profile-page .icon-btn:focus,
+.profile-page .icon-btn:active,
+.profile-page .header-icon-btn,
+.profile-page .header-icon-btn:hover,
+.profile-page .header-icon-btn:focus,
+.profile-page .header-icon-btn:active,
+.profile-page .action-link,
+.profile-page .action-link:hover,
+.profile-page .action-link:focus,
+.profile-page .action-link:active,
+.profile-page .web-header .nav-item,
+.profile-page .web-header .nav-item:hover,
+.profile-page .web-header .nav-item:focus,
+.profile-page .header-actions .action-link,
+.profile-page .header-actions .action-link:hover,
+.profile-page .header-actions .action-link:focus {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #555555 !important;
+    stroke: #333333 !important;
+    cursor: default !important;
+}
+
+.profile-page .icon-btn svg,
+.profile-page .header-icon-btn svg,
+.profile-page .action-link svg,
+.profile-page .web-header .nav-item svg,
+.profile-page .header-actions .action-link svg {
+    stroke: #333333 !important;
+}
+
+.profile-page .icon-btn:hover svg,
+.profile-page .header-icon-btn:hover svg,
+.profile-page .action-link:hover svg,
+.profile-page .web-header .nav-item:hover svg,
+.profile-page .header-actions .action-link:hover svg {
+    stroke: #333333 !important;
 }

@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>RADIANT JEWEL </title>
-    <!-- <link rel="icon" type="image/jpeg" sizes="16x16" href="{{ asset('images/logo.png') }}">
-    <link rel="icon" type="image/jpeg" sizes="32x32" href="{{ asset('images/logo.png') }}">
-    <link rel="icon" type="image/jpeg" sizes="96x96" href="{{ asset('images/logo.png') }}"> -->
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/categories/category-styles.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/product-styles.css') }}">
@@ -113,14 +110,6 @@
         </section>
         <section class="container" id="mid-banner-1-container"></section>
         <section class="container" id="mid-banner-2-container"></section>
-        <!-- <div id="brands-marquee-container"></div> -->
-
-        <!-- <section class="section-container">
-            <div class="container">
-                <div id="brands-grid" class="brands-grid-figma"></div>
-            </div>
-        </section> -->
-
         <div id="dynamic-category-sections"></div>
 
        <section class="container">

@@ -1080,22 +1080,17 @@
                 </nav>
             </div>
             <div class="search-area">
-                <div class="search-box" style="position:relative;">
-                <input
-                        type="text"
-                        id="web-search-input"
-                        placeholder="Search for products, brands..."
-                        autocomplete="off"
-                    >
-
-                    <div
-                        id="web-search-suggestions"
-                        class="web-search-suggestions"
-                        style="display:none;"
-                    ></div>
-
-                </div>
-            </div>
+    <div class="search-box" style="position:relative;">
+        <input type="text" id="web-search-input" placeholder="Search for " autocomplete="off" aria-label="Search products">
+        <button class="search-icon-btn" aria-label="Search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="10" cy="10" r="7"/>
+                <line x1="21" y1="21" x2="15" y2="15"/>
+            </svg>
+        </button>
+        <div id="web-search-suggestions" class="web-search-suggestions" style="display:none;"></div>
+    </div>
+</div>
             <div class="header-actions">
 
         <a href="javascript:void(0)" class="action-link" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }">    
@@ -1418,19 +1413,12 @@
     let originalProducts = [];
     
     function getProductPrice(p) {
-        return parseFloat(
-            (p.product_price && p.product_price != "0.00")
-                ? p.product_price
-                : (p.final_price || p.price || 0)
-        );
-    }
+    const sellingPrice = p.final_price || p.product_price || p.price || 0;
+    return parseFloat(sellingPrice);
+}
 
     function getProductMrp(p) {
-        return parseFloat(
-            (p.product_price && p.product_price != "0.00")
-                ? p.product_price
-                : (p.price || 0)
-        );
+        return parseFloat(p.price || p.mrp || p.product_price || 0);
     }
 
 function renderProducts(products) {
@@ -1649,110 +1637,125 @@ async function fetchData() {
         }
     }
 
-    function updateDesktopFiltersFromProducts(products) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const type = urlParams.get('type');
-        
-        if (type === 'top-selling') {
-            const categorySection = document.querySelector('#desktopCategoryFilters')?.closest('.desktop-filter-section');
-            if (categorySection) categorySection.style.display = 'none';
-        }
-        
-        const brands = new Set();
-        products.forEach(p => { if (p.brand) brands.add(p.brand); });
-        const brandContainer = document.getElementById('desktopBrandFilters');
-        if (brandContainer) {
-            brandContainer.innerHTML = Array.from(brands).map(brand => `
-                <label class="desktop-filter-option">
-                    <input type="checkbox" class="desktop-brand-filter" value="${brand}" onchange="applyDesktopFilters()"> ${brand}
-                </label>
-            `).join('');
-        }
-        
-        const priceContainer = document.getElementById('desktopPriceFilters');
-        if (priceContainer && products.length > 0) {
-            const prices = products.map(p => getProductPrice(p)).filter(p => !isNaN(p));
-            const minPrice = Math.min(...prices);
-            const maxPrice = Math.max(...prices);
-            const step = Math.ceil((maxPrice - minPrice) / 4);
-            const ranges = [];
-            let current = minPrice;
-            
-            for (let i = 0; i < 4; i++) {
-                if (i === 0) ranges.push({ min: 0, max: current + step, label: `Below ₹${(current + step).toFixed(0)}` });
-                else if (i === 3) ranges.push({ min: current, max: maxPrice, label: `Above ₹${current.toFixed(0)}` });
-                else ranges.push({ min: current, max: current + step, label: `₹${current.toFixed(0)} - ₹${(current + step).toFixed(0)}` });
-                current += step;
-            }
-            
-            priceContainer.innerHTML = ranges.map(range => `
-                <label class="desktop-filter-option">
-                    <input type="checkbox" class="desktop-price-filter" value="${range.min}-${range.max}" onchange="applyDesktopFilters()"> ${range.label}
-                </label>
-            `).join('');
-        }
-        
-        const discountContainer = document.getElementById('desktopDiscountFilters');
-        if (discountContainer) {
-            const discountSet = new Set();
-            products.forEach(p => {
-                if (p.price && p.final_price) {
-                    const original = parseFloat(p.price);
-                    const final = parseFloat(p.final_price);
-                    if (original > final) discountSet.add(Math.round(((original - final) / original) * 100));
-                }
-            });
-            const sortedDiscounts = Array.from(discountSet).sort((a, b) => a - b);
-            discountContainer.innerHTML = sortedDiscounts.map(d => `
-                <label class="desktop-filter-option">
-                    <input type="checkbox" class="desktop-discount-filter" value="${d}" onchange="applyDesktopFilters()"> ${d}% & above
-                </label>
-            `).join('');
-        }
+    window.applyDesktopFilters = function() {
+    let filtered = [...currentProducts];
+    let filterApplied = false;
+
+    const selectedCategories = Array.from(document.querySelectorAll('.desktop-category-filter:checked')).map(cb => cb.value);
+
+    if (selectedCategories.length === 1) {
+        changeSubcategory(selectedCategories[0]);
+        return;
+    }
+    if (selectedCategories.length > 1) {
+        fetchMultipleSubcategoriesCommon(selectedCategories);
+        return;
     }
 
-    window.applyDesktopFilters = function() {
-        let filtered = [...currentProducts];
-        let filterApplied = false;
-
-        const selectedCategories = Array.from(document.querySelectorAll('.desktop-category-filter:checked')).map(cb => cb.value);
-
-        if (selectedCategories.length === 1) {
-            changeSubcategory(selectedCategories[0]);
-            return;
-        }
-        if (selectedCategories.length > 1) {
-            fetchMultipleSubcategoriesCommon(selectedCategories);
-            return;
-        }
-
-        const selectedPriceRanges = Array.from(document.querySelectorAll('.desktop-price-filter:checked')).map(cb => cb.value);
-        if (selectedPriceRanges.length > 0) {
-            filterApplied = true;
-            filtered = filtered.filter(p => {
-                const price = getProductPrice(p);
-                return selectedPriceRanges.some(range => {
-                    const [min, max] = range.split('-').map(Number);
-                    return price >= min && price <= max;
-                });
+    const selectedPriceRanges = Array.from(document.querySelectorAll('.desktop-price-filter:checked')).map(cb => cb.value);
+    if (selectedPriceRanges.length > 0) {
+        filterApplied = true;
+        filtered = filtered.filter(p => {
+            const price = getProductPrice(p);
+            return selectedPriceRanges.some(range => {
+                const [min, max] = range.split('-').map(Number);
+                return price >= min && price <= max;
             });
-        }
+        });
+    }
 
-        const selectedBrands = Array.from(document.querySelectorAll('.desktop-brand-filter:checked')).map(cb => cb.value);
-        if (selectedBrands.length > 0) {
-            filterApplied = true;
-            filtered = filtered.filter(p => selectedBrands.includes(p.brand));
-        }
+    const selectedBrands = Array.from(document.querySelectorAll('.desktop-brand-filter:checked')).map(cb => cb.value);
+    if (selectedBrands.length > 0) {
+        filterApplied = true;
+        filtered = filtered.filter(p => selectedBrands.includes(p.brand));
+    }
 
-        if (!filterApplied) {
-            renderProducts(currentProducts);
-        } else if (filtered.length > 0) {
-            renderProducts(filtered);
-        } else {
-            document.getElementById('productsGrid').innerHTML = '<div class="loading">No products match your filters</div>';
-        }
-    };
+    const selectedDiscounts = Array.from(document.querySelectorAll('.desktop-discount-filter:checked')).map(cb => parseInt(cb.value));
+    if (selectedDiscounts.length > 0) {
+        filterApplied = true;
+        filtered = filtered.filter(p => {
+            if (p.price && p.final_price && parseFloat(p.price) > parseFloat(p.final_price)) {
+                const discount = Math.round(((parseFloat(p.price) - parseFloat(p.final_price)) / parseFloat(p.price)) * 100);
+                return selectedDiscounts.some(d => discount >= d);
+            }
+            return false;
+        });
+    }
 
+    if (!filterApplied) {
+        renderProducts(currentProducts);
+    } else if (filtered.length > 0) {
+        renderProducts(filtered);
+    } else {
+        document.getElementById('productsGrid').innerHTML = '<div class="loading">No products match your filters</div>';
+    }
+};
+
+window.updateDesktopFiltersFromProducts = function(products) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const type = urlParams.get('type');
+    
+    if (type === 'top-selling') {
+        const categorySection = document.querySelector('#desktopCategoryFilters')?.closest('.desktop-filter-section');
+        if (categorySection) categorySection.style.display = 'none';
+    }
+    
+    const brands = new Set();
+    products.forEach(p => { if (p.brand) brands.add(p.brand); });
+    const brandContainer = document.getElementById('desktopBrandFilters');
+    if (brandContainer) {
+        const currentChecked = Array.from(document.querySelectorAll('.desktop-brand-filter:checked')).map(cb => cb.value);
+        brandContainer.innerHTML = Array.from(brands).map(brand => `
+            <label class="desktop-filter-option">
+                <input type="checkbox" class="desktop-brand-filter" value="${brand}" onchange="applyDesktopFilters()" ${currentChecked.includes(brand) ? 'checked' : ''}> ${brand}
+            </label>
+        `).join('');
+    }
+    
+    const priceContainer = document.getElementById('desktopPriceFilters');
+    if (priceContainer && products.length > 0) {
+        const currentChecked = Array.from(document.querySelectorAll('.desktop-price-filter:checked')).map(cb => cb.value);
+        const prices = products.map(p => getProductPrice(p)).filter(p => !isNaN(p));
+        const minPrice = Math.min(...prices);
+        const maxPrice = Math.max(...prices);
+        const step = Math.ceil((maxPrice - minPrice) / 4);
+        const ranges = [];
+        let current = minPrice;
+        
+        for (let i = 0; i < 4; i++) {
+            if (i === 0) ranges.push({ min: 0, max: current + step, label: `Below ₹${(current + step).toFixed(0)}` });
+            else if (i === 3) ranges.push({ min: current, max: maxPrice, label: `Above ₹${current.toFixed(0)}` });
+            else ranges.push({ min: current, max: current + step, label: `₹${current.toFixed(0)} - ₹${(current + step).toFixed(0)}` });
+            current += step;
+        }
+        
+        priceContainer.innerHTML = ranges.map(range => `
+            <label class="desktop-filter-option">
+                <input type="checkbox" class="desktop-price-filter" value="${range.min}-${range.max}" onchange="applyDesktopFilters()" ${currentChecked.includes(`${range.min}-${range.max}`) ? 'checked' : ''}> ${range.label}
+            </label>
+        `).join('');
+    }
+    
+    const discountContainer = document.getElementById('desktopDiscountFilters');
+    if (discountContainer) {
+        const currentChecked = Array.from(document.querySelectorAll('.desktop-discount-filter:checked')).map(cb => cb.value);
+        const discountSet = new Set();
+        products.forEach(p => {
+            if (p.price && p.final_price) {
+                const original = parseFloat(p.price);
+                const final = parseFloat(p.final_price);
+                if (original > final) discountSet.add(Math.round(((original - final) / original) * 100));
+            }
+        });
+        const sortedDiscounts = Array.from(discountSet).sort((a, b) => a - b);
+        discountContainer.innerHTML = sortedDiscounts.map(d => `
+            <label class="desktop-filter-option">
+                <input type="checkbox" class="desktop-discount-filter" value="${d}" onchange="applyDesktopFilters()" ${currentChecked.includes(String(d)) ? 'checked' : ''}> ${d}% & above
+            </label>
+        `).join('');
+    }
+};
+   
     window.resetDesktopFilters = function() {
         document.querySelectorAll('.desktop-category-filter, .desktop-brand-filter, .desktop-discount-filter, .desktop-price-filter').forEach(cb => cb.checked = false);
         renderProducts(originalProducts);
@@ -1779,144 +1782,190 @@ async function fetchData() {
     }
 
     async function loadFilterOptions(filterType, container) {
-        let options = [];
-        const urlParams = new URLSearchParams(window.location.search);
-        const categoryId = urlParams.get('category');
-        const subcategoryId = urlParams.get('subcategory');
-        const type = urlParams.get('type');
-        
-        if (type === 'top-selling') {
-            if (filterType === 'price') {
-                const prices = currentProducts.map(p => getProductPrice(p)).filter(p => !isNaN(p));
+    let options = [];
+    const urlParams = new URLSearchParams(window.location.search);
+    let categoryId = urlParams.get('category');
+    let subcategoryId = urlParams.get('subcategory');
+    const type = urlParams.get('type');
+    
+    const path = window.location.pathname;
+    const collectionMatch = path.match(/\/collection\/([^\/]+)(?:\/([^\/]+))?/);
+    
+    if (!categoryId && !subcategoryId && collectionMatch && collectionMatch[1]) {
+        try {
+            const res = await fetch(`${API_BASE_URL}/categories`);
+            const data = await res.json();
+            if (data.success) {
+                const mainSlug = collectionMatch[1];
+                const subSlug = collectionMatch[2] || null;
+                for (let cat of data.data) {
+                    if (cat.children && cat.children.length) {
+                        let mainCatSlug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        if (mainCatSlug === mainSlug) {
+                            categoryId = cat.id;
+                            if (subSlug) {
+                                for (let sub of cat.children) {
+                                    let subCatSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                                    if (subCatSlug === subSlug) {
+                                        subcategoryId = sub.id;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!subcategoryId && cat.children.length) {
+                                subcategoryId = cat.children[0].id;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch(e) {}
+    }
+    
+    const targetId = subcategoryId || categoryId;
+    
+    if (filterType === 'category') {
+        try {
+            const res = await fetch(`${API_BASE_URL}/categories`);
+            const data = await res.json();
+            if (data.success) {
+                let targetCategory = null;
+                if (categoryId) targetCategory = data.data.find(c => c.id == categoryId);
+                else if (subcategoryId) targetCategory = data.data.find(c => c.children?.some(child => child.id == subcategoryId));
+                if (targetCategory && targetCategory.children && targetCategory.children.length) {
+                    options = targetCategory.children.map(child => ({ value: child.id, label: child.name }));
+                }
+            }
+        } catch (error) { console.error('Error loading categories:', error); }
+    }
+    else if (filterType === 'price') {
+        if (targetId) {
+            const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
+            const data = await res.json();
+            if (data.success && data.data.products && data.data.products.length) {
+                const prices = data.data.products.map(p => parseFloat(p.final_price || p.price)).filter(p => !isNaN(p));
                 const minPrice = Math.min(...prices);
                 const maxPrice = Math.max(...prices);
-                const step = Math.ceil((maxPrice - minPrice) / 4);
-                const ranges = [];
-                let current = minPrice;
-                for (let i = 0; i < 4; i++) {
-                    if (i === 0) ranges.push({ min: 0, max: current + step, label: `Below ₹${(current + step).toFixed(0)}` });
-                    else if (i === 3) ranges.push({ min: current, max: maxPrice, label: `Above ₹${current.toFixed(0)}` });
-                    else ranges.push({ min: current, max: current + step, label: `₹${current.toFixed(0)} - ₹${(current + step).toFixed(0)}` });
-                    current += step;
+                const step = 500;
+                for (let start = Math.floor(minPrice / step) * step; start < maxPrice; start += step) {
+                    const end = start + step;
+                    options.push({ value: `${start}-${end}`, label: start === 0 ? `Below ₹${end}` : `₹${start} - ₹${end}` });
                 }
-                options = ranges.map(range => ({ value: `${range.min}-${range.max}`, label: range.label }));
-            } else if (filterType === 'brand') {
+                options.push({ value: `${maxPrice}-999999`, label: `Above ₹${maxPrice}` });
+            }
+        }
+    }
+    else if (filterType === 'brand') {
+        if (targetId) {
+            const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
+            const data = await res.json();
+            if (data.success && data.data.products) {
                 const brands = new Set();
-                currentProducts.forEach(p => { if (p.brand) brands.add(p.brand); });
+                data.data.products.forEach(p => { if (p.brand) brands.add(p.brand); });
                 options = Array.from(brands).map(b => ({ value: b, label: b }));
-            } else if (filterType === 'discount') {
+            }
+        }
+    }
+    else if (filterType === 'discount') {
+        if (targetId) {
+            const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
+            const data = await res.json();
+            if (data.success && data.data.products) {
                 const discountSet = new Set();
-                currentProducts.forEach(p => {
+                data.data.products.forEach(p => {
                     if (p.price && p.final_price && parseFloat(p.price) > parseFloat(p.final_price)) {
                         discountSet.add(Math.round(((parseFloat(p.price) - parseFloat(p.final_price)) / parseFloat(p.price)) * 100));
                     }
                 });
                 options = Array.from(discountSet).sort((a, b) => a - b).map(d => ({ value: d, label: `${d}% & above` }));
             }
-            
-            if (options.length > 0) {
-                container.innerHTML = options.map(opt => `<label class="filter-checkbox"><input type="checkbox" class="filter-${filterType}" value="${opt.value}"> ${opt.label}</label>`).join('');
-            } else {
-                container.innerHTML = '<div style="padding: 20px; color: #999;">No options available</div>';
-            }
-            return;
-        }
-        
-        if (filterType === 'category') {
-            try {
-                const res = await fetch(`${API_BASE_URL}/categories`);
-                const data = await res.json();
-                if (data.success) {
-                    let targetCategory = null;
-                    if (categoryId) targetCategory = data.data.find(c => c.id == categoryId);
-                    else if (subcategoryId) targetCategory = data.data.find(c => c.children?.some(child => child.id == subcategoryId));
-                    if (targetCategory?.children?.length) {
-                        options = targetCategory.children.map(child => ({ value: child.id, label: child.name }));
-                    }
-                }
-            } catch (error) { console.error('Error loading categories:', error); }
-        }
-        
-        else if (filterType === 'price') {
-            const targetId = subcategoryId || categoryId;
-            if (targetId) {
-                const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
-                const data = await res.json();
-                if (data.success && data.data.products?.length) {
-                    const prices = data.data.products.map(p => parseFloat(p.final_price || p.price)).filter(p => !isNaN(p));
-                    const minPrice = Math.min(...prices);
-                    const maxPrice = Math.max(...prices);
-                    const step = 500;
-                    for (let start = Math.floor(minPrice / step) * step; start < maxPrice; start += step) {
-                        const end = start + step;
-                        options.push({ value: `${start}-${end}`, label: start === 0 ? `Below ₹${end}` : `₹${start} - ₹${end}` });
-                    }
-                    options.push({ value: `${maxPrice}-999999`, label: `Above ₹${maxPrice}` });
-                }
-            }
-        }
-        else if (filterType === 'brand') {
-            const targetId = subcategoryId || categoryId;
-            if (targetId) {
-                const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
-                const data = await res.json();
-                if (data.success && data.data.products) {
-                    const brands = new Set();
-                    data.data.products.forEach(p => { if (p.brand) brands.add(p.brand); });
-                    options = Array.from(brands).map(b => ({ value: b, label: b }));
-                }
-            }
-        }
-        else if (filterType === 'discount') {
-            const targetId = subcategoryId || categoryId;
-            if (targetId) {
-                const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
-                const data = await res.json();
-                if (data.success && data.data.products) {
-                    const discountSet = new Set();
-                    data.data.products.forEach(p => {
-                        if (p.price && p.final_price && parseFloat(p.price) > parseFloat(p.final_price)) {
-                            discountSet.add(Math.round(((parseFloat(p.price) - parseFloat(p.final_price)) / parseFloat(p.price)) * 100));
-                        }
-                    });
-                    options = Array.from(discountSet).sort((a, b) => a - b).map(d => ({ value: d, label: `${d}% & above` }));
-                }
-            }
-        } else if (filterType === 'size') {
-            const targetId = subcategoryId || categoryId;
-            if (targetId) {
-                const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
-                const data = await res.json();
-                if (data.success && data.data.products) {
-                    const sizeSet = new Set();
-                    data.data.products.forEach(product => {
-                        if (Array.isArray(product.variants)) {
-                            product.variants.forEach(variant => {
-                                if (variant?.variant_type?.toLowerCase() === 'size' && variant.variant_value) {
-                                    sizeSet.add(String(variant.variant_value).trim());
-                                }
-                            });
-                        }
-                    });
-                    options = Array.from(sizeSet).filter(v => v).sort((a, b) => a.localeCompare(b)).map(size => ({ value: size, label: size }));
-                }
-            }
-        } else if (filterType === 'color') {
-            options = ['Red', 'Blue', 'Green', 'Black', 'White', 'Pink', 'Yellow', 'Purple'].map(c => ({ value: c, label: c }));
-        } else if (filterType === 'fabric') {
-            options = ['Cotton', 'Polyester', 'Linen', 'Denim', 'Silk', 'Wool', 'Nylon'].map(f => ({ value: f, label: f }));
-        } else if (filterType === 'occasion') {
-            options = ['Casual', 'Formal', 'Party', 'Wedding', 'Sports', 'Travel'].map(o => ({ value: o, label: o }));
-        } else if (filterType === 'rating') {
-            options = ['4★', '3★', '2★', '1★'].map(r => ({ value: r, label: `${r} & above` }));
-        }
-        
-        if (options.length > 0) {
-            container.innerHTML = options.map(opt => `<label class="filter-checkbox"><input type="checkbox" class="filter-${filterType}" value="${opt.value}"> ${opt.label}</label>`).join('');
-        } else {
-            container.innerHTML = '<div style="padding: 20px; color: #999;">No options available</div>';
         }
     }
+    else if (filterType === 'size') {
+        if (targetId) {
+            const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
+            const data = await res.json();
+            if (data.success && data.data.products) {
+                const sizeSet = new Set();
+                data.data.products.forEach(product => {
+                    if (Array.isArray(product.variants)) {
+                        product.variants.forEach(variant => {
+                            if (variant && variant.variant_type && variant.variant_type.toLowerCase() === 'size' && variant.variant_value) {
+                                sizeSet.add(String(variant.variant_value).trim());
+                            }
+                        });
+                    }
+                });
+                options = Array.from(sizeSet).filter(v => v).sort((a, b) => a.localeCompare(b)).map(size => ({ value: size, label: size }));
+            }
+        }
+    }
+    else if (filterType === 'color') {
+        if (targetId) {
+            const colorSet = new Set();
+            const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
+            const data = await res.json();
+            if (data.success && data.data.products) {
+                data.data.products.forEach(product => {
+                    if (Array.isArray(product.variants)) {
+                        product.variants.forEach(variant => {
+                            if (variant && variant.variant_type && variant.variant_type.toLowerCase() === 'color' && variant.variant_value) {
+                                colorSet.add(String(variant.variant_value).trim());
+                            }
+                        });
+                    }
+                    if (product.color) colorSet.add(product.color);
+                });
+            }
+            options = Array.from(colorSet).filter(v => v).sort().map(color => ({ value: color, label: color }));
+        }
+        if (options.length === 0) {
+            options = ['Red', 'Blue', 'Green', 'Black', 'White', 'Pink', 'Yellow', 'Purple'].map(c => ({ value: c, label: c }));
+        }
+    }
+    else if (filterType === 'fabric') {
+        if (targetId) {
+            const fabricSet = new Set();
+            const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
+            const data = await res.json();
+            if (data.success && data.data.products) {
+                data.data.products.forEach(product => {
+                    if (product.fabric) fabricSet.add(product.fabric);
+                });
+            }
+            options = Array.from(fabricSet).filter(v => v).sort().map(fabric => ({ value: fabric, label: fabric }));
+        }
+        if (options.length === 0) {
+            options = ['Cotton', 'Polyester', 'Linen', 'Denim', 'Silk', 'Wool', 'Nylon'].map(f => ({ value: f, label: f }));
+        }
+    }
+    else if (filterType === 'occasion') {
+        if (targetId) {
+            const occasionSet = new Set();
+            const res = await fetch(`${API_BASE_URL}/categories/${targetId}/products`);
+            const data = await res.json();
+            if (data.success && data.data.products) {
+                data.data.products.forEach(product => {
+                    if (product.occasion) occasionSet.add(product.occasion);
+                });
+            }
+            options = Array.from(occasionSet).filter(v => v).sort().map(occasion => ({ value: occasion, label: occasion }));
+        }
+        if (options.length === 0) {
+            options = ['Casual', 'Formal', 'Party', 'Wedding', 'Sports', 'Travel'].map(o => ({ value: o, label: o }));
+        }
+    }
+    else if (filterType === 'rating') {
+        options = ['4★', '3★', '2★', '1★'].map(r => ({ value: r, label: `${r} & above` }));
+    }
+    
+    if (options.length > 0) {
+        container.innerHTML = options.map(opt => `<label class="filter-checkbox"><input type="checkbox" class="filter-${filterType}" value="${opt.value}"> ${opt.label}</label>`).join('');
+    } else {
+        container.innerHTML = '<div style="padding: 20px; color: #999;">No options available</div>';
+    }
+}
 
     function applyOtherFilters(selected) {
         let filtered = [...currentProducts];
