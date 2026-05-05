@@ -105,6 +105,15 @@ Route::get('/order-confirmation/{orderId}', function ($orderId) {
 Route::get('/trends', function () {
     return view('mobile.trends');
 })->name('trends');
+Route::get('/terms', function () {
+    return view('pages.terms');
+});
+Route::get('/returns', function () {
+    return view('pages.returns');
+});
+Route::get('/privacy-policy', function () {
+    return view('pages.privacy');
+});
 /*
 |--------------------------------------------------------------------------
 | Logout

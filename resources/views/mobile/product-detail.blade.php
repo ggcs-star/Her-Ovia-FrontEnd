@@ -28,24 +28,17 @@
                 <nav class="nav-menu" id="productDesktopNavMenu"></nav>
             </div>
             <div class="search-area">
-                <div class="search-box" style="position:relative;">
-                    <input
-                        type="text"
-                        id="web-search-input"
-                        placeholder="Search for products, brands..."
-                        autocomplete="off"
-                    >
-
-                    <span id="clearBtn" class="clear-btn"></span>
-
-                    <div
-                        id="web-search-suggestions"
-                        class="web-search-suggestions"
-                        style="display:none;"
-                    ></div>
-
-                </div>
-            </div>
+    <div class="search-box" style="position:relative;">
+        <input type="text" id="web-search-input" placeholder="Search for " autocomplete="off" aria-label="Search products">
+        <button class="search-icon-btn" aria-label="Search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="10" cy="10" r="7"/>
+                <line x1="21" y1="21" x2="15" y2="15"/>
+            </svg>
+        </button>
+        <div id="web-search-suggestions" class="web-search-suggestions" style="display:none;"></div>
+    </div>
+</div>
             <div class="header-actions">
 
 <a href="javascript:void(0)" class="action-link" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }">        <svg class="header-icon"

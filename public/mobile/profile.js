@@ -234,6 +234,7 @@ function renderProfile(user) {
             
             <div class="menu-card">
                 <h3>Customer Care</h3>
+                <!--
                 <div class="menu-item" onclick="return false;">
                     <span>How To Return</span>
                     <span class="menu-arrow">›</span>
@@ -242,34 +243,34 @@ function renderProfile(user) {
                     <span>How Do I Redeem My Coupon?</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="return false;">
+                    -->
+                <a href="/terms" class="menu-item" style="text-decoration: none; color: inherit; display: flex; justify-content: space-between; align-items: center;">
                     <span>Terms & Conditions</span>
                     <span class="menu-arrow">›</span>
-                </div>
+                </a>
+                <a href="/returns" class="menu-item" style="text-decoration: none; color: inherit; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Returns & Refund Policy</span>
+                    <span class="menu-arrow">›</span>
+                </a>
+                <a href="/privacy-policy" class="menu-item" style="text-decoration: none; color: inherit; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Privacy Policy</span>
+                    <span class="menu-arrow">›</span>
+                </a>
+                
                 <div class="menu-item" onclick="return false;">
-                    <span>Promotions Terms & Conditions</span>
+                    <span>Shipping Policy</span>
                     <span class="menu-arrow">›</span>
                 </div>
                 <div class="menu-item" onclick="return false;">
-                    <span>Returns & Refunds Policy</span>
+                    <span>Cancellation & Return Policy</span>
                     <span class="menu-arrow">›</span>
                 </div>
+                
                 <div class="menu-item" onclick="return false;">
-                    <span>We Respect Your Privacy</span>
+                    <span>FAQ</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="return false;">
-                    <span>Fees & Payments</span>
-                    <span class="menu-arrow">›</span>
-                </div>
-                <div class="menu-item" onclick="return false;">
-                    <span>Who We Are</span>
-                    <span class="menu-arrow">›</span>
-                </div>
-                <div class="menu-item" onclick="return false;">
-                    <span>Join Our Team</span>
-                    <span class="menu-arrow">›</span>
-                </div>
+                
                 <div class="menu-item logout-btn" onclick="handleLogout()">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>

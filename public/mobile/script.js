@@ -1,5 +1,10 @@
 window.S3_BASE_URL = 'https://inventorydata-s3-bucket.s3.amazonaws.com/';
 window.API_BASE_URL = window.API_BASE_URL;
+
+if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
+    console.log = console.debug = console.info = console.warn = function() {};
+}
+
 const APP_CONFIG = {
     ENDPOINTS: {
         CATEGORIES: `${API_BASE_URL}/categories`,
@@ -23,6 +28,7 @@ class RapidRetailsEngine {
         this.autoScrollTimer = null;
         this.scrollTimeout = null;
         this.styleResizeTimer = null;
+        this.apiCache = new Map();
     }
 
     async init() {
@@ -41,19 +47,10 @@ class RapidRetailsEngine {
                     this.renderPromotionalBanners();  
                     this.renderHeroSlider();
                     this.renderStyleSpotlight();
-                    this.renderBrandsGrid();
                 }
                 this.renderHeader();
             }, 250);
         });
-        
-        let lastWidth = window.innerWidth;
-        setInterval(() => {
-            if (lastWidth !== window.innerWidth) {
-                lastWidth = window.innerWidth;
-                this.renderHeader();
-            }
-        }, 100);
     }
 
     getProductPrice(product) {
@@ -64,6 +61,27 @@ class RapidRetailsEngine {
 
     getBannerImage(banner, isMobile) {
         return isMobile ? (banner.mobile_image || banner.image) : (banner.image || banner.mobile_image);
+    }
+
+    resolveImage(path) {
+        if (!path) return APP_CONFIG.FALLBACK_IMAGE;
+        if (path.startsWith('http')) return path;
+        if (!path.includes('amazonaws.com')) return S3_BASE_URL + path;
+        return path;
+    }
+
+    applyAppSettings() {
+        if (!this.appSettings) return;
+        
+        const headerLogo = document.getElementById('site-logo');
+        if (headerLogo && this.appSettings.header_logo) {
+            headerLogo.src = this.appSettings.header_logo;
+            headerLogo.onerror = function () {
+                this.src = 'https://placehold.co/120x40?text=LOGO';
+            };
+        }
+        
+        if (this.appSettings.app_name) document.title = this.appSettings.app_name;
     }
 
     renderHeader() {
@@ -105,7 +123,13 @@ class RapidRetailsEngine {
                         </div>
                         <div class="search-area">
                             <div class="search-box" style="position:relative;">
-                                <input type="text" id="web-search-input" placeholder="Search for products, brands..." autocomplete="off">
+                                <input type="text" id="web-search-input" placeholder="Search for " autocomplete="off">
+                                <button class="search-icon-btn" aria-label="Search">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="10" cy="10" r="7"/>
+                                        <line x1="21" y1="21" x2="15" y2="15"/>
+                                    </svg>
+                                </button>
                                 <div id="web-search-suggestions" class="web-search-suggestions" style="display:none;"></div>
                             </div>
                         </div>
@@ -151,9 +175,11 @@ class RapidRetailsEngine {
             const isProfilePage = document.body.classList.contains('profile-page');
             const isOrdersPage = document.body.classList.contains('orders-page');
             const isWishlistPage = document.body.classList.contains('wishlist-page'); 
-            const isOrderConfirmationPage = document.body.classList.contains('order-confirmation-page'); 
-
-            const showBackButton = isCartPage || isCheckoutPage || isProfilePage || isOrdersPage || isWishlistPage || isOrderConfirmationPage;
+            const isOrderConfirmationPage = document.body.classList.contains('order-confirmation-page');
+            const isTermsPage = document.body.classList.contains('terms-page') || window.location.pathname === '/terms';
+            const isReturnsPage = document.body.classList.contains('returns-page') || window.location.pathname === '/returns';
+            const isPrivacyPage = document.body.classList.contains('privacy-page') || window.location.pathname === '/privacy-policy';
+            const showBackButton = isCartPage || isCheckoutPage || isProfilePage || isOrdersPage || isWishlistPage || isOrderConfirmationPage || isTermsPage || isReturnsPage || isPrivacyPage;
             
             header.innerHTML = `
                 <div class="container">
@@ -212,10 +238,18 @@ class RapidRetailsEngine {
             }
             
             let timer;
+            let currentController = null;
             
             const fetchAndShowSuggestions = async (q) => {
+                if (currentController) {
+                    currentController.abort();
+                }
+                currentController = new AbortController();
+                
                 try {
-                    const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`);
+                    const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`, {
+                        signal: currentController.signal
+                    });
                     const data = await res.json();
                     if (!data.success) return;
                     
@@ -233,7 +267,7 @@ class RapidRetailsEngine {
                     suggestionsBox.innerHTML = html;
                     suggestionsBox.style.display = "block";
                 } catch (err) {
-                    console.log(err);
+                    if (err.name !== 'AbortError') console.log(err);
                 }
             };
             
@@ -371,24 +405,6 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
                 </div>
                 <span>Home</span>
             </a>
-        <!--
-            <a href="/trends" class="nav-item-figma ${activePage === 'trends' ? 'active' : ''}">
-                <div class="nav-icon-box">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
-                        <line x1="7" y1="2" x2="7" y2="22"/>
-                        <line x1="17" y1="2" x2="17" y2="22"/>
-                        <line x1="2" y1="12" x2="22" y2="12"/>
-                        <line x1="2" y1="7" x2="7" y2="7"/>
-                        <line x1="2" y1="17" x2="7" y2="17"/>
-                        <line x1="17" y1="17" x2="22" y2="17"/>
-                        <line x1="17" y1="7" x2="22" y2="7"/>
-                    </svg>
-                </div>
-                <span>Trends</span>
-            </a>
-        --!>
-
             <a href="/categories" class="nav-item-figma ${activePage === 'all-categories' ? 'active' : ''}">
                 <div class="nav-icon-box">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -437,12 +453,9 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         if (this.isLoggedIn) await this.fetchUserCategoryOrder();
         
         await this.renderHeroSlider();
-        // await this.renderCategoryPills();
         await this.renderTrending();
         await this.renderPromotionalBanners();
         await this.renderStyleSpotlight();
-        // await this.renderBrandsMarquee();
-        // await this.renderBrandsGrid();
         await this.renderDynamicCategorySections();
         
         await this.loadTrendingReels();
@@ -499,7 +512,7 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
             const bannerImage = this.getBannerImage(b, isMobile);
             
             return `<div class="slide ${i === 0 ? 'active' : ''}">
-                <img src="${this.resolveImage(bannerImage)}" class="slide-img-figma" alt="${b.title || 'Banner'}">
+                <img src="${this.resolveImage(bannerImage)}" class="slide-img-figma" alt="${b.title || 'Banner'}" loading="${i === 0 ? 'eager' : 'lazy'}" fetchpriority="${i === 0 ? 'high' : 'auto'}">
                 ${hasText ? `<div class="slide-content-figma">
                     <h1>${b.title || ''}</h1>
                     <p>${b.subtitle || ''}</p>
@@ -554,64 +567,6 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         }
     }
 
-    applyAppSettings() {
-        if (!this.appSettings) return;
-        
-        const headerLogo = document.getElementById('site-logo');
-        if (headerLogo && this.appSettings.header_logo) {
-            headerLogo.src = this.appSettings.header_logo;
-            headerLogo.onerror = function () {
-                this.src = 'https://placehold.co/120x40?text=LOGO';
-            };
-        }
-        
-        if (this.appSettings.app_name) document.title = this.appSettings.app_name;
-    }
-
-    // async renderCategoryPills() {
-    //     const container = document.getElementById('categories-pills');
-    //     if (!container) return;
-
-    //     const categoriesToShow = (this.isLoggedIn && this.userCategories.length > 0) ? this.userCategories : this.allCategories;
-    //     if (!categoriesToShow.length) return;
-
-    //     let categoriesHtml = `<div class="pill-item" onclick="window.location.href='/categories'">
-    //         <div class="pill-img-wrap all-categories-pill">
-    //             <img src="https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=100&h=100&fit=crop" 
-    //                  style="width:100%; height:100%; object-fit:cover; border-radius:50%;"
-    //                  onerror="this.src='https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=100&h=100&fit=crop'">
-    //         </div>
-    //         <span>All Categories</span>
-    //     </div>`;
-        
-    //     categoriesHtml += categoriesToShow.map(cat => `
-    //         <div class="pill-item" onclick="redirectToSubcategory(${cat.id})">
-    //             <div class="pill-img-wrap">
-    //                 <img src="${this.resolveImage(cat.image_url)}" onerror="this.src='${APP_CONFIG.FALLBACK_IMAGE}'">
-    //             </div>
-    //             <span>${cat.name}</span>
-    //         </div>
-    //     `).join('');
-        
-    //     container.innerHTML = categoriesHtml;
-    // }
-
-    startTrendingAutoScroll(container) {
-        let scrollAmount = 0;
-        const step = 1;
-        const interval = 30;
-        
-        setInterval(() => {
-            if (container.scrollLeft >= (container.scrollWidth - container.clientWidth)) {
-                container.scrollLeft = 0;
-                scrollAmount = 0;
-            } else {
-                container.scrollLeft += step;
-                scrollAmount += step;
-            }
-        }, interval);
-    }
-
     async renderPromotionalBanners() {
     const banners = this.allBanners.filter(b => b.position === 'mid');
     const container1 = document.getElementById('mid-banner-1-container');
@@ -626,7 +581,7 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         const hasText = b.title || b.subtitle || b.button_text;
         return `
             <div style="position: relative; border-radius: 16px; overflow: hidden; background: #f5f5f5; height: 100%;">
-                <img src="${this.resolveImage(bannerImage)}" style="width: 100%; height: auto; display: block;">
+                <img src="${this.resolveImage(bannerImage)}" style="width: 100%; height: auto; display: block;" loading="lazy">
                 ${hasText ? `
                     <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); padding: 20px; color: white;">
                         ${b.title ? `<h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">${b.title}</h3>` : ''}
@@ -746,7 +701,7 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
             body.innerHTML = category.children.map(child => `
                 <div class="subcategory-card" onclick="window.location.href='/products?subcategory=${child.id}'">
                     <div class="subcategory-image">
-                        <img src="${child.image_url || fallbackImage}" onerror="this.src='${fallbackImage}'" alt="${child.name}">
+                        <img src="${child.image_url || fallbackImage}" onerror="this.src='${fallbackImage}'" alt="${child.name}" loading="lazy">
                     </div>
                     <div class="subcategory-name">${child.name}</div>
                 </div>
@@ -776,7 +731,6 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
     const container = document.getElementById('trending-slider');
     if (!container) return;
 
-    // Categories ki API call
     let categories = [];
     if (this.allCategories && this.allCategories.length > 0) {
         categories = this.allCategories.slice(0, 5);
@@ -811,7 +765,7 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
                 <span class="shop-now-link">SHOP NOW</span>
             </div>
             <div class="trending-img-wrap">
-                <img src="${imageUrl}" alt="${categoryName}">
+                <img src="${imageUrl}" alt="${categoryName}" loading="lazy" width="85" height="85" decoding="async">
             </div>
         </div>`;
     }).join('');
@@ -825,8 +779,8 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         const slider = container;
         let isPaused = false;
         let resetting = false;
-        const scrollSpeed = 1;
-        const intervalTime = 30;
+        const scrollSpeed = 0.8;
+        const intervalTime = 40;
         
         slider.addEventListener('mouseenter', () => { isPaused = true; slider.classList.remove('scrolling'); });
         slider.addEventListener('mouseleave', () => { isPaused = false; });
@@ -882,7 +836,7 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
     const itemsHtml = displayItems.map(item => {
         const brand = item.brand || 'Premium Brand';
         const name = item.name || 'Fashion Item';
-        const rating = item.rating || (4 + Math.random()).toFixed(1);
+        const rating = item.rating || '4.5';
         const current = this.getProductPrice(item);
         
         const old = item.mrp || item.original_price || item.price || current;
@@ -890,8 +844,16 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         
         return `<div class="spotlight-card" onclick="window.location.href='/product/${item.slug || '#'}'">
             <div class="spotlight-card-img">
-                <img src="${this.resolveImage(item.image_url)}" onerror="this.src='${APP_CONFIG.FALLBACK_IMAGE}'">
-                <div class="rating-badge">★ <span>${rating}</span></div>
+                <img src="${this.resolveImage(item.image_url)}" 
+                    data-main="${this.resolveImage(item.image_url)}"
+                    onmouseenter="loadHoverImage(this, '${item.slug}')"
+                    onmouseleave="this.src=this.dataset.main"
+                    onerror="this.src='${APP_CONFIG.FALLBACK_IMAGE}'" 
+                    loading="lazy" 
+                    width="200" 
+                    height="200" 
+                    decoding="async"> 
+                 <div class="rating-badge">★ <span>${rating}</span></div>
             </div>
             <div class="spotlight-card-info">
                 <div class="card-brand">${brand}</div>
@@ -922,173 +884,10 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
     </div>`;
 }
 
-    async renderBrandsMarquee() {
-        const container = document.getElementById('brands-marquee-container');
-        if (!container || !this.allCategories.length) return;
-
-        const names = this.allCategories.map(c => c.name.toUpperCase());
-        const marqueeText = names.map(name => `<span>${name} ON SALE</span>`).join('');
-        
-        container.innerHTML = `<div class="brands-marquee"><div class="marquee-content">${marqueeText}${marqueeText}${marqueeText}${marqueeText}</div></div>`;
-    }
-
-    async renderBrandsGrid() {
-        const container = document.getElementById('brands-grid');
-        if (!container) return;
-
-        let brandNames = [];
-        if (this.allCategories && this.allCategories.length > 0) {
-            brandNames = this.allCategories.map(c => c.name.toUpperCase());
-        } else {
-            brandNames = ["JEWELLERY", "ELECTRONICS", "MEN'S SHAVING", "WESTERN WEAR", "BEAUTY", "SPORTS"];
-        }
-
-        const isDesktop = window.innerWidth >= 1025;
-        const maxBrands = isDesktop ? 4 : 6;
-        const displayBrands = brandNames.slice(0, maxBrands);
-
-        container.innerHTML = displayBrands.map(brand => `
-            <div class="brand-card-figma" onclick="window.location.href='/category/${brand.toLowerCase().replace(/\s+/g, '-')}'">
-                <h4>${brand}</h4>
-                <p>Up to 50% Off</p>
-            </div>
-        `).join('');
-
-        console.log("Brands Grid rendered:", displayBrands);
-    }
-
-    // async renderDynamicCategorySections() {
-    //     const container = document.getElementById('dynamic-category-sections');
-    //     if (!container || !this.allCategories.length) return;
-
-    //     container.innerHTML = '';
-        
-    //     const MAX_SECTIONS = 4;
-    //     const MAX_PRODUCTS = 8;
-    //     let sectionsAdded = 0;
-    //     let sectionsHtml = [];
-        
-    //     for (let i = 0; i < this.allCategories.length && sectionsAdded < MAX_SECTIONS; i++) {
-    //         const category = this.allCategories[i];
-    //         if (category.children && category.children.length > 0) {
-    //             const firstSubcategory = category.children[0];
-                
-    //             try {
-    //                 const res = await fetch(APP_CONFIG.ENDPOINTS.CATEGORY_PRODUCTS(firstSubcategory.id));
-    //                 const data = await res.json();
-                    
-    //                 if (data.success && data.data && data.data.products && data.data.products.length > 0) {
-    //                     const products = data.data.products.slice(0, MAX_PRODUCTS);
-    //                     const sectionId = `dual-scroll-${sectionsAdded}`;
-                        
-    //                     const sectionHtml = `<div class="landscape-dual-section">
-    //                         <div class="container">
-    //                             <div class="landscape-dual-box">
-    //                                 <div class="landscape-dual-left">
-    //                                     <img src="${this.resolveImage(firstSubcategory.image_url || category.image_url)}" alt="${firstSubcategory.name}">
-    //                                     <div class="landscape-dual-overlay">
-    //                                         <h3>${firstSubcategory.name}</h3>
-    //                                         <a href="/products?subcategory=${firstSubcategory.id}" class="landscape-dual-btn">SHOP NOW →</a>
-    //                                     </div>
-    //                                 </div>
-    //                                 <div class="landscape-dual-right">
-    //                                     <div class="landscape-dual-scroll" id="${sectionId}">
-    //                                         ${products.map(p => `<div class="landscape-dual-card" onclick="window.location.href='/product/${p.slug}'">
-    //                                             <div class="landscape-dual-img">
-    //                                                 <img src="${this.resolveImage(p.image_url)}" alt="${p.name}">
-    //                                             </div>
-    //                                             <div class="landscape-dual-name">${p.name.length > 22 ? p.name.substring(0, 22) + '...' : p.name}</div>
-    //                                             <div class="landscape-dual-price">₹${this.getProductPrice(p)}</div>
-    //                                         </div>`).join('')}
-    //                                     </div>
-    //                                     <div class="landscape-dual-bottom">
-    //                                         <div class="landscape-dual-nav">
-    //                                             <button class="landscape-nav-btn prev-btn" data-scroll="${sectionId}">◀</button>
-    //                                             <button class="landscape-nav-btn next-btn" data-scroll="${sectionId}">▶</button>
-    //                                         </div>
-    //                                         <a href="/products?subcategory=${firstSubcategory.id}" class="landscape-viewall">View All →</a>
-    //                                     </div>
-    //                                 </div>
-    //                             </div>
-    //                         </div>
-    //                     </div>`;
-                        
-    //                     sectionsHtml.push(sectionHtml);
-    //                     sectionsAdded++;
-    //                 }
-    //             } catch (error) {
-    //                 console.error('Error fetching products for subcategory:', error);
-    //             }
-    //         }
-    //     }
-        
-    //     let finalHtml = '';
-    //     for (let i = 0; i < sectionsHtml.length; i++) {
-    //         finalHtml += sectionsHtml[i];
-    //         if (i === 1) {
-    //             finalHtml += `<section class="trending-reels-section web-only" id="trending-reels-section">
-    //                 <div class="container">
-    //                     <div class="section-header centered">
-    //                         <h2 class="section-title">Trending Reels</h2>
-    //                     </div>
-    //                     <div class="reels-container">
-    //                         <div class="reels-slider-wrapper">
-    //                             <button class="reels-nav reels-prev">◀</button>
-    //                             <div class="reels-slider" id="reels-slider"></div>
-    //                             <button class="reels-nav reels-next">▶</button>
-    //                         </div>
-    //                     </div>
-    //                 </div>
-    //             </section>`;
-    //         }
-    //         if (i === 2) {
-    //             finalHtml += `<section class="section-container"><div class="container"><div id="brands-grid" class="brands-grid-figma"></div></div></section>`;
-    //         }
-    //     }
-        
-    //     container.innerHTML = finalHtml;
-        
-    //     const handlePrevClick = (btn) => {
-    //         const scrollId = btn.dataset.scroll;
-    //         const container = document.getElementById(scrollId);
-    //         const cards = container.querySelectorAll('.landscape-dual-card');
-    //         if (cards.length > 4) {
-    //             for(let i = 0; i < 2; i++) {
-    //                 const lastCard = cards[cards.length - 1];
-    //                 container.insertBefore(lastCard, cards[0]);
-    //             }
-    //         }
-    //     };
-        
-    //     const handleNextClick = (btn) => {
-    //         const scrollId = btn.dataset.scroll;
-    //         const container = document.getElementById(scrollId);
-    //         const cards = container.querySelectorAll('.landscape-dual-card');
-    //         if (cards.length > 4) {
-    //             for(let i = 0; i < 2; i++) {
-    //                 const firstCard = cards[0];
-    //                 container.appendChild(firstCard);
-    //             }
-    //         }
-    //     };
-        
-    //     document.querySelectorAll('.prev-btn').forEach(btn => {
-    //         btn.addEventListener('click', () => handlePrevClick(btn));
-    //     });
-        
-    //     document.querySelectorAll('.next-btn').forEach(btn => {
-    //         btn.addEventListener('click', () => handleNextClick(btn));
-    //     });
-        
-    //     this.loadTrendingReels();
-    //     await this.renderBrandsGrid();
-    // }
-
     async renderDynamicCategorySections() {
     const container = document.getElementById('dynamic-category-sections');
     if (!container) return;
 
-    // ✅ SIRF REELS SECTION
     container.innerHTML = `
         <section class="trending-reels-section web-only" id="trending-reels-section">
             <div class="container">
@@ -1106,7 +905,6 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         </section>
     `;
     
-    // ✅ REELS LOAD
     this.loadTrendingReels();
 }
     async loadTrendingReels() {
@@ -1147,63 +945,6 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
             return cards;
         };
         
-        const handleTrackClick = (e) => {
-            const playBtn = e.target.closest('.play-pause-btn');
-            if (playBtn) {
-                e.stopPropagation();
-                const wrapper = playBtn.closest('.reel-video-wrapper');
-                const video = wrapper?.querySelector('.reel-video');
-                if (video) {
-                    if (video.paused) {
-                        video.play();
-                        playBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-                    } else {
-                        video.pause();
-                        playBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>`;
-                    }
-                }
-                return;
-            }
-            
-            const soundBtn = e.target.closest('.sound-btn');
-            if (soundBtn) {
-                e.stopPropagation();
-                const wrapper = soundBtn.closest('.reel-video-wrapper');
-                const video = wrapper?.querySelector('.reel-video');
-                if (video) {
-                    video.muted = !video.muted;
-                    soundBtn.innerHTML = video.muted 
-                        ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`
-                        : `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>`;
-                }
-                return;
-            }
-            
-            const playOverlayBtn = e.target.closest('.play-reel-btn');
-            if (playOverlayBtn) {
-                e.stopPropagation();
-                const wrapper = playOverlayBtn.closest('.reel-video-wrapper');
-                const video = wrapper?.querySelector('.reel-video');
-                const playPauseBtn = wrapper?.querySelector('.play-pause-btn');
-                if (video && playPauseBtn) {
-                    if (video.paused) {
-                        video.play();
-                        playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-                    } else {
-                        video.pause();
-                        playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>`;
-                    }
-                }
-                return;
-            }
-            
-            const card = e.target.closest('.reel-card');
-            if (card && !e.target.closest('button')) {
-                const slug = card.dataset.slug;
-                if (slug) window.location.href = '/product/' + slug;
-            }
-        };
-        
         const updateSlider = () => {
             const visibleCards = getVisibleCards();
             let html = '';
@@ -1237,15 +978,20 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
             });
             
             slider.innerHTML = `<div class="reels-track" style="display: flex; justify-content: center; align-items: center; gap: 20px;">${html}</div>`;
-            
-            const track = document.querySelector('.reels-track');
-            if (track) {
-                track.removeEventListener('click', handleTrackClick);
-                track.addEventListener('click', handleTrackClick);
-            }
+            this.attachReelVideoEvents();
         };
         
         updateSlider();
+        
+        const handlePrevClick = () => {
+            currentIndex = (currentIndex - 1 + reels.length) % reels.length;
+            updateSlider();
+        };
+        
+        const handleNextClick = () => {
+            currentIndex = (currentIndex + 1) % reels.length;
+            updateSlider();
+        };
         
         const prevBtn = document.querySelector('.reels-prev');
         const nextBtn = document.querySelector('.reels-next');
@@ -1253,80 +999,67 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         if (prevBtn) {
             const newPrev = prevBtn.cloneNode(true);
             prevBtn.parentNode.replaceChild(newPrev, prevBtn);
-            newPrev.onclick = (e) => {
-                e.stopPropagation();
-                currentIndex = (currentIndex - 1 + reels.length) % reels.length;
-                updateSlider();
-            };
+            newPrev.onclick = handlePrevClick;
         }
         
         if (nextBtn) {
             const newNext = nextBtn.cloneNode(true);
             nextBtn.parentNode.replaceChild(newNext, nextBtn);
-            newNext.onclick = (e) => {
-                e.stopPropagation();
-                currentIndex = (currentIndex + 1) % reels.length;
-                updateSlider();
-            };
+            newNext.onclick = handleNextClick;
         }
-    }
-
-    initReelEvents(reels, currentIndex, updateSlider) {
-        const prevBtn = document.querySelector('.reels-prev');
-        const nextBtn = document.querySelector('.reels-next');
-        
-        let currentIdx = currentIndex;
-        
-        const update = () => {
-            let html = '';
-            for (let i = 0; i < reels.length; i++) {
-                const reel = reels[i];
-                const isCenter = (i === currentIdx);
-                const videoUrl = reel.video ? `https://inventorydata-s3-bucket.s3.amazonaws.com/${reel.video}` : '';
-                html += `<div class="reel-card ${isCenter ? 'center' : 'normal'}" data-index="${i}">
-                    <div class="reel-video-wrapper">
-                        ${videoUrl ? `<video class="reel-video" muted loop preload="metadata">
-                            <source src="${videoUrl}" type="video/mp4">
-                        </video>
-                        <div class="play-overlay">
-                            <button class="play-reel-btn">▶</button>
-                        </div>` : `<div class="reel-placeholder">${reel.title || 'Reel'}</div>`}
-                    </div>
-                    <div class="reel-info">
-                        <div class="reel-title">${reel.title || ''}</div>
-                    </div>
-                </div>`;
-            }
-            const slider = document.getElementById('reels-slider');
-            if (slider) {
-                slider.innerHTML = `<div class="reels-track" style="display: flex; justify-content: center; align-items: center; gap: 20px;">${html}</div>`;
-            }
-            this.attachReelVideoEvents();
-        };
-        
-        if (prevBtn) prevBtn.onclick = () => { if (currentIdx > 0) { currentIdx--; update(); } };
-        if (nextBtn) nextBtn.onclick = () => { if (currentIdx < reels.length - 1) { currentIdx++; update(); } };
     }
 
     attachReelVideoEvents() {
         document.querySelectorAll('.reel-card').forEach(card => {
             const video = card.querySelector('.reel-video');
             const playBtn = card.querySelector('.play-reel-btn');
+            const playPauseBtn = card.querySelector('.play-pause-btn');
+            const soundBtn = card.querySelector('.sound-btn');
+            
             if (video && playBtn) {
                 card.onmouseenter = () => video.play();
                 card.onmouseleave = () => { video.pause(); video.currentTime = 0; };
+                
                 playBtn.onclick = (e) => {
                     e.stopPropagation();
-                    if (video.paused) video.play();
-                    else video.pause();
+                    if (video.paused) {
+                        video.play();
+                        if (playPauseBtn) playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+                    } else {
+                        video.pause();
+                        if (playPauseBtn) playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>`;
+                    }
                 };
+                
+                if (playPauseBtn) {
+                    playPauseBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        if (video.paused) {
+                            video.play();
+                            playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+                        } else {
+                            video.pause();
+                            playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>`;
+                        }
+                    };
+                }
+                
+                if (soundBtn) {
+                    soundBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        video.muted = !video.muted;
+                        soundBtn.innerHTML = video.muted 
+                            ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`
+                            : `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>`;
+                    };
+                }
             }
         });
     }
 
     genCircularItem(p) {
         return `<div class="circular-item" onclick="window.location.href='/product/${p.slug}'">
-            <div class="circular-img-wrap"><img src="${this.resolveImage(p.image_url)}"></div>
+            <div class="circular-img-wrap"><img src="${this.resolveImage(p.image_url)}" loading="lazy" width="110" height="110" decoding="async" alt="${p.name}"></div>
             <h4>${p.name}</h4>
             <p>₹${this.getProductPrice(p)}</p>
         </div>`;
@@ -1335,7 +1068,7 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
     genProductCard(p) {
         return `<div class="product-card-horizontal" onclick="window.location.href='/product/${p.slug}'">
             <div class="product-image-wrapper">
-                <img src="${this.resolveImage(p.image_url)}" alt="${p.name}">
+                <img src="${this.resolveImage(p.image_url)}" alt="${p.name}" loading="lazy" width="160" height="160" decoding="async">
                 <div class="product-rating">⭐ ${p.rating || '4.5'}</div>
             </div>
             <div class="product-info">
@@ -1347,19 +1080,6 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
             </div>
         </div>`;
     }
-
-    resolveImage(path) {
-        if (!path) return APP_CONFIG.FALLBACK_IMAGE;
-        if (path.startsWith('http')) return path;
-        if (!path.includes('amazonaws.com')) return S3_BASE_URL + path;
-        return path;
-    }
-
-    setupCoreEvents() {}
-    updateAuthUI() {}
-    async initAllCategories() {}
-    async initCategoryDetail() {}
-    async initProductDetail() {}
 }
 
 function redirectToSubcategory(categoryId) {
@@ -1508,3 +1228,66 @@ function setupReelRedirect() {
         };
     });
 }
+// Dynamic search placeholder - Fetches categories on every page load
+(function() {
+    let categories = ['Necklace', 'Earrings', 'Maang Tikka', 'Bridal Sets', 'Bangles'];
+    let index = 0;
+    let intervalId = null;
+    
+    function startRotation(input) {
+        if (intervalId) clearInterval(intervalId);
+        intervalId = setInterval(function() {
+            if (input && categories.length > 0) {
+                input.placeholder = 'Search for ' + categories[index];
+                index = (index + 1) % categories.length;
+            }
+        }, 3000);
+    }
+    
+    async function fetchAndRotate() {
+        const input = document.getElementById('web-search-input');
+        if (!input) {
+            setTimeout(fetchAndRotate, 500);
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/categories`);
+            const data = await response.json();
+            if (data.success && data.data && data.data.length > 0) {
+                categories = data.data.map(cat => cat.name);
+            }
+        } catch(e) {
+            // Using fallback categories
+        }
+        
+        // Immediately set first placeholder
+        input.placeholder = 'Search for ' + categories[0];
+        // Start rotation
+        startRotation(input);
+    }
+    
+    fetchAndRotate();
+})();
+window.loadHoverImage = async function(imgElement, slug) {
+    if (imgElement.dataset.loading === 'true') return;
+    imgElement.dataset.loading = 'true';
+    try {
+        const response = await fetch(`${API_BASE_URL}/products/${slug}`);
+        const data = await response.json();
+        if (data.success && data.data) {
+            const galleryImages = data.data.gallery_images || [];
+            let hoverImage = galleryImages[1] || galleryImages[0];
+            if (hoverImage && hoverImage !== imgElement.dataset.main) {
+                const tempImg = new Image();
+                tempImg.src = hoverImage;
+                tempImg.onload = () => {
+                    imgElement.src = hoverImage;
+                };
+            }
+        }
+    } catch (error) { console.error(error); }
+    finally { 
+        imgElement.dataset.loading = 'false';
+    }
+};

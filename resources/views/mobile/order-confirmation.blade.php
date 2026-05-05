@@ -1140,10 +1140,9 @@
         
         .search-area {
             flex: 1;
-            max-width: 350px;
+            max-width: 550px;
             margin: 0 20px;
         }
-        
         .search-box {
             display: flex;
             background: #f5f5f5;
@@ -1310,8 +1309,8 @@
 
 .web-header .search-area {
     flex: 1;
-    max-width: 350px;
-    margin: 0;
+    max-width: 550px;
+    margin: 0 15px;
 }
 
 .web-header .search-box {
@@ -1577,7 +1576,6 @@
 body, .site-header, .web-header, .main-header, .header-container, .header-actions, .action-link, .nav-item, .search-wrapper input, .search-wrapper input::placeholder, .btn, .card-title, .product-name, .price-detail-row, .step-label-text, .order-id, .payment-badge, .order-total {
     font-family: 'Inter', sans-serif !important;
 }
-/* Order Confirmation Page - Categories Menu Fix */
 .order-app .web-header .nav-menu {
     gap: 12px !important;
 }
@@ -1617,6 +1615,39 @@ body, .site-header, .web-header, .main-header, .header-container, .header-action
     .order-app .web-header .nav-item {
         font-size: 10px !important;
     }
+}
+/* Fix header categories font size in order page */
+.order-app .web-header .nav-item {
+    font-size: 11px !important;
+    padding: 0 8px !important;
+    letter-spacing: 0.3px !important;
+}
+
+.order-app .web-header .nav-menu {
+    gap: 8px !important;
+}
+
+.order-app .web-header .logo-area {
+    gap: 20px !important;
+}
+
+.order-app .web-header .logo img {
+    height: 32px !important;
+}
+
+/* Search bar width increased */
+.order-app .web-header .search-area {
+    max-width: 500px !important;
+}
+
+.order-app .web-header .search-box input {
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+}
+
+/* Header spacing */
+.order-app .web-header .main-header {
+    padding: 10px 40px !important;
 }
     </style>
 </head>
@@ -1679,8 +1710,13 @@ function renderHeader() {
                                 </div>
                                 <div class="search-area">
                                     <div class="search-box" style="position:relative;">
-                                        <input type="text" placeholder="Search for products, brands..." id="web-search-input">
-                                        <span id="web-clear-btn" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; display:none; font-size:16px;"></span>
+                                        <input type="text" id="web-search-input" placeholder="Search for " autocomplete="off">
+                                        <button class="search-icon-btn" aria-label="Search" onclick="window.location.href='/search'">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="10" cy="10" r="7"/>
+                                                <line x1="21" y1="21" x2="15" y2="15"/>
+                                            </svg>
+                                        </button>
                                         <div id="web-search-suggestions" class="web-search-suggestions" style="display:none;"></div>
                                     </div>
                                 </div>
@@ -1926,10 +1962,8 @@ setTimeout(() => {
 function initWebSearchDropdown() {
     const input = document.getElementById("web-search-input");
     const box = document.getElementById("web-search-suggestions");
-    const clearBtn = document.getElementById("web-clear-btn");
 
     if (!input) {
-        console.log("Search input not found, retrying...");
         setTimeout(initWebSearchDropdown, 500);
         return;
     }
@@ -1937,12 +1971,8 @@ function initWebSearchDropdown() {
     let timer;
 
     input.addEventListener("input", function(e) {
-
         clearTimeout(timer);
-
         const q = e.target.value.trim();
-
-        clearBtn.style.display = q ? "block" : "none";
 
         if (q.length === 0) {
             box.style.display = "none";
@@ -1951,28 +1981,16 @@ function initWebSearchDropdown() {
         }
 
         timer = setTimeout(async () => {
-
             try {
-
-                const res = await fetch(
-                    `${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`
-                );
-
+                const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`);
                 const data = await res.json();
-
                 if (!data.success) return;
 
                 let html = "";
-
                 const products = data.data.products || [];
 
                 products.forEach(p => {
-                    html += `
-                        <div class="web-suggestion-item"
-                             onclick="window.location.href='/product/${p.slug}'">
-                             ${p.name}
-                        </div>
-                    `;
+                    html += `<div class="web-suggestion-item" onclick="window.location.href='/product/${p.slug}'">${p.name}</div>`;
                 });
 
                 if (html === "") {
@@ -1981,21 +1999,10 @@ function initWebSearchDropdown() {
 
                 box.innerHTML = html;
                 box.style.display = "block";
-
             } catch (err) {
                 console.log(err);
             }
-
         }, 200);
-
-    });
-
-    clearBtn.addEventListener("click", function() {
-        input.value = "";
-        box.style.display = "none";
-        box.innerHTML = "";
-        clearBtn.style.display = "none";
-        input.focus();
     });
 
     document.addEventListener("click", function(e) {
@@ -2003,9 +2010,7 @@ function initWebSearchDropdown() {
             box.style.display = "none";
         }
     });
-console.log("Web search dropdown initialized successfully");
 }
-
 setTimeout(() => {
     applyAppSettingsForOrderPage();
 }, 100);
@@ -2481,6 +2486,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 500);
 });
+// Dynamic search placeholder for order page
+setTimeout(function() {
+    const categories = ['Necklace', 'Earrings', 'Maang Tikka', 'Bridal Sets', 'Bangles'];
+    let index = 0;
+    const input = document.getElementById('web-search-input');
+    
+    if (input) {
+        setInterval(function() {
+            input.placeholder = 'Search for ' + categories[index];
+            index = (index + 1) % categories.length;
+        }, 3000);
+    }
+}, 2000);
     </script>
     @include('mobile.auth.auth')
 

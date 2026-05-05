@@ -976,3 +976,40 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         setTimeout(() => loadProductDesktopCategories(), 500);
     });
 })();
+// Dynamic search placeholder for all categories page
+setTimeout(function() {
+    let categories = ['Necklace', 'Earrings', 'Maang Tikka', 'Bridal Sets', 'Bangles'];
+    let index = 0;
+    let isRotating = false;
+    let intervalId = null;
+    const input = document.getElementById('web-search-input');
+    
+    if (!input) return;
+    
+    async function fetchCategories() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/categories`);
+            const data = await response.json();
+            if (data.success && data.data.length > 0) {
+                categories = data.data.map(cat => cat.name);
+                if (!isRotating) startRotation();
+            } else {
+                if (!isRotating) startRotation();
+            }
+        } catch(e) {
+            if (!isRotating) startRotation();
+        }
+    }
+    
+    function startRotation() {
+        if (isRotating) return;
+        isRotating = true;
+        input.placeholder = 'Search for ' + categories[0];
+        intervalId = setInterval(function() {
+            input.placeholder = 'Search for ' + categories[index];
+            index = (index + 1) % categories.length;
+        }, 3000);
+    }
+    
+    fetchCategories();
+}, 2000);

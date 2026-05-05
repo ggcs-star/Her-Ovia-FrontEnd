@@ -45,9 +45,9 @@
                 <h4>Support</h4>
                 <ul class="footer-support-list">
                     <li>Help Center</li>
-                    <li>Returns & Refunds</li>
+                    <li><a href="/returns">Returns & Refunds</a></li>
                     <li>Shipping Info</li>
-                    <li>Track Order</li>
+                    <li><a href="javascript:void(0)" onclick="checkLoginAndTrack()">Track Order</a></li>
                     <li>Contact Us</li>
                     <li>FAQs</li>
                 </ul>
@@ -400,6 +400,9 @@
 .quick-links-list li:hover {
     color: #F4B94E;
 }
+.footer-col:last-child > div:last-child svg {
+    stroke: #F4B94E !important;
+}
 </style>
 
 <script>
@@ -450,6 +453,20 @@ async function initFooter() {
         console.error('Footer error:', err);
     }
 }
-
+function checkLoginAndTrack() {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (token && user.id) {
+        window.location.href = '/orders';
+    } else {
+        sessionStorage.setItem('redirect_after_login', '/orders');
+        if (typeof showLoginPopup === 'function') {
+            showLoginPopup();
+        } else {
+            window.location.href = '/user/login';
+        }
+    }
+}
 document.addEventListener('DOMContentLoaded', initFooter);
 </script>
