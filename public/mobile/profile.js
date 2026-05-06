@@ -446,27 +446,25 @@ function showEditModal(user) {
             <h3 style="margin-bottom: 20px; color: #282c3f;">Edit Profile</h3>
             
             <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Full Name <span style="color: #ff3f6c;">*</span></label>
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Full Name <span style="color: var(--accent, #F4B94E);">*</span></label>
                 <input type="text" id="edit-name" value="${escapeHtml(user.name || '')}" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
-                <div id="name-error" style="color: #ff3f6c; font-size: 12px; margin-top: 5px; display: none;"></div>
+                <div id="name-error" style="color: var(--accent, #F4B94E); font-size: 12px; margin-top: 5px; display: none;"></div>
             </div>
-            
+
             <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Email Address <span style="color: #ff3f6c;">*</span></label>
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Email Address <span style="color: var(--accent, #F4B94E);">*</span></label>
                 <input type="email" id="edit-email" value="${escapeHtml(user.email || '')}" readonly style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: #f5f5f5;">
                 <div style="color: #999; font-size: 11px; margin-top: 5px;">Email cannot be changed</div>
             </div>
-            
+
             <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Phone Number <span style="color: #ff3f6c;">*</span></label>
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Phone Number <span style="color: var(--accent, #F4B94E);">*</span></label>
                 <input type="tel" id="edit-phone" value="${escapeHtml(user.phone || user.mobile || '')}" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
-                <div id="phone-error" style="color: #ff3f6c; font-size: 12px; margin-top: 5px; display: none;"></div>
+                <div id="phone-error" style="color: var(--accent, #F4B94E); font-size: 12px; margin-top: 5px; display: none;"></div>
             </div>
-            
             <div style="display: flex; gap: 10px;">
                 <button onclick="closeEditModal()" style="flex: 1; padding: 14px; background: #f5f5f5; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Cancel</button>
-                <button onclick="saveProfile()" style="flex: 1; padding: 14px; background: #ff3f6c; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Save Changes</button>
-            </div>
+                <button onclick="saveProfile()" style="flex: 1; padding: 14px; background: var(--accent, #F4B94E); color: var(--primary, #440C2C); border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Save Changes</button>            </div>
         </div>
     `;
     
