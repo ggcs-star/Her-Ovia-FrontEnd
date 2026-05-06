@@ -26,11 +26,16 @@ const API_BASE_URL = window.API_BASE_URL;
     }
     
     function getProductPrice(product) {
-        return parseFloat(
-            (product.product_price && product.product_price != "0.00")
-                ? product.product_price
-                : (product.final_price || product.price || 0)
-        );
+        if (product.variants && product.variants.length > 0) {
+            let firstVariant = product.variants[0];
+            if (firstVariant.final_price && firstVariant.final_price != "0.00") {
+                return parseFloat(firstVariant.final_price);
+            }
+            if (firstVariant.price && firstVariant.price != "0.00") {
+                return parseFloat(firstVariant.price);
+            }
+        }
+        return parseFloat(product.product_price || product.price || 0);
     }
     
     function updateCartBadge() {
@@ -228,14 +233,21 @@ const API_BASE_URL = window.API_BASE_URL;
             if (!selectedVariant) selectedVariant = product.variants[0];
         }
         
-        let finalPrice = 0;
-        let originalPrice = 0;
+       let finalPrice = 0;
+       let originalPrice = 0;
         if (selectedVariant && selectedColor) {
             finalPrice = parseFloat(selectedVariant.final_price) || parseFloat(selectedVariant.price) || 0;
             originalPrice = parseFloat(selectedVariant.price) || finalPrice;
+        } else if (selectedVariant) {
+            finalPrice = parseFloat(selectedVariant.final_price) || parseFloat(selectedVariant.price) || 0;
+            originalPrice = parseFloat(selectedVariant.price) || finalPrice;
+        } else if (product.variants && product.variants.length > 0) {
+            let firstVariant = product.variants[0];
+            finalPrice = parseFloat(firstVariant.final_price) || parseFloat(firstVariant.price) || 0;
+            originalPrice = parseFloat(firstVariant.price) || finalPrice;
         } else {
             finalPrice = getProductPrice(product);
-            originalPrice = finalPrice;
+            originalPrice = parseFloat(product.product_price || product.price || finalPrice);
         }
         
         const variantType = selectedVariant?.variant_type || 'Size';
@@ -254,10 +266,21 @@ const API_BASE_URL = window.API_BASE_URL;
         else if (product.gallery_images && product.gallery_images.length) imageUrl = product.gallery_images[0];
 
         const cartItem = {
-            id: product.id, name: product.name, brand: product.brand || '', price: finalPrice, mrp: originalPrice,
-            originalPrice: originalPrice, product_price: product.product_price, image: imageUrl, slug: product.slug,
-            variantType: variantType, variantValue: variantValue, variantId: variantId, categoryId: product.category?.id,
-            quantity: 1, availableVariants: availableVariants, rating: product.rating || 4.5, reviewCount: product.review_count || 33
+            id: product.id, name: product.name, brand: product.brand || '', 
+            price: finalPrice, 
+            mrp: originalPrice,
+            originalPrice: originalPrice, 
+            product_price: product.product_price, 
+            image: imageUrl, 
+            slug: product.slug,
+            variantType: variantType, 
+            variantValue: variantValue, 
+            variantId: variantId, 
+            categoryId: product.category?.id,
+            quantity: 1, 
+            availableVariants: availableVariants, 
+            rating: product.rating || 4.5, 
+            reviewCount: product.review_count || 33
         };
 
         const existingIndex = cart.findIndex(i => i.id === cartItem.id && i.variantId === cartItem.variantId);
@@ -291,11 +314,24 @@ const API_BASE_URL = window.API_BASE_URL;
         
         let finalPriceToUse = selectedVariant ? (parseFloat(selectedVariant.final_price) || parseFloat(selectedVariant.price) || 0) : getProductPrice(currentProduct);
         
+        let mrpValue = currentProduct?.product_price || currentProduct?.price || finalPriceToUse;
+            if (selectedVariant && selectedVariant.price) {
+                mrpValue = parseFloat(selectedVariant.price);
+            }
+
         const product = {
-            id: currentProduct?.id, name: currentProduct?.name, brand: currentProduct?.brand, price: finalPriceToUse,
-            final_price: finalPriceToUse, product_price: currentProduct?.product_price,
-            image_url: document.getElementById('mainImage')?.src || currentProduct?.image_url, slug: currentProduct?.slug,
-            category: currentProduct?.category, variants: currentProduct?.variants, gallery_images: currentProduct?.gallery_images
+            id: currentProduct?.id, 
+            name: currentProduct?.name, 
+            brand: currentProduct?.brand, 
+            price: finalPriceToUse,
+            mrp: mrpValue,
+            final_price: finalPriceToUse, 
+            product_price: currentProduct?.product_price,
+            image_url: document.getElementById('mainImage')?.src || currentProduct?.image_url, 
+            slug: currentProduct?.slug,
+            category: currentProduct?.category, 
+            variants: currentProduct?.variants, 
+            gallery_images: currentProduct?.gallery_images
         };
         
         if (selectedVariant) {
@@ -313,56 +349,104 @@ const API_BASE_URL = window.API_BASE_URL;
     window.goBack = function() { window.history.back(); };
     
     window.selectColor = function(element, colorCode, imageUrl, colorName) {
-        if (selectedColor === (colorName || colorCode)) {
-            selectedColor = null;
-            selectedVariant = null;
-            document.querySelectorAll('.pdp-color-circle, .pdp-color-name-item').forEach(item => item.classList.remove('active'));
-            currentImages = currentProduct.gallery_images && currentProduct.gallery_images.length ? currentProduct.gallery_images : [currentProduct.image_url];
-            
-            const priceElement = document.getElementById('currentPrice');
-            const buyPriceElement = document.getElementById('buyPrice');
-            if (priceElement) priceElement.textContent = '₹' + Number(window.displayPrice).toLocaleString('en-IN');
-            if (buyPriceElement) buyPriceElement.textContent = Number(window.displayPrice).toLocaleString('en-IN');
-            
-            currentImageIndex = 0;
-            const mainImage = document.getElementById('mainImage');
-            const counter = document.getElementById('currentImage');
-            if (mainImage) mainImage.src = currentImages[0];
-            if (counter) counter.textContent = `1/${currentImages.length}`;
-            startImageAutoScroll();
-            return;
-        }
-        
+    if (selectedColor === (colorName || colorCode)) {
+        selectedColor = null;
+        selectedVariant = null;
         document.querySelectorAll('.pdp-color-circle, .pdp-color-name-item').forEach(item => item.classList.remove('active'));
-        element.classList.add('active');
-        selectedColor = colorName || colorCode;
+        currentImages = currentProduct.gallery_images && currentProduct.gallery_images.length ? currentProduct.gallery_images : [currentProduct.image_url];
         
-        if (imageUrl) {
-            const mainImage = document.getElementById('mainImage');
-            mainImage.src = imageUrl;
-            currentImages = [imageUrl];
-            currentImageIndex = 0;
-            const counter = document.getElementById('currentImage');
-            if (counter) counter.textContent = `1/1`;
+        const priceElement = document.getElementById('currentPrice');
+        const buyPriceElement = document.getElementById('buyPrice');
+        const originalPriceSpan = document.querySelector('.pdp-original-price');
+        const discountSpan = document.querySelector('.pdp-discount');
+        
+        if (priceElement) priceElement.textContent = '₹' + Number(window.displayPrice).toLocaleString('en-IN');
+        if (buyPriceElement) buyPriceElement.textContent = Number(window.displayPrice).toLocaleString('en-IN');
+        if (originalPriceSpan && window.originalPrice > window.displayPrice) {
+            originalPriceSpan.textContent = '₹' + window.originalPrice.toLocaleString('en-IN');
         }
         
-        const variant = allSizes.find(v => v.color === colorCode);
-        if (variant) {
-            selectedVariant = variant;
-            window.selectedVariant = variant;
-            selectedSize = variant.value;
-            const price = variant.final_price && variant.final_price != 0 ? variant.final_price : (variant.price && variant.price != 0 ? variant.price : window.displayPrice);
-            const priceElement = document.getElementById('currentPrice');
-            const buyPriceElement = document.getElementById('buyPrice');
-            if (priceElement) priceElement.textContent = '₹' + Number(price).toLocaleString('en-IN');
-            if (buyPriceElement) buyPriceElement.textContent = Number(price).toLocaleString('en-IN');
-            document.querySelectorAll('.pdp-size-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.textContent === variant.value) btn.classList.add('active');
-            });
-        }
-        if (imageTimer) clearInterval(imageTimer);
+        currentImageIndex = 0;
+        const mainImage = document.getElementById('mainImage');
+        const counter = document.getElementById('currentImage');
+        if (mainImage) mainImage.src = currentImages[0];
+        if (counter) counter.textContent = `1/${currentImages.length}`;
+        startImageAutoScroll();
+        return;
     }
+    
+    document.querySelectorAll('.pdp-color-circle, .pdp-color-name-item').forEach(item => item.classList.remove('active'));
+    element.classList.add('active');
+    selectedColor = colorName || colorCode;
+    
+    if (imageUrl) {
+        const mainImage = document.getElementById('mainImage');
+        mainImage.src = imageUrl;
+        currentImages = [imageUrl];
+        currentImageIndex = 0;
+        const counter = document.getElementById('currentImage');
+        if (counter) counter.textContent = `1/1`;
+    }
+    
+    const variant = allSizes.find(v => v.color === colorCode);
+    if (variant) {
+        selectedVariant = variant;
+        window.selectedVariant = variant;
+        selectedSize = variant.value;
+        
+        let variantOriginal = parseFloat(variant.price);
+        let variantFinal = parseFloat(variant.final_price) || parseFloat(variant.price);
+        let variantDiscount = 0;
+        
+        if (variantOriginal > variantFinal) {
+            variantDiscount = Math.round(((variantOriginal - variantFinal) / variantOriginal) * 100);
+        }
+        
+        const priceElement = document.getElementById('currentPrice');
+        const buyPriceElement = document.getElementById('buyPrice');
+        const originalPriceSpan = document.querySelector('.pdp-original-price');
+        const discountSpan = document.querySelector('.pdp-discount');
+        
+        if (priceElement) priceElement.textContent = '₹' + variantFinal.toLocaleString('en-IN');
+        if (buyPriceElement) buyPriceElement.textContent = variantFinal.toLocaleString('en-IN');
+        
+        if (variantOriginal > variantFinal) {
+            if (!originalPriceSpan) {
+                const priceDiv = document.querySelector('.pdp-price');
+                const currentSpan = document.querySelector('.pdp-current-price');
+                const newOriginalSpan = document.createElement('span');
+                newOriginalSpan.className = 'pdp-original-price';
+                newOriginalSpan.textContent = '₹' + variantOriginal.toLocaleString('en-IN');
+                if (currentSpan && priceDiv) {
+                    currentSpan.insertAdjacentElement('afterend', newOriginalSpan);
+                }
+            } else {
+                originalPriceSpan.textContent = '₹' + variantOriginal.toLocaleString('en-IN');
+                originalPriceSpan.style.display = 'inline';
+            }
+            
+            if (!discountSpan) {
+                const priceDiv = document.querySelector('.pdp-price');
+                const newDiscountSpan = document.createElement('span');
+                newDiscountSpan.className = 'pdp-discount';
+                newDiscountSpan.textContent = variantDiscount + '% Off';
+                if (priceDiv) priceDiv.appendChild(newDiscountSpan);
+            } else {
+                discountSpan.textContent = variantDiscount + '% Off';
+                discountSpan.style.display = 'inline';
+            }
+        } else {
+            if (originalPriceSpan) originalPriceSpan.style.display = 'none';
+            if (discountSpan) discountSpan.style.display = 'none';
+        }
+        
+        document.querySelectorAll('.pdp-size-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.textContent === variant.value) btn.classList.add('active');
+        });
+    }
+    if (imageTimer) clearInterval(imageTimer);
+}
     
     window.selectScrollColor = function(colorCode, imageUrl, colorName) {
         document.querySelectorAll('.pdp-color-circle').forEach((circle, index) => {
@@ -373,21 +457,67 @@ const API_BASE_URL = window.API_BASE_URL;
     }
     
     window.selectVariant = function(btn, price, variantId, variantType) {
-        document.querySelectorAll('.pdp-size-btn:not(.disabled)').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        selectedSize = btn.textContent;
-        const sizeError = document.querySelector('.pdp-size-error');
-        if (sizeError) sizeError.style.display = 'none';
+    document.querySelectorAll('.pdp-size-btn:not(.disabled)').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedSize = btn.textContent;
+    const sizeError = document.querySelector('.pdp-size-error');
+    if (sizeError) sizeError.style.display = 'none';
+    
+    const variant = allSizes.find(v => v.id == variantId);
+    if (variant) {
+        window.selectedSizeOnly = variant;
         
-        const variant = allSizes.find(v => v.id == variantId);
-        if (variant) {
-            window.selectedSizeOnly = variant;
-            const priceElement = document.getElementById('currentPrice');
-            const buyPriceElement = document.getElementById('buyPrice');
-            if (priceElement) priceElement.textContent = '₹' + Number(window.displayPrice).toLocaleString('en-IN');
-            if (buyPriceElement) buyPriceElement.textContent = Number(window.displayPrice).toLocaleString('en-IN');
+        let variantOriginal = parseFloat(variant.price);
+        let variantFinal = parseFloat(variant.final_price) || parseFloat(price);
+        let variantDiscount = 0;
+        
+        if (variantOriginal > variantFinal) {
+            variantDiscount = Math.round(((variantOriginal - variantFinal) / variantOriginal) * 100);
         }
+        
+        const priceElement = document.getElementById('currentPrice');
+        const buyPriceElement = document.getElementById('buyPrice');
+        let originalPriceSpan = document.querySelector('.pdp-original-price');
+        let discountSpan = document.querySelector('.pdp-discount');
+        
+        if (priceElement) priceElement.textContent = '₹' + variantFinal.toLocaleString('en-IN');
+        if (buyPriceElement) buyPriceElement.textContent = variantFinal.toLocaleString('en-IN');
+        
+        if (variantOriginal > variantFinal) {
+            if (originalPriceSpan) {
+                originalPriceSpan.textContent = '₹' + variantOriginal.toLocaleString('en-IN');
+                originalPriceSpan.style.display = 'inline';
+            } else {
+                const priceDiv = document.querySelector('.pdp-price');
+                const currentSpan = document.querySelector('.pdp-current-price');
+                const newOriginalSpan = document.createElement('span');
+                newOriginalSpan.className = 'pdp-original-price';
+                newOriginalSpan.textContent = '₹' + variantOriginal.toLocaleString('en-IN');
+                if (currentSpan && priceDiv) {
+                    currentSpan.insertAdjacentElement('afterend', newOriginalSpan);
+                }
+                originalPriceSpan = document.querySelector('.pdp-original-price');
+            }
+            
+            if (discountSpan) {
+                discountSpan.textContent = variantDiscount + '% Off';
+                discountSpan.style.display = 'inline';
+            } else {
+                const priceDiv = document.querySelector('.pdp-price');
+                const newDiscountSpan = document.createElement('span');
+                newDiscountSpan.className = 'pdp-discount';
+                newDiscountSpan.textContent = variantDiscount + '% Off';
+                if (priceDiv) priceDiv.appendChild(newDiscountSpan);
+            }
+        } else {
+            if (originalPriceSpan) originalPriceSpan.style.display = 'none';
+            if (discountSpan) discountSpan.style.display = 'none';
+        }
+        
+        window.displayPrice = variantFinal;
+        window.originalPrice = variantOriginal;
     }
+}
     
     window.changeImage = function(index) {
         const mainImage = document.getElementById('mainImage');
@@ -851,16 +981,23 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
                 if (!variantPrice) variantPrice = getProductPrice(product);
                 allSizes.push({
                     id: v.id, type: v.variant_type || 'Size', value: v.variant_value,
-                    price: variantPrice, final_price: variantPrice, stock: v.quantity || 5,
+                    price: parseFloat(v.price) || variantPrice, 
+                    final_price: parseFloat(v.final_price) || variantPrice, 
+                    stock: v.quantity || 5,
                     color: v.color, inStock: v.in_stock !== false
                 });
             }
         });
         
         let displayPrice = getProductPrice(product);
-        let originalPrice = parseFloat(product.price || displayPrice);
-        let discountPercentage = originalPrice > displayPrice ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100) : 0;
-        
+let originalPrice = parseFloat(product.product_price || product.price || displayPrice);
+if (product.variants && product.variants.length > 0) {
+    let firstVariant = product.variants[0];
+    if (firstVariant.price && parseFloat(firstVariant.price) > originalPrice) {
+        originalPrice = parseFloat(firstVariant.price);
+    }
+}
+let discountPercentage = originalPrice > displayPrice ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100) : 0;
         const brand = product.brand || 'H&M';
         const name = product.name || 'Maxi Dress';
         const rating = 4.5;
