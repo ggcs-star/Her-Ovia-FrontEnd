@@ -1596,29 +1596,27 @@ body, .site-header, .web-header, .main-header, .header-container, .header-action
 .order-app .web-header .logo img {
     height: 28px !important;
 }
-
 @media (max-width: 1024px) {
     .order-app .web-header .nav-item {
-        font-size: 10px !important;
+        font-size: 12px !important;
     }
     
     .order-app .web-header .nav-menu {
         gap: 8px !important;
     }
 }
-
 @media (min-width: 1025px) {
     .order-app .web-header .nav-menu {
-        gap: 10px !important;
+        gap: 12px !important;
     }
     
     .order-app .web-header .nav-item {
-        font-size: 10px !important;
+        font-size: 12px !important;
     }
 }
-.order-app .web-header .nav-item {
-    font-size: 11px !important;
-    padding: 0 8px !important;
+order-app .web-header .nav-item {
+    font-size: 12px !important;
+    padding: 0 6px !important;
     letter-spacing: 0.3px !important;
 }
 
@@ -1633,26 +1631,31 @@ body, .site-header, .web-header, .main-header, .header-container, .header-action
 .order-app .web-header .logo img {
     height: 32px !important;
 }
+
 .order-app .web-header .search-area {
-    max-width: 500px !important;
+    max-width: 380px !important;
+    margin: 0 15px !important;
 }
+
 .order-app .web-header .search-box input {
-    padding: 10px 14px !important;
+    padding: 8px 14px !important;
     font-size: 13px !important;
 }
 .order-app .web-header .main-header {
-    padding: 10px 40px !important;
+    padding: 12px 40px !important;
 }
+
 * {
     -webkit-tap-highlight-color: transparent !important;
     -webkit-touch-callout: none !important;
 }
+
 .web-header .nav-menu {
-    gap: 8px !important;
+    gap: 10px !important;
 }
 
 .web-header .nav-item {
-    font-size: 11px !important;
+    font-size: 12px !important;
     padding: 0 6px !important;
     letter-spacing: 0.3px !important;
     color: #333 !important;
@@ -1714,12 +1717,15 @@ body, .site-header, .web-header, .main-header, .header-container, .header-action
     color: #333 !important;
     background: transparent !important;
 }
+
 .web-header .logo-area {
     gap: 15px !important;
 }
+
 .web-header .search-area {
-    max-width: 400px !important;
+    max-width: 420px !important;
 }
+
 .web-header .main-header {
     padding: 8px 30px !important;
 }
@@ -2566,6 +2572,7 @@ window.addEventListener('resize', () => {
         renderHeader();
         fetchOrderData();
         startAutoRefresh();
+
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
         if (typeof initWebSearchDropdown === 'function') {

@@ -18,15 +18,17 @@ class AllCategoriesPage {
         this.sortable = null;
         this.apiCache = new Map();
         this.domCache = new Map();
+        this.lastRenderState = null;
         this.init();
         
         let resizeTimer;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(() => {
+                this.renderCategories();
                 this.renderHeader();
                 this.renderWebSidebar();
-            }, 200);
+            }, 100);
         });
     }
 
@@ -134,6 +136,12 @@ class AllCategoriesPage {
             this.appSettings = data.data;
         }
     }
+    resolveImage(path) {
+    if (!path) return CONFIG.FALLBACK_IMAGE;
+    if (path.startsWith('http')) return path;
+    if (!path.includes('amazonaws.com')) return window.S3_BASE_URL + path;
+    return path;
+}
 
     renderHeader() {
         const header = this.getElement('site-header');
@@ -423,16 +431,35 @@ class AllCategoriesPage {
     }
 
     renderCategories() {
-        const container = this.getElement('all-categories-grid');
-        if (!container) return;
+    const container = this.getElement('all-categories-grid');
+    if (!container) return;
 
-        const fallbackImages = [
-            'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop',
-            'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=200&auto=format&fit=crop',
-            'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=200&auto=format&fit=crop',
-            'https://images.unsplash.com/photo-1598033121397-5ecc08fe7f1f?q=80&w=200&auto=format&fit=crop'
-        ];
+    const fallbackImage = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
+    const categoriesToShow = this.userCategories.length ? this.userCategories : this.allCategories;
+    const isDesktop = window.innerWidth >= 1024;
 
+    if (isDesktop) {
+    container.innerHTML = categoriesToShow.map((cat) => {
+        const imageUrl = cat.image_url || fallbackImage;
+        const subCategories = cat.children || [];
+        const subCount = subCategories.length;
+        
+        return `<div class="category-card" data-id="${cat.id}">
+            <div class="category-image-box" onclick="redirectToSubcategory(${cat.id})">
+                <img src="${this.resolveImage(imageUrl)}" alt="${escapeHtml(cat.name)}" loading="lazy">
+            </div>
+            <div class="category-info">
+                <h3 onclick="redirectToSubcategory(${cat.id})">${escapeHtml(cat.name)}</h3>
+                <div class="category-count" onclick="redirectToSubcategory(${cat.id})">${subCount} Collections</div>
+                <span class="shop-now-link-cat" onclick="redirectToSubcategory(${cat.id})">Shop Now</span>
+                ${subCount > 0 ? `<div class="subcategories-list">
+                    ${subCategories.slice(0, 4).map(sub => `<span class="subcategory-tag" onclick="event.stopPropagation(); redirectToSubcategory(${sub.id})">${escapeHtml(sub.name)}</span>`).join('')}
+                    ${subCount > 4 ? `<span class="subcategory-tag" onclick="event.stopPropagation(); redirectToSubcategory(${cat.id})">+${subCount - 4}</span>` : ''}
+                </div>` : ''}
+            </div>
+        </div>`;
+    }).join('');
+}else {
         const colors = [
             "linear-gradient(135deg, #FBE7A1, #F9D976)",
             "linear-gradient(135deg, #F8C8DC, #F4A6C1)",
@@ -441,33 +468,21 @@ class AllCategoriesPage {
             "linear-gradient(135deg, #C8E6C9, #A5D6A7)",
             "linear-gradient(135deg, #C5CAE9, #9FA8DA)"
         ];
-
-        const categoriesToShow = this.userCategories.length ? this.userCategories : this.allCategories;
-
-        const editButtonHtml = this.isLoggedIn ? `
-            <div class="categories-header">
-                <button class="edit-categories-btn" onclick="window.allCategoriesPage.toggleEditMode()" aria-label="Edit categories order">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                        <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" stroke-width="2"/>
-                        <polygon points="18 2 22 6 12 16 8 16 8 12 18 2" stroke-width="2"/>
-                    </svg>
-                    Filter
-                </button>
-            </div>
-        ` : '';
-
-        container.innerHTML = editButtonHtml + categoriesToShow.map((cat, index) => {
-            const imageUrl = cat.image_url || fallbackImages[index % fallbackImages.length];
+        
+        container.innerHTML = categoriesToShow.map((cat, index) => {
+            const imageUrl = cat.image_url || fallbackImage;
             const bgColor = colors[index % colors.length];
-            return `<div class="category-card ${this.isLoggedIn ? 'draggable' : ''}" style="background: ${bgColor}" data-id="${cat.id}" onclick="redirectToSubcategory(${cat.id})" role="button" tabindex="0" aria-label="View ${escapeHtml(cat.name)} category">
+            
+            return `<div class="category-card" style="background: ${bgColor}" data-id="${cat.id}" onclick="redirectToSubcategory(${cat.id})">
                 <div class="category-info"><h3>${escapeHtml(cat.name)}</h3></div>
-                <div class="category-image-box"><img src="${imageUrl}" alt="${escapeHtml(cat.name)}" loading="lazy" width="60" height="60" decoding="async"></div>
+                <div class="category-image-box"><img src="${this.resolveImage(imageUrl)}" alt="${escapeHtml(cat.name)}" loading="lazy"></div>
             </div>`;
         }).join('');
-
-        const layout = document.getElementById('categoriesLayoutWeb');
-        if (layout) layout.style.display = 'flex';
     }
+
+    const layout = document.getElementById('categoriesLayoutWeb');
+    if (layout) layout.style.display = 'block';
+}
 
     renderWebSidebar() {
         const sidebar = this.getElement('categoriesWebSidebarList');
@@ -573,18 +588,46 @@ function redirectToSubcategory(categoryId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                const category = data.data.find(c => c.id == categoryId);
-                if (category && category.children && category.children.length > 0) {
-                    const slug = category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                    window.location.href = `/collection/${slug}`;
+                let targetCategory = null;
+                let parentCategory = null;
+                
+                for (let cat of data.data) {
+                    if (cat.id == categoryId) {
+                        targetCategory = cat;
+                        break;
+                    }
+                    if (cat.children) {
+                        for (let sub of cat.children) {
+                            if (sub.id == categoryId) {
+                                targetCategory = sub;
+                                parentCategory = cat;
+                                break;
+                            }
+                        }
+                    }
+                    if (targetCategory) break;
+                }
+                
+                if (targetCategory) {
+                    if (parentCategory) {
+                        const parentSlug = parentCategory.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        const subSlug = targetCategory.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        window.location.href = `/collection/${parentSlug}/${subSlug}`;
+                    } else if (targetCategory.children && targetCategory.children.length > 0) {
+                        const slug = targetCategory.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        window.location.href = `/collection/${slug}`;
+                    } else {
+                        const slug = targetCategory.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        window.location.href = `/collection/${slug}`;
+                    }
                 } else {
-                    window.location.href = `/products?category=${categoryId}`;
+                    window.location.href = `/categories`;
                 }
             } else {
-                window.location.href = `/products?category=${categoryId}`;
+                window.location.href = `/categories`;
             }
         })
-        .catch(() => window.location.href = `/products?category=${categoryId}`);
+        .catch(() => window.location.href = `/categories`);
 }
 
 window.goBack = function() {

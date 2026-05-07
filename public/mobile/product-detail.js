@@ -868,14 +868,20 @@ const API_BASE_URL = window.API_BASE_URL;
             const res = await fetch(`${API_BASE_URL}/categories/${categoryId}/products`);
             const data = await res.json();
             if (data.success && data.data?.products) {
-                const otherProducts = data.data.products.filter(p => p.id != currentProduct.id);
+                const otherProducts = data.data.products.filter(p => p.id != currentProduct.id).slice(0, 8);
                 if (otherProducts.length > 0) {
                     similarSection.style.display = 'block';
                     grid.innerHTML = otherProducts.map(p => {
                         let currentPrice = getProductPrice(p);
                         let originalPrice = parseFloat(p.price) || 0;
                         return `<div class="pdp-similar-card" onclick="window.location.href='/product/${p.slug}'">
-                            <img src="${p.image_url || ''}" class="pdp-similar-image" onerror="this.style.display='none'">
+                            <img src="${p.image_url || ''}" 
+                                class="pdp-similar-image" 
+                                data-main="${p.image_url || ''}"
+                                data-slug="${p.slug}"
+                                onmouseenter="loadSimilarHoverImage(this)"
+                                onmouseleave="this.src=this.dataset.main"
+                                onerror="this.style.display='none'">
                             <div class="pdp-similar-brand">${p.brand || 'Brand'}</div>
                             <div class="pdp-similar-name">${p.name}</div>
                             <div class="pdp-similar-price">
@@ -1006,8 +1012,8 @@ let discountPercentage = originalPrice > displayPrice ? Math.round(((originalPri
         const rating = 4.5;
         const reviewCount = 33;
         let starsHtml = '';
-        for (let i = 0; i < Math.floor(rating); i++) starsHtml += '★';
-        if (rating % 1 >= 0.5) starsHtml += '½';
+        let fullStars = Math.floor(rating);
+        for (let i = 0; i < fullStars; i++) starsHtml += '★';
         for (let i = starsHtml.length; i < 5; i++) starsHtml += '☆';
         
         const descriptionPoints = [];
@@ -1116,7 +1122,7 @@ let discountPercentage = originalPrice > displayPrice ? Math.round(((originalPri
         setTimeout(() => loadProductDesktopCategories(), 500);
     });
 })();
-// Dynamic search placeholder for all categories page
+
 setTimeout(function() {
     let categories = ['Necklace', 'Earrings', 'Maang Tikka', 'Bridal Sets', 'Bangles'];
     let index = 0;
@@ -1153,3 +1159,40 @@ setTimeout(function() {
     
     fetchCategories();
 }, 2000);
+window.loadSimilarHoverImage = function(imgElement) {
+    if (imgElement.dataset.loading === 'true') return;
+    
+    const slug = imgElement.dataset.slug;
+    if (!slug) return;
+    
+    const mainImage = imgElement.dataset.main;
+    const hoverUrl = imgElement.dataset.hoverImage;
+    
+    if (hoverUrl && imgElement.src !== hoverUrl) {
+        imgElement.src = hoverUrl;
+        return;
+    }
+    
+    imgElement.dataset.loading = 'true';
+    
+    fetch(`${API_BASE_URL}/products/${slug}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.data) {
+                const galleryImages = data.data.gallery_images || [];
+                let hoverImage = galleryImages[1] || galleryImages[0];
+                if (hoverImage) {
+                    const img = new Image();
+                    img.onload = function() {
+                        imgElement.dataset.hoverImage = hoverImage;
+                        imgElement.src = hoverImage;
+                    };
+                    img.src = hoverImage;
+                }
+            }
+        })
+        .catch(() => {})
+        .finally(() => {
+            imgElement.dataset.loading = 'false';
+        });
+};
