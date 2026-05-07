@@ -142,9 +142,10 @@ class AllCategoriesPage {
         const isDesktop = window.innerWidth >= 1025;
 
         if (isDesktop) {
-            const categoriesHtml = this.allCategories.slice(0, 5).map(cat => 
-                `<a href="/category/${cat.id}" class="nav-item" data-cat-id="${cat.id}">${escapeHtml(cat.name.toUpperCase())}</a>`
-            ).join('');
+            const categoriesHtml = this.allCategories.slice(0, 5).map(cat => {
+                let categorySlug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                return `<a href="/collection/${categorySlug}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${escapeHtml(cat.name.toUpperCase())}</a>`;
+            }).join('');
 
             header.innerHTML = `
                 <div class="web-header">

@@ -1616,7 +1616,6 @@ body, .site-header, .web-header, .main-header, .header-container, .header-action
         font-size: 10px !important;
     }
 }
-/* Fix header categories font size in order page */
 .order-app .web-header .nav-item {
     font-size: 11px !important;
     padding: 0 8px !important;
@@ -1634,20 +1633,95 @@ body, .site-header, .web-header, .main-header, .header-container, .header-action
 .order-app .web-header .logo img {
     height: 32px !important;
 }
-
-/* Search bar width increased */
 .order-app .web-header .search-area {
     max-width: 500px !important;
 }
-
 .order-app .web-header .search-box input {
     padding: 10px 14px !important;
     font-size: 13px !important;
 }
-
-/* Header spacing */
 .order-app .web-header .main-header {
     padding: 10px 40px !important;
+}
+* {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+}
+.web-header .nav-menu {
+    gap: 8px !important;
+}
+
+.web-header .nav-item {
+    font-size: 11px !important;
+    padding: 0 6px !important;
+    letter-spacing: 0.3px !important;
+    color: #333 !important;
+}
+
+.web-header .nav-item:active,
+.web-header .nav-item:focus,
+.web-header .nav-item:hover,
+.web-header .nav-item:visited {
+    color: #333 !important;
+    background: transparent !important;
+}
+
+.web-header .action-link,
+.web-header .action-link:active,
+.web-header .action-link:focus,
+.web-header .action-link:hover,
+.web-header .action-link:visited {
+    color: #333 !important;
+    background: transparent !important;
+}
+
+.web-header .action-link .header-icon,
+.web-header .action-link .header-icon:active,
+.web-header .action-link .header-icon:focus,
+.web-header .action-link .header-icon:hover,
+.web-header .action-link .header-icon:visited {
+    stroke: #333 !important;
+    fill: none !important;
+}
+
+.web-header .cart-icon-wrapper svg,
+.web-header .cart-icon-wrapper svg:active,
+.web-header .cart-icon-wrapper svg:focus,
+.web-header .cart-icon-wrapper svg:hover {
+    stroke: #333 !important;
+}
+
+.header-container .header-icon-btn,
+.header-container .header-icon-btn:active,
+.header-container .header-icon-btn:focus,
+.header-container .header-icon-btn:hover {
+    color: #333 !important;
+    background: transparent !important;
+}
+
+.header-container .header-icon-btn svg,
+.header-container .header-icon-btn:active svg,
+.header-container .header-icon-btn:focus svg,
+.header-container .header-icon-btn:hover svg {
+    stroke: #333 !important;
+    fill: none !important;
+}
+
+.back-btn-header,
+.back-btn-header:hover,
+.back-btn-header:active,
+.back-btn-header:focus {
+    color: #333 !important;
+    background: transparent !important;
+}
+.web-header .logo-area {
+    gap: 15px !important;
+}
+.web-header .search-area {
+    max-width: 400px !important;
+}
+.web-header .main-header {
+    padding: 8px 30px !important;
 }
     </style>
 </head>
@@ -1687,9 +1761,10 @@ function renderHeader() {
             .then(data => {
                 if (data.success && data.data) {
                     const categories = data.data.slice(0, 5);
-                    const categoriesHtml = categories.map(cat => 
-                        `<a href="/category/${cat.id}" class="nav-item">${cat.name.toUpperCase()}</a>`
-                    ).join('');
+                    const categoriesHtml = categories.map(cat => {
+                        let categorySlug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        return `<a href="/collection/${categorySlug}" class="nav-item">${cat.name.toUpperCase()}</a>`;
+                    }).join('');
                     
                     header.innerHTML = `
                         <div class="web-header">
@@ -1859,9 +1934,23 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
                                     }
                                 });
                         });
-                        item.addEventListener('mouseleave', () => {
-                            setTimeout(() => { popup.style.display = 'none'; }, 200);
-                        });
+                        let hideTimeout;
+                            item.addEventListener('mouseleave', () => {
+                                hideTimeout = setTimeout(() => { 
+                                    if (!popup.matches(':hover')) {
+                                        popup.style.display = 'none'; 
+                                    }
+                                }, 300);
+                            });
+
+                            popup.addEventListener('mouseenter', () => {
+                                clearTimeout(hideTimeout);
+                                popup.style.display = 'block';
+                            });
+
+                            popup.addEventListener('mouseleave', () => {
+                                popup.style.display = 'none';
+                            });
                     });
                     popup.addEventListener('mouseenter', () => { popup.style.display = 'block'; });
                     popup.addEventListener('mouseleave', () => { popup.style.display = 'none'; });
@@ -2477,7 +2566,6 @@ window.addEventListener('resize', () => {
         renderHeader();
         fetchOrderData();
         startAutoRefresh();
-        // Initialize web search dropdown after DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
         if (typeof initWebSearchDropdown === 'function') {
@@ -2486,7 +2574,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 500);
 });
-// Dynamic search placeholder for order page
 setTimeout(function() {
     const categories = ['Necklace', 'Earrings', 'Maang Tikka', 'Bridal Sets', 'Bangles'];
     let index = 0;

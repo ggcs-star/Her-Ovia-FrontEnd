@@ -910,7 +910,10 @@ const API_BASE_URL = window.API_BASE_URL;
         fetch(`${API_BASE_URL}/categories`).then(res => res.json()).then(data => {
             if (data.success) {
                 const categories = data.data.slice(0, 5);
-                navMenu.innerHTML = categories.map(cat => `<a href="/category/${cat.id}" class="nav-item" data-cat-id="${cat.id}">${cat.name.toUpperCase()}</a>`).join('');
+                navMenu.innerHTML = categories.map(cat => {
+                    let categorySlug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                    return `<a href="/collection/${categorySlug}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`;
+                }).join('');                
                 const navItems = document.querySelectorAll('#productDesktopNavMenu .nav-item');
                 let hideTimeout;
                 const showPopup = () => {

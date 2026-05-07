@@ -77,9 +77,14 @@ Route::get('/all-products', function () {
 Route::get('/product/{slug}', function ($slug) {
     return view('mobile.product-detail', ['slug' => $slug]);
 })->name('product.detail');
-// web.php
+Route::get('/top-selling', function () {
+    return view('mobile.products');
+})->name('top.selling');
 Route::get('/cart', function () {
     return view('mobile.cart');
+});
+Route::get('/products', function () {
+    return view('mobile.products');
 });
 Route::get('/coupon-terms', function () {
     return view('mobile.coupon-terms');
