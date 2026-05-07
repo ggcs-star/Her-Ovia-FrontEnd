@@ -3,6 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    @php
+        $pageTitle = 'Products | Radiant Jewel';
+        $pageDescription = 'Shop beautiful jewellery at Radiant Jewel. Find necklaces, earrings, maang tikka, bridal sets, and bangles with amazing discounts.';
+        
+        if(request()->route('categorySlug')) {
+            $categoryName = ucfirst(str_replace('-', ' ', request()->route('categorySlug')));
+            $pageTitle = $categoryName . ' | Radiant Jewel';
+            $pageDescription = 'Shop beautiful ' . $categoryName . ' at Radiant Jewel. Best quality ' . $categoryName . ' with amazing discounts. Free shipping on orders above ₹999.';
+        }
+        
+        if(request()->query('subcategory')) {
+            $pageDescription = 'Shop beautiful jewellery at Radiant Jewel. Find the perfect piece for every occasion.';
+        }
+    @endphp
+
+    <title>{{ $pageTitle }}</title>
+    <meta name="description" content="{{ $pageDescription }}">
+    <meta name="keywords" content="jewellery, necklace, earrings, maang tikka, bridal sets, bangles, kundan jewellery">
+    <meta name="author" content="Radiant Jewel">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ url()->current() }}">
+
     <title>Products | RADIANT JEWEL</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
@@ -465,7 +487,7 @@
             .desktop-filter-section .desktop-filter-title::after {
                 content: '+';
                 font-size: 18px;
-                color: #ff3f6c;
+                color: #F4B94E;
                 font-weight: 600;
             }
 
@@ -1377,31 +1399,44 @@
 
 
 <script>
-    async function loadHoverImage(imgElement, slug) {
-    if (imgElement.dataset.hoverLoaded === 'true') return;
-    if (imgElement.dataset.loading === 'true') return;
-    imgElement.dataset.loading = 'true';
-    try {
-        const response = await fetch(`${API_BASE_URL}/products/${slug}`);
-        const data = await response.json();
-        if (data.success && data.data) {
-            const galleryImages = data.data.gallery_images || [];
-            let hoverImage = galleryImages[1] || galleryImages[0];
-            if (hoverImage && hoverImage !== imgElement.dataset.main) {
-                const tempImg = new Image();
-                tempImg.src = hoverImage;
-                tempImg.onload = () => {
-                    imgElement.src = hoverImage;
-                    imgElement.dataset.hoverLoaded = 'true';
-                };
-            } else {
-                imgElement.dataset.hoverLoaded = 'true';
-            }
+    async function preloadAllHoverImages(products) {
+    const preloadPromises = products.map(async (p) => {
+        if (p.slug) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/products/${p.slug}`);
+                const data = await response.json();
+                if (data.success && data.data) {
+                    const galleryImages = data.data.gallery_images || [];
+                    let hoverImage = galleryImages[1] || galleryImages[0];
+                    if (hoverImage && hoverImage !== p.image_url) {
+                        const img = new Image();
+                        img.src = hoverImage;
+                        p.preloadedHoverImage = hoverImage;
+                    }
+                }
+            } catch(e) {}
         }
-    } catch (error) { console.error(error); }
-    finally { imgElement.dataset.loading = 'false'; }
+    });
+    await Promise.all(preloadPromises);
 }
-
+   window.loadHoverImage = function(imgElement, slug, hoverUrl) {
+    if (imgElement.dataset.loading === 'true') return;
+    
+    if (hoverUrl && hoverUrl !== imgElement.dataset.main) {
+        if (imgElement.src === hoverUrl) return;
+        
+        imgElement.dataset.loading = 'true';
+        const tempImg = new Image();
+        tempImg.onload = () => {
+            imgElement.src = hoverUrl;
+            imgElement.dataset.loading = 'false';
+        };
+        tempImg.onerror = () => {
+            imgElement.dataset.loading = 'false';
+        };
+        tempImg.src = hoverUrl;
+    }
+};
 (function() {
     const subId = document.body.dataset.subcategoryId;
     const catId = document.body.dataset.categoryId;
@@ -1452,13 +1487,13 @@ function renderProducts(products) {
         
         return `<div class="card" data-product-id="${p.id}" data-product-slug="${p.slug}">
             <div class="img-box" onclick="window.location.href='/product/${p.slug}'">
-                <img class="product-img-${p.id}" 
-                    src="${mainImage}" 
-                    data-main="${mainImage}"
-                    data-hover-loaded="false"
-                    onmouseenter="loadHoverImage(this, '${p.slug}')"
-                    onmouseleave="this.src=this.dataset.main; this.dataset.hoverLoaded='false'"
-                    onerror="this.src='${fallback}'">
+               <img class="product-img-${p.id}" 
+                src="${mainImage}" 
+                data-main="${mainImage}"
+                data-hover="${p.preloadedHoverImage || ''}"
+                onmouseenter="loadHoverImage(this, '${p.slug}', '${p.preloadedHoverImage || ''}')"
+                onmouseleave="this.src=this.dataset.main"
+                onerror="this.src='${fallback}'">
                 ${isBest ? '<span class="badge">Best Seller</span>' : ''}
                 <button class="wishlist ${inWish ? 'active' : ''}" 
                         onclick="event.stopPropagation(); toggleWish(this, ${JSON.stringify({
@@ -1487,8 +1522,9 @@ async function fetchData() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
         const type = urlParams.get('type');
-        
-        if (type === 'top-selling') {
+        const currentPath = window.location.pathname;
+
+        if (type === 'top-selling' || currentPath === '/top-selling') {
             await fetchTopSellingProducts();
             return;
         }
@@ -1557,9 +1593,10 @@ async function fetchData() {
             if (data.success && data.data.products) {
                 currentProducts = data.data.products;
                 originalProducts = [...data.data.products];
+                await preloadAllHoverImages(currentProducts);
                 renderProducts(currentProducts);
                 updateDesktopFiltersFromProducts(currentProducts);
-            } else {
+            }else {
                 grid.innerHTML = '<div class="loading">No products found</div>';
             }
         } catch (error) {
@@ -2049,6 +2086,7 @@ window.updateDesktopFiltersFromProducts = function(products) {
                 let products = Array.isArray(data.data) ? data.data : (data.data.products || []);
                 currentProducts = products;
                 originalProducts = [...products];
+                await preloadAllHoverImages(currentProducts);
                 renderProducts(products);
                 const subStrip = document.getElementById('subStrip');
                 if (subStrip) subStrip.style.display = 'none';
@@ -2156,63 +2194,94 @@ window.updateDesktopFiltersFromProducts = function(products) {
     };
     
     async function loadProductDesktopHeader() {
-        const navMenu = document.getElementById('productNavMenu');
-        const popup = document.getElementById('productAllCategoriesPopup');
-        if (!navMenu) return;
-        
-        try {
-            const res = await fetch(`${API_BASE_URL}/categories`);
-            const data = await res.json();
-            if (data.success) {
-                const categories = data.data.slice(0, 5);
-                navMenu.innerHTML = categories.map(cat => `<a href="/category/${cat.id}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`).join('');
-                
-                const navItems = document.querySelectorAll('#productNavMenu .nav-item');
-                const showPopup = () => { if (popup) { renderProductAllCategoriesPopup(data.data); popup.style.display = 'block'; } };
-                const hidePopup = () => { if (popup) setTimeout(() => popup.style.display = 'none', 200); };
-                
-                navItems.forEach(item => {
-                    item.addEventListener('mouseenter', showPopup);
-                    item.addEventListener('mouseleave', hidePopup);
-                });
-                if (popup) {
-                    popup.addEventListener('mouseenter', () => popup.style.display = 'block');
-                    popup.addEventListener('mouseleave', hidePopup);
-                }
-            }
-        } catch (error) { console.error('Error loading categories:', error); }
-    }
-
-    function renderProductAllCategoriesPopup(categories) {
-        const popup = document.getElementById('productAllCategoriesPopup');
-        if (!popup) return;        
-        const columnSize = Math.ceil(categories.length / 5);
-        const columns = [];
-        for (let i = 0; i < 5; i++) columns.push(categories.slice(i * columnSize, (i + 1) * columnSize));        
-        let html = `<div style="max-width:1200px; margin:0 auto; padding:30px; display:grid; grid-template-columns:repeat(5,1fr); gap:25px;">`;
-        columns.forEach(col => {
-            if (col.length) {
-                html += `<div>`;
-                col.forEach(cat => {
-                    html += `<div style="margin-bottom:20px;">
-                        <h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">${cat.name}</h3>
-                        <ul style="list-style:none; padding:0; margin-top:12px;">`;
-                    if (cat.children?.length) {
-                        cat.children.slice(0, 6).forEach(sub => {
-                            let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
-                        });
-                        if (cat.children.length > 6) {
-                            html += `<li style="margin-top:5px;"><a href="/category/${cat.id}" style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">+${cat.children.length - 6} more →</a></li>`;
-                        }
+    const navMenu = document.getElementById('productNavMenu');
+    const popup = document.getElementById('productAllCategoriesPopup');
+    if (!navMenu) return;
+    
+    try {
+        const res = await fetch(`${API_BASE_URL}/categories`);
+        const data = await res.json();
+        if (data.success) {
+            const categories = data.data.slice(0, 5);
+            navMenu.innerHTML = categories.map(cat => {
+                let categorySlug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                return `<a href="/collection/${categorySlug}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`;
+            }).join('');
+            
+            const navItems = document.querySelectorAll('#productNavMenu .nav-item');
+            let hideTimeout;
+            let isHoveringPopup = false;
+            let isHoveringNav = false;
+            
+            const showPopup = () => {
+                if (hideTimeout) clearTimeout(hideTimeout);
+                isHoveringNav = true;
+                renderProductAllCategoriesPopup(data.data);
+                popup.style.display = 'block';
+            };
+            
+            const hidePopup = () => {
+                isHoveringNav = false;
+                hideTimeout = setTimeout(() => {
+                    if (!isHoveringPopup && !isHoveringNav) {
+                        popup.style.display = 'none';
                     }
-                    html += `</ul></div>`;
+                }, 800);
+            };
+            
+            navItems.forEach(item => {
+                item.addEventListener('mouseenter', showPopup);
+                item.addEventListener('mouseleave', hidePopup);
+            });
+            
+            if (popup) {
+                popup.addEventListener('mouseenter', () => {
+                    if (hideTimeout) clearTimeout(hideTimeout);
+                    isHoveringPopup = true;
+                    popup.style.display = 'block';
                 });
-                html += `</div>`;
+                popup.addEventListener('mouseleave', () => {
+                    isHoveringPopup = false;
+                    setTimeout(() => {
+                        if (!isHoveringPopup && !isHoveringNav) {
+                            popup.style.display = 'none';
+                        }
+                    }, 800);
+                });
             }
-        });
-        popup.innerHTML = html + `</div>`;
-    }
+        }
+    } catch (error) { console.error('Error loading categories:', error); }
+}
+    function renderProductAllCategoriesPopup(categories) {
+    const popup = document.getElementById('productAllCategoriesPopup');
+    if (!popup) return;        
+    const columnSize = Math.ceil(categories.length / 5);
+    const columns = [];
+    for (let i = 0; i < 5; i++) columns.push(categories.slice(i * columnSize, (i + 1) * columnSize));        
+    let html = `<div style="max-width:1200px; margin:0 auto; padding:30px; display:grid; grid-template-columns:repeat(5,1fr); gap:25px;">`;
+    columns.forEach(col => {
+        if (col.length) {
+            html += `<div>`;
+            col.forEach(cat => {
+                html += `<div style="margin-bottom:20px;">
+                    <h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">${cat.name}</h3>
+                    <ul style="list-style:none; padding:0; margin-top:12px;">`;
+                if (cat.children?.length) {
+                    cat.children.slice(0, 6).forEach(sub => {
+                        let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px; display:block; padding:4px 0;" onclick="event.stopPropagation(); window.location.href='/collection/${subSlug}'">${sub.name}</a></li>`;
+                    });
+                    if (cat.children.length > 6) {
+                        html += `<li style="margin-top:5px;"><a href="/category/${cat.id}" style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;" onclick="event.stopPropagation(); window.location.href='/category/${cat.id}'">+${cat.children.length - 6} more →</a></li>`;
+                    }
+                }
+                html += `</ul></div>`;
+            });
+            html += `</div>`;
+        }
+    });
+    popup.innerHTML = html + `</div>`;
+}
     function initDesktopFiltersToggle() {
         document.querySelectorAll('.desktop-filter-section').forEach(section => {
             const title = section.querySelector('.desktop-filter-title');

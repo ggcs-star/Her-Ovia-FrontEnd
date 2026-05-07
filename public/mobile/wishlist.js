@@ -293,8 +293,7 @@
                 '<img src="' + item.image + '" ' +
                     'data-main="' + item.image + '" ' +
                     'data-slug="' + item.slug + '" ' +
-                    'data-hover-loaded="false" ' +
-                    'onmouseenter="if(typeof window.loadHoverImage === \'function\') window.loadHoverImage(this, \'' + item.slug + '\')" ' +
+                    'onmouseenter="window.loadHoverImage(this)" ' +
                     'onmouseleave="this.src=this.dataset.main" ' +
                     'alt="' + escapeHtml(item.name) + '" ' +
                     'loading="lazy" ' +

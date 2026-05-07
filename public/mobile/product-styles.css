@@ -146,12 +146,13 @@ body {
 }
 
 .pdp-wishlist.active {
-    color: var(--primary); 
+    color: #FF0000; 
     background: white;
 }
 
 .pdp-wishlist.active svg {
-    fill: var(--accent); stroke: var(--accent);
+    fill: #FF0000;
+    stroke: #FF0000;
 }
 
 .pdp-wishlist:hover {
@@ -2174,4 +2175,35 @@ body.product-detail-page .pdp-main {
 .cart-badge,
 #cart-count-badge {
     display: flex !important;
+}
+.pdp-similar-card {
+    transition: all 0.3s ease;
+}
+
+.pdp-similar-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    border-color: #F4B94E;
+}
+
+.pdp-similar-image {
+    transition: transform 0.5s ease;
+}
+
+.pdp-similar-card:hover .pdp-similar-image {
+    transform: scale(1.05);
+}
+
+.pdp-similar-brand,
+.pdp-similar-name,
+.pdp-similar-price {
+    transition: all 0.2s ease;
+}
+
+.pdp-similar-card:hover .pdp-similar-brand {
+    color: #F4B94E;
+}
+
+.pdp-similar-card:hover .pdp-similar-current {
+    color: #F4B94E;
 }

@@ -583,6 +583,16 @@ function placeOrder() {
 
     const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
 
+    const orderItems = cartItems.map(item => ({
+        product_id: item.id,
+        variant_id: item.variantId,
+        product_name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image || '',
+        mrp: item.mrp || item.originalPrice || item.price
+    }));
+
     fetch(`${API_BASE_URL}/checkout/place-order`, {
         method: 'POST',
         headers: {
@@ -595,6 +605,7 @@ function placeOrder() {
             billing_address_id: Number(shippingAddress),
             payment_method_id: 1,
             coupon_code: localStorage.getItem('applied_coupon') || null,
+            items: orderItems
         })
     })
     .then(res => res.json())
@@ -806,8 +817,9 @@ function verifyRazorpayPayment(response) {
                     product_name: item.name,
                     price: item.price,
                     quantity: item.quantity,
-                    image: item.image,
-                    product_id: item.id   
+                    image: item.image || '',
+                    product_id: item.id,
+                    variant_id: item.variantId
                 }))
             };
             

@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>RADIANT JEWEL </title>
+      <meta name="description" content="Shop exquisite handcrafted jewellery at Radiant Jewel. Necklaces, earrings, maang tikka, bridal sets, bangles & more. Free shipping on orders above ₹999.">
+      <meta name="keywords" content="jewellery, necklaces, earrings, bridal sets, maang tikka, bangles, kundan jewellery, pearl jewellery">
+       <meta name="author" content="Radiant Jewel">
+        <title>RADIANT JEWEL </title>
+  
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/categories/category-styles.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/product-styles.css') }}">

@@ -104,10 +104,11 @@ class RapidRetailsEngine {
             }
         
             const topCategories = this.allCategories.slice(0, 5);
-            const categoriesHtml = topCategories.map(cat => 
-                `<a href="/category/${cat.id}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`
-            ).join('');
-            
+            const categoriesHtml = topCategories.map(cat => {
+                let categorySlug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                return `<a href="/collection/${categorySlug}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`;
+            }).join('');
+                        
             header.innerHTML = `
                 <div class="web-header">
                     <div class="top-bar">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
@@ -539,7 +540,7 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         this.slideTimer = setInterval(() => {
             const next = (this.slideIdx + 1) % count;
             this.changeSlide(next);
-        }, 5000);
+        }, 7000);
     }
 
     changeSlide(idx) {
@@ -833,26 +834,51 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         return;
     }
 
+    const preloadPromises = displayItems.map(async (item) => {
+        if (item.slug) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/products/${item.slug}`);
+                const data = await response.json();
+                if (data.success && data.data) {
+                    const galleryImages = data.data.gallery_images || [];
+                    const hoverImage = galleryImages[1] || galleryImages[0];
+                    if (hoverImage) {
+                        const img = new Image();
+                        img.src = this.resolveImage(hoverImage);
+                        item.hoverImage = this.resolveImage(hoverImage);
+                    }
+                }
+            } catch(e) {}
+        }
+        return item;
+    });
+
+    await Promise.all(preloadPromises);
+
     const itemsHtml = displayItems.map(item => {
         const brand = item.brand || 'Premium Brand';
         const name = item.name || 'Fashion Item';
         const rating = item.rating || '4.5';
         const current = this.getProductPrice(item);
+        const mainImage = this.resolveImage(item.image_url);
+        const hoverImageUrl = item.hoverImage || mainImage;
         
         const old = item.mrp || item.original_price || item.price || current;
         const discount = old > current ? Math.round(((old - current) / old) * 100) : 0;
         
         return `<div class="spotlight-card" onclick="window.location.href='/product/${item.slug || '#'}'">
             <div class="spotlight-card-img">
-                <img src="${this.resolveImage(item.image_url)}" 
-                    data-main="${this.resolveImage(item.image_url)}"
-                    onmouseenter="loadHoverImage(this, '${item.slug}')"
+                <img src="${mainImage}" 
+                    alt="${brand} ${name} - Radiant Jewel"
+                    data-main="${mainImage}"
+                    data-hover="${hoverImageUrl}"
+                    onmouseenter="this.src=this.dataset.hover"
                     onmouseleave="this.src=this.dataset.main"
                     onerror="this.src='${APP_CONFIG.FALLBACK_IMAGE}'" 
                     loading="lazy" 
                     width="200" 
                     height="200" 
-                    decoding="async"> 
+                    decoding="async">
                  <div class="rating-badge">★ <span>${rating}</span></div>
             </div>
             <div class="spotlight-card-info">
@@ -860,10 +886,8 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
                 <div class="card-title">${name.length > 35 ? name.substring(0, 35) + '...' : name}</div>
                 <div class="card-price">
                     <span class="current-price">₹${current}</span>
-                    ${old > current ? `<span class="old-price">₹${old}</span>` : ''}
-                    ${discount > 0 ? `<span class="discount-badge">(${discount}% off)</span>` : ''}
                 </div>
-                <button class="add-to-cart" onclick="event.stopPropagation(); window.location.href='/product/${item.slug}'">
+                <button class="add-to-cart" onclick="event.stopPropagation(); window.location.href='/product/${item.slug}'" aria-label="Explore ${name} product details">
                     <svg viewBox="0 0 24 24" fill="none">
                         <path d="M1 1H5L7.68 14.39C7.77144 14.8504 8.02191 15.264 8.38755 15.5583C8.75318 15.8526 9.2107 16.009 9.68 16H19.4C19.8693 16.009 20.3268 15.8526 20.6925 15.5583C21.0581 15.264 21.3086 14.8504 21.4 14.39L23 6H6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         <circle cx="9" cy="21" r="1.5" fill="currentColor"/>
@@ -878,7 +902,7 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
     container.innerHTML = `<div class="style-spotlight-section">
         <div class="spotlight-header">
             <h2>Style Spotlight</h2>
-            <a href="/products?type=top-selling" class="spotlight-viewall">View All →</a>
+           <a href="/top-selling" class="spotlight-viewall">View All →</a>
         </div>
         <div class="spotlight-grid">${itemsHtml}</div>
     </div>`;
@@ -1269,25 +1293,42 @@ function setupReelRedirect() {
     
     fetchAndRotate();
 })();
-window.loadHoverImage = async function(imgElement, slug) {
+window.loadHoverImage = function(imgElement) {
     if (imgElement.dataset.loading === 'true') return;
-    imgElement.dataset.loading = 'true';
-    try {
-        const response = await fetch(`${API_BASE_URL}/products/${slug}`);
-        const data = await response.json();
-        if (data.success && data.data) {
-            const galleryImages = data.data.gallery_images || [];
-            let hoverImage = galleryImages[1] || galleryImages[0];
-            if (hoverImage && hoverImage !== imgElement.dataset.main) {
-                const tempImg = new Image();
-                tempImg.src = hoverImage;
-                tempImg.onload = () => {
-                    imgElement.src = hoverImage;
-                };
-            }
-        }
-    } catch (error) { console.error(error); }
-    finally { 
-        imgElement.dataset.loading = 'false';
+    
+    const slug = imgElement.dataset.slug;
+    if (!slug) return;
+    
+    const mainImage = imgElement.dataset.main;
+    const hoverUrl = imgElement.dataset.hoverImage;
+    
+    if (hoverUrl && imgElement.src === hoverUrl) return;
+    
+    if (hoverUrl && hoverUrl !== mainImage) {
+        imgElement.src = hoverUrl;
+        return;
     }
+    
+    imgElement.dataset.loading = 'true';
+    
+    fetch(`${API_BASE_URL}/products/${slug}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.data) {
+                const galleryImages = data.data.gallery_images || [];
+                let hoverImage = galleryImages[1] || galleryImages[0];
+                if (hoverImage) {
+                    const img = new Image();
+                    img.onload = function() {
+                        imgElement.dataset.hoverImage = hoverImage;
+                        imgElement.src = hoverImage;
+                    };
+                    img.src = hoverImage;
+                }
+            }
+        })
+        .catch(() => {})
+        .finally(() => {
+            imgElement.dataset.loading = 'false';
+        });
 };
