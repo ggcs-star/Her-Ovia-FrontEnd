@@ -21,8 +21,7 @@
                     class="site-logo"
                     src=""
                     alt="Logo"
-                    style="height:40px;width:auto;"
-                    onerror="this.src='https://placehold.co/120x40?text=LOGO'"
+                    style="height:40px;width:auto;display:none;"
                 >
             </a>
                 <nav class="nav-menu" id="productDesktopNavMenu"></nav>
