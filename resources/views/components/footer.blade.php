@@ -5,8 +5,7 @@
             <!-- Column 1: Logo + Address -->
             <div class="footer-col">
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <img id="footer-logo" src="" alt="Logo" class="site-logo" style="height:40px;" onerror="this.src='https://placehold.co/120x40?text=LOGO'">
-                </div>
+<img id="footer-logo" src="" alt="Logo" class="site-logo" style="height:40px;display:none;">                </div>
                 <p class="footer-tagline">
                     Your one-stop destination for fashion and lifestyle.
                 </p>
@@ -36,7 +35,7 @@
             <ul class="quick-links-list">
                 <li>About Us</li>
                 <li><a href="/categories">All Categories</a></li>
-                <li>Blog</li>
+                <li><a href="https://blogs.radiantejewel.com/" target="_blank">Blog</a></li>
             </ul>
         </div>
 
@@ -418,6 +417,10 @@ async function initFooter() {
             const footerLogo = document.getElementById('footer-logo');
             if (footerLogo && logo) {
                 footerLogo.src = logo;
+                footerLogo.style.display = 'block';
+                footerLogo.onerror = function() {
+                    this.style.display = 'none';
+                };
             }
         }
 
@@ -429,7 +432,6 @@ async function initFooter() {
             const categories = catData.data.slice(0, 6);
             if (list) {
                 list.innerHTML = categories.map(cat => {
-                    const hasChildren = cat.children && cat.children.length > 0;
                     const slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
                     const linkUrl = `/collection/${slug}`;
                     
@@ -453,6 +455,7 @@ async function initFooter() {
         console.error('Footer error:', err);
     }
 }
+
 function checkLoginAndTrack() {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -468,5 +471,6 @@ function checkLoginAndTrack() {
         }
     }
 }
+
 document.addEventListener('DOMContentLoaded', initFooter);
 </script>

@@ -896,18 +896,35 @@ const API_BASE_URL = window.API_BASE_URL;
     }
     
     async function fetchAppSettingsForProductPage() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/app-settings`);
-            const data = await response.json();
-            if (data.success) {
-                const headerLogo = data.data.header_logo || data.data.app_logo;
-                const desktopLogoImg = document.getElementById('site-logo');
-                if (desktopLogoImg && headerLogo) { desktopLogoImg.src = headerLogo; desktopLogoImg.onerror = function() { this.src = 'https://placehold.co/120x40?text=LOGO'; }; }
-                const mobileLogo = document.querySelector('.header-left img');
-                if (mobileLogo && headerLogo) mobileLogo.src = headerLogo;
+    try {
+        const response = await fetch(`${API_BASE_URL}/app-settings`);
+        const data = await response.json();
+        if (data.success) {
+            const headerLogo = data.data.header_logo || data.data.app_logo;
+            
+            const desktopLogoImg = document.getElementById('site-logo');
+            if (desktopLogoImg && headerLogo) { 
+                desktopLogoImg.src = headerLogo; 
+                desktopLogoImg.style.display = 'block';
+                desktopLogoImg.onerror = function() { 
+                    this.style.display = 'none';
+                };
             }
-        } catch (error) { console.error('Error fetching app settings:', error); }
-    }
+            
+            const desktopHeaderLogo = document.getElementById('desktopHeaderLogo');
+            if (desktopHeaderLogo && headerLogo) {
+                desktopHeaderLogo.src = headerLogo;
+                desktopHeaderLogo.style.display = 'block';
+                desktopHeaderLogo.onerror = function() {
+                    this.style.display = 'none';
+                };
+            }
+            
+            const mobileLogo = document.querySelector('.header-left img');
+            if (mobileLogo && headerLogo) mobileLogo.src = headerLogo;
+        }
+    } catch (error) { console.error('Error fetching app settings:', error); }
+}
     
     function loadProductDesktopCategories() {
         const navMenu = document.getElementById('productDesktopNavMenu');

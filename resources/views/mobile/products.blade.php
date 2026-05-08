@@ -80,11 +80,17 @@
             overflow-x:auto;
             overflow-y:hidden;
             white-space:nowrap;
-            border-bottom:1px solid #f0f0f0;
             background:#fff;
             position:sticky;
             top:calc(56px + env(safe-area-inset-top));
             z-index:999;
+        }
+        .products-page-wrapper {
+            border: none !important;
+        }
+
+        .desktop-products-area {
+            border: none !important;
         }
         .sub-strip::-webkit-scrollbar { display: none; }
         .sub-item{
@@ -339,11 +345,15 @@
                 top: 0;
                 padding: 16px 0 20px 0;
                 margin-bottom: 20px;
-                border-bottom: 1px solid #f0f0f0;
+                border-bottom: none !important;
                 background: transparent;
                 gap: 20px;
             }
-            
+            .sub-strip {
+    border: none !important;
+    border-bottom: none !important;
+    border-top: none !important;
+}
             .sub-item {
                 min-width: 70px;
             }
@@ -1060,6 +1070,7 @@
         width: 100% !important;
     }
 }
+
     </style>
 </head>
 <body data-page="products" data-subcategory-id="{{ request()->query('subcategory') }}" data-category-id="{{ request()->query('category') }}" data-category-slug="{{ request()->route('categorySlug') }}">
@@ -1090,12 +1101,10 @@
             <div class="logo-area">
                 <a href="/" class="logo">
                     <img 
-                        src=""
                         id="desktopHeaderLogo"
                         class="site-logo"
                         alt="Logo"
-                        style="height:40px;width:auto;"
-                        onerror="this.src='https://placehold.co/120x40?text=LOGO'"
+                        style="height:40px;width:auto;display:none;"
                     >
                 </a>
                 <nav class="nav-menu" id="productNavMenu">
@@ -1530,8 +1539,13 @@ async function fetchData() {
         }
         
         let targetSubId = null;
+        let targetSubName = null;
         const path = window.location.pathname;
-        const collectionMatch = path.match(/\/collection\/([^\/]+)/);
+        const collectionMatch = path.match(/\/collection\/([^\/]+)(?:\/([^\/]+))?/);
+        
+        if (collectionMatch && collectionMatch[2]) {
+            targetSubName = decodeURIComponent(collectionMatch[2]);
+        }
         
         if (collectionMatch && collectionMatch[1]) {
             const categorySlug = collectionMatch[1];
@@ -1542,13 +1556,27 @@ async function fetchData() {
                     if (cat.children && cat.children.length) {
                         let mainSlug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
                         if (mainSlug === categorySlug) {
-                            targetSubId = cat.children[0].id;
+                            if (targetSubName) {
+                                for (let sub of cat.children) {
+                                    let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                                    if (subSlug === targetSubName) {
+                                        targetSubId = sub.id;
+                                        currentSub = targetSubId;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!targetSubId && cat.children.length) {
+                                targetSubId = cat.children[0].id;
+                                currentSub = targetSubId;
+                            }
                             break;
                         }
                         for (let sub of cat.children) {
                             let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
                             if (subSlug === categorySlug) {
                                 targetSubId = sub.id;
+                                currentSub = targetSubId;
                                 break;
                             }
                         }
@@ -1558,6 +1586,7 @@ async function fetchData() {
             }
         } else {
             targetSubId = document.body.dataset.subcategoryId;
+            currentSub = targetSubId;
         }
         
         if (!targetSubId) return;
@@ -1574,7 +1603,9 @@ async function fetchData() {
             if (mainCat) {
                 allSubs = mainCat.children || [];
                 renderSubs();
-                currentSub = targetSubId;
+                if (!currentSub || currentSub != targetSubId) {
+                    currentSub = targetSubId;
+                }
                 fetchProducts(currentSub);
                 loadDesktopFilters(mainCat);
                 initDesktopFiltersToggle();
@@ -1615,13 +1646,17 @@ async function fetchData() {
         const fallback = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
         
         strip.innerHTML = allSubs.map(sub => `
-            <div class="sub-item ${sub.id == currentSub ? 'active' : ''}" onclick="changeSubcategory(${sub.id})">
+            <div class="sub-item ${sub.id == currentSub ? 'active' : ''}" data-subid="${sub.id}" onclick="changeSubcategory(${sub.id})">
                 <div class="sub-img"><img src="${sub.image_url || fallback}" onerror="this.src='${fallback}'"></div>
                 <div class="sub-name">${sub.name}</div>
             </div>
         `).join('');
-        
-        document.querySelectorAll('.sub-item').forEach((item, i) => item.dataset.subid = allSubs[i].id);
+
+        document.querySelectorAll('.sub-item').forEach((item) => {
+            if (item.dataset.subid == currentSub) {
+                item.classList.add('active');
+            }
+        });
     }
 
     window.changeSubcategory = function(newSubId) {
@@ -2337,7 +2372,10 @@ window.updateDesktopFiltersFromProducts = function(products) {
             if (data.success) {
                 const headerLogo = data.data.header_logo || data.data.app_logo;
                 const desktopLogoEl = document.getElementById('desktopHeaderLogo');
-                if (desktopLogoEl && headerLogo) desktopLogoEl.src = headerLogo;
+                    if (desktopLogoEl && headerLogo) {
+                        desktopLogoEl.src = headerLogo;
+                        desktopLogoEl.style.display = 'block';
+                    }
             }
         } catch (error) { console.error('Error fetching app settings:', error); }
     }

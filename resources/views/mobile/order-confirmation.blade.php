@@ -789,21 +789,20 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            background: white;
+            background: #fff;
             border-bottom: 1px solid #f0f0f0;
             width: 100%;
+            padding: 12px 0 !important;
         }
 
         .header-container {
-            width: 100%;
-            max-width: 100%;
-            margin: 0;
-            padding: 12px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
-            min-height: 56px;
+            gap: 8px !important;
+            padding: 8px 16px !important;
+            width: 100%;
+            min-height: auto !important;
         }
 
         @media (min-width: 768px) {
@@ -819,13 +818,13 @@
         }
 
         .logo-search-container {
+            flex: 1;
             display: flex;
             align-items: center;
-            flex: 1;
-            gap: 8px;
+            gap: 6px;
             background: #f5f5f6;
             border-radius: 30px;
-            padding: 4px 4px 4px 12px;
+            padding: 4px 8px;
             border: 1px solid #e0e0e0;
             min-width: 0;
         }
@@ -834,9 +833,9 @@
         }
 
         .site-logo {
-            height: 32px;
-            width: auto;
-            max-width: 100px;
+            height: 32px !important;
+            width: auto !important;
+            max-width: 100px !important;
             object-fit: contain;
         }
 
@@ -858,10 +857,10 @@
         .search-wrapper input {
             flex: 1;
             border: none;
-            background: none;
+            background: transparent;
             outline: none;
             font-size: 13px;
-            padding: 8px 0;
+            padding: 6px 0;
             min-width: 0;
             width: 100%;
             font-family: 'Inter', sans-serif;
@@ -899,15 +898,15 @@
         }
 
         .search-icon-btn svg {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             stroke: #666;
             stroke-width: 2;
         }
 
         .header-icons {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             flex-shrink: 0;
         }
 
@@ -916,7 +915,6 @@
             border: none;
             cursor: pointer;
             padding: 6px;
-            color: #333;
             width: 36px;
             height: 36px;
             display: flex;
@@ -933,7 +931,7 @@
             }
         }
 
-        .header-icon-btn svg {
+       .header-icon-btn svg {
             width: 22px;
             height: 22px;
             stroke: #333;
@@ -967,11 +965,12 @@
 
         @media (max-width: 480px) {
             .header-logo {
-                display: none;
+                display: block;
             }
             .site-logo {
-                height: 28px;
-                max-width: 80px;
+                display: block !important;
+                height: 28px !important;
+                max-width: 80px !important;
             }
         }
         
@@ -1783,8 +1782,7 @@ function renderHeader() {
                                             class="site-logo"
                                             src=""
                                             alt="Logo"
-                                            style="height:40px;width:auto;"
-                                            onerror="this.src='https://placehold.co/120x40?text=LOGO'"
+                                            style="height:40px;width:auto;display:none;"
                                         >
                                     </a>
                                     <nav class="nav-menu">${categoriesHtml}</nav>
@@ -1883,12 +1881,8 @@ function renderHeader() {
                         </div>
                         <div class="all-categories-popup" id="allCategoriesPopup" style="display:none;"></div>
                     `;
-                    setTimeout(function() {
-                            if (window.innerWidth >= 1025) {
-                                initWebSearchDropdown();
-                            }
-                        }, 300);
-                    setTimeout(() => {
+
+                    const loadDesktopLogo = () => {
                         const webLogo = document.getElementById('site-logo');
                         if (webLogo) {
                             fetch(`${API_BASE_URL}/app-settings`)
@@ -1898,12 +1892,26 @@ function renderHeader() {
                                         const logoUrl = data.data.header_logo || data.data.app_logo;
                                         if (logoUrl && webLogo) {
                                             webLogo.src = logoUrl;
+                                            webLogo.style.display = 'block';
+                                            webLogo.style.height = '32px';
+                                            webLogo.style.width = 'auto';
+                                            webLogo.onerror = function() {
+                                                this.style.display = 'none';
+                                            };
                                         }
                                     }
                                 })
                                 .catch(err => console.log('Logo error:', err));
                         }
-                    }, 100);
+                    };
+
+                    setTimeout(loadDesktopLogo, 50);
+
+                    setTimeout(function() {
+                        if (window.innerWidth >= 1025) {
+                            initWebSearchDropdown();
+                        }
+                    }, 300);
                     const navItems = document.querySelectorAll('.nav-item');
                     const popup = document.getElementById('allCategoriesPopup');
                     
@@ -1924,7 +1932,7 @@ function renderHeader() {
                                                     html += `<div style="margin-bottom:20px;"><h3 style="font-size:14px; font-weight:700; border-bottom:2px solid #ff3f6c; display:inline-block; margin-bottom:12px;">${cat.name}</h3><ul style="list-style:none; margin-top:12px;">`;
                                                     cat.children.slice(0,6).forEach(sub => {
                                                         let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
+                                                            html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
                                                     });
                                                     if (cat.children.length > 6) {
                                                         html += `<li><a href="/category/${cat.id}" style="color:#ff3f6c; font-size:11px;">+${cat.children.length-6} more →</a></li>`;
@@ -1974,9 +1982,9 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
                     <div class="logo-search-container">
                         <div class="header-logo">
                             <a href="/">
-                                <img src="/images/logo.jpg" alt="RAPID RETAIL" class="site-logo" 
-    style="height:32px; width:auto;"
-    onerror="this.src='https://via.placeholder.com/100x35?text=RAPID'">
+                                <img src="" alt="Logo" class="site-logo" id="mobile-site-logo"
+                                    style="height:32px; width:auto; display:none;"
+                                    onerror="this.style.display='none'">
                             </a>
                         </div>
                         <div class="search-wrapper">
@@ -2517,26 +2525,31 @@ window.addEventListener('resize', () => {
         function handleBackToOrders() {
             window.location.replace('/orders');
         }
-        async function applyAppSettingsForOrderPage() {
-            try {
-                const res = await fetch(`${API_BASE_URL}/app-settings`);
-                const data = await res.json();
+    async function applyAppSettingsForOrderPage() {
+        try {
+            const res = await fetch(`${API_BASE_URL}/app-settings`);
+            const data = await res.json();
 
-                if (data.success) {
-                    const headerLogo = data.data.header_logo || data.data.app_logo;
-                    const logoImg = document.getElementById('site-logo');
-                    if (logoImg && headerLogo) {
-                        logoImg.src = headerLogo;
-                    }
-                    if (data.data.app_name) {
-                        document.title = data.data.app_name;
-                    }
+            if (data.success) {
+                const headerLogo = data.data.header_logo || data.data.app_logo;
+                const logoImg = document.getElementById('site-logo');
+                if (logoImg && headerLogo) {
+                    logoImg.src = headerLogo;
+                    logoImg.style.display = 'block';
+                    logoImg.onerror = function() {
+                        this.style.display = 'none';
+                    };
                 }
-            } catch (e) {
-                console.error('Logo load error:', e);
+                if (data.data.app_name) {
+                    document.title = data.data.app_name;
+                }
             }
+        } catch (e) {
+            console.error('Logo load error:', e);
         }
-        document.querySelectorAll('.back-btn-header, [onclick="goBack()"]').forEach(btn => {
+    }
+            
+    document.querySelectorAll('.back-btn-header, [onclick="goBack()"]').forEach(btn => {
             btn.onclick = function(e) {
                 e.preventDefault();
                 window.location.replace('/orders');
