@@ -31,7 +31,7 @@
             <ul class="quick-links-list">
                 <li>About Us</li>
                 <li><a href="/categories">All Categories</a></li>
-                <li><a href="https://blogs.radiantejewel.com/" target="_blank">Blog</a></li>
+                <li>Blog</li>
             </ul>
         </div>
 
