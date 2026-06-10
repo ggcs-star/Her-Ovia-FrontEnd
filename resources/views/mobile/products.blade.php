@@ -4,28 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     @php
-        $pageTitle = 'Products | Radiant Jewel';
-        $pageDescription = 'Shop beautiful jewellery at Radiant Jewel. Find necklaces, earrings, maang tikka, bridal sets, and bangles with amazing discounts.';
+        $pageTitle = 'Products | MAHERA JEWEL';
+        $pageDescription = 'Shop beautiful jewellery at MAHERA JEWEL. Find necklaces, earrings, maang tikka, bridal sets, and bangles with amazing discounts.';
         
         if(request()->route('categorySlug')) {
             $categoryName = ucfirst(str_replace('-', ' ', request()->route('categorySlug')));
-            $pageTitle = $categoryName . ' | Radiant Jewel';
-            $pageDescription = 'Shop beautiful ' . $categoryName . ' at Radiant Jewel. Best quality ' . $categoryName . ' with amazing discounts. Free shipping on orders above ₹999.';
+            $pageTitle = $categoryName . ' | MAHERA JEWEL';
+            $pageDescription = 'Shop beautiful ' . $categoryName . ' at MAHERA JEWEL. Best quality ' . $categoryName . ' with amazing discounts. Free shipping on orders above ₹999.';
         }
         
         if(request()->query('subcategory')) {
-            $pageDescription = 'Shop beautiful jewellery at Radiant Jewel. Find the perfect piece for every occasion.';
+            $pageDescription = 'Shop beautiful jewellery at MAHERA JEWEL. Find the perfect piece for every occasion.';
         }
     @endphp
 
     <title>{{ $pageTitle }}</title>
     <meta name="description" content="{{ $pageDescription }}">
     <meta name="keywords" content="jewellery, necklace, earrings, maang tikka, bridal sets, bangles, kundan jewellery">
-    <meta name="author" content="Radiant Jewel">
+    <meta name="author" content="MAHERA JEWEL">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="{{ url()->current() }}">
 
-    <title>Products | RADIANT JEWEL</title>
+    <title>Products | MAHERA JEWEL</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <style>

@@ -869,7 +869,7 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         return `<div class="spotlight-card" onclick="window.location.href='/product/${item.slug || '#'}'">
             <div class="spotlight-card-img">
                 <img src="${mainImage}" 
-                    alt="${brand} ${name} - Radiant Jewel"
+                    alt="${brand} ${name} - MAHERA JEWEL"
                     data-main="${mainImage}"
                     data-hover="${hoverImageUrl}"
                     onmouseenter="this.src=this.dataset.hover"

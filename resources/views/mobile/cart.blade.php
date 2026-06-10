@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Shopping Bag | RADIANT JEWEL</title>
+    <title>Shopping Bag | MAHERA JEWEL</title>
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/cart.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
 <header class="site-header" id="site-header"></header>
 
 <div class="safety-alert">
-    <i>🔒</i> A gentle reminder to stay alert against prevalent fraudulent practices. RAPID RETAIL will never ask for OTPs, payments via unofficial links, or personal details for any contests or promotions.
+    <i>🔒</i> A gentle reminder to stay alert against prevalent fraudulent practices. MAHERA JEWEL will never ask for OTPs, payments via unofficial links, or personal details for any contests or promotions.
 </div>
 
 <div class="gifts-banner">

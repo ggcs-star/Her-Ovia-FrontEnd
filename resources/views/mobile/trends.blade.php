@@ -7,7 +7,7 @@
 <meta name="viewport"
 content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-<title>Trending Reels | RADIANT JEWEL</title>
+<title>Trending Reels | MAHERA JEWEL</title>
 
 <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
 <link rel="stylesheet" href="{{ asset('mobile/trends.css') }}">

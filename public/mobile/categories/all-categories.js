@@ -161,7 +161,7 @@ class AllCategoriesPage {
                     <div class="main-header">
                         <div class="logo-area">
                             <a href="/" class="logo">
-                                <img src="${this.appSettings?.header_logo || 'https://placehold.co/120x40?text=LOGO'}" alt="Radiante Jewel Logo" id="site-logo" class="site-logo" onerror="this.src='https://placehold.co/120x40?text=LOGO'">
+                                <img src="${this.appSettings?.header_logo || 'https://placehold.co/120x40?text=LOGO'}" alt="MAHERA JEWEL Logo" id="site-logo" class="site-logo" onerror="this.src='https://placehold.co/120x40?text=LOGO'">
                             </a>
                             <nav class="nav-menu" id="navMenu">${categoriesHtml}</nav>
                         </div>
@@ -221,7 +221,7 @@ class AllCategoriesPage {
                         <div class="logo-search-container">
                             <div class="header-logo">
                                 <a href="/" aria-label="Home">
-                                    <img src="${this.appSettings?.header_logo || '/images/logo.jpg'}" alt="Radiante Jewel Logo" class="site-logo" onerror="this.src='https://via.placeholder.com/100x35?text=RAPID'">
+                                    <img src="${this.appSettings?.header_logo || '/images/logo.jpg'}" alt="MAHERA JEWEL Logo" class="site-logo" onerror="this.src='https://via.placeholder.com/100x35?text=MAHERA'">
                                 </a>
                             </div>
                             <div class="search-wrapper">

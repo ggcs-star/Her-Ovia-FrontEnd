@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Returns & Refund Policy | RADIANTE JEWEL</title>
-    <meta name="description" content="Radiante Jewel returns and refund policy - 3 days return window, eligibility conditions, and refund process.">
+    <title>Returns & Refund Policy | MAHERA JEWEL</title>
+    <meta name="description" content="MAHERA JEWEL returns and refund policy - 3 days return window, eligibility conditions, and refund process.">
     <meta name="robots" content="index, follow">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="preload" href="{{ asset('mobile/style.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -200,7 +200,7 @@
             
             <div class="policy-content">
                 <div class="policy-section">
-                    <p>We want you to love every piece from Radianté Jewel. Please read our returns and refund policy carefully before placing your order.</p>
+                    <p>We want you to love every piece from MAHERA JEWEL. Please read our returns and refund policy carefully before placing your order.</p>
                 </div>
                 
                 <div class="policy-section">
@@ -237,7 +237,7 @@
                     <h2>3. How to Initiate a Return</h2>
                     <p>Follow these steps to request a return:</p>
                     <ul>
-                        <li><strong>Step 1:</strong> Contact us within 3 days of delivery at <strong>info@radiantejewel.com</strong> or call <strong>+91 88663 73077</strong> (Mon–Sat, 10AM – 7PM)</li>
+                        <li><strong>Step 1:</strong> Contact us within 3 days of delivery at <strong>info@maherajewel.com</strong> or call <strong>+91 9653270168</strong> (Mon–Sat, 10AM – 10PM)</li>
                         <li><strong>Step 2:</strong> Share your Order ID and a clear photograph of the product, packaging, and intact tag</li>
                         <li><strong>Step 3:</strong> Our team will review your request within 1–2 business days and confirm eligibility</li>
                         <li><strong>Step 4:</strong> If approved, you will receive return shipping instructions</li>
@@ -285,23 +285,21 @@
                     
                     <div class="contact-box">
                         <h3>📧 Email:</h3>
-                        <p>info@radiantejewel.com</p>
+                        <p>info@maherajewel.com</p>
                         
                         <h3>📞 Phone:</h3>
-                        <p>+91 88663 73077</p>
+                        <p>+91 9653270168</p>
                         
                         <h3>🕐 Hours:</h3>
-                        <p>Mon–Sat, 10AM – 7PM</p>
+                        <p>Mon–Sat, 10AM – 10PM</p>
                         
                         <h3>📍 Address:</h3>
-                        <p>5th Floor, Grand Emporio, Shiv Habitat B-Block,<br>
-                        Motera Stadium Rd, Motera, Ahmedabad,<br>
-                        Gujarat – 380005</p>
+                        <p>Demo Street, Business Park, Mumbai, Maharashtra, India, 400068</p>
                     </div>
                 </div>
                 
                 <div class="policy-section" style="text-align: center; border-bottom: none;">
-                    <p style="font-size: 12px; color: #999;">© 2025 Radianté Jewel. All rights reserved.</p>
+                    <p style="font-size: 12px; color: #999;">© 2026 MAHERA JEWEL. All rights reserved.</p>
                 </div>
             </div>
         </div>

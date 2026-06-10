@@ -129,7 +129,7 @@
         </div>
 
         <div class="footer-bottom">
-            <p>© <span id="footerYear"></span> Radiant Jewel. All Rights Reserved.</p>
+            <p>© <span id="footerYear"></span> MAHERA JEWEL. All Rights Reserved.</p>
         </div>
 
     </div>
