@@ -174,7 +174,7 @@
             name: titleElem ? titleElem.textContent : 'Product',
             price: priceElement ? priceElement.textContent.replace('₹', '').replace(/,/g, '') : '0',
             image: mainImage ? mainImage.src : '',
-            brand: brandElem ? brandElem.textContent : 'RADIANTE',
+            brand: brandElem ? brandElem.textContent : 'MAHERA JEWEL',
             slug: window.location.pathname.split('/').pop()
         };
     }
@@ -302,7 +302,7 @@
                 '<button class="wishlist-remove-btn" onclick="event.stopPropagation(); window.wishlist.removeFromWishlist(\'' + item.id + '\')" aria-label="Remove">✕</button>' +
             '</div>' +
             '<div class="wishlist-info">' +
-                '<div class="wishlist-brand">' + escapeHtml(item.brand || 'RADIANTE') + '</div>' +
+                '<div class="wishlist-brand">' + escapeHtml(item.brand || 'MAHERA') + '</div>' +
                 '<div class="wishlist-title" onclick="location.href=\'/product/' + item.slug + '\'">' + escapeHtml(item.name) + '</div>' +
                 '<div class="wishlist-price">₹' + Number(item.price).toLocaleString('en-IN') + '</div>' +
                 '<button class="wishlist-move-to-bag" onclick="window.wishlist.moveToBag(\'' + item.id + '\')" aria-label="Move to bag">MOVE TO BAG</button>' +

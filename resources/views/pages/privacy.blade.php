@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Privacy Policy | RADIANTE JEWEL</title>
-    <meta name="description" content="Radiante Jewel privacy policy - how we collect, use, store and protect your personal information.">
+    <title>Privacy Policy | MAHERA JEWEL</title>
+    <meta name="description" content="MAHERA JEWEL privacy policy - how we collect, use, store and protect your personal information.">
     <meta name="robots" content="index, follow">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="preload" href="{{ asset('mobile/style.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -204,7 +204,7 @@
                     <p>This Privacy Policy is published in accordance with the Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data of Information) Rules, 2011 under the Information Technology Act, 2000, and the Digital Personal Data Protection Act, 2023.</p>
                     <p>Please read this Privacy Policy carefully. By using our website or services, you agree and consent to the terms herein. If you do not agree, please do not use our website. You provide your unconditional consent under Section 43A and Section 72A of the Information Technology Act, 2000.</p>
                     <div class="highlight">
-                        <strong>📌 Note:</strong> Raidenté Jewel ("we", "us", "our", or "Raidenté Jewel") is committed to protecting the privacy of all users ("you", "your") who access, browse, purchase from, or otherwise interact with our website (www.radiantejewel.com), mobile applications, or customer service channels.
+                        <strong>📌 Note:</strong> MAHERA JEWEL ("we", "us", "our", or "MAHERA JEWEL") is committed to protecting the privacy of all users ("you", "your") who access, browse, purchase from, or otherwise interact with our website (www.maherajewel.com), mobile applications, or customer service channels.
                     </div>
                     <p>This Privacy Policy may be amended from time to time. We recommend that you review it regularly. Continued use of our website after any update implies your unconditional acceptance of the revised policy.</p>
                 </div>
@@ -310,7 +310,7 @@
                 
                 <div class="policy-section">
                     <h2>6. User Discretion and Opt-Out</h2>
-                    <p>You provide your information voluntarily. You have the right to withdraw consent at any time by writing to us at info@radiantejewel.com. Please note that withdrawing consent may affect your ability to use certain features or services on our website.</p>
+                    <p>You provide your information voluntarily. You have the right to withdraw consent at any time by writing to us at info@maherajewel.com. Please note that withdrawing consent may affect your ability to use certain features or services on our website.</p>
                     <p>You may also update or correct your Personal Information at any time. Please note that we may retain previous versions of your information in our records.</p>
                 </div>
                 
@@ -330,7 +330,7 @@
                         <li>Object to or restrict certain types of processing</li>
                         <li>File a complaint with the Data Protection Board of India</li>
                     </ul>
-                    <p>To exercise any of the above rights, please write to: info@radiantejewel.com</p>
+                    <p>To exercise any of the above rights, please write to: info@maherajewel.com</p>
                 </div>
                 
                 <div class="policy-section">
@@ -351,7 +351,7 @@
                 
                 <div class="policy-section">
                     <h2>12. Grievance Redressal</h2>
-                    <p>Raidenté Jewel is committed to resolving your privacy-related concerns promptly and transparently. Our grievance redressal principles are:</p>
+                    <p>MAHERA JEWEL is committed to resolving your privacy-related concerns promptly and transparently. Our grievance redressal principles are:</p>
                     <ul>
                         <li>All users are treated fairly and with respect at all times</li>
                         <li>Complaints are addressed with an open mind, courtesy, and within a reasonable timeframe</li>
@@ -361,7 +361,7 @@
                     <p>To file a complaint or share feedback, please contact our Grievance Officer:</p>
                     <div class="contact-box" style="margin-top: 10px;">
                         <p><strong>Grievance Officer:</strong> [To be appointed]</p>
-                        <p><strong>Email:</strong> info@radiantejewel.com</p>
+                        <p><strong>Email:</strong> info@maherajewel.com</p>
                         <p><strong>Phone:</strong> +91 88663 73077</p>
                         <p><strong>Response Time:</strong> Within 30 days of receipt of complaint</p>
                     </div>
@@ -381,7 +381,7 @@
                 
                 <div class="policy-section">
                     <h2>15. Your Consent</h2>
-                    <p>By using our website and/or providing your information, you consent to the collection, use, and sharing of your information as described in this Privacy Policy. If we update our Privacy Policy, the revised version will be posted at www.radiantejewel.com so you are always aware of our current practices.</p>
+                    <p>By using our website and/or providing your information, you consent to the collection, use, and sharing of your information as described in this Privacy Policy. If we update our Privacy Policy, the revised version will be posted at www.maherajewel.com so you are always aware of our current practices.</p>
                 </div>
                 
                 <div class="policy-section">
@@ -389,9 +389,9 @@
                     <p>For any privacy-related queries, concerns, or requests, please reach us at:</p>
                     
                     <div class="contact-box">
-                        <p><strong>📧 Email:</strong> info@radiantejewel.com</p>
+                        <p><strong>📧 Email:</strong> info@maherajewel.com</p>
                         <p><strong>📞 Phone:</strong> +91 88663 73077 (Mon–Sat, 10AM – 7PM)</p>
-                        <p><strong>🌐 Website:</strong> www.radiantejewel.com</p>
+                        <p><strong>🌐 Website:</strong> www.maherajewel.com</p>
                         <p><strong>📍 Address:</strong> 5th Floor, Grand Emporio, Shiv Habitat B-Block, Motera Stadium Rd, Motera, Ahmedabad, Gujarat – 380005</p>
                     </div>
                 </div>

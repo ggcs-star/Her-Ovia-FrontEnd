@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Terms & Conditions | RADIANTE JEWEL</title>
-    <meta name="description" content="Read Radiante Jewel's terms and conditions, policies, and guidelines for using our website and services.">
+    <title>Terms & Conditions | MAHERA JEWEL</title>
+    <meta name="description" content="Read MAHERA JEWEL's terms and conditions, policies, and guidelines for using our website and services.">
     <meta name="robots" content="index, follow">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="preload" href="{{ asset('mobile/style.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -171,7 +171,7 @@
             <div class="terms-content">
                 <div class="terms-section">
                     <h2>OVERVIEW</h2>
-                    <p>This website is operated by Radianté Jewel. Throughout the site, the terms "we", "us" and "our" refer to Radianté Jewel. Radianté Jewel offers this website, including all information, tools, and services available from this site to you, the user, conditioned upon your acceptance of all terms, conditions, policies, and notices stated here.</p>
+                    <p>This website is operated by MAHERA JEWEL. Throughout the site, the terms "we", "us" and "our" refer to MAHERA JEWEL. MAHERA JEWEL offers this website, including all information, tools, and services available from this site to you, the user, conditioned upon your acceptance of all terms, conditions, policies, and notices stated here.</p>
                     <p>By visiting our site and/ or purchasing something from us, you engage in our "Service" and agree to be bound by the following terms and conditions ("Terms of Service", "Terms"), including those additional terms and conditions and policies referenced herein and/or available by hyperlink. These Terms of Service apply to all users of the site, including without limitation users who are browsers, vendors, customers, merchants, and/ or contributors of content.</p>
                     <p>Please read these Terms of Service carefully before accessing or using our website. By accessing or using any part of the site, you agree to be bound by these Terms of Service. If you do not agree to all the terms and conditions of this agreement, then you may not access the website or use any services. If these Terms of Service are considered an offer, acceptance is expressly limited to these Terms of Service.</p>
                 </div>
@@ -262,7 +262,7 @@
                 
                 <div class="terms-section">
                     <h2>SECTION 14 - INDEMNIFICATION</h2>
-                    <p>You agree to indemnify, defend and hold harmless Radianté Jewel and our parent, subsidiaries, affiliates, partners, officers, directors, agents, contractors, licensors, service providers, subcontractors, suppliers, interns and employees, harmless from any claim or demand, including reasonable attorneys' fees, made by any third-party due to or arising out of your breach of these Terms of Service or the documents they incorporate by reference, or your violation of any law or the rights of a third-party.</p>
+                    <p>You agree to indemnify, defend and hold harmless MAHERA JEWEL and our parent, subsidiaries, affiliates, partners, officers, directors, agents, contractors, licensors, service providers, subcontractors, suppliers, interns and employees, harmless from any claim or demand, including reasonable attorneys' fees, made by any third-party due to or arising out of your breach of these Terms of Service or the documents they incorporate by reference, or your violation of any law or the rights of a third-party.</p>
                 </div>
                 
                 <div class="terms-section">

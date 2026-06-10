@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Category Products | RADIANT JEWEL</title>
+    <title>Category Products | MAHERA JEWEL</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/category-styles.css') }}">
