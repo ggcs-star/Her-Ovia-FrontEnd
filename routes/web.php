@@ -1,12 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SitemapController;
 
 /*
 |--------------------------------------------------------------------------
 | Entry Point
 |--------------------------------------------------------------------------
 */
+
 
 // Project start → Landing page
 Route::get('/', function () {
@@ -119,6 +121,9 @@ Route::get('/returns', function () {
 Route::get('/privacy-policy', function () {
     return view('pages.privacy');
 });
+Route::get('/shipping', function () {
+    return view('pages.shipping');
+})->name('shipping');
 /*
 |--------------------------------------------------------------------------
 | Logout
