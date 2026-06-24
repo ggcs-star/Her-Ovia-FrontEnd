@@ -26,6 +26,12 @@
     <link rel="canonical" href="{{ url()->current() }}">
 
     <title>Products | MAHERA JEWEL</title>
+    <title>Jewellery Collection | Mahera Jewel</title>
+
+    <meta name="description"
+    content="Explore premium jewellery collection from Mahera Jewel. Find necklaces, earrings, bangles and bridal jewellery.">
+
+    <link rel="canonical" href="{{ url()->current() }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <style>

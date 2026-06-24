@@ -5,7 +5,7 @@
             <!-- Column 1: Logo + Address -->
             <div class="footer-col">
                 <div style="display:flex; align-items:center; gap:10px;">
-<img id="footer-logo" src="" alt="Logo" class="site-logo" style="height:40px;display:none;">                </div>
+                    <img id="footer-logo" src="" alt="Logo" class="site-logo" style="height:40px;display:none;">                </div>
                 <p class="footer-tagline">
                     Your one-stop destination for fashion and lifestyle.
                 </p>
@@ -35,16 +35,19 @@
             </ul>
         </div>
 
-            <!-- Column 4: Support -->
             <div class="footer-col">
                 <h4>Support</h4>
                 <ul class="footer-support-list">
-                    <li>Help Center</li>
+                    <!-- <li>Help Center</li> -->
+                    <li><a href="/privacy-policy">Privacy Policy</a></li>
+                    <li><a href="/terms">Terms & Conditions</a></li>
                     <li><a href="/returns">Returns & Refunds</a></li>
-                    <li>Shipping Info</li>
+                    <li><a href="/shipping">Shipping Policy</a></li>
                     <li><a href="javascript:void(0)" onclick="checkLoginAndTrack()">Track Order</a></li>
-                    <li>Contact Us</li>
-                    <li>FAQs</li>
+                    <!-- <li>Contact Us</li>
+                    <li>FAQs</li> -->
+                     
+                    
                 </ul>
             </div>
 

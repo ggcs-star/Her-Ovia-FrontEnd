@@ -397,7 +397,7 @@
                 </div>
                 
                 <div class="policy-section" style="text-align: center; border-bottom: none;">
-                    <p style="font-size: 12px; color: #999;">© 2025 Raidenté Jewel. All rights reserved.</p>
+                    <p style="font-size: 12px; color: #999;">© 2026 Mahera Jewel. All rights reserved.</p>
                 </div>
             </div>
         </div>

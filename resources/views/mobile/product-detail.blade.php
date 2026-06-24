@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Product Details | MAHERA JEWEL</title>
+    <meta name="description"
+    content="Buy premium jewellery online from Mahera Jewel with secure payment and fast delivery.">
+
+    <link rel="canonical" href="{{ url()->current() }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/product-styles.css') }}">
