@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Returns & Refund Policy | MAHERA JEWEL</title>
-    <meta name="description" content="MAHERA JEWEL returns and refund policy - 3 days return window, eligibility conditions, and refund process.">
+    <title>Returns & Refund Policy | Maherá Jewels</title>
+    <meta name="description" content="Maherá Jewels returns and refund policy - 3 days return window, eligibility conditions, and refund process.">
     <meta name="robots" content="index, follow">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="preload" href="{{ asset('mobile/style.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -86,7 +86,7 @@
             line-height: 1.7;
         }
         
-        .policy-section ul {
+        .policy-section ul, .policy-section ol {
             margin: 10px 0 10px 25px;
         }
         
@@ -120,13 +120,10 @@
             margin-top: 20px;
         }
         
-        .contact-box h3 {
-            margin-top: 0;
-            color: #440C2C;
-        }
-        
         .contact-box p {
             margin-bottom: 8px;
+            font-size: 14px;
+            color: #333;
         }
         
         .back-btn {
@@ -195,12 +192,13 @@
             
             <div class="page-header">
                 <h1>Returns & Refund Policy</h1>
-                <p>Effective Date: 2025 | Last updated: May 2026</p>
+                <p>Effective Date: 2026</p>
+                <p><a href="https://www.maherajewels.com" style="color: #666; text-decoration: none;">www.maherajewels.com</a></p>
             </div>
             
             <div class="policy-content">
                 <div class="policy-section">
-                    <p>We want you to love every piece from MAHERA JEWEL. Please read our returns and refund policy carefully before placing your order.</p>
+                    <p>We want you to love every piece from Maherá Jewels. Please read our returns and refund policy carefully before placing your order.</p>
                 </div>
                 
                 <div class="policy-section">
@@ -236,21 +234,23 @@
                 <div class="policy-section">
                     <h2>3. How to Initiate a Return</h2>
                     <p>Follow these steps to request a return:</p>
-                    <ul>
-                        <li><strong>Step 1:</strong> Contact us within 3 days of delivery at <strong>info@maherajewel.com</strong> or call <strong>+91 9653270168</strong> (Mon–Sat, 10AM – 10PM)</li>
-                        <li><strong>Step 2:</strong> Share your Order ID and a clear photograph of the product, packaging, and intact tag</li>
-                        <li><strong>Step 3:</strong> Our team will review your request within 1–2 business days and confirm eligibility</li>
-                        <li><strong>Step 4:</strong> If approved, you will receive return shipping instructions</li>
-                    </ul>
+                    <ol>
+                        <li>Contact us within 3 days of delivery at:<br>
+                        <strong>Email:</strong> info@maherajewels.com<br>
+                        <strong>Phone:</strong> +91 9653270168 (Mon–Sat, 10AM – 6:30PM)</li>
+                        <li>Share your Order ID and a clear photograph of the product, packaging, and intact tag.</li>
+                        <li>Our team will review your request within 1–2 business days and confirm eligibility.</li>
+                        <li>If approved, you will receive return shipping instructions.</li>
+                    </ol>
                 </div>
                 
                 <div class="policy-section">
                     <h2>4. Refund Policy</h2>
                     <p>Once the returned item is received and inspected by our team:</p>
                     <ul>
-                        <li>Only the <strong>item price (product MRP)</strong> will be refunded</li>
-                        <li>Convenience fees, handling charges, shipping fees, payment gateway charges, and any other applicable fees are <strong>non-refundable</strong></li>
-                        <li>Refunds will be processed to the original payment method within <strong>5–7 business days</strong> after the return is approved</li>
+                        <li>Only the item price (product MRP) will be refunded</li>
+                        <li>Convenience fees, handling charges, shipping fees, payment gateway charges, and any other applicable fees are non-refundable</li>
+                        <li>Refunds will be processed to the original payment method within 5–7 business days after the return is approved</li>
                     </ul>
                     <div class="highlight">
                         <strong>📌 Note:</strong> Refunds are limited to the item price only. No additional charges paid at the time of order will be refunded.
@@ -259,7 +259,7 @@
                 
                 <div class="policy-section">
                     <h2>5. Non-Refundable Charges</h2>
-                    <p>The following charges are <strong>strictly non-refundable</strong> under all circumstances:</p>
+                    <p>The following charges are strictly non-refundable under all circumstances:</p>
                     <ul>
                         <li>Delivery / shipping charges</li>
                         <li>Convenience fees</li>
@@ -270,13 +270,13 @@
                 
                 <div class="policy-section">
                     <h2>6. Damaged or Incorrect Items</h2>
-                    <p>If you receive a damaged or incorrect item, please contact us <strong>within 24 hours of delivery</strong> with:</p>
+                    <p>If you receive a damaged or incorrect item, please contact us within 24 hours of delivery with:</p>
                     <ul>
                         <li>Your Order ID</li>
                         <li>A clear photograph of the damaged or incorrect product</li>
                         <li>A photograph of the original packaging</li>
                     </ul>
-                    <p>We will arrange a <strong>replacement or full refund (including shipping)</strong> for verified cases of damage or incorrect fulfilment.</p>
+                    <p>We will arrange a replacement or full refund (including shipping) for verified cases of damage or incorrect fulfilment.</p>
                 </div>
                 
                 <div class="policy-section">
@@ -284,22 +284,15 @@
                     <p>For any return or refund queries, reach us at:</p>
                     
                     <div class="contact-box">
-                        <h3>📧 Email:</h3>
-                        <p>info@maherajewel.com</p>
-                        
-                        <h3>📞 Phone:</h3>
-                        <p>+91 9653270168</p>
-                        
-                        <h3>🕐 Hours:</h3>
-                        <p>Mon–Sat, 10AM – 10PM</p>
-                        
-                        <h3>📍 Address:</h3>
-                        <p>Demo Street, Business Park, Mumbai, Maharashtra, India, 400068</p>
+                        <p><strong>📧 Email:</strong> info@maherajewels.com</p>
+                        <p><strong>📞 Phone:</strong> +91 9653270168</p>
+                        <p><strong>🕐 Hours:</strong> Mon–Sat, 10AM – 6:30PM</p>
+                        <p><strong>📍 Registered Address:</strong> 29th Floor, 2901 Siddhi Samarpan, Jaywant Sawant Marg, Dahisar West, Mumbai, Maharashtra, 400 068.</p>
                     </div>
                 </div>
                 
                 <div class="policy-section" style="text-align: center; border-bottom: none;">
-                    <p style="font-size: 12px; color: #999;">© 2026 MAHERA JEWEL. All rights reserved.</p>
+                    <p style="font-size: 12px; color: #999;">©️ 2026 Maherá Jewels. All rights reserved.</p>
                 </div>
             </div>
         </div>
