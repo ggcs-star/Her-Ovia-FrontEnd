@@ -9,4 +9,4 @@ Disallow: /profile
 Disallow: /orders
 Disallow: /wishlist
 
-Sitemap: http://127.0.0.1:8000/sitemap.xml
+Sitemap: https://maherajewels.com/sitemap.xml
