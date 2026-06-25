@@ -19,10 +19,16 @@
     @endphp
 
     <title>{{ $pageTitle }}</title>
+
     <meta name="description" content="{{ $pageDescription }}">
-    <meta name="keywords" content="jewellery, necklace, earrings, maang tikka, bridal sets, bangles, kundan jewellery">
+
+    <meta name="keywords"
+    content="jewellery, necklace, earrings, maang tikka, bridal sets, bangles, kundan jewellery">
+
     <meta name="author" content="MAHERA JEWEL">
-    <meta name="robots" content="index, follow">
+
+    <meta name="robots" content="index,follow">
+
     <link rel="canonical" href="{{ url()->current() }}">
 
     <title>Products | MAHERA JEWEL</title>

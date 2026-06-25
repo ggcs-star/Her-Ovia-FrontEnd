@@ -8,7 +8,7 @@ use App\Http\Controllers\SitemapController;
 | Entry Point
 |--------------------------------------------------------------------------
 */
-
+Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 
 // Project start → Landing page
 Route::get('/', function () {
