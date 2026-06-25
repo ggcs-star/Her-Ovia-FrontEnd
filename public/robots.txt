@@ -9,4 +9,4 @@ Disallow: /profile
 Disallow: /orders
 Disallow: /wishlist
 
-Sitemap: https://mahherajewel.com/sitemap.xml
+Sitemap: https://maherajewels.com/sitemap.xml
