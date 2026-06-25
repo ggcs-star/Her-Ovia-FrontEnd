@@ -124,6 +124,9 @@ Route::get('/privacy-policy', function () {
 Route::get('/shipping', function () {
     return view('pages.shipping');
 })->name('shipping');
+Route::get('/about-us', function () {
+    return view('pages.about-us');
+})->name('about.us');
 /*
 |--------------------------------------------------------------------------
 | Logout
