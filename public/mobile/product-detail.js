@@ -1108,6 +1108,18 @@ let discountPercentage = originalPrice > displayPrice ? Math.round(((originalPri
         `;
         
         container.innerHTML = html;
+        document.title = `${product.name} | MAHERA JEWEL`;
+
+        let metaDesc = document.querySelector('meta[name="description"]');
+
+        if (metaDesc) {
+            metaDesc.setAttribute(
+                'content',
+                product.description
+                    ? product.description.replace(/<[^>]*>/g, '').substring(0, 160)
+                    : `Buy ${product.name} online at MAHERA JEWEL with best price and fast delivery`
+            );
+        }
         window.productVariants = allSizes;
         window.displayPrice = displayPrice;
         window.originalPrice = originalPrice;
