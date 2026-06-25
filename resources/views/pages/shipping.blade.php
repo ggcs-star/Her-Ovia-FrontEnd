@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Shipping Policy | MAHERA JEWEL</title>
-    <meta name="description" content="MAHERA JEWEL shipping policy - delivery timelines, charges, tracking, and international shipping information.">
+    <title>Shipping Policy | Maherá Jewels</title>
+    <meta name="description" content="Maherá Jewels shipping policy - delivery timelines, charges, tracking, and international shipping information.">
     <meta name="robots" content="index, follow">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="preload" href="{{ asset('mobile/style.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -263,209 +263,103 @@
             
             <div class="page-header">
                 <h1>Shipping Policy</h1>
-                <p>Effective Date: 2025 | Last updated: May 2026</p>
+                <p>Effective Date: 2026</p>
+                <p><a href="https://www.maherajewels.com" style="color: #666; text-decoration: none;">www.maherajewels.com</a></p>
             </div>
             
             <div class="policy-content">
                 <div class="policy-section">
-                    <p>At <strong>MAHERA JEWEL</strong>, we strive to deliver your precious jewelry orders with care, speed, and reliability. Please read our shipping policy carefully to understand how we process and deliver your orders.</p>
+                    <p>At <strong>Maherá Jewels</strong>, we take great care to ensure your order reaches you safely and on time. Please read our Shipping Policy carefully before placing your order.</p>
                 </div>
                 
                 <div class="policy-section">
-                    <h2>1. Processing Time</h2>
-                    <p>All orders are processed within <strong>1-3 business days</strong> (Monday to Saturday, excluding public holidays).</p>
-                    <ul>
-                        <li>Orders placed before <strong>12:00 PM</strong> are processed the same day</li>
-                        <li>Orders placed after 12:00 PM are processed the next business day</li>
-                        <li>Orders placed on <strong>Sunday</strong> or <strong>public holidays</strong> are processed on the next business day</li>
-                        <li>Customized or personalized jewelry may require <strong>5-7 business days</strong> for processing</li>
-                    </ul>
-                    <div class="highlight">
-                        <strong>📌 Note:</strong> Processing time does not include shipping time. The total delivery time = Processing Time + Shipping Time.
-                    </div>
+                    <h2>1. Order Processing</h2>
+                    <p>All orders are processed within <strong>1–2 business days</strong> of payment confirmation. Orders placed on weekends or public holidays will be processed on the next working day.</p>
+                    <p>Once your order is dispatched, you will receive a shipping confirmation email with a tracking link.</p>
                 </div>
                 
                 <div class="policy-section">
-                    <h2>2. Shipping Methods & Delivery Timelines</h2>
-                    <p>We offer multiple shipping options to suit your needs. Delivery timelines are estimated and may vary based on location and courier partner.</p>
+                    <h2>2. Shipping Rates</h2>
+                    <p>We offer the following shipping options:</p>
                     
-                    <table class="shipping-table">
-                        <thead>
-                            <tr>
-                                <th>Shipping Method</th>
-                                <th>Delivery Time</th>
-                                <th>Charges</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Standard Shipping</strong></td>
-                                <td>3-5 business days</td>
-                                <td>₹99</td>
-                                <td><span class="shipping-badge badge-standard">Standard</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Express Shipping</strong></td>
-                                <td>1-2 business days</td>
-                                <td>₹199</td>
-                                <td><span class="shipping-badge badge-express">Express</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Free Shipping</strong></td>
-                                <td>3-5 business days</td>
-                                <td><strong>FREE</strong> on orders above ₹5,000</td>
-                                <td><span class="shipping-badge badge-free">FREE</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>International Shipping</strong></td>
-                                <td>7-14 business days</td>
-                                <td>Calculated at checkout</td>
-                                <td><span class="shipping-badge badge-standard">International</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <h3>A. Domestic Shipping (India)</h3>
+                    <ul>
+                        <li>Standard shipping charges apply on orders below ₹999</li>
+                        <li><strong>Free shipping</strong> on all orders of ₹999 and above</li>
+                    </ul>
                     
-                    <div class="success-box">
-                        <strong>🎉 Free Shipping:</strong> Enjoy free standard shipping on all orders above ₹5,000. No coupon code required!
-                    </div>
-                </div>
-                
-                <div class="policy-section">
-                    <h2>3. Order Tracking</h2>
-                    <p>Once your order is shipped, you will receive:</p>
+                    <h3>B. International Shipping</h3>
                     <ul>
-                        <li>A <strong>shipping confirmation email</strong> with your tracking number</li>
-                        <li>An <strong>SMS</strong> with tracking details on your registered mobile number</li>
-                        <li>Real-time <strong>tracking updates</strong> via our <a href="javascript:void(0)" onclick="checkLoginAndTrack()" style="color: #440C2C; font-weight: 500;">Track Order</a> page</li>
+                        <li>Standard international shipping charges apply on orders below $49</li>
+                        <li><strong>Free international shipping</strong> on all orders of $49 and above</li>
                     </ul>
-                    <div class="highlight">
-                        <strong>📌 Note:</strong> It may take 24-48 hours for tracking information to update after dispatch.
-                    </div>
                 </div>
                 
                 <div class="policy-section">
-                    <h2>4. Shipping Charges</h2>
-                    <p>Shipping charges are calculated based on the following factors:</p>
+                    <h2>3. Estimated Delivery Timelines</h2>
                     <ul>
-                        <li><strong>Order Value:</strong> Orders above ₹5,000 qualify for free standard shipping</li>
-                        <li><strong>Shipping Method:</strong> Standard (₹99) or Express (₹199)</li>
-                        <li><strong>Delivery Location:</strong> Metro cities, tier-2 cities, and remote areas may have different rates</li>
-                        <li><strong>International Orders:</strong> Shipping charges are calculated at checkout based on destination</li>
+                        <li><strong>Domestic (India):</strong> 5–7 business days from dispatch</li>
+                        <li><strong>International:</strong> 10–20 business days from dispatch, depending on destination country and customs clearance</li>
                     </ul>
                     <div class="warning">
-                        <strong>⚠️ Important:</strong> Shipping charges are non-refundable, even if the order is returned or cancelled.
+                        <strong>⚠️ Important:</strong> Delivery timelines are estimates only and may vary during peak seasons, public holidays, or due to factors beyond our control (including customs delays, weather, or carrier issues).
                     </div>
                 </div>
                 
                 <div class="policy-section">
-                    <h2>5. Delivery Areas</h2>
-                    <p>We currently ship to:</p>
-                    <ul>
-                        <li><strong>PAN India:</strong> All states and union territories of India</li>
-                        <li><strong>Metro Cities:</strong> Mumbai, Delhi, Bengaluru, Chennai, Hyderabad, Kolkata, Pune, Ahmedabad</li>
-                        <li><strong>Tier-2 & Tier-3 Cities:</strong> All major cities and towns across India</li>
-                        <li><strong>International:</strong> Select countries (USA, UK, UAE, Canada, Australia, Singapore, and more)</li>
-                    </ul>
-                    <p><em>For international shipping inquiries, please contact us at info@maherajewel.com</em></p>
+                    <h2>4. Shipment Tracking</h2>
+                    <p>Once your order is dispatched, you will receive a tracking number via email. You can use this to monitor your shipment’s status in real time.</p>
+                    <p>If you do not receive a tracking email within 3 business days of placing your order, please contact us at info@maherajewels.com.</p>
                 </div>
                 
                 <div class="policy-section">
-                    <h2>6. Delivery Attempts & Failed Deliveries</h2>
-                    <p>Our courier partners will make <strong>up to 3 delivery attempts</strong>:</p>
-                    <ul>
-                        <li>If delivery fails after 3 attempts, the package will be returned to our warehouse</li>
-                        <li>A <strong>re-shipping fee</strong> will be charged for re-delivery attempts</li>
-                        <li>Please ensure someone is available to receive the package at the delivery address</li>
-                        <li>If you wish to reschedule delivery, contact our support team immediately</li>
-                    </ul>
+                    <h2>5. Customs, Duties & Taxes (International Orders)</h2>
+                    <p>International shipments may be subject to import duties, taxes, or customs fees levied by the destination country. These charges are the sole responsibility of the customer and are not included in the order total or shipping fee paid to Maherá Jewels.</p>
+                    <p>Maherá Jewels is not responsible for delays caused by customs processing. We recommend checking your country’s import regulations before placing an order.</p>
                 </div>
                 
                 <div class="policy-section">
-                    <h2>7. Damaged or Missing Packages</h2>
-                    <p>We take utmost care in packaging your jewelry. However, in case of:</p>
+                    <h2>6. Damaged or Lost Shipments</h2>
+                    <p>If your order arrives damaged or appears to be lost in transit, please contact us within 24 hours of delivery (or within 24 hours of the expected delivery date in case of non-delivery) with:</p>
                     <ul>
-                        <li><strong>Damaged Package:</strong> Please refuse delivery and contact us immediately</li>
-                        <li><strong>Missing Items:</strong> Contact us within 24 hours of delivery</li>
-                        <li><strong>Wrong Item:</strong> Report within 24 hours with a photograph of the received item</li>
+                        <li>Your Order ID</li>
+                        <li>A clear photograph of the damaged product and its packaging</li>
+                        <li>A photograph of the shipping label</li>
                     </ul>
-                    <div class="warning">
-                        <strong>⚠️ Important:</strong> Always unbox and inspect your order immediately upon delivery. Any damage or discrepancy must be reported within 24 hours.
-                    </div>
+                    <p>We will work with our shipping partners to investigate and resolve the matter promptly. Verified cases will be eligible for a replacement or full refund including shipping charges.</p>
+                </div>
+
+                <div class="policy-section">
+                    <h2>7. Exchange Policy</h2>
+                    <p>We accept exchanges within 3 days of delivery for items that are unused, unworn, and in their original packaging with all tags intact. We do not offer refunds, except in verified cases of damage or incorrect fulfilment.</p>
+                    <p>To initiate an exchange, please contact us within 3 days of delivery at:</p>
+                    <ul>
+                        <li><strong>Email:</strong> info@maherajewels.com</li>
+                        <li><strong>Phone:</strong> +91 9653270168 (Mon–Sat, 10AM – 6:30PM)</li>
+                    </ul>
+                    <p>Shipping costs for exchanges are borne by the customer, unless the item received was defective or incorrect.</p>
                 </div>
                 
                 <div class="policy-section">
-                    <h2>8. Address Changes</h2>
-                    <p>If you need to change your shipping address:</p>
-                    <ul>
-                        <li><strong>Before Processing:</strong> Contact us immediately for free address change</li>
-                        <li><strong>After Processing:</strong> Address changes may not be possible after dispatch</li>
-                        <li><strong>Incorrect Address:</strong> A re-shipping fee will apply for orders returned due to incorrect address</li>
-                    </ul>
-                    <div class="highlight">
-                        <strong>📌 Tip:</strong> Double-check your shipping address before placing your order to avoid delays.
-                    </div>
+                    <h2>8. Non-Serviceable Areas</h2>
+                    <p>We currently ship to most locations within India and internationally. However, certain remote or restricted locations may not be serviceable by our logistics partners. If your pin code or country is not supported at checkout, please contact us at info@maherajewels.com to explore alternative arrangements.</p>
                 </div>
                 
                 <div class="policy-section">
-                    <h2>9. Customs & International Shipping</h2>
-                    <p>For international orders:</p>
-                    <ul>
-                        <li>Customs duties and taxes are <strong>not included</strong> in our prices</li>
-                        <li>These charges are the <strong>responsibility of the customer</strong></li>
-                        <li>We recommend checking with your local customs office for applicable duties</li>
-                        <li>Delivery timelines may be affected by customs clearance procedures</li>
-                        <li>Please provide a valid phone number for customs contact</li>
-                    </ul>
-                    <div class="warning">
-                        <strong>⚠️ Important:</strong> International orders may be delayed at customs. MAHERA JEWEL is not responsible for customs delays or additional charges.
-                    </div>
-                </div>
-                
-                <div class="policy-section">
-                    <h2>10. Shipping Partner</h2>
-                    <p>We partner with trusted logistics providers for safe and timely delivery:</p>
-                    <ul>
-                        <li><strong>Domestic:</strong> Delhivery, Ecom Express, Blue Dart, DTDC, India Post</li>
-                        <li><strong>International:</strong> DHL, FedEx, Aramex, India Post International</li>
-                    </ul>
-                    <p><em>We reserve the right to choose the most appropriate shipping partner for your order based on location and delivery speed.</em></p>
-                </div>
-                
-                <div class="policy-section">
-                    <h2>11. Shipping Insurance</h2>
-                    <p>All orders are <strong>fully insured</strong> during transit:</p>
-                    <ul>
-                        <li>Insurance covers the full value of your jewelry</li>
-                        <li>In case of loss or damage, we will process a full refund or replacement</li>
-                        <li>Insurance claims require supporting documentation (photographs, courier reports)</li>
-                    </ul>
-                    <div class="success-box">
-                        <strong>✅ Peace of Mind:</strong> Every order is insured at no additional cost to you. Your precious jewelry is protected!
-                    </div>
-                </div>
-                
-                <div class="policy-section">
-                    <h2>12. Contact Us</h2>
-                    <p>For any shipping-related queries, reach out to us:</p>
+                    <h2>9. Contact Us</h2>
+                    <p>For any shipping-related queries, please reach us at:</p>
                     
                     <div class="contact-box">
-                        <h3>📧 Email:</h3>
-                        <p>info@maherajewel.com</p>
-                        
-                        <h3>📞 Phone:</h3>
-                        <p>+91 9653270168</p>
-                        
-                        <h3>🕐 Hours:</h3>
-                        <p>Mon–Sat, 10AM – 10PM</p>
-                        
-                        <h3>📍 Address:</h3>
-                        <p>Demo Street, Business Park, Mumbai, Maharashtra, India, 400068</p>
+                        <p><strong>📧 Email:</strong> info@maherajewels.com</p>
+                        <p><strong>📞 Phone:</strong> +91 9653270168</p>
+                        <p><strong>🕐 Hours:</strong> Mon–Sat, 10AM – 6:30PM</p>
+                        <p><strong>🌐 Website:</strong> www.maherajewels.com</p>
+                        <p><strong>📍 Registered Address:</strong> 29th Floor, 2901 Siddhi Samarpan, Jaywant Sawant Marg, Dahisar West, Mumbai, Maharashtra, 400 068.</p>
                     </div>
                 </div>
                 
                 <div class="policy-section" style="text-align: center; border-bottom: none;">
-                    <p style="font-size: 12px; color: #999;">© 2026 MAHERA JEWEL. All rights reserved.</p>
+                    <p style="font-size: 12px; color: #999;">©️ 2026 Maherá Jewels. All rights reserved.</p>
                 </div>
             </div>
         </div>
