@@ -1082,6 +1082,9 @@
         width: 100% !important;
     }
 }
+.sub-strip {
+    display: none !important;
+}
 
     </style>
 </head>
@@ -2251,9 +2254,31 @@ window.updateDesktopFiltersFromProducts = function(products) {
         if (data.success) {
             const categories = data.data.slice(0, 5);
             navMenu.innerHTML = categories.map(cat => {
-                let categorySlug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                return `<a href="/collection/${categorySlug}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`;
-            }).join('');
+
+            let categorySlug = cat.name.toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, '');
+
+            let url = `/collection/${categorySlug}`;
+
+            // Trending
+            if (categorySlug === "trending") {
+                url = "/top-selling";
+            }
+
+            // Bestsellers
+            if (categorySlug === "bestsellers") {
+                url = "/top-selling";
+            }
+
+            return `<a href="${url}"
+                    class="nav-item"
+                    data-cat-id="${cat.id}"
+                    data-cat-name="${cat.name}">
+                    ${cat.name.toUpperCase()}
+                </a>`;
+
+        }).join('');
             
             const navItems = document.querySelectorAll('#productNavMenu .nav-item');
             let hideTimeout;
@@ -2301,7 +2326,14 @@ window.updateDesktopFiltersFromProducts = function(products) {
 }
     function renderProductAllCategoriesPopup(categories) {
     const popup = document.getElementById('productAllCategoriesPopup');
-    if (!popup) return;        
+    if (!popup) return;  
+      categories = categories.filter(cat => {
+        const slug = cat.name.toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '');
+
+        return slug !== 'trending' && slug !== 'bestsellers';
+    });      
     const columnSize = Math.ceil(categories.length / 5);
     const columns = [];
     for (let i = 0; i < 5; i++) columns.push(categories.slice(i * columnSize, (i + 1) * columnSize));        
