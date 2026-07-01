@@ -101,6 +101,10 @@ class AllCategoriesPage {
         const data = await this.cachedFetch(`${API_BASE_URL}/categories`);
         if (data?.success && data.data?.length) {
             this.allCategories = data.data;
+            this.setSEO(
+                "All Categories | MAHERA JEWEL",
+                "Explore premium jewellery categories at MAHERA JEWEL"
+            );
         } else {
             this.allCategories = [
                 { id: 1, name: "Jewellery", image_url: null, children: [] },

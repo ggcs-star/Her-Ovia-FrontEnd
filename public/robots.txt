@@ -1,2 +1,12 @@
 User-agent: *
-Disallow:
+
+Allow: /
+
+Disallow: /admin
+Disallow: /checkout
+Disallow: /cart
+Disallow: /profile
+Disallow: /orders
+Disallow: /wishlist
+
+Sitemap: https://maherajewels.com/sitemap.xml
