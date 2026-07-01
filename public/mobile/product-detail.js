@@ -934,9 +934,31 @@ const API_BASE_URL = window.API_BASE_URL;
             if (data.success) {
                 const categories = data.data.slice(0, 5);
                 navMenu.innerHTML = categories.map(cat => {
-                    let categorySlug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                    return `<a href="/collection/${categorySlug}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`;
-                }).join('');                
+
+                let categorySlug = cat.name.toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-|-$/g, '');
+
+                let url = `/collection/${categorySlug}`;
+
+                // Trending
+                if (categorySlug === "trending") {
+                    url = "/top-selling";
+                }
+
+                // Bestsellers
+                if (categorySlug === "bestsellers") {
+                    url = "/top-selling";
+                }
+
+                return `<a href="${url}"
+                        class="nav-item"
+                        data-cat-id="${cat.id}"
+                        data-cat-name="${cat.name}">
+                        ${cat.name.toUpperCase()}
+                    </a>`;
+
+            }).join('');              
                 const navItems = document.querySelectorAll('#productDesktopNavMenu .nav-item');
                 let hideTimeout;
                 const showPopup = () => {

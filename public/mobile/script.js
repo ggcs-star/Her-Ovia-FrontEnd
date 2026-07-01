@@ -105,9 +105,26 @@ class RapidRetailsEngine {
         
             const topCategories = this.allCategories.slice(0, 5);
             const categoriesHtml = topCategories.map(cat => {
-                let categorySlug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                return `<a href="/collection/${categorySlug}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`;
-            }).join('');
+
+            let url = `/collection/${cat.slug}`;
+
+            if (cat.slug === "trending") {
+                url = "/top-selling";
+            }
+
+            if (cat.slug === "bestsellers") {
+                url = "/top-selling";
+            }
+
+            return `
+                <a href="${url}"
+                class="nav-item"
+                data-cat-id="${cat.id}"
+                data-cat-name="${cat.name}">
+                    ${cat.name.toUpperCase()}
+                </a>
+            `;
+        }).join('');
                         
             header.innerHTML = `
                 <div class="web-header">
@@ -1127,24 +1144,40 @@ const productSlug = card.permalink || "#";
 }
 
 function redirectToSubcategory(categoryId) {
+
     fetch(`${API_BASE_URL}/categories`)
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                const category = data.data.find(c => c.id == categoryId);
-                if (category && category.children && category.children.length > 0) {
-                    const slug = category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                    window.location.href = `/collection/${slug}`;
-                } else {
-                    window.location.href = `/products?category=${categoryId}`;
-                }
+
+            if (!data.success) {
+                window.location.href = `/products?category=${categoryId}`;
+                return;
+            }
+
+            const category = data.data.find(c => c.id == categoryId);
+
+            if (!category) {
+                window.location.href = `/products?category=${categoryId}`;
+                return;
+            }
+
+            // Trending
+            if (category.slug === "trending") {
+                window.location.href = "/top-selling";
+                return;
+            }
+
+            // Bestsellers
+            if (category.slug === "bestsellers") {
+                window.location.href = "/top-selling";
+                return;
+            }
+
+            if (category.children && category.children.length > 0) {
+                window.location.href = `/collection/${category.slug}`;
             } else {
                 window.location.href = `/products?category=${categoryId}`;
             }
-        })
-        .catch(error => {
-            console.error('Redirect error:', error);
-            window.location.href = `/products?category=${categoryId}`;
         });
 }
 

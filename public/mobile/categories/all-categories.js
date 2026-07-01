@@ -155,8 +155,21 @@ class AllCategoriesPage {
 
         if (isDesktop) {
             const categoriesHtml = this.allCategories.slice(0, 5).map(cat => {
-                let categorySlug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                return `<a href="/collection/${categorySlug}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${escapeHtml(cat.name.toUpperCase())}</a>`;
+                let categorySlug = cat.name.toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-|-$/g, '');
+
+                let url = `/collection/${categorySlug}`;
+
+                if (categorySlug === "trending" || categorySlug === "bestsellers") {
+                    url = "/top-selling";
+                }
+
+                return `<a href="${url}" class="nav-item"
+                    data-cat-id="${cat.id}"
+                    data-cat-name="${cat.name}">
+                    ${escapeHtml(cat.name.toUpperCase())}
+                </a>`;
             }).join('');
 
             header.innerHTML = `
@@ -613,17 +626,47 @@ function redirectToSubcategory(categoryId) {
                 }
                 
                 if (targetCategory) {
-                    if (parentCategory) {
-                        const parentSlug = parentCategory.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                        const subSlug = targetCategory.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                        window.location.href = `/collection/${parentSlug}/${subSlug}`;
-                    } else if (targetCategory.children && targetCategory.children.length > 0) {
-                        const slug = targetCategory.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                        window.location.href = `/collection/${slug}`;
+                  if (parentCategory) {
+
+                    const parentSlug = parentCategory.name.toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-|-$/g, '');
+
+                    const subSlug = targetCategory.name.toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-|-$/g, '');
+
+                    if (subSlug === 'trending' || subSlug === 'bestsellers') {
+                        window.location.href = '/top-selling';
                     } else {
-                        const slug = targetCategory.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        window.location.href = `/collection/${parentSlug}/${subSlug}`;
+                    }
+
+                } else if (targetCategory.children && targetCategory.children.length > 0) {
+
+                    const slug = targetCategory.name.toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-|-$/g, '');
+
+                    if (slug === 'trending' || slug === 'bestsellers') {
+                        window.location.href = '/top-selling';
+                    } else {
                         window.location.href = `/collection/${slug}`;
                     }
+
+                } else {
+
+                    const slug = targetCategory.name.toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-|-$/g, '');
+
+                    if (slug === 'trending' || slug === 'bestsellers') {
+                        window.location.href = '/top-selling';
+                    } else {
+                        window.location.href = `/collection/${slug}`;
+                    }
+
+                }
                 } else {
                     window.location.href = `/categories`;
                 }

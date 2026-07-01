@@ -1767,8 +1767,19 @@ function renderHeader() {
                 if (data.success && data.data) {
                     const categories = data.data.slice(0, 5);
                     const categoriesHtml = categories.map(cat => {
-                        let categorySlug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                        return `<a href="/collection/${categorySlug}" class="nav-item">${cat.name.toUpperCase()}</a>`;
+                        let categorySlug = cat.name.toLowerCase()
+                            .replace(/[^a-z0-9]+/g, '-')
+                            .replace(/^-|-$/g, '');
+
+                        let url = `/collection/${categorySlug}`;
+
+                        if (categorySlug === "trending" || categorySlug === "bestsellers") {
+                            url = "/top-selling";
+                        }
+
+                        return `<a href="${url}" class="nav-item">
+                            ${cat.name.toUpperCase()}
+                        </a>`;
                     }).join('');
                     
                     header.innerHTML = `
