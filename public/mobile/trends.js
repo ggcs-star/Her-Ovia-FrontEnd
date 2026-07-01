@@ -10,26 +10,32 @@ function loadTrendingReels() {
 
     container.innerHTML = '<div class="loading">Loading reels...</div>';
 
-    fetch(API_BASE_URL + "/reels")
+fetch(API_BASE_URL + "/instagram/reels")
         .then(res => res.json())
         .then(res => {
-            if (!res || !res.data) {
-                showError();
-                return;
-            }
-            renderReels(res.data);
+          if (!res || !res.reels) {
+    showError();
+    return;
+}
+
+renderReels(res.reels);
         })
         .catch(showError);
 }
 
 function renderReels(reels) {
+console.log("Reels received:", reels);
+
     const container = document.getElementById("trendsContainer");
+
+    console.log("Container:", container);
+
     let html = "";
 
-    reels.forEach((reel, index) => {
-        const media = reel.video;
-        const product = reel.product || {};
 
+    reels.forEach((reel, index) => {
+const media = reel.media_url;
+const product = reel.product || {};
         html += `
 <div class="reel-card">
     <div class="reel-video">
@@ -50,7 +56,7 @@ function renderReels(reels) {
         <div class="reel-product">
             <h3>${product.name ?? "Trending Product"}</h3>
             <p id="desc-${index}" class="reel-desc">
-                ${reel.description ?? ""}
+${reel.caption ?? ""}
             </p>
             <span class="reel-more" onclick="toggleDesc(${index})">
                 More
