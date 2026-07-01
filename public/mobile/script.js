@@ -937,21 +937,42 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         if (window.innerWidth < 1025) return;
         
         try {
-            const response = await fetch(`${API_BASE_URL}/reels?status=1`);
-            const data = await response.json();
-            
-            let reels = [];
-            if (data.status === true && data.data) {
-                reels = data.data;
-            }
-            
-            if (!reels.length) return;
-            this.renderReelsSlider(reels);
+          const response = await fetch(`${API_BASE_URL}/instagram/reels`);
+const data = await response.json();
+
+if (!data.success) {
+    return;
+}
+
+this.renderReelsSlider(data.reels);
         } catch (error) {
             console.error('Reels API error:', error);
         }
     }
+renderInstagramReels(reels) {
 
+    const slider = document.getElementById("reels-slider");
+
+    if (!slider) return;
+
+    slider.innerHTML = reels.map(reel => `
+        <div class="reel-card">
+
+            <video
+                controls
+                muted
+                playsinline
+                preload="metadata"
+                style="width:100%;height:420px;object-fit:cover;border-radius:12px">
+
+                <source src="${reel.media_url}" type="video/mp4">
+
+            </video>
+
+        </div>
+    `).join("");
+
+}
     renderReelsSlider(reels) {
         const slider = document.getElementById('reels-slider');
         if (!slider) return;
@@ -975,9 +996,8 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
             
             visibleCards.forEach((card) => {
                 const posClass = `position-${card.position}`;
-                const videoUrl = card.video || '';
-                const productSlug = card.product?.slug || card.slug || `reel-${card.id}`;
-                
+const videoUrl = card.media_url || '';
+const productSlug = card.permalink || "#";                
                 html += `<div class="reel-card ${posClass}" data-index="${card.originalIndex}" data-slug="${productSlug}">
                     <div class="reel-video-wrapper">
                         <video class="reel-video" ${card.position === 3 ? 'autoplay' : ''} muted loop preload="auto" playsinline webkit-playsinline style="background: #f5f5f5; width:100%; height:100%; object-fit:cover;">
@@ -991,7 +1011,7 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
                                 <svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
                             </button>
                         </div>
-                        <div class="reel-info-overlay"><div class="reel-title-overlay">${card.title || ''}</div></div>
+                        <div class="reel-info-overlay"><div class="reel-title-overlay">${card.caption || 'Instagram Reel'}</div></div>
                         <div class="play-overlay">
                             <button class="play-reel-btn">
                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#440C2C"><path d="M8 5v14l11-7z"/></svg>
