@@ -1530,7 +1530,26 @@ function renderProducts(products) {
             <div class="info" onclick="window.location.href='/product/${p.slug}'">
                 <div class="brand">${p.brand || 'RAPID RETAIL'}</div>
                 <div class="name">${p.name}</div>
-                <div class="rating"><span class="stars">${stars}</span> | ${Math.floor(Math.random() * 50) + 10}</div>
+<div class="rating-row">
+    <div class="rating">
+        <span class="stars">${stars}</span> | ${Math.floor(Math.random() * 50) + 10}
+    </div>
+
+    <div class="product-clicks">
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="14"
+             height="14"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2">
+            <path d="M1 12C3 7 7 4 12 4s9 3 11 8c-2 5-6 8-11 8S3 17 1 12z"/>
+            <circle cx="12" cy="12" r="3"/>
+        </svg>
+
+        <span>${p.click_count || 0}</span>
+    </div>
+</div>
                 <div class="price">
                     <span class="current">₹${price.toLocaleString('en-IN')}</span>
                     ${mrp > price ? `<span class="original">₹${mrp.toLocaleString('en-IN')}</span>` : ''}
@@ -1548,10 +1567,15 @@ async function fetchData() {
         const type = urlParams.get('type');
         const currentPath = window.location.pathname;
 
-        if (type === 'top-selling' || currentPath === '/top-selling') {
-            await fetchTopSellingProducts();
-            return;
-        }
+if (type === 'top-selling' || currentPath === '/top-selling') {
+    await fetchTopSellingProducts();
+    return;
+}
+
+if (type === 'best-selling' || currentPath === '/best-selling') {
+    await fetchBestSellerProducts();
+    return;
+}
         
         let targetSubId = null;
         let targetSubName = null;
@@ -2155,7 +2179,33 @@ window.updateDesktopFiltersFromProducts = function(products) {
             grid.innerHTML = '<div class="loading">Error loading products</div>';
         }
     }
-    
+    async function fetchBestSellerProducts() {
+    const grid = document.getElementById('productsGrid');
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/best-sellers`);
+        const data = await res.json();
+
+        if (data.success && data.data) {
+            let products = Array.isArray(data.data)
+                ? data.data
+                : (data.data.products || []);
+
+            currentProducts = products;
+            originalProducts = [...products];
+
+            await preloadAllHoverImages(products);
+
+            renderProducts(products);
+            updateDesktopFiltersFromProducts(products);
+        } else {
+            grid.innerHTML = '<div class="loading">No Best Seller Products</div>';
+        }
+    } catch (e) {
+        console.error(e);
+        grid.innerHTML = '<div class="loading">Error loading Best Sellers</div>';
+    }
+}
     window.showSortPopup = function() {
         document.getElementById('sortPopupOverlay').classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -2268,7 +2318,7 @@ window.updateDesktopFiltersFromProducts = function(products) {
 
             // Bestsellers
             if (categorySlug === "bestsellers") {
-                url = "/top-selling";
+                url = "/best-selling";
             }
 
             return `<a href="${url}"

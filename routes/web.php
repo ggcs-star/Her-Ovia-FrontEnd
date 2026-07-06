@@ -82,6 +82,9 @@ Route::get('/product/{slug}', function ($slug) {
 Route::get('/top-selling', function () {
     return view('mobile.products');
 })->name('top.selling');
+Route::get('/best-selling', function () {
+    return view('mobile.products');
+})->name('best.selling');
 Route::get('/cart', function () {
     return view('mobile.cart');
 });
