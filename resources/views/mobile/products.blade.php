@@ -1545,7 +1545,24 @@ function renderProducts(products) {
 async function fetchData() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
-        const type = urlParams.get('type');
+
+const search = urlParams.get("search");
+
+if (search) {
+    const res = await fetch(`${API_BASE_URL}/products/search?q=${encodeURIComponent(search)}`);
+    const data = await res.json();
+
+    currentProducts = data.data.products || data.data || [];
+    originalProducts = [...currentProducts];
+
+    await preloadAllHoverImages(currentProducts);
+    renderProducts(currentProducts);
+    
+    updateDesktopFiltersFromProducts(currentProducts);
+    return;
+}
+
+        const type = urlParams.get("type");
         const currentPath = window.location.pathname;
 
         if (type === 'top-selling' || currentPath === '/top-selling') {
@@ -2376,40 +2393,55 @@ window.updateDesktopFiltersFromProducts = function(products) {
         });
     }
     function initWebSearchDropdown() {
-        setTimeout(() => {
-            const input = document.getElementById("web-search-input");
-            if (!input) return;
-            let suggestionsBox = document.getElementById("web-search-suggestions");
-            let timer;
-            const renderSuggestions = (products) => {
-                let html = products.length ? products.map(p => `<div class="web-suggestion-item" onclick="window.location.href='/product/${p.slug}'">${p.name}</div>`).join('') : '<div class="web-suggestion-item">No results found</div>';
-                suggestionsBox.innerHTML = html;
-                suggestionsBox.style.display = "block";
-            };
-            input.addEventListener("input", async (e) => {
-                clearTimeout(timer);
-                const q = e.target.value.trim();
-                if (q.length === 0) { suggestionsBox.style.display = "none"; suggestionsBox.innerHTML = ""; return; }
-                try {
-                    if (q.length === 1) {
-                        const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`);
-                        const data = await res.json();
-                        if (data.success) renderSuggestions(data.data.products);
-                        return;
-                    }
-                    timer = setTimeout(async () => {
-                        const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`);
-                        const data = await res.json();
-                        if (data.success) renderSuggestions(data.data.products);
-                    }, 200);
-                } catch (err) { console.log(err); }
-            });
-            document.addEventListener("click", (e) => {
-                if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) suggestionsBox.style.display = "none";
-            });
-        }, 300);
-    }
-    async function fetchAppSettingsForProducts() {
+    setTimeout(() => {
+        const input = document.getElementById("web-search-input");
+        if (!input) return;
+        
+        let suggestionsBox = document.getElementById("web-search-suggestions");
+        let timer;
+        
+        const renderSuggestions = (products) => {
+            let html = products.length ? products.map(p => `<div class="web-suggestion-item" onclick="window.location.href='/product/${p.slug}'">${p.name}</div>`).join('') : '<div class="web-suggestion-item">No results found</div>';
+            suggestionsBox.innerHTML = html;
+            suggestionsBox.style.display = "block";
+        };
+        
+        // 🔥 ENTER - DIRECT SEARCH
+        input.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const q = this.value.trim();
+                if (q) {
+                    window.location.href = `/products?search=${encodeURIComponent(q)}`;
+                }
+            }
+        });
+        
+        input.addEventListener("input", async (e) => {
+            clearTimeout(timer);
+            const q = e.target.value.trim();
+            if (q.length === 0) { suggestionsBox.style.display = "none"; suggestionsBox.innerHTML = ""; return; }
+            try {
+                if (q.length === 1) {
+                    const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`);
+                    const data = await res.json();
+                    if (data.success) renderSuggestions(data.data.products);
+                    return;
+                }
+                timer = setTimeout(async () => {
+                    const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`);
+                    const data = await res.json();
+                    if (data.success) renderSuggestions(data.data.products);
+                }, 200);
+            } catch (err) { console.log(err); }
+        });
+        
+        document.addEventListener("click", (e) => {
+            if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) suggestionsBox.style.display = "none";
+        });
+    }, 300);
+}
+async function fetchAppSettingsForProducts() {
         try {
             const response = await fetch(`${API_BASE_URL}/app-settings`);
             const data = await response.json();

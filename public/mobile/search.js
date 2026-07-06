@@ -46,6 +46,21 @@ if (input) {
     }, 300);
 });
 }
+if (input) {
+
+    input.addEventListener("keydown", function (e) {
+
+        if (e.key === "Enter") {
+
+            e.preventDefault();
+
+            handleEnterSearch();
+
+        }
+
+    });
+
+}
 if (clearBtn) {
 clearBtn.addEventListener("click", () => {
     input.value = "";
@@ -113,20 +128,20 @@ async function renderProducts(products) {
         let imageUrl = await resolveImage(p.slug);
 
         html += `
-<div class="product" onclick="openProduct('${p.slug}')">
-<img src="${imageUrl}" 
-     style="width:100%;height:160px;object-fit:cover;"
-     onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
+            <div class="product" onclick="openProduct('${p.slug}')">
+            <img src="${imageUrl}" 
+                style="width:100%;height:160px;object-fit:cover;"
+                onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
 
-<div class="product-info">
-<div class="product-name">${p.name}</div>
-<div class="product-price">₹${p.final_price || p.price || ''}</div>
-</div>
-</div>
-`;
-    }
+            <div class="product-info">
+            <div class="product-name">${p.name}</div>
+            <div class="product-price">₹${p.final_price || p.price || ''}</div>
+            </div>
+            </div>
+            `;
+                }
 
-    results.innerHTML = html;
+        results.innerHTML = html;
 }
 function openProduct(slug) {
     window.location.href = `/product/${slug}`;
@@ -178,4 +193,11 @@ function removeRecent(event, query) {
     localStorage.setItem("recent_searches", JSON.stringify(searches));
 
     showRecentSearches();
+}
+async function handleEnterSearch() {
+    const q = input.value.trim();
+    if (!q) return;
+
+    // Direct search - redirect to products page with search query
+    window.location.href = `/products?search=${encodeURIComponent(q)}`;
 }
