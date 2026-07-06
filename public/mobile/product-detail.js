@@ -888,6 +888,20 @@ const API_BASE_URL = window.API_BASE_URL;
                                 <span class="pdp-similar-current">₹${currentPrice.toLocaleString('en-IN')}</span>
                                 ${originalPrice > currentPrice ? '<span class="pdp-similar-original">₹' + originalPrice.toLocaleString('en-IN') + '</span>' : ''}
                             </div>
+                            <div class="pdp-similar-views">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <path d="M1 12C3 7 7 4 12 4C17 4 21 7 23 12C21 17 17 20 12 20C7 20 3 17 1 12Z"
+              stroke="currentColor"
+              stroke-width="2"/>
+        <circle cx="12"
+                cy="12"
+                r="3"
+                stroke="currentColor"
+                stroke-width="2"/>
+    </svg>
+
+    <span>${p.click_count || 0} Views</span>
+</div>
                         </div>`;
                     }).join('');
                 } else similarSection.style.display = 'none';
@@ -948,7 +962,7 @@ const API_BASE_URL = window.API_BASE_URL;
 
                 // Bestsellers
                 if (categorySlug === "bestsellers") {
-                    url = "/top-selling";
+                    url = "/best-selling";
                 }
 
                 return `<a href="${url}"
@@ -1096,8 +1110,15 @@ let discountPercentage = originalPrice > displayPrice ? Math.round(((originalPri
                             </div>
                         </div>
                         <div class="pdp-name-row"><span class="pdp-title">${name}</span><span class="pdp-color-count" onclick="showColorPopup()">${allColors.length} colors</span></div>
-                        <div class="pdp-rating"><span class="pdp-stars">${starsHtml}</span><span class="pdp-review-count">${rating} (${reviewCount} reviews)</span></div>
-                        <div class="pdp-price"><span class="pdp-current-price" id="currentPrice">₹${displayPrice.toLocaleString('en-IN')}</span>${originalPrice > displayPrice ? `<span class="pdp-original-price">₹${originalPrice.toLocaleString('en-IN')}</span>` : ''}${discountPercentage > 0 ? `<span class="pdp-discount">${discountPercentage}% Off</span>` : ''}</div>
+<div class="pdp-product-views">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M1 12C3 7 7 4 12 4C17 4 21 7 23 12C21 17 17 20 12 20C7 20 3 17 1 12Z"
+              stroke="currentColor" stroke-width="2"/>
+        <circle cx="12" cy="12" r="3"
+                stroke="currentColor" stroke-width="2"/>
+    </svg>
+    <span>${product.click_count || 0} Views</span>
+</div>                        <div class="pdp-price"><span class="pdp-current-price" id="currentPrice">₹${displayPrice.toLocaleString('en-IN')}</span>${originalPrice > displayPrice ? `<span class="pdp-original-price">₹${originalPrice.toLocaleString('en-IN')}</span>` : ''}${discountPercentage > 0 ? `<span class="pdp-discount">${discountPercentage}% Off</span>` : ''}</div>
                     </div>
                     <div class="pdp-size">
                         <div class="pdp-size-header"><h3>${allSizes[0]?.type || 'Size'}</h3>${allSizes[0]?.type === 'Size' ? '<span class="pdp-size-chart" onclick="showSizeChart()">Size Chart ▾</span>' : ''}</div>
