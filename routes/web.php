@@ -130,6 +130,14 @@ Route::get('/shipping', function () {
 Route::get('/about-us', function () {
     return view('pages.about-us');
 })->name('about.us');
+Route::fallback(function () {
+    return view('errors.404');
+});
+// routes/web.php - Last me ye daalo
+
+Route::get('/blog', function () {
+    return view('errors.404');
+});
 /*
 |--------------------------------------------------------------------------
 | Logout

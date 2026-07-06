@@ -306,7 +306,19 @@ class RapidRetailsEngine {
                 
                 timer = setTimeout(() => fetchAndShowSuggestions(q), 200);
             });
-            
+            input.addEventListener("keydown", function (e) {
+
+            if (e.key !== "Enter") return;
+
+            e.preventDefault();
+
+            const q = input.value.trim();
+
+            if (!q) return;
+
+            window.location.href = `/products?search=${encodeURIComponent(q)}`;
+
+        });
             document.addEventListener("click", (e) => {
                 if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
                     suggestionsBox.style.display = "none";

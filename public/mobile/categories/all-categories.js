@@ -58,17 +58,20 @@ class AllCategoriesPage {
         }
     }
 
-    async init() {
-        this.showSkeletonLoader();
-        this.showSidebarSkeleton();
-        await this.fetchAppSettings();
-        await this.fetchCategories();
-        if (this.isLoggedIn) await this.fetchUserCategoryOrder();
-        this.renderHeader();
-        this.renderCategories();
-        this.renderWebSidebar();
-        this.renderBottomNav();
-    }
+   async init() {
+    this.showSkeletonLoader();
+    this.showSidebarSkeleton();
+    await this.fetchAppSettings();
+    await this.fetchCategories();
+    if (this.isLoggedIn) await this.fetchUserCategoryOrder();
+    this.renderHeader();
+    
+    // 🔥 YEH CHANGE KARO - setTimeout hatao
+    this.renderCategories();
+    this.renderWebSidebar();
+    
+    this.renderBottomNav();
+}
 
     showSkeletonLoader() {
         const container = this.getElement('all-categories-grid');
@@ -146,6 +149,17 @@ class AllCategoriesPage {
     if (!path.includes('amazonaws.com')) return window.S3_BASE_URL + path;
     return path;
 }
+setSEO(title, description) {
+    if (title) {
+        document.title = title;
+    }
+    if (description) {
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+            metaDesc.setAttribute('content', description);
+        }
+    }
+}
 
     renderHeader() {
         const header = this.getElement('site-header');
@@ -201,31 +215,32 @@ if (categorySlug === "bestsellers") {
                             
                         </div>
                         <div class="header-actions">
-                            <a href="javascript:void(0)" class="action-link" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }" aria-label="Profile">
-                                <svg class="header-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" aria-hidden="true">
-                                    <circle cx="12" cy="7" r="4"/>
-                                    <path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>
+                             <a href="javascript:void(0)" class="action-link" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }">
+                                <svg class="header-icon" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2"/>
                                 </svg>
                                 Profile
                             </a>
-                            <a href="/wishlist" class="action-link" aria-label="Wishlist">
-                                <svg class="header-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" aria-hidden="true">
-                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            <a href="/wishlist" class="action-link">
+                                <svg class="header-icon" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 21s-6-4.35-9-8.5C-1 6.5 4 2 8 5c2 1.5 4 3.5 4 3.5S14 6.5 16 5c4-3 9 1.5 5 7.5C18 16.65 12 21 12 21z"
+                                        stroke="currentColor" stroke-width="2"/>
                                 </svg>
                                 Wishlist
                             </a>
-                            <a href="/cart" class="action-link cart-link" aria-label="Cart">
+                            <a href="/cart" class="action-link cart-link">
                                 <span class="cart-icon-wrapper">
-                                    <svg class="header-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" aria-hidden="true">
-                                        <circle cx="9" cy="21" r="1.5"/>
-                                        <circle cx="18" cy="21" r="1.5"/>
-                                        <path d="M2 2h3l3 12h11l2-8H6"/>
+                                    <svg class="header-icon" viewBox="0 0 24 24" fill="none">
+                                        <circle cx="9" cy="21" r="1.5" stroke="currentColor" stroke-width="2"/>
+                                        <circle cx="18" cy="21" r="1.5" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M2 2h3l3 12h11l2-8H6" stroke="currentColor" stroke-width="2"/>
                                     </svg>
-                                    <span id="cart-count-badge">0</span>
+                                    <span id="web-cart-count-badge">0</span>
                                 </span>
                                 Cart
-                            </a>
-                        </div>
+                            </a>                        
+                            </div>
                     </div>
                 </div>
                 <div class="all-categories-popup" id="allCategoriesPopup" style="display:none; position:absolute; top:100%; left:0; width:100%; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:1000; border-top:1px solid #f0f0f0;"></div>
@@ -269,57 +284,68 @@ if (categorySlug === "bestsellers") {
     }
 
     initWebSearchDropdown() {
-        setTimeout(() => {
-            const input = document.getElementById("web-search-input");
-            if (!input) return;
+    setTimeout(() => {
+        const input = document.getElementById("web-search-input");
+        if (!input) return;
 
-            const suggestionsBox = document.getElementById("web-search-suggestions");
-            let timer;
-            let currentController = null;
+        const suggestionsBox = document.getElementById("web-search-suggestions");
+        let timer;
+        let currentController = null;
 
-            const renderSuggestions = (products) => {
-                const html = products.length ? 
-                    products.map(p => `<div class="web-suggestion-item" role="button" tabindex="0" onclick="window.location.href='/product/${p.slug}'" onkeypress="if(event.key==='Enter') window.location.href='/product/${p.slug}'">${escapeHtml(p.name)}</div>`).join('') :
-                    `<div class="web-suggestion-item">No results found</div>`;
-                suggestionsBox.innerHTML = html;
-                suggestionsBox.style.display = "block";
-            };
+        const renderSuggestions = (products) => {
+            const html = products.length ? 
+                products.map(p => `<div class="web-suggestion-item" role="button" tabindex="0" onclick="window.location.href='/product/${p.slug}'" onkeypress="if(event.key==='Enter') window.location.href='/product/${p.slug}'">${escapeHtml(p.name)}</div>`).join('') :
+                `<div class="web-suggestion-item">No results found</div>`;
+            suggestionsBox.innerHTML = html;
+            suggestionsBox.style.display = "block";
+        };
 
-            input.addEventListener("input", async (e) => {
-                clearTimeout(timer);
-                const q = e.target.value.trim();
-
-                if (q.length === 0) {
-                    suggestionsBox.style.display = "none";
-                    suggestionsBox.innerHTML = "";
-                    return;
+        // 🔥 ENTER KEY EVENT - ADD THIS
+        input.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const q = this.value.trim();
+                if (q) {
+                    window.location.href = `/products?search=${encodeURIComponent(q)}`;
                 }
+            }
+        });
 
-                if (currentController) currentController.abort();
-                currentController = new AbortController();
+        input.addEventListener("input", async (e) => {
+            clearTimeout(timer);
+            const q = e.target.value.trim();
 
-                try {
-                    timer = setTimeout(async () => {
-                        const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`, {
-                            signal: currentController.signal
-                        });
-                        const data = await res.json();
-                        if (data.success && data.data?.products) {
-                            renderSuggestions(data.data.products);
-                        }
-                    }, 300);
-                } catch (err) {
-                    if (err.name !== 'AbortError') console.log(err);
-                }
-            });
+            if (q.length === 0) {
+                suggestionsBox.style.display = "none";
+                suggestionsBox.innerHTML = "";
+                return;
+            }
 
-            document.addEventListener("click", (e) => {
-                if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
-                    suggestionsBox.style.display = "none";
-                }
-            });
-        }, 300);
-    }
+            if (currentController) currentController.abort();
+            currentController = new AbortController();
+
+            try {
+                timer = setTimeout(async () => {
+                    const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`, {
+                        signal: currentController.signal
+                    });
+                    const data = await res.json();
+                    if (data.success && data.data?.products) {
+                        renderSuggestions(data.data.products);
+                    }
+                }, 300);
+            } catch (err) {
+                if (err.name !== 'AbortError') console.log(err);
+            }
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.style.display = "none";
+            }
+        });
+    }, 300);
+}
 
     setupAllCategoriesPopup() {
         const navItems = document.querySelectorAll('.nav-item');
