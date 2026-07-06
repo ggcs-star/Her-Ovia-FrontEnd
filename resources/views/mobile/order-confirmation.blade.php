@@ -2617,6 +2617,69 @@ setTimeout(function() {
         }, 3000);
     }
 }, 2000);
+function initWebSearchDropdown() {
+    const input = document.getElementById("web-search-input");
+    const box = document.getElementById("web-search-suggestions");
+
+    if (!input) {
+        setTimeout(initWebSearchDropdown, 500);
+        return;
+    }
+
+    let timer;
+
+    // 🔥 ENTER KEY EVENT - ADD THIS
+    input.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            const q = this.value.trim();
+            if (q) {
+                window.location.href = `/products?search=${encodeURIComponent(q)}`;
+            }
+        }
+    });
+
+    input.addEventListener("input", function(e) {
+        clearTimeout(timer);
+        const q = e.target.value.trim();
+
+        if (q.length === 0) {
+            box.style.display = "none";
+            box.innerHTML = "";
+            return;
+        }
+
+        timer = setTimeout(async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+                if (!data.success) return;
+
+                let html = "";
+                const products = data.data.products || [];
+
+                products.forEach(p => {
+                    html += `<div class="web-suggestion-item" onclick="window.location.href='/product/${p.slug}'">${p.name}</div>`;
+                });
+
+                if (html === "") {
+                    html = `<div class="web-suggestion-item">No results found</div>`;
+                }
+
+                box.innerHTML = html;
+                box.style.display = "block";
+            } catch (err) {
+                console.log(err);
+            }
+        }, 200);
+    });
+
+    document.addEventListener("click", function(e) {
+        if (!input.contains(e.target) && !box.contains(e.target)) {
+            box.style.display = "none";
+        }
+    });
+}
     </script>
     @include('mobile.auth.auth')
 

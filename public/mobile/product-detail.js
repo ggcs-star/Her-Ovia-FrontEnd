@@ -1247,3 +1247,70 @@ window.loadSimilarHoverImage = function(imgElement) {
             imgElement.dataset.loading = 'false';
         });
 };
+// Product detail page - Search on Enter (Direct Search)
+(function() {
+    if (!document.body.classList.contains('product-detail-page')) return;
+    
+    setTimeout(function() {
+        const input = document.getElementById('web-search-input');
+        if (!input) return;
+        
+        let suggestionsBox = document.getElementById('web-search-suggestions');
+        if (!suggestionsBox) {
+            const parent = input.parentElement;
+            const div = document.createElement('div');
+            div.id = 'web-search-suggestions';
+            div.className = 'web-search-suggestions';
+            div.style.display = 'none';
+            parent.appendChild(div);
+            suggestionsBox = div;
+        }
+        
+        let timer;
+        
+        const renderSuggestions = (products) => {
+            let html = products.length ? 
+                products.map(p => `<div class="web-suggestion-item" onclick="window.location.href='/product/${p.slug}'">${p.name}</div>`).join('') : 
+                '<div class="web-suggestion-item">No results found</div>';
+            suggestionsBox.innerHTML = html;
+            suggestionsBox.style.display = 'block';
+        };
+        
+        // 🔥 ENTER key - Direct search (NO redirect API)
+        input.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const q = this.value.trim();
+                if (q) {
+                    window.location.href = `/products?search=${encodeURIComponent(q)}`;
+                }
+            }
+        });
+        
+        // Suggestions
+        input.addEventListener("input", async (e) => {
+            clearTimeout(timer);
+            const q = e.target.value.trim();
+            
+            if (q.length === 0) {
+                suggestionsBox.style.display = 'none';
+                suggestionsBox.innerHTML = '';
+                return;
+            }
+            
+            timer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`);
+                    const data = await res.json();
+                    if (data.success) renderSuggestions(data.data.products || []);
+                } catch(err) {}
+            }, 200);
+        });
+        
+        document.addEventListener("click", (e) => {
+            if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+    }, 500);
+})();

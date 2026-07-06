@@ -31,7 +31,7 @@
             <ul class="quick-links-list">
                 <li><a href="/about-us">About Us</a></li>
                 <li><a href="/categories">All Categories</a></li>
-                <li>Blog</li>
+                <li><a href="/blog">Blog</a></li>
             </ul>
         </div>
 
