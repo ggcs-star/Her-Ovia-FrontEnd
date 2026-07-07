@@ -888,6 +888,7 @@ const API_BASE_URL = window.API_BASE_URL;
                                 <span class="pdp-similar-current">₹${currentPrice.toLocaleString('en-IN')}</span>
                                 ${originalPrice > currentPrice ? '<span class="pdp-similar-original">₹' + originalPrice.toLocaleString('en-IN') + '</span>' : ''}
                             </div>
+
                         </div>`;
                     }).join('');
                 } else similarSection.style.display = 'none';
@@ -948,7 +949,7 @@ const API_BASE_URL = window.API_BASE_URL;
 
                 // Bestsellers
                 if (categorySlug === "bestsellers") {
-                    url = "/top-selling";
+                    url = "/best-selling";
                 }
 
                 return `<a href="${url}"
@@ -1096,8 +1097,7 @@ let discountPercentage = originalPrice > displayPrice ? Math.round(((originalPri
                             </div>
                         </div>
                         <div class="pdp-name-row"><span class="pdp-title">${name}</span><span class="pdp-color-count" onclick="showColorPopup()">${allColors.length} colors</span></div>
-                        <div class="pdp-rating"><span class="pdp-stars">${starsHtml}</span><span class="pdp-review-count">${rating} (${reviewCount} reviews)</span></div>
-                        <div class="pdp-price"><span class="pdp-current-price" id="currentPrice">₹${displayPrice.toLocaleString('en-IN')}</span>${originalPrice > displayPrice ? `<span class="pdp-original-price">₹${originalPrice.toLocaleString('en-IN')}</span>` : ''}${discountPercentage > 0 ? `<span class="pdp-discount">${discountPercentage}% Off</span>` : ''}</div>
+                      <div class="pdp-price"><span class="pdp-current-price" id="currentPrice">₹${displayPrice.toLocaleString('en-IN')}</span>${originalPrice > displayPrice ? `<span class="pdp-original-price">₹${originalPrice.toLocaleString('en-IN')}</span>` : ''}${discountPercentage > 0 ? `<span class="pdp-discount">${discountPercentage}% Off</span>` : ''}</div>
                     </div>
                     <div class="pdp-size">
                         <div class="pdp-size-header"><h3>${allSizes[0]?.type || 'Size'}</h3>${allSizes[0]?.type === 'Size' ? '<span class="pdp-size-chart" onclick="showSizeChart()">Size Chart ▾</span>' : ''}</div>

@@ -8,17 +8,16 @@ function loadTrendingReels() {
     const container = document.getElementById("trendsContainer");
     if (!container) return;
 
-    container.innerHTML = '<div class="loading">Loading reels...</div>';
-
+container.innerHTML = '<div class="loading">Loading posts...</div>';
 fetch(API_BASE_URL + "/instagram/reels")
         .then(res => res.json())
         .then(res => {
-          if (!res || !res.reels) {
+      if (!res || !res.posts) {
     showError();
     return;
 }
 
-renderReels(res.reels);
+renderReels(res.posts);
         })
         .catch(showError);
 }
@@ -648,8 +647,7 @@ function shareReel(id) {
 function showError() {
     const container = document.getElementById("trendsContainer");
     if (container) {
-        container.innerHTML = '<div class="error">Failed to load reels</div>';
-    }
+container.innerHTML = '<div class="error">Failed to load posts</div>';    }
 }
 
 

@@ -1530,7 +1530,13 @@ function renderProducts(products) {
             <div class="info" onclick="window.location.href='/product/${p.slug}'">
                 <div class="brand">${p.brand || 'RAPID RETAIL'}</div>
                 <div class="name">${p.name}</div>
-                <div class="rating"><span class="stars">${stars}</span> | ${Math.floor(Math.random() * 50) + 10}</div>
+<div class="rating-row">
+    <div class="rating">
+        <span class="stars">${stars}</span> | ${Math.floor(Math.random() * 50) + 10}
+    </div>
+
+  
+</div>
                 <div class="price">
                     <span class="current">₹${price.toLocaleString('en-IN')}</span>
                     ${mrp > price ? `<span class="original">₹${mrp.toLocaleString('en-IN')}</span>` : ''}
@@ -1565,10 +1571,15 @@ if (search) {
         const type = urlParams.get("type");
         const currentPath = window.location.pathname;
 
-        if (type === 'top-selling' || currentPath === '/top-selling') {
-            await fetchTopSellingProducts();
-            return;
-        }
+if (type === 'top-selling' || currentPath === '/top-selling') {
+    await fetchTopSellingProducts();
+    return;
+}
+
+if (type === 'best-selling' || currentPath === '/best-selling') {
+    await fetchBestSellerProducts();
+    return;
+}
         
         let targetSubId = null;
         let targetSubName = null;
@@ -2144,35 +2155,122 @@ window.updateDesktopFiltersFromProducts = function(products) {
         }
     };
     
-    async function fetchTopSellingProducts() {
-        const grid = document.getElementById('productsGrid');
-        try {
-            const res = await fetch(`${API_BASE_URL}/products/top-selling`);
-            const data = await res.json();
-            if (data.success && data.data) {
-                let products = Array.isArray(data.data) ? data.data : (data.data.products || []);
-                currentProducts = products;
-                originalProducts = [...products];
-                await preloadAllHoverImages(currentProducts);
-                renderProducts(products);
-                const subStrip = document.getElementById('subStrip');
-                if (subStrip) subStrip.style.display = 'none';
-                updateDesktopFiltersFromProducts(products);
-                const desktopCategoryContainer = document.getElementById('desktopCategoryFilters');
-                if (desktopCategoryContainer) {
-                    desktopCategoryContainer.innerHTML = '';
-                    const categoryHeader = desktopCategoryContainer.closest('.desktop-filter-section');
-                    if (categoryHeader) categoryHeader.style.display = 'none';
-                }
-                initDesktopFiltersToggle();
-            } else {
-                grid.innerHTML = '<div class="loading">No products found</div>';
+  async function fetchTopSellingProducts() {
+
+    // Track Top Selling Page Impression
+    trackPageImpression('top-selling');
+
+    const grid = document.getElementById('productsGrid');
+
+    try {
+
+        const res = await fetch(`${API_BASE_URL}/products/top-selling`);
+        const data = await res.json();
+
+        if (data.success && data.data) {
+
+            let products = Array.isArray(data.data)
+                ? data.data
+                : (data.data.products || []);
+
+            currentProducts = products;
+            originalProducts = [...products];
+
+            await preloadAllHoverImages(currentProducts);
+
+            renderProducts(products);
+
+            const subStrip = document.getElementById('subStrip');
+            if (subStrip) {
+                subStrip.style.display = 'none';
             }
-        } catch (error) {
-            grid.innerHTML = '<div class="loading">Error loading products</div>';
+
+            updateDesktopFiltersFromProducts(products);
+
+            const desktopCategoryContainer = document.getElementById('desktopCategoryFilters');
+
+            if (desktopCategoryContainer) {
+                desktopCategoryContainer.innerHTML = '';
+
+                const categoryHeader = desktopCategoryContainer.closest('.desktop-filter-section');
+
+                if (categoryHeader) {
+                    categoryHeader.style.display = 'none';
+                }
+            }
+
+            initDesktopFiltersToggle();
+
+        } else {
+
+            grid.innerHTML = '<div class="loading">No products found</div>';
+
         }
+
+    } catch (error) {
+
+        console.error(error);
+        grid.innerHTML = '<div class="loading">Error loading products</div>';
+
     }
-    
+}
+async function fetchBestSellerProducts() {
+
+    // Track Best Seller Page Impression
+    trackPageImpression('best-selling');
+
+    const grid = document.getElementById('productsGrid');
+
+    try {
+
+        const res = await fetch(`${API_BASE_URL}/best-sellers`);
+        const data = await res.json();
+
+        if (data.success && data.data) {
+
+            let products = Array.isArray(data.data)
+                ? data.data
+                : (data.data.products || []);
+
+            currentProducts = products;
+            originalProducts = [...products];
+
+            await preloadAllHoverImages(products);
+
+            renderProducts(products);
+
+            updateDesktopFiltersFromProducts(products);
+
+            const subStrip = document.getElementById('subStrip');
+            if (subStrip) {
+                subStrip.style.display = 'none';
+            }
+
+            const desktopCategoryContainer = document.getElementById('desktopCategoryFilters');
+            if (desktopCategoryContainer) {
+                desktopCategoryContainer.innerHTML = '';
+
+                const categoryHeader = desktopCategoryContainer.closest('.desktop-filter-section');
+                if (categoryHeader) {
+                    categoryHeader.style.display = 'none';
+                }
+            }
+
+            initDesktopFiltersToggle();
+
+        } else {
+
+            grid.innerHTML = '<div class="loading">No Best Seller Products</div>';
+
+        }
+
+    } catch (e) {
+
+        console.error(e);
+        grid.innerHTML = '<div class="loading">Error loading Best Sellers</div>';
+
+    }
+}
     window.showSortPopup = function() {
         document.getElementById('sortPopupOverlay').classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -2285,7 +2383,7 @@ window.updateDesktopFiltersFromProducts = function(products) {
 
             // Bestsellers
             if (categorySlug === "bestsellers") {
-                url = "/top-selling";
+                url = "/best-selling";
             }
 
             return `<a href="${url}"

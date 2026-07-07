@@ -5232,3 +5232,17 @@ body {
         animation: none !important;
     }
 }
+.product-views{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+}
+
+.product-views i{
+    color: #440C2C;
+    font-size: 14px;
+}

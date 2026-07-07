@@ -175,9 +175,13 @@ setSEO(title, description) {
 
                 let url = `/collection/${categorySlug}`;
 
-                if (categorySlug === "trending" || categorySlug === "bestsellers") {
-                    url = "/top-selling";
-                }
+             if (categorySlug === "trending") {
+    url = "/top-selling";
+}
+
+if (categorySlug === "bestsellers") {
+    url = "/best-selling";
+}
 
                 return `<a href="${url}" class="nav-item"
                     data-cat-id="${cat.id}"
@@ -662,23 +666,26 @@ function redirectToSubcategory(categoryId) {
                         .replace(/[^a-z0-9]+/g, '-')
                         .replace(/^-|-$/g, '');
 
-                    if (subSlug === 'trending' || subSlug === 'bestsellers') {
-                        window.location.href = '/top-selling';
-                    } else {
-                        window.location.href = `/collection/${parentSlug}/${subSlug}`;
-                    }
+                 if (subSlug === 'trending') {
+    window.location.href = '/top-selling';
+} else if (subSlug === 'bestsellers') {
+    window.location.href = '/best-selling';
+} else {
+    window.location.href = `/collection/${parentSlug}/${subSlug}`;
+}
 
                 } else if (targetCategory.children && targetCategory.children.length > 0) {
 
                     const slug = targetCategory.name.toLowerCase()
                         .replace(/[^a-z0-9]+/g, '-')
                         .replace(/^-|-$/g, '');
-
-                    if (slug === 'trending' || slug === 'bestsellers') {
-                        window.location.href = '/top-selling';
-                    } else {
-                        window.location.href = `/collection/${slug}`;
-                    }
+if (slug === 'trending') {
+    window.location.href = '/top-selling';
+} else if (slug === 'bestsellers') {
+    window.location.href = '/best-selling';
+} else {
+    window.location.href = `/collection/${slug}`;
+}
 
                 } else {
 
@@ -686,11 +693,13 @@ function redirectToSubcategory(categoryId) {
                         .replace(/[^a-z0-9]+/g, '-')
                         .replace(/^-|-$/g, '');
 
-                    if (slug === 'trending' || slug === 'bestsellers') {
-                        window.location.href = '/top-selling';
-                    } else {
-                        window.location.href = `/collection/${slug}`;
-                    }
+                   if (slug === 'trending') {
+    window.location.href = '/top-selling';
+} else if (slug === 'bestsellers') {
+    window.location.href = '/best-selling';
+} else {
+    window.location.href = `/collection/${slug}`;
+}
 
                 }
                 } else {
@@ -744,6 +753,7 @@ function hideCategoryPopup() {
     }
 }
 
+
 function updateCartCountBadge() {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     const totalItems = cart.length;
@@ -755,9 +765,19 @@ function updateCartCountBadge() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+
     if (document.body.dataset.page === 'all-categories') {
         window.allCategoriesPage = new AllCategoriesPage();
     }
+
+    if (window.location.pathname === '/top-selling') {
+        trackPageImpression('top-selling');
+    }
+
+    if (window.location.pathname === '/best-selling') {
+        trackPageImpression('best-selling');
+    }
+
 });
 // Dynamic search placeholder for all categories page
 setTimeout(function() {
