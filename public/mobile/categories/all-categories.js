@@ -753,6 +753,7 @@ function hideCategoryPopup() {
     }
 }
 
+
 function updateCartCountBadge() {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     const totalItems = cart.length;
@@ -764,9 +765,19 @@ function updateCartCountBadge() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+
     if (document.body.dataset.page === 'all-categories') {
         window.allCategoriesPage = new AllCategoriesPage();
     }
+
+    if (window.location.pathname === '/top-selling') {
+        trackPageImpression('top-selling');
+    }
+
+    if (window.location.pathname === '/best-selling') {
+        trackPageImpression('best-selling');
+    }
+
 });
 // Dynamic search placeholder for all categories page
 setTimeout(function() {

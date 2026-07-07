@@ -917,9 +917,7 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
                 <div class="card-price">
                     <span class="current-price">₹${current}</span>
                 </div>
-                <div class="product-views">
-    👁 ${item.click_count || 0}
-</div>
+ 
                 <button class="add-to-cart" onclick="event.stopPropagation(); window.location.href='/product/${item.slug}'" aria-label="Explore ${name} product details">
                     <svg viewBox="0 0 24 24" fill="none">
                         <path d="M1 1H5L7.68 14.39C7.77144 14.8504 8.02191 15.264 8.38755 15.5583C8.75318 15.8526 9.2107 16.009 9.68 16H19.4C19.8693 16.009 20.3268 15.8526 20.6925 15.5583C21.0581 15.264 21.3086 14.8504 21.4 14.39L23 6H6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -949,7 +947,7 @@ html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="
         <section class="trending-reels-section web-only" id="trending-reels-section">
             <div class="container">
                 <div class="section-header centered">
-                    <h2 class="section-title">Trending Reels</h2>
+                    <h2 class="section-title">Shop The Feed</h2>
                 </div>
                 <div class="reels-container">
                     <div class="reels-slider-wrapper">
@@ -977,7 +975,7 @@ if (!data.success) {
     return;
 }
 
-this.renderReelsSlider(data.reels);
+this.renderReelsSlider(data.posts || []);
         } catch (error) {
             console.error('Reels API error:', error);
         }
@@ -1006,133 +1004,195 @@ renderInstagramReels(reels) {
     `).join("");
 
 }
-    renderReelsSlider(reels) {
-        const slider = document.getElementById('reels-slider');
-        if (!slider) return;
-        
-        let currentIndex = 2;
-        
-        const getVisibleCards = () => {
-            const total = reels.length;
-            const cards = [];
-            for (let i = -2; i <= 2; i++) {
-                let idx = (currentIndex + i) % total;
-                if (idx < 0) idx += total;
-                cards.push({ ...reels[idx], originalIndex: idx, position: i + 3 });
-            }
-            return cards;
-        };
-        
-        const updateSlider = () => {
-            const visibleCards = getVisibleCards();
-            let html = '';
-            
-            visibleCards.forEach((card) => {
-                const posClass = `position-${card.position}`;
-const videoUrl = card.media_url || '';
-const productSlug = card.permalink || "#";                
-                html += `<div class="reel-card ${posClass}" data-index="${card.originalIndex}" data-slug="${productSlug}">
-                    <div class="reel-video-wrapper">
-                        <video class="reel-video" ${card.position === 3 ? 'autoplay' : ''} muted loop preload="auto" playsinline webkit-playsinline style="background: #f5f5f5; width:100%; height:100%; object-fit:cover;">
-                            <source src="${videoUrl}" type="video/mp4">
-                        </video>
-                        <div class="reel-controls">
-                            <button class="reel-control-btn play-pause-btn">
-                                <svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>
-                            </button>
-                            <button class="reel-control-btn sound-btn">
-                                <svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-                            </button>
-                        </div>
-                        <div class="reel-info-overlay"><div class="reel-title-overlay">${card.caption || 'Instagram Reel'}</div></div>
-                        <div class="play-overlay">
-                            <button class="play-reel-btn">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="#440C2C"><path d="M8 5v14l11-7z"/></svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>`;
-            });
-            
-            slider.innerHTML = `<div class="reels-track" style="display: flex; justify-content: center; align-items: center; gap: 20px;">${html}</div>`;
-            this.attachReelVideoEvents();
-        };
-        
-        updateSlider();
-        
-        const handlePrevClick = () => {
-            currentIndex = (currentIndex - 1 + reels.length) % reels.length;
-            updateSlider();
-        };
-        
-        const handleNextClick = () => {
-            currentIndex = (currentIndex + 1) % reels.length;
-            updateSlider();
-        };
-        
-        const prevBtn = document.querySelector('.reels-prev');
-        const nextBtn = document.querySelector('.reels-next');
-        
-        if (prevBtn) {
-            const newPrev = prevBtn.cloneNode(true);
-            prevBtn.parentNode.replaceChild(newPrev, prevBtn);
-            newPrev.onclick = handlePrevClick;
-        }
-        
-        if (nextBtn) {
-            const newNext = nextBtn.cloneNode(true);
-            nextBtn.parentNode.replaceChild(newNext, nextBtn);
-            newNext.onclick = handleNextClick;
-        }
+renderReelsSlider(reels) {
+
+    const slider = document.getElementById("reels-slider");
+
+    if (!slider) return;
+
+    if (!Array.isArray(reels) || reels.length === 0) {
+        slider.innerHTML = `
+            <div class="text-center p-4">
+                No Instagram Posts Found
+            </div>
+        `;
+        return;
     }
 
-    attachReelVideoEvents() {
-        document.querySelectorAll('.reel-card').forEach(card => {
-            const video = card.querySelector('.reel-video');
-            const playBtn = card.querySelector('.play-reel-btn');
-            const playPauseBtn = card.querySelector('.play-pause-btn');
-            const soundBtn = card.querySelector('.sound-btn');
-            
-            if (video && playBtn) {
-                card.onmouseenter = () => video.play();
-                card.onmouseleave = () => { video.pause(); video.currentTime = 0; };
-                
-                playBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    if (video.paused) {
-                        video.play();
-                        if (playPauseBtn) playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-                    } else {
-                        video.pause();
-                        if (playPauseBtn) playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>`;
-                    }
-                };
-                
-                if (playPauseBtn) {
-                    playPauseBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        if (video.paused) {
-                            video.play();
-                            playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-                        } else {
-                            video.pause();
-                            playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>`;
-                        }
-                    };
-                }
-                
-                if (soundBtn) {
-                    soundBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        video.muted = !video.muted;
-                        soundBtn.innerHTML = video.muted 
-                            ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`
-                            : `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>`;
-                    };
-                }
-            }
+    let currentIndex = 2;
+
+    const getVisibleCards = () => {
+        const total = reels.length;
+        const cards = [];
+
+        for (let i = -2; i <= 2; i++) {
+
+            let idx = (currentIndex + i) % total;
+
+            if (idx < 0) idx += total;
+
+            cards.push({
+                ...reels[idx],
+                originalIndex: idx,
+                position: i + 3
+            });
+
+        }
+
+        return cards;
+    };
+
+    const updateSlider = () => {
+
+        const visibleCards = getVisibleCards();
+
+        let html = "";
+
+        visibleCards.forEach((card) => {
+
+            const posClass = `position-${card.position}`;
+
+            html += `
+            <div
+                class="reel-card ${posClass}"
+                data-url="${card.permalink}"
+                style="cursor:pointer;">
+
+                <div class="reel-image-wrapper">
+
+                    <img
+                        src="${card.media_url}"
+                        class="reel-image"
+                        loading="lazy"
+                        style="
+                            width:100%;
+                            height:100%;
+                            object-fit:cover;
+                            border-radius:16px;
+                        ">
+
+                    <div class="reel-info-overlay">
+
+                        <div class="reel-title-overlay">
+
+                            ${card.caption || ""}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+            `;
+
         });
+
+        slider.innerHTML = `
+            <div class="reels-track"
+                 style="display:flex;justify-content:center;align-items:center;gap:20px;">
+
+                ${html}
+
+            </div>
+        `;
+
+        setupReelRedirect();
+
+    };
+
+    updateSlider();
+
+    const handlePrevClick = () => {
+
+        currentIndex =
+            (currentIndex - 1 + reels.length) % reels.length;
+
+        updateSlider();
+
+    };
+
+    const handleNextClick = () => {
+
+        currentIndex =
+            (currentIndex + 1) % reels.length;
+
+        updateSlider();
+
+    };
+
+    const prevBtn = document.querySelector(".reels-prev");
+    const nextBtn = document.querySelector(".reels-next");
+
+    if (prevBtn) {
+
+        const newPrev = prevBtn.cloneNode(true);
+
+        prevBtn.parentNode.replaceChild(newPrev, prevBtn);
+
+        newPrev.onclick = handlePrevClick;
+
     }
+
+    if (nextBtn) {
+
+        const newNext = nextBtn.cloneNode(true);
+
+        nextBtn.parentNode.replaceChild(newNext, nextBtn);
+
+        newNext.onclick = handleNextClick;
+
+    }
+
+}
+
+    // attachReelVideoEvents() {
+    //     document.querySelectorAll('.reel-card').forEach(card => {
+    //         const video = card.querySelector('.reel-video');
+    //         const playBtn = card.querySelector('.play-reel-btn');
+    //         const playPauseBtn = card.querySelector('.play-pause-btn');
+    //         const soundBtn = card.querySelector('.sound-btn');
+            
+    //         if (video && playBtn) {
+    //             card.onmouseenter = () => video.play();
+    //             card.onmouseleave = () => { video.pause(); video.currentTime = 0; };
+                
+    //             playBtn.onclick = (e) => {
+    //                 e.stopPropagation();
+    //                 if (video.paused) {
+    //                     video.play();
+    //                     if (playPauseBtn) playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+    //                 } else {
+    //                     video.pause();
+    //                     if (playPauseBtn) playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>`;
+    //                 }
+    //             };
+                
+    //             if (playPauseBtn) {
+    //                 playPauseBtn.onclick = (e) => {
+    //                     e.stopPropagation();
+    //                     if (video.paused) {
+    //                         video.play();
+    //                         playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+    //                     } else {
+    //                         video.pause();
+    //                         playPauseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>`;
+    //                     }
+    //                 };
+    //             }
+                
+    //             if (soundBtn) {
+    //                 soundBtn.onclick = (e) => {
+    //                     e.stopPropagation();
+    //                     video.muted = !video.muted;
+    //                     soundBtn.innerHTML = video.muted 
+    //                         ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`
+    //                         : `<svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>`;
+    //                 };
+    //             }
+    //         }
+    //     });
+    // }
 
     genCircularItem(p) {
         return `<div class="circular-item" onclick="window.location.href='/product/${p.slug}'">
@@ -1312,14 +1372,23 @@ document.addEventListener("click", (e) => {
 });
 
 function setupReelRedirect() {
-    document.querySelectorAll('.reel-card').forEach(card => {
-        card.onclick = (e) => {
-            if (e.target.closest('button')) return;
-            if (e.target.closest('.play-overlay')) return;
-            const slug = card.dataset.slug;
-            if (slug) window.location.href = '/product/' + slug;
+
+    document.querySelectorAll(".reel-card").forEach(card => {
+
+        card.onclick = () => {
+
+            const url = card.dataset.url;
+
+            if (url) {
+
+                window.open(url, "_blank");
+
+            }
+
         };
+
     });
+
 }
 // Dynamic search placeholder - Fetches categories on every page load
 (function() {
@@ -1401,3 +1470,20 @@ window.loadHoverImage = function(imgElement) {
             imgElement.dataset.loading = 'false';
         });
 };
+async function trackPageImpression(pageName) {
+    try {
+        await fetch(`${API_BASE_URL}/page-impression`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                page_name: pageName
+            })
+        });
+
+        console.log(pageName + " impression saved");
+    } catch (e) {
+        console.error("Impression Error:", e);
+    }
+}
