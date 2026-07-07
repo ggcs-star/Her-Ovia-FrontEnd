@@ -14,7 +14,7 @@ echo '<' . '?xml version="1.0" encoding="UTF-8"?' . '>';
     {{-- STATIC PAGES --}}
     <url>
         <loc>{{ url('/about-us') }}</loc>
-        <lastmod>{{ date('c', filemtime(resource_path('views/pages/about-us.blade.php'))) }}</lastmod>
+        <lastmod>{{ \Carbon\Carbon::createFromTimestamp(filemtime(resource_path('views/pages/about-us.blade.php')))->setTimezone('Asia/Kolkata')->toIso8601String() }}</lastmod>
         <changefreq>monthly</changefreq>
         <priority>1.0</priority>
     </url>
@@ -22,26 +22,26 @@ echo '<' . '?xml version="1.0" encoding="UTF-8"?' . '>';
 
     <url>
         <loc>{{ url('/privacy-policy') }}</loc>
-        <lastmod>{{ date('c', filemtime(resource_path('views/pages/privacy.blade.php'))) }}</lastmod>
+        <lastmod>{{ \Carbon\Carbon::createFromTimestamp(filemtime(resource_path('views/pages/privacy.blade.php')))->setTimezone('Asia/Kolkata')->toIso8601String() }}</lastmod>
         <changefreq>yearly</changefreq>
         <priority>1.0</priority>
     </url>
 
     <url>
         <loc>{{ url('/returns') }}</loc>
-        <lastmod>{{ date('c', filemtime(resource_path('views/pages/returns.blade.php'))) }}</lastmod>
+        <lastmod>{{ \Carbon\Carbon::createFromTimestamp(filemtime(resource_path('views/pages/returns.blade.php')))->setTimezone('Asia/Kolkata')->toIso8601String() }}</lastmod>
         <changefreq>monthly</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
         <loc>{{ url('/shipping') }}</loc>
-        <lastmod>{{ date('c', filemtime(resource_path('views/pages/shipping.blade.php'))) }}</lastmod>
+        <lastmod>{{ \Carbon\Carbon::createFromTimestamp(filemtime(resource_path('views/pages/shipping.blade.php')))->setTimezone('Asia/Kolkata')->toIso8601String() }}</lastmod>
         <changefreq>monthly</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
         <loc>{{ url('/terms') }}</loc>
-        <lastmod>{{ date('c', filemtime(resource_path('views/pages/terms.blade.php'))) }}</lastmod>
+        <lastmod>{{ \Carbon\Carbon::createFromTimestamp(filemtime(resource_path('views/pages/terms.blade.php')))->setTimezone('Asia/Kolkata')->toIso8601String() }}</lastmod>
         <changefreq>yearly</changefreq>
         <priority>1.0</priority>
     </url>
@@ -51,7 +51,7 @@ echo '<' . '?xml version="1.0" encoding="UTF-8"?' . '>';
 
         <url>
             <loc>{{ url('/collection/'.$cat['slug']) }}</loc>
-            <lastmod>{{ $cat['updated_at'] }}</lastmod>
+            <lastmod>{{ \Carbon\Carbon::parse($cat['updated_at'])->setTimezone('Asia/Kolkata')->toIso8601String() }}</lastmod>
             <changefreq>weekly</changefreq>
             <priority>1.0</priority>
         </url>
@@ -62,7 +62,7 @@ echo '<' . '?xml version="1.0" encoding="UTF-8"?' . '>';
 
                 <url>
                     <loc>{{ url('/collection/'.$child['slug']) }}</loc>
-                    <lastmod>{{ $child['updated_at'] }}</lastmod>
+                    <lastmod>{{ \Carbon\Carbon::parse($child['updated_at'])->setTimezone('Asia/Kolkata')->toIso8601String() }}</lastmod>
                     <changefreq>weekly</changefreq>
                     <priority>1.0</priority>
                 </url>
@@ -78,7 +78,7 @@ echo '<' . '?xml version="1.0" encoding="UTF-8"?' . '>';
         @if(!empty($product['slug']))
             <url>
                 <loc>{{ url('/product/'.$product['slug']) }}</loc>
-                <lastmod>{{ $product['updated_at'] }}</lastmod>
+                <lastmod>{{ \Carbon\Carbon::parse($product['updated_at'])->setTimezone('Asia/Kolkata')->toIso8601String() }}</lastmod>
                 <changefreq>weekly</changefreq>
                 <priority>1.0</priority>
             </url>
