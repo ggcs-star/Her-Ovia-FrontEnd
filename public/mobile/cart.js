@@ -640,10 +640,34 @@ function applyCoupon(couponCode = null) {
     }
     
     const cartTotal = parseFloat(document.getElementById('final-total-web')?.innerText.replace('₹', '').replace(',', '') || 0);
-    
+  const cart = getCart();
+
+if (!cart.length) {
+    showToast('Cart is empty', 'error');
+    return;
+}
+
+const firstItem = cart[0];  
+console.log(firstItem);
+console.log("First Item:", firstItem);
+
+console.log({
+    coupon_code: code.toUpperCase(),
+    cart_total: cartTotal,
+    product_id: firstItem.id,
+    category_id: firstItem.categoryId,
+    subcategory_id: firstItem.subcategoryId
+});
     fetch(`${API_BASE_URL}/coupons/apply`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ coupon_code: code.toUpperCase(), cart_total: cartTotal })
+body: JSON.stringify({
+    coupon_code: code.toUpperCase(),
+    cart_total: cartTotal,
+
+    product_id: firstItem.id,
+    category_id: firstItem.categoryId,
+    subcategory_id: firstItem.categoryId
+})
     })
     .then(res => res.json())
     .then(response => {
