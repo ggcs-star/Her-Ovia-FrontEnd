@@ -277,6 +277,7 @@ const API_BASE_URL = window.API_BASE_URL;
             variantValue: variantValue, 
             variantId: variantId, 
             categoryId: product.category?.id,
+            
             quantity: 1, 
             availableVariants: availableVariants, 
             rating: product.rating || 4.5, 
@@ -805,7 +806,7 @@ const API_BASE_URL = window.API_BASE_URL;
         const cartItem = {
             id: currentProduct?.id, name: currentProduct?.name, brand: currentProduct?.brand || '',
             price: finalPrice, product_price: finalPrice, image: imageUrl, slug: currentProduct?.slug,
-            variantId: selectedVariant?.id || null, quantity: 1
+            variantId: selectedVariant?.id || null, quantity: 1,categoryId: currentProduct?.category?.id || null
         };
         localStorage.setItem('cart', JSON.stringify([cartItem]));
         updateCartBadge();
