@@ -43,6 +43,7 @@ if (cartItems.length === 0) {
     syncCartWithServer().then(() => {
         loadCheckoutSummary();
         loadUserAddresses();
+        loadAppliedCheckoutCoupon();
     });
     
 });
@@ -138,12 +139,15 @@ function loadCheckoutSummary() {
         console.log('Full checkout summary response:', response);
         
         if (response.success && response.data && response.data.cart) {
-            console.log('Cart data:', response.data.cart);
-            console.log('Items in server cart:', response.data.cart.items);
-            console.log('Tax value:', response.data.cart.tax);
-            console.log('Shipping value:', response.data.cart.shipping);
-            console.log('Platform fee:', response.data.cart.platform_fee);
             renderCheckoutSummary(response.data.cart);
+            
+            // ✅ Check if coupon applied from server response
+            if (response.data.cart.discount > 0) {
+                const appliedCode = localStorage.getItem('applied_coupon');
+                if (appliedCode) {
+                    showAppliedCheckoutCoupon(appliedCode, response.data.cart.discount);
+                }
+            }
         } else {
             console.log('Response success false or no cart data');
             let localCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -156,19 +160,23 @@ function loadCheckoutSummary() {
             let tax = response.data?.cart?.tax || 0;
             let shipping = response.data?.cart?.shipping || 0;
             let platformFee = response.data?.cart?.platform_fee || 0;
+            let discount = parseFloat(localStorage.getItem('coupon_discount')) || 0; // ✅ Add this
             
-            let total = localSubtotal + tax + shipping + platformFee;
+            let total = localSubtotal + tax + shipping + platformFee - discount;
             
             summaryContainer.innerHTML = `
                 <div class="order-details">
                     <h3 class="price-details-title">Price Details (${localCart.length} Items)</h3>
                     <div class="detail-row"><span>Product Price</span><span>₹${localSubtotal.toFixed(2)}</span></div>
+                    ${discount > 0 ? `<div class="detail-row discount"><span>Coupon Discount</span><span>-₹${discount.toFixed(2)}</span></div>` : ''}
                     <div class="detail-row"><span>Tax (GST)</span><span>₹${tax.toFixed(2)}</span></div>
                     <div class="detail-row"><span>Delivery Fee</span><span>₹${shipping.toFixed(2)}</span></div>
                     <div class="detail-row"><span>Platform Fee</span><span>₹${platformFee.toFixed(2)}</span></div>
                     <div class="detail-row final-total"><span>Final Total</span><span>₹${total.toFixed(2)}</span></div>
                 </div>
             `;
+            
+            summaryContainer.dataset.total = total;
         }
     })
     .catch(error => {
@@ -905,5 +913,336 @@ function confirmRemoveAddress() {
     if (pendingAddressId) {
         removeAddress(pendingAddressId);
         closeConfirmModal();
+    }
+}
+function renderCheckoutSummary(cart) {
+    const summaryContainer = document.getElementById('checkout-summary');
+    if (!summaryContainer) return;
+
+    const subtotal = parseFloat(cart.subtotal) || 0;
+    const tax = parseFloat(cart.tax) || 0;
+    const shipping = parseFloat(cart.shipping) || 0;
+    const discount = parseFloat(cart.discount) || 0;
+    const platformFee = parseFloat(cart.platform_fee) || 0;
+    const total = parseFloat(cart.total) || 0;
+    const itemsCount = cart.items_count || 0;
+
+    let html = `
+        <div class="order-details">
+            <h3 class="price-details-title">Price Details (${itemsCount} Items)</h3>
+            <div class="detail-row">
+                <span>Product Price</span>
+                <span>₹${subtotal.toFixed(2)}</span>
+            </div>
+    `;
+
+    if (discount > 0) {
+        html += `
+            <div class="detail-row discount">
+                <span>Coupon Discount</span>
+                <span>-₹${discount.toFixed(2)}</span>
+            </div>
+        `;
+    }
+
+    if (tax > 0) {
+        html += `
+            <div class="detail-row">
+                <span>Tax (GST)</span>
+                <span>₹${tax.toFixed(2)}</span>
+            </div>
+        `;
+    }
+
+    if (shipping > 0) {
+        html += `
+            <div class="detail-row">
+                <span>Delivery Fee</span>
+                <span>₹${shipping.toFixed(2)}</span>
+            </div>
+        `;
+    } else {
+        html += `
+            <div class="detail-row">
+                <span>Delivery Fee</span>
+                <span class="free">FREE</span>
+            </div>
+        `;
+    }
+    
+    if (platformFee > 0) {
+        html += `
+            <div class="detail-row">
+                <span>Platform Fee</span>
+                <span>₹${platformFee.toFixed(2)}</span>
+            </div>
+        `;
+    }
+
+    html += `
+        <div class="detail-row final-total">
+            <span>Final Total</span>
+            <span>₹${total.toFixed(2)}</span>
+        </div>
+    `;
+
+    if (discount > 0) {
+        html += `
+            <div class="total-savings">
+                <span>🎉 Yay! Your total discount is ₹${discount.toFixed(2)}</span>
+            </div>
+        `;
+    }
+
+    summaryContainer.innerHTML = html;
+    summaryContainer.dataset.total = total;
+}
+// ========== CHECKOUT COUPON FUNCTIONS ==========
+
+let allCoupons = [];
+
+function toggleCouponSection() {
+    const body = document.getElementById('checkoutCouponBody');
+    const btn = document.querySelector('.coupon-toggle-btn');
+    
+    if (body.style.display === 'none' || body.style.display === '') {
+        body.style.display = 'block';
+        btn.textContent = 'Hide ▲';
+        loadCheckoutCoupons();
+    } else {
+        body.style.display = 'none';
+        btn.textContent = 'Apply Coupon ▼';
+    }
+}
+
+function toggleAvailableCoupons() {
+    const list = document.getElementById('checkoutCouponList');
+    const link = document.querySelector('.coupon-toggle-link');
+    
+    if (list.style.display === 'none' || list.style.display === '') {
+        list.style.display = 'block';
+        link.textContent = 'Hide Available Coupons ▲';
+        loadCheckoutCoupons();
+    } else {
+        list.style.display = 'none';
+        link.textContent = 'View Available Coupons ▼';
+    }
+}
+
+function loadCheckoutCoupons() {
+    const list = document.getElementById('checkoutCouponList');
+    if (!list) return;
+    
+    list.innerHTML = '<div class="loading-coupons">Loading coupons...</div>';
+    
+    fetch(`${API_BASE_URL}/coupons`, {
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(response => {
+        if (response.success && response.data?.length) {
+            allCoupons = response.data;
+            renderCheckoutCoupons(response.data);
+        } else {
+            list.innerHTML = '<div class="no-coupons">No coupons available</div>';
+        }
+    })
+    .catch(err => {
+        console.error('Error loading coupons:', err);
+        list.innerHTML = '<div class="no-coupons">Failed to load coupons</div>';
+    });
+}
+
+function renderCheckoutCoupons(coupons) {
+    const list = document.getElementById('checkoutCouponList');
+    if (!list) return;
+    
+    // Get current cart total from summary
+    const summaryContainer = document.getElementById('checkout-summary');
+    const totalMatch = summaryContainer?.innerHTML?.match(/₹([\d.]+)/);
+    const cartTotal = totalMatch ? parseFloat(totalMatch[1]) : 0;
+    
+    if (cartTotal === 0) {
+        list.innerHTML = '<div class="no-coupons">Add items to see applicable coupons</div>';
+        return;
+    }
+    
+    const applicableCoupons = coupons.filter(c => 
+        cartTotal >= (c.min_order_amount ? parseFloat(c.min_order_amount) : 0)
+    );
+    
+    if (!applicableCoupons.length) {
+        list.innerHTML = '<div class="no-coupons">No applicable coupons for this order</div>';
+        return;
+    }
+    
+    // Filter out BANK coupons
+    const normalCoupons = applicableCoupons.filter(c => c.coupon_type !== 'BANK');
+    
+    if (!normalCoupons.length) {
+        list.innerHTML = '<div class="no-coupons">No normal coupons available. Bank offers can be applied during payment.</div>';
+        return;
+    }
+    
+    let html = '<div class="coupon-stickers-row">';
+    normalCoupons.forEach(coupon => {
+        const valueText = coupon.discount_type === 'PERCENT' ? `${coupon.value}%` : `₹${coupon.value}`;
+        const isApplied = localStorage.getItem('applied_coupon') === coupon.code;
+        
+        html += `
+            <div class="coupon-sticker ${isApplied ? 'applied' : ''}" 
+                 onclick="applyCheckoutCoupon('${coupon.code}')"
+                 style="${isApplied ? 'border-color: #2e7d32; background: #e8f5e9;' : ''}">
+                <span class="code">${coupon.code}</span>
+                <span class="value">${valueText}</span>
+                ${isApplied ? ' ✅' : ''}
+            </div>
+        `;
+    });
+    html += '</div>';
+    
+    list.innerHTML = html;
+}
+
+function applyCheckoutCoupon(couponCode = null) {
+    const input = document.getElementById('checkoutCouponInput');
+    const code = couponCode || input?.value?.trim()?.toUpperCase();
+    
+    if (!code) {
+        showToast('Please enter a coupon code', 'error');
+        return;
+    }
+    
+    // Check if it's a BANK coupon
+    const coupon = allCoupons.find(c => c.code === code);
+    if (coupon?.coupon_type === 'BANK') {
+        showToast('This is a bank offer. It will be applied during payment.', 'info');
+        return;
+    }
+    
+    // Get cart total from summary
+    const summaryContainer = document.getElementById('checkout-summary');
+    const totalMatch = summaryContainer?.innerHTML?.match(/₹([\d.]+)/);
+    const cartTotal = totalMatch ? parseFloat(totalMatch[1]) : 0;
+    
+    // Get cart items
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    if (!cart.length) {
+        showToast('Cart is empty', 'error');
+        return;
+    }
+    
+    const firstItem = cart[0];
+    
+    // Show loading
+    const applyBtn = document.querySelector('.apply-coupon-btn');
+    const originalText = applyBtn?.innerHTML || 'Apply';
+    if (applyBtn) {
+        applyBtn.innerHTML = 'Applying...';
+        applyBtn.disabled = true;
+    }
+    
+    fetch(`${API_BASE_URL}/coupons/apply`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+            coupon_code: code,
+            cart_total: cartTotal,
+            product_id: firstItem.id,
+            category_id: firstItem.categoryId,
+            subcategory_id: firstItem.subcategoryId || null
+        })
+    })
+    .then(res => res.json())
+    .then(response => {
+        if (response.success) {
+            // Store in localStorage
+            localStorage.setItem('applied_coupon', response.data.coupon_code);
+            localStorage.setItem('coupon_discount', response.data.discount);
+            
+            // Show applied coupon
+            showAppliedCheckoutCoupon(response.data.coupon_code, response.data.discount);
+            
+            // Update summary
+            loadCheckoutSummary();
+            
+            // Show success
+            showToast(`Coupon ${response.data.coupon_code} applied! You saved ₹${response.data.discount.toFixed(2)}`, 'success');
+            
+            // Clear input
+            if (input) input.value = '';
+            
+            // Refresh coupon list
+            loadCheckoutCoupons();
+            
+        } else {
+            showToast(response.message || 'Failed to apply coupon', 'error');
+        }
+    })
+    .catch(err => {
+        console.error('Error applying coupon:', err);
+        showToast('Error applying coupon. Please try again.', 'error');
+    })
+    .finally(() => {
+        if (applyBtn) {
+            applyBtn.innerHTML = originalText;
+            applyBtn.disabled = false;
+        }
+    });
+}
+
+function showAppliedCheckoutCoupon(code, discount) {
+    const appliedDiv = document.getElementById('appliedCoupon');
+    const codeSpan = document.getElementById('appliedCouponCode');
+    
+    if (appliedDiv && codeSpan) {
+        codeSpan.textContent = `${code} • -₹${parseFloat(discount).toFixed(2)}`;
+        appliedDiv.style.display = 'flex';
+    }
+}
+
+function removeCheckoutCoupon() {
+    const token = localStorage.getItem('token');
+    
+    fetch(`${API_BASE_URL}/coupons/remove`, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(() => {
+        localStorage.removeItem('applied_coupon');
+        localStorage.removeItem('coupon_discount');
+        
+        document.getElementById('appliedCoupon').style.display = 'none';
+        loadCheckoutSummary();
+        loadCheckoutCoupons();
+        showToast('Coupon removed', 'info');
+    })
+    .catch(err => {
+        console.error('Error removing coupon:', err);
+        showToast('Error removing coupon', 'error');
+    });
+}
+
+function loadAppliedCheckoutCoupon() {
+    const code = localStorage.getItem('applied_coupon');
+    const discount = localStorage.getItem('coupon_discount');
+    
+    if (code && discount) {
+        showAppliedCheckoutCoupon(code, parseFloat(discount));
+        
+        // Auto-expand coupon section
+        const body = document.getElementById('checkoutCouponBody');
+        const btn = document.querySelector('.coupon-toggle-btn');
+        if (body && (body.style.display === 'none' || body.style.display === '')) {
+            body.style.display = 'block';
+            if (btn) btn.textContent = 'Hide ▲';
+        }
     }
 }
