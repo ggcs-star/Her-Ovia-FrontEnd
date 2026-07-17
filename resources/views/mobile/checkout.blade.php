@@ -117,14 +117,47 @@
             </div> 
             
             <div class="checkout-right">
-                <div class="order-summary-card">
-                    <h2>Order Summary</h2>
-                    <div id="checkout-summary">
-                        <div class="loading-spinner">Loading summary...</div>
-                    </div>
-                    <button class="place-order-btn" onclick="handleCheckout()">PLACE ORDER</button>
-                    
+                <!-- Order Summary Card ke andar, place-order-btn se pehle -->
+<div class="order-summary-card">
+    <h2>Order Summary</h2>
+    <div id="checkout-summary">
+        <div class="loading-spinner">Loading summary...</div>
+    </div>
+    
+    <!-- ✅ COUPON SECTION ADD KARO -->
+    <div class="coupon-section">
+        <div class="coupon-header" onclick="toggleCouponSection()">
+            <span>🎫 Have a coupon?</span>
+            <span class="coupon-toggle-btn">Apply Coupon ▼</span>
+        </div>
+        
+        <div class="coupon-body" id="checkoutCouponBody" style="display:none;">
+            <!-- Applied Coupon Display -->
+            <div class="applied-coupon" id="appliedCoupon" style="display:none;">
+                <span>✅ Coupon Applied: <strong id="appliedCouponCode"></strong></span>
+                <button class="remove-coupon-btn" onclick="removeCheckoutCoupon()">✕</button>
+            </div>
+            
+            <!-- Coupon Input -->
+            <div class="coupon-input-wrapper">
+                <input type="text" id="checkoutCouponInput" placeholder="Enter coupon code" class="coupon-input">
+                <button class="apply-coupon-btn" onclick="applyCheckoutCoupon()">Apply</button>
+            </div>
+            
+            <!-- Available Coupons -->
+            <div class="available-coupons">
+                <div class="coupon-toggle-link" onclick="toggleAvailableCoupons()">
+                    View Available Coupons ▼
                 </div>
+                <div class="coupon-list" id="checkoutCouponList" style="display:none;">
+                    <div class="loading-coupons">Loading coupons...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <button class="place-order-btn" onclick="handleCheckout()">PLACE ORDER</button>
+</div>
             </div>
         </div>
             </div>
