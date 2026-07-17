@@ -30,29 +30,37 @@
         </section>
 
         <aside class="cart-right">
-            <div class="coupon-section">
-                <div class="coupon-header-row">
-                    <h4>Apply Coupon</h4>
-                    <a href="#" class="view-coupons-link">View Coupons</a>
-                </div>
-                
-                <div class="coupon-box">
-                    <input type="text" id="coupon-code-input" placeholder="Enter Coupon Code" value="">
-                    <button id="apply-coupon-btn" class="apply-coupon">APPLY</button>
-                </div>
-                
-                <div class="applied-coupon" style="display: none;">
-                    <span class="coupon-tag" id="applied-coupon-code"></span>
-                    <button id="remove-coupon-btn" class="remove-coupon">✕</button>
-                </div>
+        <div class="coupon-section">
 
-                <div class="applicable-coupons">
-                    <h5>Applicable Coupons</h5>
-                    <div id="coupons-list" class="coupons-list">
-                        <div class="loading-coupons">Loading coupons...</div>
-                    </div>
-                </div>
-            </div>
+    <h4>Apply Coupon</h4>
+
+    <div class="coupon-box">
+        <input
+            type="text"
+            id="coupon-code-input"
+            placeholder="Enter Coupon Code">
+
+        <button
+            id="apply-coupon-btn"
+            class="apply-coupon">
+            APPLY
+        </button>
+    </div>
+
+    <div class="applied-coupon" style="display:none;">
+        <span
+            class="coupon-tag"
+            id="applied-coupon-code">
+        </span>
+
+        <button
+            id="remove-coupon-btn"
+            class="remove-coupon">
+            ✕
+        </button>
+    </div>
+
+</div>
 
             <div class="order-summary-card">
                 <h3>Order Summary (<span id="item-count">0</span> Items)</h3>
