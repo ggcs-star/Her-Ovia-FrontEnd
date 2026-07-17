@@ -296,9 +296,7 @@ function loadCart() {
         renderCart(updatedCart);
     });
 
-    setTimeout(() => {
-        if (typeof loadAvailableCoupons === 'function') loadAvailableCoupons();
-    }, 100);
+ 
 }
 
 // ========== CART ITEM ACTIONS ==========
@@ -530,114 +528,135 @@ function closeQtyPopup() {
 }
 
 // ========== COUPON FUNCTIONS ==========
+// function initCouponSection() {
+//     const viewCouponsBtn = document.querySelector('.view-coupons-link');
+//     const couponsWrapper = document.querySelector('.applicable-coupons');
+    
+//     if (viewCouponsBtn && couponsWrapper) {
+//         couponsWrapper.style.display = 'none';
+//         viewCouponsBtn.addEventListener('click', function(e) {
+//             e.preventDefault();
+//             const isHidden = couponsWrapper.style.display === 'none';
+//             couponsWrapper.style.display = isHidden ? 'block' : 'none';
+//             if (isHidden) loadAvailableCoupons();
+//             viewCouponsBtn.textContent = isHidden ? 'Hide Coupons' : 'View Coupons';
+//         });
+//     }
+    
+//     const applyBtn = document.getElementById('apply-coupon-btn');
+//     if (applyBtn) applyBtn.addEventListener('click', () => applyCoupon());
+    
+//     const removeBtn = document.getElementById('remove-coupon-btn');
+//     if (removeBtn) removeBtn.addEventListener('click', removeCoupon);
+    
+//     const input = document.getElementById('coupon-code-input');
+//     if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') applyCoupon(); });
+// }
 function initCouponSection() {
-    const viewCouponsBtn = document.querySelector('.view-coupons-link');
-    const couponsWrapper = document.querySelector('.applicable-coupons');
-    
-    if (viewCouponsBtn && couponsWrapper) {
-        couponsWrapper.style.display = 'none';
-        viewCouponsBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const isHidden = couponsWrapper.style.display === 'none';
-            couponsWrapper.style.display = isHidden ? 'block' : 'none';
-            if (isHidden) loadAvailableCoupons();
-            viewCouponsBtn.textContent = isHidden ? 'Hide Coupons' : 'View Coupons';
-        });
-    }
-    
+
     const applyBtn = document.getElementById('apply-coupon-btn');
-    if (applyBtn) applyBtn.addEventListener('click', () => applyCoupon());
-    
+    if (applyBtn) {
+        applyBtn.addEventListener('click', () => applyCoupon());
+    }
+
     const removeBtn = document.getElementById('remove-coupon-btn');
-    if (removeBtn) removeBtn.addEventListener('click', removeCoupon);
-    
+    if (removeBtn) {
+        removeBtn.addEventListener('click', removeCoupon);
+    }
+
     const input = document.getElementById('coupon-code-input');
-    if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') applyCoupon(); });
-}
-
-function loadAvailableCoupons() {
-    const couponsList = document.getElementById('coupons-list');
-    if (!couponsList) return;
-    
-    couponsList.innerHTML = '<div class="loading-coupons">Loading coupons...</div>';
-    
-    fetch(`${API_BASE_URL}/coupons`, { headers: { 'Accept': 'application/json' } })
-    .then(res => res.ok ? res.json() : Promise.reject(`HTTP ${res.status}`))
-    .then(response => {
-        if (response.success && response.data?.length) {
-            window.allCoupons = response.data;
-            renderCouponsList(response.data);
-        } else {
-            couponsList.innerHTML = '<div class="no-coupons">No coupons available</div>';
-        }
-    })
-    .catch(err => {
-        console.error('Error loading coupons:', err);
-        couponsList.innerHTML = '<div class="no-coupons">Failed to load coupons</div>';
-    });
-}
-
-function renderCouponsList(coupons) {
-    const couponsList = document.getElementById('coupons-list');
-    if (!couponsList) return;
-    
-    const bottomTotalEl = document.getElementById('bottom-total');
-    const cartTotal = parseFloat(bottomTotalEl?.innerText.replace('₹', '').replace(',', '') || 0);
-    
-    if (cartTotal === 0) {
-        couponsList.innerHTML = '<div class="no-coupons">Add items to see applicable coupons</div>';
-        return;
-    }
-    
-    const applicableCoupons = coupons.filter(c => cartTotal >= (c.min_order_amount ? parseFloat(c.min_order_amount) : 0));
-    if (!applicableCoupons.length) {
-        couponsList.innerHTML = '<div class="no-coupons">No applicable coupons for this order</div>';
-        return;
-    }
-    
-    const bankOffers = applicableCoupons.filter(c => c.coupon_type === 'BANK');
-    const normalCoupons = applicableCoupons.filter(c => c.coupon_type !== 'BANK');
-    
-    const getStickerHTML = (coupon, isBank) => {
-        const valueText = coupon.discount_type === 'PERCENT' ? `${coupon.value}%` : `₹${coupon.value}`;
-        const icon = isBank ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9L12 3L21 9V20H3V9Z"/><path d="M8 20V12H16V20"/></svg>` : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 10h8M8 14h4"/><circle cx="17" cy="10" r="1.5" fill="currentColor"/><circle cx="17" cy="14" r="1.5" fill="currentColor"/></svg>`;
-        return `<div class="coupon-sticker ${isBank ? 'bank-sticker' : 'normal-sticker'}" onclick="applyCoupon('${coupon.code}')">
-            <span class="coupon-sticker-badge">${icon}</span>
-            <span class="coupon-sticker-code">${coupon.code}</span>
-            <span class="coupon-sticker-value">${valueText}</span>
-        </div>`;
-    };
-    
-    couponsList.innerHTML = `
-        <div class="coupon-tabs">
-            <button class="coupon-tab active" data-tab="all">All (${applicableCoupons.length})</button>
-            <button class="coupon-tab" data-tab="bank">Bank (${bankOffers.length})</button>
-            <button class="coupon-tab" data-tab="normal">Coupons (${normalCoupons.length})</button>
-        </div>
-        <div class="coupon-tab-content active" id="tab-all"><div class="coupon-stickers-row">${applicableCoupons.map(c => getStickerHTML(c, c.coupon_type === 'BANK')).join('')}</div></div>
-        <div class="coupon-tab-content" id="tab-bank"><div class="coupon-stickers-row">${bankOffers.length ? bankOffers.map(c => getStickerHTML(c, true)).join('') : '<div class="no-coupons-small">No bank offers</div>'}</div></div>
-        <div class="coupon-tab-content" id="tab-normal"><div class="coupon-stickers-row">${normalCoupons.length ? normalCoupons.map(c => getStickerHTML(c, false)).join('') : '<div class="no-coupons-small">No coupons available</div>'}</div></div>
-    `;
-    
-    document.querySelectorAll('.coupon-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            document.querySelectorAll('.coupon-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.coupon-tab-content').forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            document.getElementById(`tab-${this.dataset.tab}`).classList.add('active');
+    if (input) {
+        input.addEventListener('keypress', function(e){
+            if(e.key === 'Enter'){
+                applyCoupon();
+            }
         });
-    });
+    }
 }
+
+// function loadAvailableCoupons() {
+//     const couponsList = document.getElementById('coupons-list');
+//     if (!couponsList) return;
+    
+//     couponsList.innerHTML = '<div class="loading-coupons">Loading coupons...</div>';
+    
+//     fetch(`${API_BASE_URL}/coupons`, { headers: { 'Accept': 'application/json' } })
+//     .then(res => res.ok ? res.json() : Promise.reject(`HTTP ${res.status}`))
+//     .then(response => {
+//         if (response.success && response.data?.length) {
+//             window.allCoupons = response.data;
+//             renderCouponsList(response.data);
+//         } else {
+//             couponsList.innerHTML = '<div class="no-coupons">No coupons available</div>';
+//         }
+//     })
+//     .catch(err => {
+//         console.error('Error loading coupons:', err);
+//         couponsList.innerHTML = '<div class="no-coupons">Failed to load coupons</div>';
+//     });
+// }
+
+// function renderCouponsList(coupons) {
+//     const couponsList = document.getElementById('coupons-list');
+//     if (!couponsList) return;
+    
+//     const bottomTotalEl = document.getElementById('bottom-total');
+//     const cartTotal = parseFloat(bottomTotalEl?.innerText.replace('₹', '').replace(',', '') || 0);
+    
+//     if (cartTotal === 0) {
+//         couponsList.innerHTML = '<div class="no-coupons">Add items to see applicable coupons</div>';
+//         return;
+//     }
+    
+//     const applicableCoupons = coupons.filter(c => cartTotal >= (c.min_order_amount ? parseFloat(c.min_order_amount) : 0));
+//     if (!applicableCoupons.length) {
+//         couponsList.innerHTML = '<div class="no-coupons">No applicable coupons for this order</div>';
+//         return;
+//     }
+    
+//     const bankOffers = applicableCoupons.filter(c => c.coupon_type === 'BANK');
+//     const normalCoupons = applicableCoupons.filter(c => c.coupon_type !== 'BANK');
+    
+//     const getStickerHTML = (coupon, isBank) => {
+//         const valueText = coupon.discount_type === 'PERCENT' ? `${coupon.value}%` : `₹${coupon.value}`;
+//         const icon = isBank ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9L12 3L21 9V20H3V9Z"/><path d="M8 20V12H16V20"/></svg>` : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 10h8M8 14h4"/><circle cx="17" cy="10" r="1.5" fill="currentColor"/><circle cx="17" cy="14" r="1.5" fill="currentColor"/></svg>`;
+//         return `<div class="coupon-sticker ${isBank ? 'bank-sticker' : 'normal-sticker'}" onclick="applyCoupon('${coupon.code}')">
+//             <span class="coupon-sticker-badge">${icon}</span>
+//             <span class="coupon-sticker-code">${coupon.code}</span>
+//             <span class="coupon-sticker-value">${valueText}</span>
+//         </div>`;
+//     };
+    
+//     couponsList.innerHTML = `
+//         <div class="coupon-tabs">
+//             <button class="coupon-tab active" data-tab="all">All (${applicableCoupons.length})</button>
+//             <button class="coupon-tab" data-tab="bank">Bank (${bankOffers.length})</button>
+//             <button class="coupon-tab" data-tab="normal">Coupons (${normalCoupons.length})</button>
+//         </div>
+//         <div class="coupon-tab-content active" id="tab-all"><div class="coupon-stickers-row">${applicableCoupons.map(c => getStickerHTML(c, c.coupon_type === 'BANK')).join('')}</div></div>
+//         <div class="coupon-tab-content" id="tab-bank"><div class="coupon-stickers-row">${bankOffers.length ? bankOffers.map(c => getStickerHTML(c, true)).join('') : '<div class="no-coupons-small">No bank offers</div>'}</div></div>
+//         <div class="coupon-tab-content" id="tab-normal"><div class="coupon-stickers-row">${normalCoupons.length ? normalCoupons.map(c => getStickerHTML(c, false)).join('') : '<div class="no-coupons-small">No coupons available</div>'}</div></div>
+//     `;
+    
+//     document.querySelectorAll('.coupon-tab').forEach(tab => {
+//         tab.addEventListener('click', function() {
+//             document.querySelectorAll('.coupon-tab').forEach(t => t.classList.remove('active'));
+//             document.querySelectorAll('.coupon-tab-content').forEach(c => c.classList.remove('active'));
+//             this.classList.add('active');
+//             document.getElementById(`tab-${this.dataset.tab}`).classList.add('active');
+//         });
+//     });
+// }
 
 function applyCoupon(couponCode = null) {
     const code = couponCode || document.getElementById('coupon-code-input')?.value;
     if (!code) { showToast('Please enter a coupon code', 'error'); return; }
     
-    const selectedCoupon = window.allCoupons?.find(c => c.code === code);
-    if (selectedCoupon?.coupon_type === 'BANK') {
-        showToast('This offer can be applied during checkout', 'info');
-        return;
-    }
+    // const selectedCoupon = window.allCoupons?.find(c => c.code === code);
+    // if (selectedCoupon?.coupon_type === 'BANK') {
+    //     showToast('This offer can be applied during checkout', 'info');
+    //     return;
+    // }
     
     const cartTotal = parseFloat(document.getElementById('final-total-web')?.innerText.replace('₹', '').replace(',', '') || 0);
   const cart = getCart();
@@ -757,40 +776,40 @@ function closeCouponSuccessPopup() {
     document.querySelector('.coupon-success-popup')?.remove();
 }
 
-function showBankOfferPopup(couponCode) {
-    const coupon = window.allCoupons?.find(c => c.code === couponCode);
-    if (!coupon) return;
+// function showBankOfferPopup(couponCode) {
+//     const coupon = window.allCoupons?.find(c => c.code === couponCode);
+//     if (!coupon) return;
     
-    const popup = document.createElement('div');
-    popup.className = 'bank-offer-popup';
-    popup.innerHTML = `
-        <div class="bank-offer-overlay" onclick="closeBankOfferPopup()"></div>
-        <div class="bank-offer-content">
-            <div class="bank-offer-icon">🏦</div>
-            <h3>Bank Offer</h3>
-            <div class="bank-offer-code">${coupon.code}</div>
-            <p class="bank-offer-message">This offer can only be applied during checkout with online payment</p>
-            <div class="bank-offer-details">
-                <div class="bank-offer-save">Save: ₹${parseFloat(coupon.value).toFixed(2)}</div>
-                <div class="bank-offer-min">Min. Purchase: ₹${coupon.min_order_amount || 1000}</div>
-            </div>
-            <div class="bank-offer-buttons">
-                <button class="bank-offer-checkout-btn" onclick="window.location.href='/checkout/shipping'">Proceed to Checkout</button>
-                <button class="bank-offer-close-btn" onclick="closeBankOfferPopup()">Later</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(popup);
-}
+//     const popup = document.createElement('div');
+//     popup.className = 'bank-offer-popup';
+//     popup.innerHTML = `
+//         <div class="bank-offer-overlay" onclick="closeBankOfferPopup()"></div>
+//         <div class="bank-offer-content">
+//             <div class="bank-offer-icon">🏦</div>
+//             <h3>Bank Offer</h3>
+//             <div class="bank-offer-code">${coupon.code}</div>
+//             <p class="bank-offer-message">This offer can only be applied during checkout with online payment</p>
+//             <div class="bank-offer-details">
+//                 <div class="bank-offer-save">Save: ₹${parseFloat(coupon.value).toFixed(2)}</div>
+//                 <div class="bank-offer-min">Min. Purchase: ₹${coupon.min_order_amount || 1000}</div>
+//             </div>
+//             <div class="bank-offer-buttons">
+//                 <button class="bank-offer-checkout-btn" onclick="window.location.href='/checkout/shipping'">Proceed to Checkout</button>
+//                 <button class="bank-offer-close-btn" onclick="closeBankOfferPopup()">Later</button>
+//             </div>
+//         </div>
+//     `;
+//     document.body.appendChild(popup);
+// }
 
-function closeBankOfferPopup() {
-    document.querySelector('.bank-offer-popup')?.remove();
-}
+// function closeBankOfferPopup() {
+//     document.querySelector('.bank-offer-popup')?.remove();
+// }
 
-window.showCouponTerms = function(code) {
-    sessionStorage.setItem('view_coupon_code', code);
-    window.location.href = '/coupon-terms';
-}
+// window.showCouponTerms = function(code) {
+//     sessionStorage.setItem('view_coupon_code', code);
+//     window.location.href = '/coupon-terms';
+// }
 
 function proceedToCheckout() {
     let cart = getCart();
