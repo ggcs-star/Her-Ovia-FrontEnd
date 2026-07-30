@@ -46,7 +46,7 @@ function showVerifyPopup(email, isReset) {
     <div id="auth-popup" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; align-items:center; justify-content:center; font-family:'Inter',sans-serif;">
         <div style="background:white; width:90%; max-width:1000px; border-radius:28px; overflow:hidden; display:flex; flex-wrap:wrap; position:relative;">
             <span onclick="document.getElementById('auth-popup').remove()" style="position:absolute; top:16px; right:20px; font-size:28px; cursor:pointer; background:white; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(0,0,0,0.1);">&times;</span>
-            <div style="flex:1; min-width:280px; background:url('{{ asset("images/jewel.jpg") }}') center center/cover no-repeat; position:relative; min-height:450px;">
+            <div style="flex:1; min-width:280px; background:url('{{ asset("images/jewel.png") }}') center center/cover no-repeat; position:relative; min-height:450px;">
                 <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg, rgba(68,12,44,0.7), rgba(68,12,44,0.85));"></div>
                 <div style="position:relative; z-index:2; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; padding:40px; color:white; text-align:center;">
                     <h1 style="font-size:42px; font-weight:800;">Verify OTP</h1>
@@ -150,7 +150,7 @@ function showResetPasswordPopup(email, otp) {
     <div id="auth-popup" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; align-items:center; justify-content:center; font-family:'Inter',sans-serif;">
         <div style="background:white; width:90%; max-width:1000px; border-radius:28px; overflow:hidden; display:flex; flex-wrap:wrap; position:relative;">
             <span onclick="document.getElementById('auth-popup').remove()" style="position:absolute; top:16px; right:20px; font-size:28px; cursor:pointer; background:white; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</span>
-            <div style="flex:1; min-width:280px; background:url('{{ asset("images/jewel.jpg") }}') center center/cover no-repeat; position:relative; min-height:450px;">
+            <div style="flex:1; min-width:280px; background:url('{{ asset("images/jewel.png") }}') center center/cover no-repeat; position:relative; min-height:450px;">
                 <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg, rgba(68,12,44,0.7), rgba(68,12,44,0.85));"></div>
                 <div style="position:relative; z-index:2; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; padding:40px; color:white; text-align:center;">
                     <h1 style="font-size:42px; font-weight:800;">Reset Password</h1>
@@ -248,7 +248,7 @@ function showLoginPopup() {
     <div id="auth-popup" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; align-items:center; justify-content:center; font-family:'Inter',sans-serif;">
         <div style="background:white; width:90%; max-width:1000px; border-radius:28px; overflow:hidden; display:flex; flex-wrap:wrap; position:relative;">
             <span onclick="document.getElementById('auth-popup').remove()" style="position:absolute; top:16px; right:20px; font-size:28px; cursor:pointer; background:white; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</span>
-            <div style="flex:1; min-width:280px; background:url('{{ asset("images/jewel.jpg") }}') center center/cover no-repeat; position:relative; min-height:450px;">
+            <div style="flex:1; min-width:280px; background:url('{{ asset("images/jewel.png") }}') center center/cover no-repeat; position:relative; min-height:450px;">
                 <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg, rgba(68,12,44,0.7), rgba(68,12,44,0.85));"></div>
                 <div style="position:relative; z-index:2; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; padding:40px; color:white; text-align:center;">
                     <h1 style="font-size:42px; font-weight:800;">Welcome Back</h1>
@@ -354,11 +354,13 @@ function showRegisterPopup() {
         <div style="background:white; width:90%; max-width:1000px; border-radius:28px; overflow:hidden; display:flex; flex-wrap:wrap; position:relative; max-height:90vh; overflow-y:auto;">
             <span onclick="document.getElementById('auth-popup').remove()" style="position:absolute; top:16px; right:20px; font-size:28px; cursor:pointer; background:white; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</span>
             
-            <div style="flex:1; min-width:280px; position:relative; overflow:hidden; min-height:500px;">
-                <video autoplay muted loop playsinline webkit-playsinline preload="auto" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;">
-                    <source src="{{ asset('videos/mahera_jewel.mp4') }}" type="video/mp4">
-                </video>
+           <div style="flex:1; min-width:280px; position:relative; overflow:hidden; min-height:500px;">
+                <img src="{{ asset('images/jewel.png') }}"
+                    alt="Mahera Jewel"
+                    style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;">
+
                 <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg, rgba(68,12,44,0.6), rgba(68,12,44,0.8));"></div>
+
                 <div style="position:relative; z-index:2; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; padding:40px; color:white; text-align:center;">
                     <h1 style="font-size:42px; font-weight:800;">Join MAHERA JEWEL</h1>
                     <p style="font-size:18px;">Get exclusive discounts & cashback rewards</p>
@@ -571,7 +573,7 @@ function showForgotPopup() {
     <div id="auth-popup" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; align-items:center; justify-content:center; font-family:'Inter',sans-serif;">
         <div style="background:white; width:90%; max-width:1000px; border-radius:28px; overflow:hidden; display:flex; flex-wrap:wrap; position:relative;">
             <span onclick="document.getElementById('auth-popup').remove()" style="position:absolute; top:16px; right:20px; font-size:28px; cursor:pointer; background:white; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</span>
-            <div style="flex:1; min-width:280px; background:url('{{ asset("images/jewel.jpg") }}') center center/cover no-repeat; position:relative; min-height:450px;">
+            <div style="flex:1; min-width:280px; background:url('{{ asset("images/jewel.png") }}') center center/cover no-repeat; position:relative; min-height:450px;">
                 <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg, rgba(68,12,44,0.7), rgba(68,12,44,0.85));"></div>
                 <div style="position:relative; z-index:2; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; padding:40px; color:white; text-align:center;">
                     <h1 style="font-size:42px; font-weight:800;">Forgot Password?</h1>
