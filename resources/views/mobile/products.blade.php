@@ -21,7 +21,7 @@
     <title>{{ $pageTitle }}</title>
 
     <meta name="description" content="{{ $pageDescription }}">
-
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/mjlogo.jpeg') }}">
     <meta name="keywords"
     content="jewellery, necklace, earrings, maang tikka, bridal sets, bangles, kundan jewellery">
 
@@ -1472,7 +1472,8 @@
     let originalProducts = [];
     
     function getProductPrice(p) {
-    const sellingPrice = p.final_price || p.product_price || p.price || 0;
+    // ✅ Sirf product_price use karo
+    const sellingPrice = p.product_price || p.price || 0;
     return parseFloat(sellingPrice);
 }
 
@@ -1490,7 +1491,15 @@ function renderProducts(products) {
     
     const latestWishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
     const fallback = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
-
+products.forEach(p => {
+    if (p.slug === 'royal-kundan-choker-set') {
+        console.log('Product Object:', p);
+        console.log('product_price:', p.product_price);
+        console.log('price:', p.price);
+        console.log('final_price:', p.final_price);
+        console.log('getProductPrice:', getProductPrice(p));
+    }
+});
     grid.innerHTML = products.map(p => {
         const price = getProductPrice(p);
         const mrp = getProductMrp(p);
