@@ -122,7 +122,7 @@ class AllCategoriesPage {
 
     async fetchUserCategoryOrder() {
         try {
-            const response = await fetch(`${API_BASE_URL}/categories/order`, {
+            const response = await fetch(`${API_BASE_URL}/categories`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                     'Accept': 'application/json'
