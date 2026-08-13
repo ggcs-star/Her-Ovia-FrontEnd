@@ -1896,24 +1896,39 @@ function renderHeader() {
 
                     const loadDesktopLogo = () => {
                         const webLogo = document.getElementById('site-logo');
+
                         if (webLogo) {
                             fetch(`${API_BASE_URL}/app-settings`)
                                 .then(res => res.json())
                                 .then(data => {
                                     if (data.success) {
                                         const logoUrl = data.data.header_logo || data.data.app_logo;
+
                                         if (logoUrl && webLogo) {
                                             webLogo.src = logoUrl;
                                             webLogo.style.display = 'block';
                                             webLogo.style.height = '32px';
                                             webLogo.style.width = 'auto';
-                                            webLogo.onerror = function() {
+
+                                            webLogo.onerror = function () {
+                                                this.style.display = 'none';
+                                            };
+                                        }
+                                        const mobileLogo = document.getElementById('mobile-site-logo');
+
+                                        if (logoUrl && mobileLogo) {
+                                            mobileLogo.src = logoUrl;
+                                            mobileLogo.style.display = 'block';
+                                            mobileLogo.style.height = '32px';
+                                            mobileLogo.style.width = 'auto';
+
+                                            mobileLogo.onerror = function () {
                                                 this.style.display = 'none';
                                             };
                                         }
                                     }
                                 })
-                                .catch(err => console.log('Logo error:', err));
+                             .catch(err => console.log('Logo error:', err));
                         }
                     };
 
@@ -1994,7 +2009,7 @@ function renderHeader() {
                     <div class="logo-search-container">
                         <div class="header-logo">
                             <a href="/">
-                                <img src="" alt="Logo" class="site-logo" id="mobile-site-logo"
+                                <img src="" class="site-logo" id="mobile-site-logo"
                                     style="height:32px; width:auto; display:none;"
                                     onerror="this.style.display='none'">
                             </a>
@@ -2544,14 +2559,26 @@ window.addEventListener('resize', () => {
 
             if (data.success) {
                 const headerLogo = data.data.header_logo || data.data.app_logo;
-                const logoImg = document.getElementById('site-logo');
-                if (logoImg && headerLogo) {
-                    logoImg.src = headerLogo;
-                    logoImg.style.display = 'block';
-                    logoImg.onerror = function() {
-                        this.style.display = 'none';
-                    };
-                }
+
+// Desktop Logo
+const logoImg = document.getElementById('site-logo');
+if (logoImg && headerLogo) {
+    logoImg.src = headerLogo;
+    logoImg.style.display = 'block';
+    logoImg.onerror = function () {
+        this.style.display = 'none';
+    };
+}
+
+// Mobile Logo
+const mobileLogo = document.getElementById('mobile-site-logo');
+if (mobileLogo && headerLogo) {
+    mobileLogo.src = headerLogo;
+    mobileLogo.style.display = 'block';
+    mobileLogo.onerror = function () {
+        this.style.display = 'none';
+    };
+}
                 if (data.data.app_name) {
                     document.title = data.data.app_name;
                 }
