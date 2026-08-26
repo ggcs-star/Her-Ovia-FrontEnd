@@ -11,16 +11,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body class="cart-page" data-page="cart">
-
+<div class="herovia-announcement">Complimentary signature packaging on every order</div>
 <header class="site-header" id="site-header"></header>
 
-<div class="safety-alert">
+<!-- <div class="safety-alert">
     <i>🔒</i> A gentle reminder to stay alert against prevalent fraudulent practices. MAHERA JEWEL will never ask for OTPs, payments via unofficial links, or personal details for any contests or promotions.
 </div>
 
 <div class="gifts-banner">
     🎁 You're Getting Free Gifts Up to ₹1800! 🎁
-</div>
+</div> -->
 
 <main class="cart-page-content">
     <div class="cart-container">

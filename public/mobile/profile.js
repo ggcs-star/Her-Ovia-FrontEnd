@@ -174,7 +174,7 @@ function renderProfile(user) {
     let profileImage = user.profile_image;
     
     if (profileImage && !profileImage.startsWith('http')) {
-        profileImage = `https://inventorydata-s3-bucket.s3.amazonaws.com/${profileImage}`;
+        profileImage = `https://her-ovia.s3.us-east-1.amazonaws.com/${profileImage}`;
     }
     
     const html = `
