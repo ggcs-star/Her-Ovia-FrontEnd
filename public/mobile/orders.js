@@ -69,7 +69,7 @@ function renderOrders(orders) {
             || '';
 
         if (image && !image.startsWith('http')) {
-            image = `https://inventorydata-s3-bucket.s3.amazonaws.com/${image}`;
+            image = `https://her-ovia.s3.us-east-1.amazonaws.com/${image}`;
         }
         const placeholderImage = 'https://placehold.co/80x80?text=No+Image';
         

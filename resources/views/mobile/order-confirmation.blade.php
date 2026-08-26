@@ -1729,6 +1729,345 @@ order-app .web-header .nav-item {
 .web-header .main-header {
     padding: 8px 30px !important;
 }
+/* ==========================================
+   HEADER COLOUR & SPACING FIX
+   ========================================== */
+
+/* Header Background - Cream */
+.site-header {
+    background: #F8EEE3 !important;
+    border-bottom: 1px solid #DCC0A8 !important;
+}
+
+/* Desktop Header */
+.web-header {
+    background: #F8EEE3 !important;
+    border-bottom: 1px solid #DCC0A8 !important;
+}
+
+.web-header .top-bar {
+    background: #4A0F14 !important;
+    color: #ffffff !important;
+    padding: 8px 40px !important;
+    text-align: center;
+    font-size: 12px;
+}
+
+.web-header .main-header {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 12px 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 30px !important;
+    background: #F8EEE3 !important;
+    flex-wrap: nowrap !important;
+}
+
+.web-header .logo-area {
+    display: flex !important;
+    align-items: center !important;
+    gap: 40px !important;
+    flex-shrink: 0 !important;
+}
+
+.web-header .logo img {
+    height: 48px !important;
+    width: auto !important;
+    max-width: 180px !important;
+    object-fit: contain !important;
+}
+
+.web-header .nav-menu {
+    display: flex !important;
+    gap: 25px !important;
+}
+
+.web-header .nav-item {
+    color: #2E1B1B !important;
+    text-decoration: none !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    font-family: 'Inter', sans-serif !important;
+    white-space: nowrap !important;
+}
+
+.web-header .nav-item:hover {
+    color: #4A0F14 !important;
+}
+
+.web-header .search-area {
+    flex: 1 !important;
+    max-width: 380px !important;
+    margin: 0 20px !important;
+}
+
+.web-header .search-box {
+    display: flex !important;
+    align-items: center !important;
+    background: #f5f5f6 !important;
+    border-radius: 30px !important;
+    overflow: hidden !important;
+    border: 1px solid #e0e0e0 !important;
+    padding-right: 4px !important;
+    position: relative !important;
+}
+
+.web-header .search-box input {
+    flex: 1 !important;
+    padding: 8px 14px !important;
+    border: none !important;
+    background: transparent !important;
+    font-size: 13px !important;
+    outline: none !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.web-header .search-box input::placeholder {
+    color: #999 !important;
+    font-size: 12px !important;
+}
+
+.web-header .search-box .search-icon-btn {
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 6px 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+}
+
+.web-header .search-box .search-icon-btn svg {
+    stroke: #666 !important;
+    width: 18px !important;
+    height: 18px !important;
+}
+
+.web-header .search-box .search-icon-btn:hover svg {
+    stroke: #440C2C !important;
+}
+
+.web-header .header-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 24px !important;
+    flex-shrink: 0 !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+}
+
+.web-header .action-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    color: #2E1B1B !important;
+    text-decoration: none !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    font-family: 'Inter', sans-serif !important;
+    white-space: nowrap !important;
+}
+
+.web-header .action-link:hover {
+    color: #4A0F14 !important;
+}
+
+.web-header .action-link .header-icon {
+    width: 18px !important;
+    height: 18px !important;
+    stroke: currentColor !important;
+    fill: none !important;
+    flex-shrink: 0 !important;
+}
+
+.web-header .cart-icon-wrapper {
+    position: relative !important;
+    display: inline-block !important;
+}
+
+#web-cart-count-badge {
+    position: absolute !important;
+    top: -8px !important;
+    right: -12px !important;
+    background: #440C2C !important;
+    color: #F4B94E !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    min-width: 18px !important;
+    height: 18px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 4px !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* Mobile Header */
+@media screen and (max-width: 1024px) {
+    .site-header .header-container {
+        display: flex !important;
+        background: #F8EEE3 !important;
+        padding: 6px 12px !important;
+        width: 100% !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 6px !important;
+    }
+
+    .site-header .logo-search-container {
+        flex: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        background: #f5f5f6 !important;
+        border-radius: 30px !important;
+        padding: 4px 10px !important;
+        border: 1px solid #e0e0e0 !important;
+        min-width: 0 !important;
+    }
+
+    .site-header .header-logo .site-logo {
+        height: 32px !important;
+        width: auto !important;
+        max-width: 90px !important;
+        object-fit: contain !important;
+        display: block !important;
+    }
+
+    .site-header .search-wrapper input {
+        font-size: 12px !important;
+        padding: 6px 0 !important;
+    }
+
+    .site-header .search-wrapper input::placeholder {
+        font-size: 11px !important;
+    }
+
+    .site-header .search-wrapper .search-icon-btn svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+
+    .site-header .header-icon-btn {
+        width: 32px !important;
+        height: 32px !important;
+        padding: 4px !important;
+    }
+
+    .site-header .header-icon-btn svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+
+    .site-header .back-btn-header {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 20px !important;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .site-header .header-container {
+        padding: 4px 10px !important;
+        gap: 4px !important;
+    }
+
+    .site-header .logo-search-container {
+        padding: 3px 8px !important;
+        border-radius: 20px !important;
+    }
+
+    .site-header .header-logo .site-logo {
+        height: 28px !important;
+        max-width: 70px !important;
+    }
+
+    .site-header .search-wrapper input {
+        font-size: 11px !important;
+        padding: 4px 0 !important;
+    }
+
+    .site-header .search-wrapper input::placeholder {
+        font-size: 10px !important;
+    }
+
+    .site-header .search-wrapper .search-icon-btn svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .site-header .header-icon-btn {
+        width: 28px !important;
+        height: 28px !important;
+        padding: 3px !important;
+    }
+
+    .site-header .header-icon-btn svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+
+    .site-header .back-btn-header {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 18px !important;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .site-header .header-container {
+        padding: 3px 8px !important;
+        gap: 3px !important;
+    }
+
+    .site-header .logo-search-container {
+        padding: 2px 6px !important;
+        border-radius: 16px !important;
+        gap: 4px !important;
+    }
+
+    .site-header .header-logo .site-logo {
+        height: 24px !important;
+        max-width: 60px !important;
+    }
+
+    .site-header .search-wrapper input {
+        font-size: 10px !important;
+        padding: 3px 0 !important;
+    }
+
+    .site-header .search-wrapper input::placeholder {
+        font-size: 9px !important;
+    }
+
+    .site-header .search-wrapper .search-icon-btn svg {
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    .site-header .header-icon-btn {
+        width: 24px !important;
+        height: 24px !important;
+        padding: 2px !important;
+    }
+
+    .site-header .header-icon-btn svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .site-header .back-btn-header {
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 16px !important;
+    }
+}
     </style>
 </head>
 <body>

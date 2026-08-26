@@ -1,5 +1,5 @@
 const API_BASE = window.API_BASE_URL;
-// const S3_BASE_URL = 'https://inventorydata-s3-bucket.s3.amazonaws.com/';
+// const S3_BASE_URL = 'https://her-ovia.s3.us-east-1.amazonaws.com/';
 const API_BASE_URL = window.API_BASE_URL;
 const S3_BASE_URL = window.S3_BASE_URL;
 const input = document.getElementById("searchInput");
