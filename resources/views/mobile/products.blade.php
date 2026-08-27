@@ -26,15 +26,22 @@
     <meta name="author" content="Her-Ovia">
     <meta name="robots" content="index,follow">
     <link rel="canonical" href="{{ url()->current() }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <style>
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --font-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-heading: Georgia, "Times New Roman", serif;
+        }
         body{
-            font-family:'Inter',sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background:#fff;
             padding-bottom:env(safe-area-inset-bottom);
             -webkit-overflow-scrolling:touch;
+        }
+        h1, h2, h3, h4, .header h1, .page-title, .product-name {
+            font-family: Georgia, "Times New Roman", serif;
         }
 
         .header{

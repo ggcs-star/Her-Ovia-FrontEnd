@@ -131,9 +131,9 @@
 </footer>
 <style>
 .site-footer {
-    background: #FAF6F5;
-    border-top: 1px solid #f0f0f0;
-    margin-top: 30px;
+    background: var(--hero-bg, #F8EEE3) !important;
+    border-top: 1px solid var(--hero-border, #DCC0A8) !important;
+    
     padding: 40px 0 30px;
 }
 
@@ -153,7 +153,7 @@
 .footer-col h4 {
     font-size: 16px;
     font-weight: 700;
-    color: #440C2C;
+    color: var(--hero-burgundy, #4A0F14) !important;
     margin-bottom: 20px;
     position: relative;
     display: inline-block;
@@ -166,12 +166,12 @@
     left: 0;
     width: 30px;
     height: 2px;
-    background: #F4B94E;
+    background: var(--hero-gold, #B88A62) !important;
 }
 
 .footer-tagline {
     font-size: 13px;
-    color: #666;
+    color: var(--hero-text-muted, #765F58) !important;
     line-height: 1.5;
     margin: 15px 0 20px;
 }
@@ -181,21 +181,21 @@
     align-items: flex-start;
     gap: 10px;
     padding: 12px 0;
-    border-top: 1px solid #eaeaea;
-    border-bottom: 1px solid #eaeaea;
+    border-top: 1px solid var(--hero-border, #DCC0A8) !important;
+    border-bottom: 1px solid var(--hero-border, #DCC0A8) !important;
 }
 
 .footer-location svg {
     width: 18px;
     height: 18px;
-    stroke: #F4B94E;
+    stroke: var(--hero-gold, #B88A62) !important;
     flex-shrink: 0;
     margin-top: 2px;
 }
 
 .footer-location span {
     font-size: 12px;
-    color: #666;
+    color: var(--hero-text-muted, #765F58) !important;
     line-height: 1.5;
 }
 
@@ -211,29 +211,28 @@
 
 .footer-col ul li a {
     text-decoration: none;
-    color: #555;
+    color: var(--hero-text-muted, #765F58) !important;
     font-size: 13px;
     transition: color 0.2s ease;
 }
 
 .footer-col ul li a:hover {
-    color: #F4B94E;
+    color: var(--hero-gold, #B88A62) !important;
 }
 
-/* Quick Links specific styling */
 .quick-links-list li a {
     display: inline-block;
 }
 
 .footer-support-list li {
     font-size: 13px;
-    color: #555;
+    color: var(--hero-text-muted, #765F58) !important;
     cursor: pointer;
     transition: color 0.2s ease;
 }
 
 .footer-support-list li:hover {
-    color: #F4B94E;
+    color: var(--hero-gold, #B88A62) !important;
 }
 
 .social-links {
@@ -253,22 +252,11 @@
 .social-link-item:hover {
     transform: translateX(5px);
 }
-.social-link-item:hover .social-icon {
-    background: rgba(244, 185, 78, 0.08);
-    border-color: #F4B94E;
-}
-
-.social-link-item:hover .social-icon svg {
-    stroke: #F4B94E;
-}
-
-.social-link-item:hover .social-icon svg {
-    stroke: #440C2C;
-}
 
 .social-link-item:hover span {
-    color: #F4B94E;
+    color: var(--hero-gold, #B88A62) !important;
 }
+
 .social-icon {
     background: transparent !important;
     border: none !important;
@@ -280,13 +268,17 @@
 .social-icon svg {
     width: 16px;
     height: 16px;
-    stroke: #F4B94E;
+    stroke: var(--hero-gold, #B88A62) !important;
     transition: all 0.3s ease;
+}
+
+.social-link-item:hover .social-icon svg {
+    stroke: var(--hero-burgundy, #4A0F14) !important;
 }
 
 .social-link-item span {
     font-size: 13px;
-    color: #555;
+    color: var(--hero-text-muted, #765F58) !important;
     transition: color 0.2s ease;
 }
 
@@ -298,19 +290,19 @@
 }
 
 .contact-info li svg {
-    stroke: #F4B94E;
+    stroke: var(--hero-gold, #B88A62) !important;
     flex-shrink: 0;
 }
 
 .contact-info li a {
     text-decoration: none;
-    color: #555;
+    color: var(--hero-text-muted, #765F58) !important;
     font-size: 13px;
     transition: color 0.2s ease;
 }
 
 .contact-info li a:hover {
-    color: #F4B94E !important;
+    color: var(--hero-gold, #B88A62) !important;
 }
 
 .footer-bottom {
@@ -318,14 +310,14 @@
     justify-content: space-between;
     align-items: center;
     padding-top: 30px;
-    border-top: 1px solid #eaeaea;
+    border-top: 1px solid var(--hero-border, #DCC0A8) !important;
     flex-wrap: wrap;
     gap: 15px;
 }
 
 .footer-bottom p {
     font-size: 12px;
-    color: #888;
+    color: var(--hero-text-muted, #765F58) !important;
     margin: 0;
 }
 
@@ -355,46 +347,61 @@
     }
 }
 
-
 .contact-info li a,
 .contact-info li a:link,
 .contact-info li a:visited,
 .contact-info li a:active,
 .contact-info li a:focus {
-    color: #555 !important;
+    color: var(--hero-text-muted, #765F58) !important;
     text-decoration: none !important;
 }
 
 .contact-info li a:hover {
-    color: #F4B94E !important;
+    color: var(--hero-gold, #B88A62) !important;
     text-decoration: none !important;
 }
 
 .contact-info li a[href^="mailto"],
 .contact-info li a[href^="tel"] {
-    color: #555 !important;
+    color: var(--hero-text-muted, #765F58) !important;
 }
 
 .contact-info li a[href^="mailto"]:hover,
 .contact-info li a[href^="tel"]:hover {
-    color: #F4B94E !important;
+    color: var(--hero-gold, #B88A62) !important;
 }
+
 .quick-links-list li {
     font-size: 13px;
-    color: #555;
+    color: var(--hero-text-muted, #765F58) !important;
     margin-bottom: 12px;
     cursor: pointer;
     transition: color 0.2s ease;
 }
 
 .quick-links-list li:hover {
-    color: #F4B94E;
+    color: var(--hero-gold, #B88A62) !important;
 }
+
 .footer-col:last-child > div:last-child svg {
-    stroke: #F4B94E !important;
+    stroke: var(--hero-gold, #B88A62) !important;
+}
+
+/* ✅ System fonts */
+.site-footer,
+.footer-col h4,
+.footer-tagline,
+.footer-location span,
+.footer-col ul li a,
+.quick-links-list li a,
+.footer-support-list li,
+.contact-info li a,
+.social-link-item span,
+.footer-bottom p,
+.quick-links-list li {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
 }
 </style>
-
 <script>
 async function initFooter() {
     try {

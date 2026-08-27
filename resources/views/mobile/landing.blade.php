@@ -8,12 +8,10 @@
     <meta name="author" content="Her-Ovia">
     <title>Her-Ovia — Her Journey</title>
     <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/categories/category-styles.css') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/product-styles.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('mobile/categories/category-styles.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('mobile/product-styles.css') }}?v={{ time() }}">
+   
 </head>
 <body data-page="landing">
 
@@ -231,8 +229,8 @@
 </div>
 
 <script>window.API_BASE_URL = "{{ env('API_BASE_URL') }}";</script>
-<script src="{{ asset('mobile/script.js') }}"></script>
-<script src="{{ asset('mobile/search.js') }}"></script>
+<script src="{{ asset('mobile/script.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('mobile/search.js') }}?v={{ time() }}"></script>
 @include('mobile.auth.auth')
 </body>
 </html>

@@ -7,7 +7,6 @@
     <meta name="description" content="Shop premium clothing online from Her-Ovia, featuring elegant Indian wear and contemporary styles with secure payment and fast delivery.">
     <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
     <link rel="canonical" href="{{ url()->current() }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/product-styles.css') }}">
 </head>

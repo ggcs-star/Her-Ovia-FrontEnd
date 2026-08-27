@@ -7,7 +7,6 @@
     <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/profile.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body class="profile-page">
     <header class="site-header" id="site-header"></header>
