@@ -9,7 +9,7 @@ class SitemapController extends Controller
     public function index()
     {
         $categoriesResponse = Http::get(
-            'https://admin.maherajewels.com/api/categories'
+            'https://heroviabackend.jagods.in/api/categories'
         )->json();
 
         $allProducts = [];
@@ -19,7 +19,7 @@ class SitemapController extends Controller
         do {
 
             $response = Http::get(
-                'https://admin.maherajewels.com/api/products?page=' . $page
+                'https://heroviabackend.jagods.in/api/products?page=' . $page
             )->json();
 
             $products = $response['data']['products'] ?? [];
