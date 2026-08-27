@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Shipping Policy | Maherá Jewels</title>
-    <meta name="description" content="Maherá Jewels shipping policy - delivery timelines, charges, tracking, and international shipping information.">
+    <title>Shipping Policy | Her-Ovia</title>
+    <meta name="description" content="Her Ovia shipping policy - delivery timelines, charges, tracking, and international shipping information.">
     <meta name="robots" content="index, follow">
-    <link rel="icon" type="image/jpeg" href="{{ asset('images/mjlogo.jpeg') }}">
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="preload" href="{{ asset('mobile/style.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="{{ asset('mobile/style.css') }}"></noscript>

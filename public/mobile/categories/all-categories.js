@@ -19,6 +19,7 @@ class AllCategoriesPage {
         this.apiCache = new Map();
         this.domCache = new Map();
         this.lastRenderState = null;
+        this.dataLoaded = false;
         this.init();
         
         let resizeTimer;
@@ -58,20 +59,27 @@ class AllCategoriesPage {
         }
     }
 
-   async init() {
-    this.showSkeletonLoader();
-    this.showSidebarSkeleton();
-    await this.fetchAppSettings();
-    await this.fetchCategories();
-    if (this.isLoggedIn) await this.fetchUserCategoryOrder();
-    this.renderHeader();
-    
-    // 🔥 YEH CHANGE KARO - setTimeout hatao
-    this.renderCategories();
-    this.renderWebSidebar();
-    
-    this.renderBottomNav();
-}
+    async init() {
+        this.showSkeletonLoader();
+        this.showSidebarSkeleton();
+        
+        // 🔥 SABHI API CALLS EK SAATH PARALLEL MEIN
+        const [settingsData, categoriesData] = await Promise.all([
+            this.fetchAppSettings(),
+            this.fetchCategories()
+        ]);
+        
+        if (this.isLoggedIn) {
+            this.fetchUserCategoryOrder().catch(() => {});
+        }
+        
+        this.renderHeader();
+        this.renderCategories();
+        this.renderWebSidebar();
+        this.renderBottomNav();
+        
+        this.dataLoaded = true;
+    }
 
     showSkeletonLoader() {
         const container = this.getElement('all-categories-grid');
@@ -118,6 +126,7 @@ class AllCategoriesPage {
                 { id: 6, name: "Bangles", image_url: null, children: [] }
             ];
         }
+        return data;
     }
 
     async fetchUserCategoryOrder() {
@@ -142,24 +151,27 @@ class AllCategoriesPage {
         if (data?.success) {
             this.appSettings = data.data;
         }
+        return data;
     }
+    
     resolveImage(path) {
-    if (!path) return CONFIG.FALLBACK_IMAGE;
-    if (path.startsWith('http')) return path;
-    if (!path.includes('amazonaws.com')) return window.S3_BASE_URL + path;
-    return path;
-}
-setSEO(title, description) {
-    if (title) {
-        document.title = title;
+        if (!path) return CONFIG.FALLBACK_IMAGE;
+        if (path.startsWith('http')) return path;
+        if (!path.includes('amazonaws.com')) return window.S3_BASE_URL + path;
+        return path;
     }
-    if (description) {
-        const metaDesc = document.querySelector('meta[name="description"]');
-        if (metaDesc) {
-            metaDesc.setAttribute('content', description);
+    
+    setSEO(title, description) {
+        if (title) {
+            document.title = title;
+        }
+        if (description) {
+            const metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) {
+                metaDesc.setAttribute('content', description);
+            }
         }
     }
-}
 
     renderHeader() {
         const header = this.getElement('site-header');
@@ -175,13 +187,13 @@ setSEO(title, description) {
 
                 let url = `/collection/${categorySlug}`;
 
-             if (categorySlug === "trending") {
-    url = "/top-selling";
-}
+                if (categorySlug === "trending") {
+                    url = "/top-selling";
+                }
 
-if (categorySlug === "bestsellers") {
-    url = "/best-selling";
-}
+                if (categorySlug === "bestsellers") {
+                    url = "/best-selling";
+                }
 
                 return `<a href="${url}" class="nav-item"
                     data-cat-id="${cat.id}"
@@ -284,68 +296,67 @@ if (categorySlug === "bestsellers") {
     }
 
     initWebSearchDropdown() {
-    setTimeout(() => {
-        const input = document.getElementById("web-search-input");
-        if (!input) return;
+        setTimeout(() => {
+            const input = document.getElementById("web-search-input");
+            if (!input) return;
 
-        const suggestionsBox = document.getElementById("web-search-suggestions");
-        let timer;
-        let currentController = null;
+            const suggestionsBox = document.getElementById("web-search-suggestions");
+            let timer;
+            let currentController = null;
 
-        const renderSuggestions = (products) => {
-            const html = products.length ? 
-                products.map(p => `<div class="web-suggestion-item" role="button" tabindex="0" onclick="window.location.href='/product/${p.slug}'" onkeypress="if(event.key==='Enter') window.location.href='/product/${p.slug}'">${escapeHtml(p.name)}</div>`).join('') :
-                `<div class="web-suggestion-item">No results found</div>`;
-            suggestionsBox.innerHTML = html;
-            suggestionsBox.style.display = "block";
-        };
+            const renderSuggestions = (products) => {
+                const html = products.length ? 
+                    products.map(p => `<div class="web-suggestion-item" role="button" tabindex="0" onclick="window.location.href='/product/${p.slug}'" onkeypress="if(event.key==='Enter') window.location.href='/product/${p.slug}'">${escapeHtml(p.name)}</div>`).join('') :
+                    `<div class="web-suggestion-item">No results found</div>`;
+                suggestionsBox.innerHTML = html;
+                suggestionsBox.style.display = "block";
+            };
 
-        // 🔥 ENTER KEY EVENT - ADD THIS
-        input.addEventListener("keydown", function(e) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                const q = this.value.trim();
-                if (q) {
-                    window.location.href = `/products?search=${encodeURIComponent(q)}`;
-                }
-            }
-        });
-
-        input.addEventListener("input", async (e) => {
-            clearTimeout(timer);
-            const q = e.target.value.trim();
-
-            if (q.length === 0) {
-                suggestionsBox.style.display = "none";
-                suggestionsBox.innerHTML = "";
-                return;
-            }
-
-            if (currentController) currentController.abort();
-            currentController = new AbortController();
-
-            try {
-                timer = setTimeout(async () => {
-                    const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`, {
-                        signal: currentController.signal
-                    });
-                    const data = await res.json();
-                    if (data.success && data.data?.products) {
-                        renderSuggestions(data.data.products);
+            input.addEventListener("keydown", function(e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    const q = this.value.trim();
+                    if (q) {
+                        window.location.href = `/products?search=${encodeURIComponent(q)}`;
                     }
-                }, 300);
-            } catch (err) {
-                if (err.name !== 'AbortError') console.log(err);
-            }
-        });
+                }
+            });
 
-        document.addEventListener("click", (e) => {
-            if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
-                suggestionsBox.style.display = "none";
-            }
-        });
-    }, 300);
-}
+            input.addEventListener("input", async (e) => {
+                clearTimeout(timer);
+                const q = e.target.value.trim();
+
+                if (q.length === 0) {
+                    suggestionsBox.style.display = "none";
+                    suggestionsBox.innerHTML = "";
+                    return;
+                }
+
+                if (currentController) currentController.abort();
+                currentController = new AbortController();
+
+                try {
+                    timer = setTimeout(async () => {
+                        const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`, {
+                            signal: currentController.signal
+                        });
+                        const data = await res.json();
+                        if (data.success && data.data?.products) {
+                            renderSuggestions(data.data.products);
+                        }
+                    }, 300);
+                } catch (err) {
+                    if (err.name !== 'AbortError') console.log(err);
+                }
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                    suggestionsBox.style.display = "none";
+                }
+            });
+        }, 300);
+    }
 
     setupAllCategoriesPopup() {
         const navItems = document.querySelectorAll('.nav-item');
@@ -478,58 +489,58 @@ if (categorySlug === "bestsellers") {
     }
 
     renderCategories() {
-    const container = this.getElement('all-categories-grid');
-    if (!container) return;
+        const container = this.getElement('all-categories-grid');
+        if (!container) return;
 
-    const fallbackImage = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
-    const categoriesToShow = this.userCategories.length ? this.userCategories : this.allCategories;
-    const isDesktop = window.innerWidth >= 1024;
+        const fallbackImage = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
+        const categoriesToShow = this.userCategories.length ? this.userCategories : this.allCategories;
+        const isDesktop = window.innerWidth >= 1024;
 
-    if (isDesktop) {
-    container.innerHTML = categoriesToShow.map((cat) => {
-        const imageUrl = cat.image_url || fallbackImage;
-        const subCategories = cat.children || [];
-        const subCount = subCategories.length;
-        
-        return `<div class="category-card" data-id="${cat.id}">
-            <div class="category-image-box" onclick="redirectToSubcategory(${cat.id})">
-                <img src="${this.resolveImage(imageUrl)}" alt="${escapeHtml(cat.name)}" loading="lazy">
-            </div>
-            <div class="category-info">
-                <h3 onclick="redirectToSubcategory(${cat.id})">${escapeHtml(cat.name)}</h3>
-                <div class="category-count" onclick="redirectToSubcategory(${cat.id})">${subCount} Collections</div>
-                <span class="shop-now-link-cat" onclick="redirectToSubcategory(${cat.id})">Shop Now</span>
-                ${subCount > 0 ? `<div class="subcategories-list">
-                    ${subCategories.slice(0, 4).map(sub => `<span class="subcategory-tag" onclick="event.stopPropagation(); redirectToSubcategory(${sub.id})">${escapeHtml(sub.name)}</span>`).join('')}
-                    ${subCount > 4 ? `<span class="subcategory-tag" onclick="event.stopPropagation(); redirectToSubcategory(${cat.id})">+${subCount - 4}</span>` : ''}
-                </div>` : ''}
-            </div>
-        </div>`;
-    }).join('');
-}else {
-        const colors = [
-            "linear-gradient(135deg, #FBE7A1, #F9D976)",
-            "linear-gradient(135deg, #F8C8DC, #F4A6C1)",
-            "linear-gradient(135deg, #D6C1E7, #C3A6E8)",
-            "linear-gradient(135deg, #FAD7B5, #F6B98C)",
-            "linear-gradient(135deg, #C8E6C9, #A5D6A7)",
-            "linear-gradient(135deg, #C5CAE9, #9FA8DA)"
-        ];
-        
-        container.innerHTML = categoriesToShow.map((cat, index) => {
-            const imageUrl = cat.image_url || fallbackImage;
-            const bgColor = colors[index % colors.length];
+        if (isDesktop) {
+            container.innerHTML = categoriesToShow.map((cat) => {
+                const imageUrl = cat.image_url || fallbackImage;
+                const subCategories = cat.children || [];
+                const subCount = subCategories.length;
+                
+                return `<div class="category-card" data-id="${cat.id}">
+                    <div class="category-image-box" onclick="redirectToSubcategory(${cat.id})">
+                        <img src="${this.resolveImage(imageUrl)}" alt="${escapeHtml(cat.name)}" loading="lazy">
+                    </div>
+                    <div class="category-info">
+                        <h3 onclick="redirectToSubcategory(${cat.id})">${escapeHtml(cat.name)}</h3>
+                        <div class="category-count" onclick="redirectToSubcategory(${cat.id})">${subCount} Collections</div>
+                        <span class="shop-now-link-cat" onclick="redirectToSubcategory(${cat.id})">Shop Now</span>
+                        ${subCount > 0 ? `<div class="subcategories-list">
+                            ${subCategories.slice(0, 4).map(sub => `<span class="subcategory-tag" onclick="event.stopPropagation(); redirectToSubcategory(${sub.id})">${escapeHtml(sub.name)}</span>`).join('')}
+                            ${subCount > 4 ? `<span class="subcategory-tag" onclick="event.stopPropagation(); redirectToSubcategory(${cat.id})">+${subCount - 4}</span>` : ''}
+                        </div>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        } else {
+            const colors = [
+                "linear-gradient(135deg, #FBE7A1, #F9D976)",
+                "linear-gradient(135deg, #F8C8DC, #F4A6C1)",
+                "linear-gradient(135deg, #D6C1E7, #C3A6E8)",
+                "linear-gradient(135deg, #FAD7B5, #F6B98C)",
+                "linear-gradient(135deg, #C8E6C9, #A5D6A7)",
+                "linear-gradient(135deg, #C5CAE9, #9FA8DA)"
+            ];
             
-            return `<div class="category-card" style="background: ${bgColor}" data-id="${cat.id}" onclick="redirectToSubcategory(${cat.id})">
-                <div class="category-info"><h3>${escapeHtml(cat.name)}</h3></div>
-                <div class="category-image-box"><img src="${this.resolveImage(imageUrl)}" alt="${escapeHtml(cat.name)}" loading="lazy"></div>
-            </div>`;
-        }).join('');
-    }
+            container.innerHTML = categoriesToShow.map((cat, index) => {
+                const imageUrl = cat.image_url || fallbackImage;
+                const bgColor = colors[index % colors.length];
+                
+                return `<div class="category-card" style="background: ${bgColor}" data-id="${cat.id}" onclick="redirectToSubcategory(${cat.id})">
+                    <div class="category-info"><h3>${escapeHtml(cat.name)}</h3></div>
+                    <div class="category-image-box"><img src="${this.resolveImage(imageUrl)}" alt="${escapeHtml(cat.name)}" loading="lazy"></div>
+                </div>`;
+            }).join('');
+        }
 
-    const layout = document.getElementById('categoriesLayoutWeb');
-    if (layout) layout.style.display = 'block';
-}
+        const layout = document.getElementById('categoriesLayoutWeb');
+        if (layout) layout.style.display = 'block';
+    }
 
     renderWebSidebar() {
         const sidebar = this.getElement('categoriesWebSidebarList');
@@ -656,52 +667,46 @@ function redirectToSubcategory(categoryId) {
                 }
                 
                 if (targetCategory) {
-                  if (parentCategory) {
+                    if (parentCategory) {
+                        const parentSlug = parentCategory.name.toLowerCase()
+                            .replace(/[^a-z0-9]+/g, '-')
+                            .replace(/^-|-$/g, '');
 
-                    const parentSlug = parentCategory.name.toLowerCase()
-                        .replace(/[^a-z0-9]+/g, '-')
-                        .replace(/^-|-$/g, '');
+                        const subSlug = targetCategory.name.toLowerCase()
+                            .replace(/[^a-z0-9]+/g, '-')
+                            .replace(/^-|-$/g, '');
 
-                    const subSlug = targetCategory.name.toLowerCase()
-                        .replace(/[^a-z0-9]+/g, '-')
-                        .replace(/^-|-$/g, '');
+                        if (subSlug === 'trending') {
+                            window.location.href = '/top-selling';
+                        } else if (subSlug === 'bestsellers') {
+                            window.location.href = '/best-selling';
+                        } else {
+                            window.location.href = `/collection/${parentSlug}/${subSlug}`;
+                        }
+                    } else if (targetCategory.children && targetCategory.children.length > 0) {
+                        const slug = targetCategory.name.toLowerCase()
+                            .replace(/[^a-z0-9]+/g, '-')
+                            .replace(/^-|-$/g, '');
+                        if (slug === 'trending') {
+                            window.location.href = '/top-selling';
+                        } else if (slug === 'bestsellers') {
+                            window.location.href = '/best-selling';
+                        } else {
+                            window.location.href = `/collection/${slug}`;
+                        }
+                    } else {
+                        const slug = targetCategory.name.toLowerCase()
+                            .replace(/[^a-z0-9]+/g, '-')
+                            .replace(/^-|-$/g, '');
 
-                 if (subSlug === 'trending') {
-    window.location.href = '/top-selling';
-} else if (subSlug === 'bestsellers') {
-    window.location.href = '/best-selling';
-} else {
-    window.location.href = `/collection/${parentSlug}/${subSlug}`;
-}
-
-                } else if (targetCategory.children && targetCategory.children.length > 0) {
-
-                    const slug = targetCategory.name.toLowerCase()
-                        .replace(/[^a-z0-9]+/g, '-')
-                        .replace(/^-|-$/g, '');
-if (slug === 'trending') {
-    window.location.href = '/top-selling';
-} else if (slug === 'bestsellers') {
-    window.location.href = '/best-selling';
-} else {
-    window.location.href = `/collection/${slug}`;
-}
-
-                } else {
-
-                    const slug = targetCategory.name.toLowerCase()
-                        .replace(/[^a-z0-9]+/g, '-')
-                        .replace(/^-|-$/g, '');
-
-                   if (slug === 'trending') {
-    window.location.href = '/top-selling';
-} else if (slug === 'bestsellers') {
-    window.location.href = '/best-selling';
-} else {
-    window.location.href = `/collection/${slug}`;
-}
-
-                }
+                        if (slug === 'trending') {
+                            window.location.href = '/top-selling';
+                        } else if (slug === 'bestsellers') {
+                            window.location.href = '/best-selling';
+                        } else {
+                            window.location.href = `/collection/${slug}`;
+                        }
+                    }
                 } else {
                     window.location.href = `/categories`;
                 }
@@ -753,7 +758,6 @@ function hideCategoryPopup() {
     }
 }
 
-
 function updateCartCountBadge() {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     const totalItems = cart.length;
@@ -765,7 +769,6 @@ function updateCartCountBadge() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-
     if (document.body.dataset.page === 'all-categories') {
         window.allCategoriesPage = new AllCategoriesPage();
     }
@@ -777,9 +780,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.location.pathname === '/best-selling') {
         trackPageImpression('best-selling');
     }
-
 });
-// Dynamic search placeholder for all categories page
+
 setTimeout(function() {
     let categories = ['Necklace', 'Earrings', 'Maang Tikka', 'Bridal Sets', 'Bangles'];
     let index = 0;

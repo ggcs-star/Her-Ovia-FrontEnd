@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <meta name="description" content="Premium Indian suits and contemporary co-ord sets, thoughtfully made for every chapter of her journey.">
-    <meta name="keywords" content="jewellery, necklaces, earrings, bridal sets, maang tikka, bangles, kundan jewellery, pearl jewellery">
-    <meta name="author" content="MAHERA JEWEL">
+    <meta name="description" content="Premium Indian clothing and contemporary co-ord sets, thoughtfully designed for every chapter of her journey.">
+    <meta name="keywords" content="women's clothing, co-ord sets, dresses, kurta sets, Indian wear, ethnic wear, women's fashion, contemporary clothing">
+    <meta name="author" content="Her-Ovia">
     <title>Her-Ovia — Her Journey</title>
-    <link rel="icon" type="image/jpeg" href="{{ asset('images/mjlogo.jpeg') }}">
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/categories/category-styles.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/product-styles.css') }}">
@@ -194,47 +194,6 @@
                 </div>
             </div>
         </section>
-
-        <!-- <section class="herovia-edit">
-            <div class="container">
-                <div class="herovia-edit-inner">
-                    <div class="herovia-edit-header">
-                        <p class="herovia-eyebrow">The Her-Ovia Edit</p>
-                        <h2>Where craft meets<br><em>everyday elegance.</em></h2>
-                    </div>
-                    <div class="herovia-edit-grid">
-                        <article class="herovia-edit-card">
-                            <span class="herovia-edit-number">01</span>
-                            <div class="herovia-edit-icon">✦</div>
-                            <h3>The Art of Detail</h3>
-                            <p>Every stitch, every fold, every drape — considered with intention. Our designs are born from a quiet obsession with craftsmanship and the way fabric meets the body.</p>
-                            <a href="#collections" class="herovia-edit-link">Discover the craft →</a>
-                        </article>
-                        <article class="herovia-edit-card">
-                            <span class="herovia-edit-number">02</span>
-                            <div class="herovia-edit-icon">↗</div>
-                            <h3>Designed for Movement</h3>
-                            <p>Fluid silhouettes that move with you — not against you. Breathable fabrics and thoughtful cuts that honor the rhythm of a woman's day, from morning light to evening glow.</p>
-                            <a href="#collections" class="herovia-edit-link">Explore the edit →</a>
-                        </article>
-                        <article class="herovia-edit-card">
-                            <span class="herovia-edit-number">03</span>
-                            <div class="herovia-edit-icon">♢</div>
-                            <h3>A Lifelong Companion</h3>
-                            <p>Not just for a season — but for a lifetime. Timeless pieces that transcend trends, designed to be loved, worn, and passed on. Her-Ovia is a companion to her journey.</p>
-                            <a href="#story" class="herovia-edit-link">Read the story →</a>
-                        </article>
-                        <article class="herovia-edit-card">
-                            <span class="herovia-edit-number">04</span>
-                            <div class="herovia-edit-icon">◈</div>
-                            <h3>The Her-Ovia Woman</h3>
-                            <p>She is poised yet effortless. Modern yet rooted. She dresses for herself — in clothes that reflect her grace, her strength, and her journey. This is her wardrobe.</p>
-                            <a href="#share-your-look" class="herovia-edit-link">Join the circle →</a>
-                        </article>
-                    </div>
-                </div>
-            </div>
-        </section> -->
 
         <section class="herovia-values">
             <div class="container">

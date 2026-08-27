@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title id="page-title">Category Products | MAHERA JEWEL</title>
+    <title id="page-title">Category Products | Her-Ovia</title>
 
     <meta name="description"
-        content="Explore jewellery collection at MAHERA JEWEL">
+        content="Explore clothing collection at her-Ovia">
 
     <meta name="robots"
         content="index,follow">
@@ -14,7 +14,7 @@
         href="{{ url()->current() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
-    <link rel="icon" type="image/jpeg" href="{{ asset('images/mjlogo.jpeg') }}">
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
     <link rel="stylesheet" href="{{ asset('mobile/category-styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>

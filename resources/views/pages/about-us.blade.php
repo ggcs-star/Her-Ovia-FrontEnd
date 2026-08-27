@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Our Story | Maherá Jewels</title>
-    <link rel="icon" type="image/jpeg" href="{{ asset('images/mjlogo.jpeg') }}">
+    <title>Our Story | Her-Ovia</title>
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
     <meta name="description" content="Discover the story behind Maherá Jewels. From 20 years of crafting polki and kundan jewellery to a direct-to-consumer legacy.">
     <meta name="robots" content="index, follow">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">

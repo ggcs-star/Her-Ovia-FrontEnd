@@ -31,6 +31,10 @@ class RapidRetailsEngine {
         this.styleResizeTimer = null;
         this.apiCache = new Map();
         this.initialized = false;
+        this.settingsLoaded = false;
+        this.categoriesLoaded = false;
+        this.bannersLoaded = false;
+        this.productsLoaded = false;
     }
 
     async init() {
@@ -83,127 +87,141 @@ class RapidRetailsEngine {
     }
 
     renderHeader() {
-        const header = document.getElementById('site-header');
-        if (!header) return;
-        const isDesktop = window.innerWidth >= 1025;
-        if (isDesktop) {
-            if (!this.allCategories || this.allCategories.length === 0) {
-                fetch(APP_CONFIG.ENDPOINTS.CATEGORIES)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.success) {
-                            this.allCategories = data.data;
-                            this.renderHeader();
-                        }
-                    });
-                return;
-            }
-            const topCategories = this.allCategories.slice(0, 5);
-            const categoriesHtml = topCategories.map(cat => {
-                let url = `/collection/${cat.slug}`;
-                if (cat.slug === "trending") url = "/top-selling";
-                if (cat.slug === "bestsellers") url = "/best-selling";
-                return `<a href="${url}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`;
-            }).join('');
-            header.innerHTML = `
-                <div class="web-header">
-                    <div class="main-header">
-                        <div class="logo-area">
-                            <a href="/" class="logo">
-                                <img src="" alt="Logo" id="site-logo" class="site-logo" onerror="this.src='https://placehold.co/120x40?text=LOGO'">
-                            </a>
-                            <nav class="nav-menu" id="navMenu">${categoriesHtml}</nav>
-                        </div>
-                        <div class="search-area">
-                            <div class="search-box" style="position:relative;">
-                                <input type="text" id="web-search-input" placeholder="Search for " autocomplete="off">
-                                <button class="search-icon-btn" aria-label="Search">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="10" cy="10" r="7"/>
-                                        <line x1="21" y1="21" x2="15" y2="15"/>
-                                    </svg>
-                                </button>
-                                <div id="web-search-suggestions" class="web-search-suggestions" style="display:none;"></div>
-                            </div>
-                        </div>
-                        <div class="header-actions">
-                            <a href="javascript:void(0)" class="action-link" onclick="if(!localStorage.getItem('token')){showLoginPopup();}else{window.location.href='/profile';}">
-                                <svg class="header-icon" viewBox="0 0 24 24" fill="none">
-                                    <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
-                                    <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2"/>
+    const header = document.getElementById('site-header');
+    if (!header) return;
+    const isDesktop = window.innerWidth >= 1025;
+    if (isDesktop) {
+        if (!this.allCategories || this.allCategories.length === 0) {
+            fetch(APP_CONFIG.ENDPOINTS.CATEGORIES)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        this.allCategories = data.data;
+                        this.categoriesLoaded = true;
+                        this.renderHeader();
+                    }
+                });
+            return;
+        }
+        const topCategories = this.allCategories.slice(0, 5);
+        const categoriesHtml = topCategories.map(cat => {
+            let url = `/collection/${cat.slug}`;
+            if (cat.slug === "trending") url = "/top-selling";
+            if (cat.slug === "bestsellers") url = "/best-selling";
+            return `<a href="${url}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`;
+        }).join('');
+        
+        // 🔥 IMPORTANT: Popup ka HTML sahi se add karo
+        header.innerHTML = `
+            <div class="web-header">
+                <div class="main-header">
+                    <div class="logo-area">
+                        <a href="/" class="logo">
+                           <img
+                                src="${this.appSettings?.header_logo || ''}"
+                                alt=""
+                                id="site-logo"
+                                class="site-logo"
+                                style="${this.appSettings?.header_logo ? 'display:block;' : 'display:none;'}"
+                                onerror="this.style.display='none'"
+                            >
+                        </a>
+                        <nav class="nav-menu" id="navMenu">${categoriesHtml}</nav>
+                    </div>
+                    <div class="search-area">
+                        <div class="search-box" style="position:relative;">
+                            <input type="text" id="web-search-input" placeholder="Search for " autocomplete="off">
+                            <button class="search-icon-btn" aria-label="Search">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="10" cy="10" r="7"/>
+                                    <line x1="21" y1="21" x2="15" y2="15"/>
                                 </svg>
-                                Profile
-                            </a>
-                            <a href="/wishlist" class="action-link">
-                                <svg class="header-icon" viewBox="0 0 24 24" fill="none">
-                                    <path d="M12 21s-6-4.35-9-8.5C-1 6.5 4 2 8 5c2 1.5 4 3.5 4 3.5S14 6.5 16 5c4-3 9 1.5 5 7.5C18 16.65 12 21 12 21z" stroke="currentColor" stroke-width="2"/>
-                                </svg>
-                                Wishlist
-                            </a>
-                            <a href="/cart" class="action-link cart-link">
-                                <span class="cart-icon-wrapper">
-                                    <svg class="header-icon" viewBox="0 0 24 24" fill="none">
-                                        <circle cx="9" cy="21" r="1.5" stroke="currentColor" stroke-width="2"/>
-                                        <circle cx="18" cy="21" r="1.5" stroke="currentColor" stroke-width="2"/>
-                                        <path d="M2 2h3l3 12h11l2-8H6" stroke="currentColor" stroke-width="2"/>
-                                    </svg>
-                                    <span id="web-cart-count-badge">0</span>
-                                </span>
-                                Cart
-                            </a>
+                            </button>
+                            <div id="web-search-suggestions" class="web-search-suggestions" style="display:none;"></div>
                         </div>
                     </div>
+                    <div class="header-actions">
+                        <a href="javascript:void(0)" class="action-link" onclick="if(!localStorage.getItem('token')){showLoginPopup();}else{window.location.href='/profile';}">
+                            <svg class="header-icon" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+                                <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            Profile
+                        </a>
+                        <a href="/wishlist" class="action-link">
+                            <svg class="header-icon" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 21s-6-4.35-9-8.5C-1 6.5 4 2 8 5c2 1.5 4 3.5 4 3.5S14 6.5 16 5c4-3 9 1.5 5 7.5C18 16.65 12 21 12 21z" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            Wishlist
+                        </a>
+                        <a href="/cart" class="action-link cart-link">
+                            <span class="cart-icon-wrapper">
+                                <svg class="header-icon" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="9" cy="21" r="1.5" stroke="currentColor" stroke-width="2"/>
+                                    <circle cx="18" cy="21" r="1.5" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M2 2h3l3 12h11l2-8H6" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                                <span id="web-cart-count-badge">0</span>
+                            </span>
+                            Cart
+                        </a>
+                    </div>
                 </div>
-                <div class="all-categories-popup" id="allCategoriesPopup" style="display:none; position:absolute; top:100%; left:0; width:100%; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:1000; border-top:1px solid #f0f0f0;"></div>
-            `;
-            this.setupAllCategoriesPopup();
-            this.initWebSearchDropdown();
-            this.applyAppSettings();
-            setTimeout(() => updateCartCountBadge(), 0);
-        } else {
-            const isCartPage = document.body.classList.contains('cart-page');
-            const isCheckoutPage = document.body.classList.contains('checkout-page');
-            const isProfilePage = document.body.classList.contains('profile-page');
-            const isOrdersPage = document.body.classList.contains('orders-page');
-            const isWishlistPage = document.body.classList.contains('wishlist-page');
-            const isOrderConfirmationPage = document.body.classList.contains('order-confirmation-page');
-            const isTermsPage = document.body.classList.contains('terms-page') || window.location.pathname === '/terms';
-            const isReturnsPage = document.body.classList.contains('returns-page') || window.location.pathname === '/returns';
-            const isPrivacyPage = document.body.classList.contains('privacy-page') || window.location.pathname === '/privacy-policy';
-            const showBackButton = isCartPage || isCheckoutPage || isProfilePage || isOrdersPage || isWishlistPage || isOrderConfirmationPage || isTermsPage || isReturnsPage || isPrivacyPage;
-            header.innerHTML = `
-                <div class="container">
-                    <div class="header-container">
-                        ${showBackButton ? '<button class="back-btn-header" onclick="goBack()">←</button>' : ''}
-                        <div class="logo-search-container">
-                            <div class="header-logo">
-                                <a href="/">
-                                    <img src="" alt="Logo" class="site-logo" id="site-logo" onerror="this.src='https://placehold.co/100x35?text=RAPID'">
-                                </a>
-                            </div>
-                            <div class="search-wrapper">
-                                <input id="landing-search" type="text" placeholder="Search for Category, Product ...">
-                                <button class="search-icon-btn" onclick="window.location.href='/search'" style="background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center;">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="10" cy="10" r="7"/>
-                                        <line x1="21" y1="21" x2="15" y2="15"/>
-                                    </svg>
-                                </button>
-                            </div>
+            </div>
+            <!-- 🔥 POPUP - VISIBLE HONE KE LIYE STYLE ADD KARO -->
+<div class="all-categories-popup" id="allCategoriesPopup" style="display:none; position:absolute; top:100%; left:0; width:100%; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:9999; border-top:1px solid #f0f0f0; max-height:500px; overflow-y:auto;"></div>
+        `;
+        
+        // 🔥 POPUP SETUP - HAR BAAR CALL KARO
+        this.setupAllCategoriesPopup();
+        this.initWebSearchDropdown();
+        this.applyAppSettings();
+        setTimeout(() => updateCartCountBadge(), 0);
+    } else {
+        // Mobile header - waise hi rakho
+        const isCartPage = document.body.classList.contains('cart-page');
+        const isCheckoutPage = document.body.classList.contains('checkout-page');
+        const isProfilePage = document.body.classList.contains('profile-page');
+        const isOrdersPage = document.body.classList.contains('orders-page');
+        const isWishlistPage = document.body.classList.contains('wishlist-page');
+        const isOrderConfirmationPage = document.body.classList.contains('order-confirmation-page');
+        const isTermsPage = document.body.classList.contains('terms-page') || window.location.pathname === '/terms';
+        const isReturnsPage = document.body.classList.contains('returns-page') || window.location.pathname === '/returns';
+        const isPrivacyPage = document.body.classList.contains('privacy-page') || window.location.pathname === '/privacy-policy';
+        const showBackButton = isCartPage || isCheckoutPage || isProfilePage || isOrdersPage || isWishlistPage || isOrderConfirmationPage || isTermsPage || isReturnsPage || isPrivacyPage;
+        header.innerHTML = `
+            <div class="container">
+                <div class="header-container">
+                    ${showBackButton ? '<button class="back-btn-header" onclick="goBack()">←</button>' : ''}
+                    <div class="logo-search-container">
+                        <div class="header-logo">
+                            <a href="/">
+                                <img src="${this.appSettings?.header_logo || ''}" alt="Logo" class="site-logo" id="site-logo" onerror="this.style.display='none'">
+                            </a>
                         </div>
-                        <div class="header-icons">
-                            <button class="header-icon-btn" onclick="window.location.href='/wishlist'">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2">
-                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        <div class="search-wrapper">
+                            <input id="landing-search" type="text" placeholder="Search for Category, Product ...">
+                            <button class="search-icon-btn" onclick="window.location.href='/search'" style="background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="10" cy="10" r="7"/>
+                                    <line x1="21" y1="21" x2="15" y2="15"/>
                                 </svg>
                             </button>
                         </div>
                     </div>
+                    <div class="header-icons">
+                        <button class="header-icon-btn" onclick="window.location.href='/wishlist'">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
-            `;
-        }
-        this.applyAppSettings();
+            </div>
+        `;
     }
+    this.applyAppSettings();
+}
 
     initWebSearchDropdown() {
         setTimeout(() => {
@@ -270,67 +288,108 @@ class RapidRetailsEngine {
     }
 
     setupAllCategoriesPopup() {
-        const navItems = document.querySelectorAll('.nav-item');
-        const popup = document.getElementById('allCategoriesPopup');
-        if (!navItems.length || !popup) return;
-        let hideTimeout = null;
-        const showPopup = () => {
-            if (hideTimeout) clearTimeout(hideTimeout);
-            this.renderAllCategoriesPopup();
-            popup.style.display = 'block';
-        };
-        const hidePopup = () => {
-            hideTimeout = setTimeout(() => popup.style.display = 'none', 200);
-        };
-        navItems.forEach(item => {
-            item.addEventListener('mouseenter', showPopup);
-            item.addEventListener('mouseleave', hidePopup);
-        });
-        popup.addEventListener('mouseenter', () => {
-            if (hideTimeout) clearTimeout(hideTimeout);
-            popup.style.display = 'block';
-        });
-        popup.addEventListener('mouseleave', hidePopup);
+    const navItems = document.querySelectorAll('.nav-item');
+    const popup = document.getElementById('allCategoriesPopup');
+    
+    if (!navItems.length || !popup) {
+        return;
     }
-
+    
+    let hideTimeout = null;
+    
+    const showPopup = () => {
+        if (hideTimeout) clearTimeout(hideTimeout);
+        this.renderAllCategoriesPopup();
+        // 🔥 DIRECT STYLE SET KARO - visibility/or display remove karo
+        popup.style.display = 'block';
+        popup.style.opacity = '1';
+        popup.style.visibility = 'visible';
+    };
+    
+    const hidePopup = () => {
+        hideTimeout = setTimeout(() => {
+            // 🔥 HIDE KARTE WAQT SIRF DISPLAY NONE KARO
+            popup.style.display = 'none';
+            popup.style.opacity = '0';
+            popup.style.visibility = 'hidden';
+        }, 300);
+    };
+    
+    navItems.forEach(item => {
+        item.addEventListener('mouseenter', showPopup);
+        item.addEventListener('mouseleave', hidePopup);
+    });
+    
+    popup.addEventListener('mouseenter', () => {
+        if (hideTimeout) clearTimeout(hideTimeout);
+        popup.style.display = 'block';
+        popup.style.opacity = '1';
+        popup.style.visibility = 'visible';
+    });
+    
+    popup.addEventListener('mouseleave', hidePopup);
+}
     renderAllCategoriesPopup() {
-        const popup = document.getElementById('allCategoriesPopup');
-        if (!popup) return;
-        if (!this.allCategories || this.allCategories.length === 0) {
-            popup.innerHTML = '<div style="padding:40px; text-align:center;">Loading categories...</div>';
-            return;
-        }
-        const categoriesWithSub = this.allCategories.filter(cat => cat.children && cat.children.length > 0);
-        const columnSize = Math.ceil(categoriesWithSub.length / 5);
-        const columns = [];
-        for (let i = 0; i < 5; i++) {
-            columns.push(categoriesWithSub.slice(i * columnSize, (i + 1) * columnSize));
-        }
-        let html = `<div style="max-width:1200px; margin:0 auto; padding:30px; display:grid; grid-template-columns:repeat(5,1fr); gap:25px;">`;
-        columns.forEach(col => {
-            if (col.length > 0) {
-                html += `<div>`;
-                col.forEach(cat => {
-                    html += `<div style="margin-bottom:20px;">
-                        <h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">${cat.name}</h3>
-                        <ul style="list-style:none; padding:0; margin-top:12px;">`;
-                    if (cat.children && cat.children.length > 0) {
-                        cat.children.slice(0, 6).forEach(sub => {
-                            let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                            html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
-                        });
-                        if (cat.children.length > 6) {
-                            html += `<li style="margin-top:5px;"><a href="/category/${cat.id}" style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">+${cat.children.length - 6} more →</a></li>`;
-                        }
-                    }
-                    html += `</ul></div>`;
-                });
-                html += `</div>`;
-            }
+    const popup = document.getElementById('allCategoriesPopup');
+    if (!popup) return;
+    
+    if (!this.allCategories || this.allCategories.length === 0) {
+        popup.innerHTML = '<div style="padding:40px; text-align:center; color:#999;">Loading categories...</div>';
+        return;
+    }
+    
+    // 🔥 ALL CATEGORIES WITH CHILDREN
+    const categoriesWithSub = this.allCategories.filter(cat => cat.children && cat.children.length > 0);
+    
+    if (categoriesWithSub.length === 0) {
+        // 🔥 AGAR KOI SUB-CATEGORY NAHI TO SIRF NAMES SHOW KARO
+        let html = `<div style="max-width:1200px; margin:0 auto; padding:30px; display:grid; grid-template-columns:repeat(4,1fr); gap:20px;">`;
+        this.allCategories.slice(0, 8).forEach(cat => {
+            let slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            let url = `/collection/${slug}`;
+            if (slug === "trending") url = "/top-selling";
+            if (slug === "bestsellers") url = "/best-selling";
+            html += `<a href="${url}" style="text-decoration:none; color:#282c3f; font-size:14px; padding:10px 15px; border:1px solid #f0f0f0; border-radius:8px; text-align:center; transition:0.2s;" onmouseover="this.style.borderColor='#ff3f6c';" onmouseout="this.style.borderColor='#f0f0f0';">${cat.name}</a>`;
         });
         html += `</div>`;
         popup.innerHTML = html;
+        return;
     }
+    
+    // 🔥 SUB-CATEGORIES KE SAATH SHOW KARO
+    const columnSize = Math.ceil(categoriesWithSub.length / 5);
+    const columns = [];
+    for (let i = 0; i < 5; i++) {
+        columns.push(categoriesWithSub.slice(i * columnSize, (i + 1) * columnSize));
+    }
+    
+    let html = `<div style="max-width:1200px; margin:0 auto; padding:30px; display:grid; grid-template-columns:repeat(5,1fr); gap:25px;">`;
+    
+    columns.forEach(col => {
+        if (col.length > 0) {
+            html += `<div>`;
+            col.forEach(cat => {
+                html += `<div style="margin-bottom:20px;">
+                    <h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">${cat.name}</h3>
+                    <ul style="list-style:none; padding:0; margin-top:12px;">`;
+                if (cat.children && cat.children.length > 0) {
+                    cat.children.slice(0, 6).forEach(sub => {
+                        let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
+                    });
+                    if (cat.children.length > 6) {
+                        let slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        html += `<li style="margin-top:5px;"><a href="/collection/${slug}" style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">+${cat.children.length - 6} more →</a></li>`;
+                    }
+                }
+                html += `</ul></div>`;
+            });
+            html += `</div>`;
+        }
+    });
+    html += `</div>`;
+    popup.innerHTML = html;
+}
 
     initSearchRedirect() {
         const mobileSearchInput = document.getElementById("landing-search");
@@ -402,12 +461,21 @@ class RapidRetailsEngine {
             fetch(APP_CONFIG.ENDPOINTS.BANNERS).then(r => r.json()),
             fetch(APP_CONFIG.ENDPOINTS.TOP_SELLING).then(r => r.json())
         ]);
-        if (catsRes.success) this.allCategories = catsRes.data;
-        if (bannersRes.success) this.allBanners = bannersRes.data;
+        if (catsRes.success) {
+            this.allCategories = catsRes.data;
+            this.categoriesLoaded = true;
+        }
+        if (bannersRes.success) {
+            this.allBanners = bannersRes.data;
+            this.bannersLoaded = true;
+        }
         if (topSellingRes.success && topSellingRes.data) {
             this.topSellingProducts = Array.isArray(topSellingRes.data) ? topSellingRes.data : (topSellingRes.data.products || []);
+            this.productsLoaded = true;
         }
-        if (this.isLoggedIn) await this.fetchUserCategoryOrder();
+        if (this.isLoggedIn) {
+            this.fetchUserCategoryOrder().catch(() => {});
+        }
         await Promise.all([
             this.renderHeroSlider(),
             this.renderTrending(),
@@ -505,11 +573,13 @@ class RapidRetailsEngine {
     }
 
     async fetchAppSettings() {
+        if (this.settingsLoaded) return;
         try {
             const response = await fetch(APP_CONFIG.ENDPOINTS.APP_SETTINGS);
             const data = await response.json();
             if (data.success) {
                 this.appSettings = data.data;
+                this.settingsLoaded = true;
                 this.applyAppSettings();
             }
         } catch (error) {
@@ -610,15 +680,9 @@ class RapidRetailsEngine {
         if (!container) return;
         let categories = this.allCategories || [];
         if (categories.length === 0) {
-            const res = await fetch(APP_CONFIG.ENDPOINTS.CATEGORIES);
-            const data = await res.json();
-            if (data.success) {
-                categories = data.data.slice(0, 5);
-                this.allCategories = data.data;
-            }
-        } else {
-            categories = categories.slice(0, 5);
+            return;
         }
+        categories = categories.slice(0, 5);
         if (!categories.length) return;
         const gradients = [
             { bg: "linear-gradient(135deg, #F0F5FF, #E0ECFF)", border: "#C0D4FF" },
@@ -687,17 +751,11 @@ class RapidRetailsEngine {
     async renderStyleSpotlight() {
         const container = document.getElementById('style-spotlight-grid');
         if (!container) return;
-        const res = await fetch(APP_CONFIG.ENDPOINTS.TOP_SELLING).then(r => r.json());
-        let displayItems = [];
-        if (res.success && res.data) {
-            let items = Array.isArray(res.data) ? res.data : (res.data.products || []);
-            displayItems = items.slice(0, 8);
-        }
+        let displayItems = this.topSellingProducts.slice(0, 8);
         if (!displayItems.length) {
-            container.innerHTML = '';
             return;
         }
-        const preloadPromises = displayItems.map(async (item) => {
+        displayItems.forEach(async (item) => {
             if (item.slug) {
                 try {
                     const response = await fetch(`${API_BASE_URL}/products/${item.slug}`);
@@ -713,9 +771,7 @@ class RapidRetailsEngine {
                     }
                 } catch (e) {}
             }
-            return item;
         });
-        await Promise.all(preloadPromises);
         const itemsHtml = displayItems.map(item => {
             const brand = item.brand || 'Premium Brand';
             const name = item.name || 'Fashion Item';
@@ -821,7 +877,7 @@ class RapidRetailsEngine {
             return;
         }
         const displayProducts = products.slice(0, 3);
-        const labels = ['WEDDING', 'FESTIVE', 'EVERYDAY'];
+        const labels = ['EVERYDAY', 'WEDDING', 'FESTIVE' ];
         const descs = [
             'Timeless pieces for your most beautiful day.',
             'Celebrate every moment with effortless elegance.',
@@ -864,145 +920,123 @@ class RapidRetailsEngine {
     }
 
     renderFeaturedLook() {
-    const container = document.getElementById('dynamic-featured');
-    if (!container) return;
-    
-    const products = this.topSellingProducts || [];
-    if (products.length === 0) {
+        const container = document.getElementById('dynamic-featured');
+        if (!container) return;
+        
+        const products = this.topSellingProducts || [];
+        if (products.length === 0) {
+            container.innerHTML = `
+                <div class="herovia-featured-box">
+                    <div class="herovia-featured-box-inner">
+                        <div class="herovia-featured-box-image-wrapper">
+                            <div class="herovia-featured-box-main">
+                                <img src="/azure-poise-suit.png" alt="Azure Poise Suit" id="featured-main-image-fallback" loading="lazy">
+                            </div>
+                            <div class="herovia-featured-box-thumbs">
+                                <div class="herovia-featured-box-thumb active" onclick="changeFeaturedImageFallback('/azure-poise-suit.png', this)">
+                                    <img src="/azure-poise-suit.png" alt="View 1" loading="lazy">
+                                </div>
+                                <div class="herovia-featured-box-thumb" onclick="changeFeaturedImageFallback('/azure-poise-suit.png', this)">
+                                    <img src="/azure-poise-suit.png" alt="View 2" loading="lazy">
+                                </div>
+                                <div class="herovia-featured-box-thumb" onclick="changeFeaturedImageFallback('/azure-poise-suit.png', this)">
+                                    <img src="/azure-poise-suit.png" alt="View 3" loading="lazy">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="herovia-featured-box-content">
+                            <p class="herovia-featured-box-eyebrow">New arrival · The Everyday Edit</p>
+                            <h2 class="herovia-featured-box-title">The Azure<br><em>Poise Suit.</em></h2>
+                            <p class="herovia-featured-box-desc">A rich cobalt-blue kurta set designed for polished days and easy evenings. Delicate floral motifs, a softly scalloped neckline and a fluid matching dupatta bring quiet detail to its clean, confident silhouette.</p>
+                            <ul class="herovia-featured-box-details">
+                                <li>Three-piece suit set</li>
+                                <li>Plain three-quarter sleeves</li>
+                                <li>Straight-fit trousers</li>
+                                <li>Lightweight matching dupatta</li>
+                            </ul>
+                            <div class="herovia-featured-box-action">
+                                <span class="herovia-featured-box-price">₹4,999</span>
+                                <a class="herovia-featured-box-btn" href="#contact">Enquire to order <span aria-hidden="true">→</span></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            window.changeFeaturedImageFallback = function(imageSrc, element) {
+                const mainImg = document.getElementById('featured-main-image-fallback');
+                if (mainImg) mainImg.src = imageSrc;
+                document.querySelectorAll('.herovia-featured-box-thumb').forEach(el => el.classList.remove('active'));
+                if (element) element.classList.add('active');
+            };
+            return;
+        }
+        
+        const product = products[0];
+        const name = product.name || 'Product';
+        const brand = product.brand || 'Her-Ovia';
+        let description = product.short_description || product.description || 'Premium quality product';
+        if (description.length > 200) {
+            description = description.substring(0, 200) + '...';
+        }
+        const price = this.getProductPrice(product);
+        const slug = product.slug || '#';
+        let detailsHtml = '';
+        if (product.attributes && Array.isArray(product.attributes) && product.attributes.length > 0) {
+            detailsHtml = product.attributes.slice(0, 4).map(d => `<li>${d}</li>`).join('');
+        } else if (product.product_details && Array.isArray(product.product_details) && product.product_details.length > 0) {
+            detailsHtml = product.product_details.slice(0, 4).map(d => `<li>${d}</li>`).join('');
+        } else if (product.specifications && typeof product.specifications === 'object') {
+            const keys = Object.keys(product.specifications).slice(0, 4);
+            detailsHtml = keys.map(key => `<li>${key}: ${product.specifications[key]}</li>`).join('');
+        } else {
+            const catName = product.category?.name || '';
+            if (catName) {
+                detailsHtml = `<li>Category: ${catName}</li><li>Premium quality</li><li>Best seller</li>`;
+            } else {
+                detailsHtml = `<li>Premium quality</li><li>Best seller</li><li>Limited edition</li>`;
+            }
+        }
+        const galleryImages = product.gallery_images || [];
+        const mainImage = galleryImages.length > 0 
+            ? this.resolveImage(galleryImages[0]) 
+            : this.resolveImage(product.image_url) || 'https://placehold.co/600x800?text=HER-OVIA';
+        const thumbnails = galleryImages.slice(1, 5).map(img => this.resolveImage(img));
+        while (thumbnails.length < 3) { thumbnails.push(mainImage); }
+        let thumbnailsHtml = thumbnails.map((thumb, idx) => `
+            <div class="herovia-featured-box-thumb ${idx === 0 ? 'active' : ''}" 
+                 onclick="changeFeaturedImage('${thumb}', this)">
+                <img src="${thumb}" alt="${name} view ${idx + 2}" loading="lazy" onerror="this.src='https://placehold.co/150x180?text=HER-OVIA'">
+            </div>
+        `).join('');
         container.innerHTML = `
             <div class="herovia-featured-box">
                 <div class="herovia-featured-box-inner">
                     <div class="herovia-featured-box-image-wrapper">
                         <div class="herovia-featured-box-main">
-                            <img src="/azure-poise-suit.png" alt="Azure Poise Suit" id="featured-main-image-fallback" loading="lazy">
+                            <img src="${mainImage}" alt="${name}" id="featured-main-image" loading="lazy" onerror="this.src='https://placehold.co/600x800?text=HER-OVIA'">
                         </div>
-                        <div class="herovia-featured-box-thumbs">
-                            <div class="herovia-featured-box-thumb active" onclick="changeFeaturedImageFallback('/azure-poise-suit.png', this)">
-                                <img src="/azure-poise-suit.png" alt="View 1" loading="lazy">
-                            </div>
-                            <div class="herovia-featured-box-thumb" onclick="changeFeaturedImageFallback('/azure-poise-suit.png', this)">
-                                <img src="/azure-poise-suit.png" alt="View 2" loading="lazy">
-                            </div>
-                            <div class="herovia-featured-box-thumb" onclick="changeFeaturedImageFallback('/azure-poise-suit.png', this)">
-                                <img src="/azure-poise-suit.png" alt="View 3" loading="lazy">
-                            </div>
-                        </div>
+                        <div class="herovia-featured-box-thumbs">${thumbnailsHtml}</div>
                     </div>
                     <div class="herovia-featured-box-content">
                         <p class="herovia-featured-box-eyebrow">New arrival · The Everyday Edit</p>
-                        <h2 class="herovia-featured-box-title">The Azure<br><em>Poise Suit.</em></h2>
-                        <p class="herovia-featured-box-desc">A rich cobalt-blue kurta set designed for polished days and easy evenings. Delicate floral motifs, a softly scalloped neckline and a fluid matching dupatta bring quiet detail to its clean, confident silhouette.</p>
-                        <ul class="herovia-featured-box-details">
-                            <li>Three-piece suit set</li>
-                            <li>Plain three-quarter sleeves</li>
-                            <li>Straight-fit trousers</li>
-                            <li>Lightweight matching dupatta</li>
-                        </ul>
+                        <h2 class="herovia-featured-box-title">${name}<br><em>${brand}</em></h2>
+                        <p class="herovia-featured-box-desc">${description}</p>
+                        <ul class="herovia-featured-box-details">${detailsHtml}</ul>
                         <div class="herovia-featured-box-action">
-                            <span class="herovia-featured-box-price">₹4,999</span>
-                            <a class="herovia-featured-box-btn" href="#contact">Enquire to order <span aria-hidden="true">→</span></a>
+                            <span class="herovia-featured-box-price">₹${price}</span>
+                            <a class="herovia-featured-box-btn" href="/product/${slug}">Enquire to order <span aria-hidden="true">→</span></a>
                         </div>
                     </div>
                 </div>
             </div>
         `;
-        window.changeFeaturedImageFallback = function(imageSrc, element) {
-            const mainImg = document.getElementById('featured-main-image-fallback');
-            if (mainImg) mainImg.src = imageSrc;
+        window.changeFeaturedImage = function(imageSrc, element) {
+            const mainImage = document.getElementById('featured-main-image');
+            if (mainImage) mainImage.src = imageSrc;
             document.querySelectorAll('.herovia-featured-box-thumb').forEach(el => el.classList.remove('active'));
             if (element) element.classList.add('active');
         };
-        return;
     }
-    
-    const product = products[0];
-    
-    // ===== PRODUCT DATA FROM API =====
-    const name = product.name || 'Product';
-    const brand = product.brand || 'Her-Ovia';
-    
-    // ✅ DESCRIPTION - API se
-    let description = product.short_description || product.description || 'Premium quality product';
-    if (description.length > 200) {
-        description = description.substring(0, 200) + '...';
-    }
-    
-    const price = this.getProductPrice(product);
-    const slug = product.slug || '#';
-    
-    // ✅ DETAILS - API se (attributes ya custom fields)
-    let detailsHtml = '';
-    
-    // Try to get from attributes
-    if (product.attributes && Array.isArray(product.attributes) && product.attributes.length > 0) {
-        detailsHtml = product.attributes.slice(0, 4).map(d => `<li>${d}</li>`).join('');
-    } 
-    // Try to get from product details
-    else if (product.product_details && Array.isArray(product.product_details) && product.product_details.length > 0) {
-        detailsHtml = product.product_details.slice(0, 4).map(d => `<li>${d}</li>`).join('');
-    }
-    // Try to get from specifications
-    else if (product.specifications && typeof product.specifications === 'object') {
-        const keys = Object.keys(product.specifications).slice(0, 4);
-        detailsHtml = keys.map(key => `<li>${key}: ${product.specifications[key]}</li>`).join('');
-    }
-    // Fallback - use category name or brand
-    else {
-        const catName = product.category?.name || '';
-        if (catName) {
-            detailsHtml = `<li>Category: ${catName}</li><li>Premium quality</li><li>Best seller</li>`;
-        } else {
-            detailsHtml = `<li>Premium quality</li><li>Best seller</li><li>Limited edition</li>`;
-        }
-    }
-    
-    // ===== IMAGES =====
-    const galleryImages = product.gallery_images || [];
-    const mainImage = galleryImages.length > 0 
-        ? this.resolveImage(galleryImages[0]) 
-        : this.resolveImage(product.image_url) || 'https://placehold.co/600x800?text=HER-OVIA';
-    
-    const thumbnails = galleryImages.slice(1, 5).map(img => this.resolveImage(img));
-    while (thumbnails.length < 3) { thumbnails.push(mainImage); }
-    
-    // ===== THUMBNAILS HTML =====
-    let thumbnailsHtml = thumbnails.map((thumb, idx) => `
-        <div class="herovia-featured-box-thumb ${idx === 0 ? 'active' : ''}" 
-             onclick="changeFeaturedImage('${thumb}', this)">
-            <img src="${thumb}" alt="${name} view ${idx + 2}" loading="lazy" onerror="this.src='https://placehold.co/150x180?text=HER-OVIA'">
-        </div>
-    `).join('');
-    
-    container.innerHTML = `
-        <div class="herovia-featured-box">
-            <div class="herovia-featured-box-inner">
-                <div class="herovia-featured-box-image-wrapper">
-                    <div class="herovia-featured-box-main">
-                        <img src="${mainImage}" alt="${name}" id="featured-main-image" loading="lazy" onerror="this.src='https://placehold.co/600x800?text=HER-OVIA'">
-                    </div>
-                    <div class="herovia-featured-box-thumbs">${thumbnailsHtml}</div>
-                </div>
-                <div class="herovia-featured-box-content">
-                    <p class="herovia-featured-box-eyebrow">New arrival · The Everyday Edit</p>
-                    <h2 class="herovia-featured-box-title">${name}<br><em>${brand}</em></h2>
-                    <p class="herovia-featured-box-desc">${description}</p>
-                    <ul class="herovia-featured-box-details">${detailsHtml}</ul>
-                    <div class="herovia-featured-box-action">
-                        <span class="herovia-featured-box-price">₹${price}</span>
-                        <a class="herovia-featured-box-btn" href="/product/${slug}">Enquire to order <span aria-hidden="true">→</span></a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    window.changeFeaturedImage = function(imageSrc, element) {
-        const mainImage = document.getElementById('featured-main-image');
-        if (mainImage) mainImage.src = imageSrc;
-        document.querySelectorAll('.herovia-featured-box-thumb').forEach(el => el.classList.remove('active'));
-        if (element) element.classList.add('active');
-    };
-}
 
     renderTwoCollections() {
         const container = document.getElementById('dynamic-two-collections');
@@ -1013,7 +1047,6 @@ class RapidRetailsEngine {
             return;
         }
         const displayCategories = categories.slice(0, 2);
-        const badges = ['CO-ORD SET', 'PARTY WEAR'];
         const titles = ['Modern Ease', 'Celebration Edit'];
         const numbers = ['01', '02'];
         const prices = ['₹4,799', '₹5,999'];
@@ -1028,13 +1061,16 @@ class RapidRetailsEngine {
             const subSlug = subcategory ? subcategory.slug : cat.slug;
             const imageUrl = this.resolveImage(subcategory?.image_url || cat.image_url) || '';
             html += `
-                <article class="herovia-two-collection" onclick="window.location.href='/collection/${subSlug || '#'}'">
+                <article class="herovia-two-collection"
+                    onclick="window.location.href='/collection/${subSlug || '#'}'">
                     <div class="herovia-two-collection-image">
-                        <img src="${imageUrl || 'https://placehold.co/600x700?text=HER-OVIA'}" 
-                             alt="${subName}" 
-                             loading="lazy" 
-                             onerror="this.src='https://placehold.co/600x700?text=HER-OVIA'">
-                        <span class="herovia-two-collection-badge">${badges[index] || cat.name.toUpperCase()}</span>
+                        <img src="${imageUrl || 'https://placehold.co/600x700?text=HER-OVIA'}"
+                            alt="${subName}"
+                            loading="lazy"
+                            onerror="this.src='https://placehold.co/600x700?text=HER-OVIA'">
+                        <span class="herovia-two-collection-badge">
+                            ${cat.name.toUpperCase()}
+                        </span>
                     </div>
                     <div class="herovia-two-collection-info">
                         <div>
@@ -1043,8 +1079,12 @@ class RapidRetailsEngine {
                         </div>
                         <strong>${prices[index] || '₹4,999'}</strong>
                     </div>
-                    <p class="herovia-two-collection-desc">${descs[index] || 'Premium quality product from ' + cat.name}</p>
-                    <a href="/collection/${subSlug || '#'}">Enquire to order <span aria-hidden="true">→</span></a>
+                    <p class="herovia-two-collection-desc">
+                        ${descs[index] || 'Premium quality product from ' + cat.name}
+                    </p>
+                    <a href="/collection/${subSlug || '#'}">
+                        Enquire to order <span aria-hidden="true">→</span>
+                    </a>
                 </article>
             `;
         });

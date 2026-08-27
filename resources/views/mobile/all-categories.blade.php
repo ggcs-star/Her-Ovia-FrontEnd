@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>All Categories | MAHERA JEWEL</title>
-    <meta name="description" content="Browse all jewellery categories at Mahera Jewel including necklaces, earrings, bangles, bridal sets and more.">
+    <title>All Categories | Her-Ovia</title>
+    <meta name="description" content="Browse all clothing categories at Her-Ovia including co-ord sets, dresses, kurta sets and more.">
     <link rel="canonical" href="{{ url()->current() }}">
-    <link rel="icon" type="image/jpeg" href="{{ asset('images/mjlogo.jpeg') }}">
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/categories/category-styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">

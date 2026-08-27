@@ -362,7 +362,7 @@ function showRegisterPopup() {
                 <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg, rgba(68,12,44,0.6), rgba(68,12,44,0.8));"></div>
 
                 <div style="position:relative; z-index:2; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; padding:40px; color:white; text-align:center;">
-                    <h1 style="font-size:42px; font-weight:800;">Join MAHERA JEWEL</h1>
+                    <h1 style="font-size:42px; font-weight:800;">Join Her Ovia</h1>
                     <p style="font-size:18px;">Get exclusive discounts & cashback rewards</p>
                 </div>
             </div>

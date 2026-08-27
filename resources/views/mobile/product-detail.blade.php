@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Product Details | MAHERA JEWEL</title>
-    <meta name="description" content="Buy premium jewellery online from Mahera Jewel with secure payment and fast delivery.">
-    <link rel="icon" type="image/jpeg" href="{{ asset('images/mjlogo.jpeg') }}">
+    <title>Product Details | Her-Ovia</title>
+    <meta name="description" content="Shop premium clothing online from Her-Ovia, featuring elegant Indian wear and contemporary styles with secure payment and fast delivery.">
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
     <link rel="canonical" href="{{ url()->current() }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
@@ -13,14 +13,9 @@
 </head>
 <body class="product-detail-page" data-page="product-detail" data-slug="{{ request()->route('slug') }}">
 
-    <!-- ==========================================
-         HEADER - SCRIPT.JS SE RENDER HOGA
-         ========================================== -->
+    <div class="herovia-announcement">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
     <header class="site-header" id="site-header"></header>
 
-    <!-- ==========================================
-         PRODUCT CONTENT
-         ========================================== -->
     <main class="page-content">
         <div class="container web-product-wrapper">
             <div id="product-container"></div>
