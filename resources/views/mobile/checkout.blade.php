@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Checkout | MAHERA JEWEL</title>
+    <title>Checkout | Her-Ovia </title>
     <meta name="robots" content="noindex,nofollow">
-    <link rel="icon" type="image/jpeg" href="{{ asset('images/mjlogo.jpeg') }}">
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="stylesheet" href="{{ asset('mobile/checkout.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body class="checkout-page">
+<div class="herovia-announcement">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
 <header class="site-header" id="site-header"></header>
 <main class="checkout-content">
     <div class="checkout-container">

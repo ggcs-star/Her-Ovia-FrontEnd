@@ -42,16 +42,16 @@ const API_BASE_URL = window.API_BASE_URL;
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
         let totalItems = cart.length;
 
-        const appBadge = document.querySelector('.cart-badge');
-        if (appBadge) {
-            appBadge.textContent = totalItems;
-            appBadge.style.display = 'flex';
+        const webBadge = document.getElementById('web-cart-count-badge');
+        if (webBadge) {
+            webBadge.style.display = 'flex';
+            webBadge.textContent = totalItems;
         }
 
-        const webBadge = document.getElementById('cart-count-badge');
-        if (webBadge) {
-            webBadge.textContent = totalItems;
-            webBadge.style.display = 'flex';
+        const cartBadge = document.getElementById('cart-count-badge');
+        if (cartBadge) {
+            cartBadge.style.display = 'flex';
+            cartBadge.textContent = totalItems;
         }
     }
     
@@ -1145,7 +1145,7 @@ let discountPercentage = originalPrice > displayPrice ? Math.round(((originalPri
                       <div class="pdp-price"><span class="pdp-current-price" id="currentPrice">₹${displayPrice.toLocaleString('en-IN')}</span>${originalPrice > displayPrice ? `<span class="pdp-original-price">₹${originalPrice.toLocaleString('en-IN')}</span>` : ''}${discountPercentage > 0 ? `<span class="pdp-discount">${discountPercentage}% Off</span>` : ''}</div>
                     </div>
                     <div class="pdp-size">
-                        <div class="pdp-size-header"><h3>${allSizes[0]?.type || 'Size'}</h3>${allSizes[0]?.type === 'Size' ? '<span class="pdp-size-chart" onclick="showSizeChart()">Size Chart ▾</span>' : ''}</div>
+                        <div class="pdp-size-header"><h3>${allSizes[0]?.type || 'Size'}</h3>${allSizes[0]?.type === 'Size' ? '<span class="pdp-size-chart" onclick="showSizeChart()"></span>' : ''}</div>
                         <div class="pdp-size-options">${[...new Map(allSizes.map(s => [s.value, s])).values()].map(s => `<button class="pdp-size-btn ${s.stock > 0 ? '' : 'disabled'}" data-variant-id="${s.id || ''}" data-price="${s.price}" onclick="selectVariant(this, '${s.price}', '${s.id || ''}', '${s.type || ''}')" ${s.stock > 0 ? '' : 'disabled'}>${s.value}</button>`).join('')}</div>
                         <div class="pdp-size-error" style="display: none;">Please select a size</div>
                     </div>

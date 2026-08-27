@@ -7151,3 +7151,59 @@ body {
 .web-header {
     background: transparent !important;
 }
+/* FIX: Header ke niche sirf ONE line */
+.site-header {
+    border-bottom: none !important;
+}
+
+.web-header {
+    border-bottom: 1px solid #DCC0A8 !important;
+}
+/* MOBILE HERO BANNER FIX */
+@media (max-width: 768px) {
+
+    .hero-section {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .hero-slider {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        position: relative !important;
+    }
+
+    .hero-slider .slide {
+        position: relative !important;
+        width: 100% !important;
+        height: auto !important;
+        display: none !important;
+        opacity: 0 !important;
+    }
+
+    .hero-slider .slide.active {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        opacity: 1 !important;
+    }
+
+    .hero-slider .slide-img-figma {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        display: block !important;
+        object-fit: contain !important;
+    }
+}

@@ -7,11 +7,11 @@
 <meta name="viewport"
 content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-<title>Trending Reels | MAHERA JEWEL</title>
+<title>Trending Reels | Her-Ovia</title>
 
 <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
 <link rel="stylesheet" href="{{ asset('mobile/trends.css') }}">
-<link rel="icon" type="image/jpeg" href="{{ asset('images/mjlogo.jpeg') }}">
+<link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
