@@ -7,7 +7,7 @@
     <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
     <meta name="description" content="View and manage your saved items. Shop your favorite clothes anytime.">
     <meta name="robots" content="noindex, follow">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <link rel="preload" href="{{ asset('mobile/style.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="{{ asset('mobile/style.css') }}"></noscript>
     <link rel="stylesheet" href="{{ asset('mobile/wishlist.css') }}">

@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
     <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
     <link rel="stylesheet" href="{{ asset('mobile/category-styles.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <style>
         /* Same responsive styles as all-categories page */
         /* Copy the style section from all-categories page here */

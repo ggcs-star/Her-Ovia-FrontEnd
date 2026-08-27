@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Order Details | Her-Ovia</title>
     <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #440C2C;
@@ -26,6 +25,8 @@
             --hero-text-muted: #765F58;
             --hero-border: #DCC0A8;
             --hero-white: #FCF9F6;
+            --font-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-heading: Georgia, "Times New Roman", serif;
         }
         * {
             margin: 0;
@@ -34,7 +35,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background: #ffffff;
             color: var(--hero-text);
         }
@@ -44,7 +45,7 @@
             text-align: center;
             padding: 10px 20px;
             font-size: 12px;
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif
             width: 100%;
         }
         .site-header {
@@ -95,7 +96,7 @@
             font-weight: 500 !important;
             text-transform: uppercase !important;
             letter-spacing: 0.8px !important;
-            font-family: 'Inter', sans-serif !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
         }
         .nav-item:hover {
             color: var(--hero-burgundy) !important;
@@ -123,7 +124,7 @@
             background: transparent !important;
             font-size: 13px !important;
             outline: none !important;
-            font-family: 'Inter', sans-serif !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
             height: 100% !important;
         }
         .search-box input::placeholder {
@@ -165,7 +166,7 @@
             text-decoration: none !important;
             font-size: 12px !important;
             font-weight: 500 !important;
-            font-family: 'Inter', sans-serif !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
         }
         .action-link:hover {
             color: var(--hero-burgundy) !important;
@@ -195,7 +196,7 @@
             align-items: center !important;
             justify-content: center !important;
             padding: 0 4px !important;
-            font-family: 'Inter', sans-serif !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         .header-container {
             display: flex !important;
@@ -243,7 +244,7 @@
             padding: 6px 0 !important;
             min-width: 0 !important;
             width: 100% !important;
-            font-family: 'Inter', sans-serif !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         .search-wrapper input::placeholder {
             color: #999 !important;
@@ -336,7 +337,7 @@
             font-size: 14px !important;
             cursor: pointer !important;
             border-bottom: 1px solid #f0ece8 !important;
-            font-family: 'Inter', sans-serif !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             color: #2E1B1B !important;
             transition: background 0.15s ease !important;
         }
@@ -441,7 +442,7 @@
             font-weight: 700;
             font-size: 16px;
             color: var(--hero-text);
-            font-family: 'Inter', sans-serif;
+            font-family: Georgia, "Times New Roman", serif;
         }
         .card-body {
             padding: 18px;
@@ -473,7 +474,7 @@
             -webkit-background-clip: text;
             color: transparent;
             letter-spacing: -0.3px;
-            font-family: 'Inter', sans-serif;
+            font-family: Georgia, "Times New Roman", serif;
         }
         @media (min-width: 768px) {
             .order-id {
@@ -493,14 +494,14 @@
             font-weight: 600;
             border: 1px solid var(--hero-border);
             color: var(--hero-text);
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         .order-total {
             font-size: 32px;
             font-weight: 800;
             color: var(--hero-text);
             letter-spacing: -1px;
-            font-family: 'Inter', sans-serif;
+            font-family: Georgia, "Times New Roman", serif;
         }
         @media (min-width: 768px) {
             .order-total {
@@ -575,14 +576,14 @@
             font-size: 12px;
             color: var(--hero-text);
             white-space: nowrap;
-            font-family: 'Inter', sans-serif;
+            font-family: Georgia, "Times New Roman", serif;
         }
         .step-date {
             font-size: 10px;
             color: var(--hero-text-muted);
             margin-top: 6px;
             white-space: nowrap;
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         @media (max-width: 640px) {
             .step-label-text {
@@ -635,13 +636,13 @@
             line-height: 1.4;
             color: var(--hero-text);
             margin-bottom: 5px;
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         .product-variant {
             font-size: 12px;
             color: var(--hero-text-muted);
             margin-bottom: 8px;
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         .price-quantity {
             display: flex;
@@ -654,7 +655,7 @@
             font-weight: 800;
             font-size: 16px;
             color: var(--hero-burgundy);
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         .quantity-badge {
             background: #ffffff;
@@ -663,7 +664,7 @@
             border-radius: 30px;
             font-size: 12px;
             font-weight: 500;
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         .price-detail-row {
             display: flex;
@@ -671,7 +672,7 @@
             padding: 10px 0;
             border-bottom: 1px solid var(--hero-border);
             font-size: 13px;
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             color: var(--hero-text);
         }
         .price-detail-row.total {
@@ -691,7 +692,7 @@
             border-radius: 16px;
             padding: 14px;
             border: 1px solid var(--hero-border);
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         .action-buttons-group {
             display: flex;
@@ -717,7 +718,7 @@
             cursor: pointer;
             transition: all 0.2s;
             border: none;
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         .btn-primary {
             background: var(--hero-burgundy);
@@ -757,7 +758,7 @@
             font-size: 12px;
             color: var(--hero-burgundy);
             margin-top: 14px;
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         .status-badge-sm {
             display: inline-flex;
@@ -767,7 +768,7 @@
             border-radius: 40px;
             font-size: 12px;
             font-weight: 600;
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         .loader-container {
             display: flex;
