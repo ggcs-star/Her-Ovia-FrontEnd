@@ -54,7 +54,6 @@ class AllCategoriesPage {
             this.apiCache.set(cacheKey, { data, timestamp: Date.now() });
             return data;
         } catch (error) {
-            console.error('Fetch error:', error);
             return null;
         }
     }
@@ -63,7 +62,6 @@ class AllCategoriesPage {
         this.showSkeletonLoader();
         this.showSidebarSkeleton();
         
-        // 🔥 SABHI API CALLS EK SAATH PARALLEL MEIN
         const [settingsData, categoriesData] = await Promise.all([
             this.fetchAppSettings(),
             this.fetchCategories()
@@ -117,14 +115,7 @@ class AllCategoriesPage {
                 "Explore premium jewellery categories at MAHERA JEWEL"
             );
         } else {
-            this.allCategories = [
-                { id: 1, name: "Jewellery", image_url: null, children: [] },
-                { id: 2, name: "Necklaces", image_url: null, children: [] },
-                { id: 3, name: "Earrings", image_url: null, children: [] },
-                { id: 4, name: "Maang Tikka", image_url: null, children: [] },
-                { id: 5, name: "Bridal Sets", image_url: null, children: [] },
-                { id: 6, name: "Bangles", image_url: null, children: [] }
-            ];
+            this.allCategories = [];
         }
         return data;
     }
@@ -204,30 +195,27 @@ class AllCategoriesPage {
 
             header.innerHTML = `
                 <div class="web-header">
-                    <div class="top-bar">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
                     <div class="main-header">
                         <div class="logo-area">
                             <a href="/" class="logo">
-                                <img src="${this.appSettings?.header_logo || 'https://placehold.co/120x40?text=LOGO'}" alt="MAHERA JEWEL Logo" id="site-logo" class="site-logo" onerror="this.src='https://placehold.co/120x40?text=LOGO'">
+                                <img src="${this.appSettings?.header_logo || ''}" alt="MAHERA JEWEL Logo" id="site-logo" class="site-logo" onerror="this.style.display='none'">
                             </a>
                             <nav class="nav-menu" id="navMenu">${categoriesHtml}</nav>
                         </div>
-                       
-                            <div class="search-area">
-                                <div class="search-box" style="position:relative;">
-                                    <input type="text" id="web-search-input" placeholder="Search for " autocomplete="off" aria-label="Search products">
-                                    <button class="search-icon-btn" aria-label="Search">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <circle cx="10" cy="10" r="7"/>
-                                            <line x1="21" y1="21" x2="15" y2="15"/>
-                                        </svg>
-                                    </button>
-                                    <div id="web-search-suggestions" class="web-search-suggestions" style="display:none;"></div>
-                                </div>
-                            
+                        <div class="search-area">
+                            <div class="search-box" style="position:relative;">
+                                <input type="text" id="web-search-input" placeholder="Search for " autocomplete="off" aria-label="Search products">
+                                <button class="search-icon-btn" aria-label="Search">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="10" cy="10" r="7"/>
+                                        <line x1="21" y1="21" x2="15" y2="15"/>
+                                    </svg>
+                                </button>
+                                <div id="web-search-suggestions" class="web-search-suggestions" style="display:none;"></div>
+                            </div>
                         </div>
                         <div class="header-actions">
-                             <a href="javascript:void(0)" class="action-link" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }">
+                            <a href="javascript:void(0)" class="action-link" onclick="if(!localStorage.getItem('token')) { showLoginPopup(); } else { window.location.href='/profile'; }">
                                 <svg class="header-icon" viewBox="0 0 24 24" fill="none">
                                     <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
                                     <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2"/>
@@ -252,7 +240,7 @@ class AllCategoriesPage {
                                 </span>
                                 Cart
                             </a>                        
-                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="all-categories-popup" id="allCategoriesPopup" style="display:none; position:absolute; top:100%; left:0; width:100%; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:1000; border-top:1px solid #f0f0f0;"></div>
@@ -269,7 +257,7 @@ class AllCategoriesPage {
                         <div class="logo-search-container">
                             <div class="header-logo">
                                 <a href="/" aria-label="Home">
-                                    <img src="${this.appSettings?.header_logo || '/images/logo.jpg'}" alt="MAHERA JEWEL Logo" class="site-logo" onerror="this.src='https://via.placeholder.com/100x35?text=MAHERA'">
+                                    <img src="${this.appSettings?.header_logo || ''}" alt="MAHERA JEWEL Logo" class="site-logo" onerror="this.style.display='none'">
                                 </a>
                             </div>
                             <div class="search-wrapper">
@@ -307,9 +295,9 @@ class AllCategoriesPage {
             const renderSuggestions = (products) => {
                 const html = products.length ? 
                     products.map(p => `<div class="web-suggestion-item" role="button" tabindex="0" onclick="window.location.href='/product/${p.slug}'" onkeypress="if(event.key==='Enter') window.location.href='/product/${p.slug}'">${escapeHtml(p.name)}</div>`).join('') :
-                    `<div class="web-suggestion-item">No results found</div>`;
+                    '';
                 suggestionsBox.innerHTML = html;
-                suggestionsBox.style.display = "block";
+                suggestionsBox.style.display = products.length ? "block" : "none";
             };
 
             input.addEventListener("keydown", function(e) {
@@ -392,7 +380,7 @@ class AllCategoriesPage {
         if (!popup) return;
 
         if (!this.allCategories?.length) {
-            popup.innerHTML = '<div style="padding:40px; text-align:center;">Loading categories...</div>';
+            popup.innerHTML = '';
             return;
         }
 
@@ -494,6 +482,12 @@ class AllCategoriesPage {
 
         const fallbackImage = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
         const categoriesToShow = this.userCategories.length ? this.userCategories : this.allCategories;
+
+        if (!categoriesToShow || !categoriesToShow.length) {
+            container.innerHTML = '';
+            return;
+        }
+
         const isDesktop = window.innerWidth >= 1024;
 
         if (isDesktop) {
@@ -547,6 +541,11 @@ class AllCategoriesPage {
         if (!sidebar || window.innerWidth < 1024) return;
 
         const categoriesToShow = this.userCategories.length ? this.userCategories : this.allCategories;
+
+        if (!categoriesToShow || !categoriesToShow.length) {
+            sidebar.innerHTML = '';
+            return;
+        }
 
         sidebar.innerHTML = categoriesToShow.map(cat => {
             const hasChildren = cat.children?.length;

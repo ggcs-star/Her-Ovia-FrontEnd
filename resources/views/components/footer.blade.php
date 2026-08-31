@@ -55,7 +55,7 @@
             <div class="footer-col">
     <h4>Join Us</h4>
     <div class="social-links">
-        <a href="https://www.instagram.com/shop.maherajewels/" target="_blank" rel="noopener noreferrer" class="social-link-item" style="text-decoration: none; color: inherit;">
+        <a href="javascript:void(0);" class="social-link-item" style="text-decoration: none; color: inherit;">
             <div class="social-icon">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
@@ -65,7 +65,7 @@
             </div>
             <span>Instagram</span>
         </a>
-        <a href="https://www.facebook.com/shop.maherajewels" target="_blank" rel="noopener noreferrer" class="social-link-item" style="text-decoration: none; color: inherit;">
+        <a href="javascript:void(0);" class="social-link-item" style="text-decoration: none; color: inherit;">
             <div class="social-icon">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
@@ -73,7 +73,7 @@
             </div>
             <span>Facebook</span>
         </a>
-        <a href="https://www.youtube.com/@MaheraJewels" target="_blank" rel="noopener noreferrer" class="social-link-item" style="text-decoration: none; color: inherit;">
+        <a href="javascript:void(0);" class="social-link-item" style="text-decoration: none; color: inherit;">
             <div class="social-icon">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
@@ -82,7 +82,7 @@
             </div>
             <span>YouTube</span>
         </a>
-        <a href="https://www.pinterest.com/maherajewels/" target="_blank" rel="noopener noreferrer" class="social-link-item" style="text-decoration: none; color: inherit;">
+        <a href="javascript:void(0);" class="social-link-item" style="text-decoration: none; color: inherit;">
             <div class="social-icon">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M8 3a5 5 0 0 0-5 5c0 7 9 13 9 13s9-6 9-13a5 5 0 0 0-5-5z"></path>
@@ -124,7 +124,7 @@
         </div>
 
         <div class="footer-bottom">
-            <p>© <span id="footerYear"></span> MAHERA JEWEL. All Rights Reserved.</p>
+            <p>© <span id="footerYear"></span> Her-Ovia. All Rights Reserved.</p>
         </div>
 
     </div>

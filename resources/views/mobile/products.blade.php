@@ -2542,7 +2542,222 @@ async function fetchBestSellerProducts() {
             });
         }, 500);
     }
-    
+    async function loadProductDesktopHeader() {
+    const navMenu = document.getElementById('productNavMenu');
+    const popup = document.getElementById('productAllCategoriesPopup');
+
+    if (!navMenu) return;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/categories`);
+        const data = await res.json();
+
+        if (!data.success || !data.data) return;
+
+        const categories = data.data.slice(0, 5);
+
+        navMenu.innerHTML = categories.map(cat => {
+
+            let categorySlug = cat.name
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, '');
+
+            let url = `/collection/${categorySlug}`;
+
+            if (
+                categorySlug === "trending" ||
+                categorySlug === "bestsellers"
+            ) {
+                url = "/top-selling";
+            }
+
+            return `
+                <a
+                    href="${url}"
+                    class="nav-item"
+                    data-cat-id="${cat.id}"
+                    data-cat-name="${cat.name}">
+                    ${cat.name.toUpperCase()}
+                </a>
+            `;
+        }).join('');
+
+        if (!popup) return;
+
+        const navItems = document.querySelectorAll(
+            '#productNavMenu .nav-item'
+        );
+
+        let hideTimeout;
+
+        navItems.forEach(item => {
+
+            item.addEventListener('mouseenter', () => {
+
+                if (hideTimeout) {
+                    clearTimeout(hideTimeout);
+                }
+
+                renderProductAllCategoriesPopup(data.data);
+
+                popup.style.display = 'block';
+            });
+
+            item.addEventListener('mouseleave', () => {
+
+                hideTimeout = setTimeout(() => {
+                    popup.style.display = 'none';
+                }, 200);
+
+            });
+
+        });
+
+        popup.addEventListener('mouseenter', () => {
+
+            if (hideTimeout) {
+                clearTimeout(hideTimeout);
+            }
+
+            popup.style.display = 'block';
+
+        });
+
+        popup.addEventListener('mouseleave', () => {
+
+            hideTimeout = setTimeout(() => {
+                popup.style.display = 'none';
+            }, 200);
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Product header category error:',
+            error
+        );
+
+    }
+}
+function renderProductAllCategoriesPopup(categories) {
+    const popup = document.getElementById('productAllCategoriesPopup');
+    if (!popup) return;
+
+    const categoriesWithSub = categories.filter(cat =>
+        cat.children && cat.children.length > 0
+    );
+
+    if (!categoriesWithSub.length) {
+        popup.innerHTML = '';
+        return;
+    }
+
+    const columnSize = Math.ceil(categoriesWithSub.length / 5);
+    let html = `
+        <div style="
+            max-width:1200px;
+            margin:0 auto;
+            padding:30px;
+            display:grid;
+            grid-template-columns:repeat(5,1fr);
+            gap:25px;
+        ">
+    `;
+
+    for (let i = 0; i < 5; i++) {
+        const column = categoriesWithSub.slice(i * columnSize, (i + 1) * columnSize);
+        if (!column.length) continue;
+
+        html += `<div>`;
+
+        column.forEach(cat => {
+            html += `
+                <div style="margin-bottom:20px;">
+                    <h3 style="
+                        font-size:14px;
+                        font-weight:700;
+                        color:#282c3f;
+                        margin-bottom:12px;
+                        border-bottom:2px solid #ff3f6c;
+                        padding-bottom:6px;
+                        display:inline-block;
+                    ">
+                        ${cat.name}
+                    </h3>
+                    <ul style="list-style:none; padding:0; margin-top:12px;">
+            `;
+
+            if (cat.children) {
+                cat.children.slice(0, 8).forEach(sub => {
+                    let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                    let productUrl = `/collection/${subSlug}`;
+                    
+                    // Trending or Bestsellers check
+                    if (subSlug === "trending") {
+                        productUrl = "/top-selling";
+                    } else if (subSlug === "bestsellers") {
+                        productUrl = "/best-selling";
+                    }
+
+                    html += `
+                        <li style="margin-bottom:8px;">
+                            <a
+                                href="${productUrl}"
+                                style="
+                                    text-decoration:none;
+                                    color:#696b79;
+                                    font-size:13px;
+                                    display:block;
+                                    padding:4px 0;
+                                    transition:color 0.2s;
+                                "
+                                onmouseover="this.style.color='#ff3f6c'"
+                                onmouseout="this.style.color='#696b79'"
+                            >
+                                ${sub.name}
+                            </a>
+                        </li>
+                    `;
+                });
+            }
+
+            if (cat.children && cat.children.length > 8) {
+                let slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                let productUrl = `/collection/${slug}`;
+                if (slug === "trending") productUrl = "/top-selling";
+                if (slug === "bestsellers") productUrl = "/best-selling";
+
+                html += `
+                    <li style="margin-top:5px;">
+                        <a
+                            href="${productUrl}"
+                            style="
+                                color:#ff3f6c;
+                                font-size:11px;
+                                font-weight:600;
+                                text-decoration:none;
+                            "
+                        >
+                            +${cat.children.length - 8} more →
+                        </a>
+                    </li>
+                `;
+            }
+
+            html += `
+                    </ul>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+    }
+
+    html += `</div>`;
+    popup.innerHTML = html;
+}
     document.addEventListener('DOMContentLoaded', function() {
     updateCartCountBadge();
     
@@ -2551,26 +2766,27 @@ async function fetchBestSellerProducts() {
         window.app.renderBottomNav();
     }
     
-    fetch(`${API_BASE_URL}/categories`)
-        .then(r => r.json())
-        .then(data => {
-            if (data.success && data.data) {
-                const navMenu = document.getElementById('productNavMenu');
-                if (navMenu) {
-                    const categories = data.data.slice(0, 5);
-                    navMenu.innerHTML = categories.map(cat => {
-                        let categorySlug = cat.name.toLowerCase()
-                            .replace(/[^a-z0-9]+/g, '-')
-                            .replace(/^-|-$/g, '');
-                        let url = `/collection/${categorySlug}`;
-                        if (categorySlug === "trending" || categorySlug === "bestsellers") {
-                            url = "/top-selling";
-                        }
-                        return `<a href="${url}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`;
-                    }).join('');
-                }
-            }
-        });
+    // fetch(`${API_BASE_URL}/categories`)
+    //     .then(r => r.json())
+    //     .then(data => {
+    //         if (data.success && data.data) {
+    //             const navMenu = document.getElementById('productNavMenu');
+    //             if (navMenu) {
+    //                 const categories = data.data.slice(0, 5);
+    //                 navMenu.innerHTML = categories.map(cat => {
+    //                     let categorySlug = cat.name.toLowerCase()
+    //                         .replace(/[^a-z0-9]+/g, '-')
+    //                         .replace(/^-|-$/g, '');
+    //                     let url = `/collection/${categorySlug}`;
+    //                     if (categorySlug === "trending" || categorySlug === "bestsellers") {
+    //                         url = "/top-selling";
+    //                     }
+    //                     return `<a href="${url}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`;
+    //                 }).join('');
+    //             }
+    //         }
+    //     });
+    loadProductDesktopHeader();
     
     fetch(`${API_BASE_URL}/app-settings`)
     .then(r => r.json())

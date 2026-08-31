@@ -334,15 +334,13 @@ class RapidRetailsEngine {
     if (!popup) return;
     
     if (!this.allCategories || this.allCategories.length === 0) {
-        popup.innerHTML = '<div style="padding:40px; text-align:center; color:#999;">Loading categories...</div>';
+        popup.innerHTML = '';
         return;
     }
     
-    // 🔥 ALL CATEGORIES WITH CHILDREN
     const categoriesWithSub = this.allCategories.filter(cat => cat.children && cat.children.length > 0);
     
     if (categoriesWithSub.length === 0) {
-        // 🔥 AGAR KOI SUB-CATEGORY NAHI TO SIRF NAMES SHOW KARO
         let html = `<div style="max-width:1200px; margin:0 auto; padding:30px; display:grid; grid-template-columns:repeat(4,1fr); gap:20px;">`;
         this.allCategories.slice(0, 8).forEach(cat => {
             let slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -356,7 +354,6 @@ class RapidRetailsEngine {
         return;
     }
     
-    // 🔥 SUB-CATEGORIES KE SAATH SHOW KARO
     const columnSize = Math.ceil(categoriesWithSub.length / 5);
     const columns = [];
     for (let i = 0; i < 5; i++) {
@@ -373,13 +370,34 @@ class RapidRetailsEngine {
                     <h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">${cat.name}</h3>
                     <ul style="list-style:none; padding:0; margin-top:12px;">`;
                 if (cat.children && cat.children.length > 0) {
-                    cat.children.slice(0, 6).forEach(sub => {
+                    cat.children.slice(0, 8).forEach(sub => {
                         let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                        html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px;">${sub.name}</a></li>`;
+                        let productUrl = `/collection/${subSlug}`;
+                        if (subSlug === "trending") {
+                            productUrl = "/top-selling";
+                        } else if (subSlug === "bestsellers") {
+                            productUrl = "/best-selling";
+                        }
+                        html += `<li style="margin-bottom:8px;">
+                            <a href="${productUrl}" 
+                               style="text-decoration:none; color:#696b79; font-size:13px; display:block; padding:4px 0; transition:color 0.2s;"
+                               onmouseover="this.style.color='#ff3f6c'"
+                               onmouseout="this.style.color='#696b79'">
+                                ${sub.name}
+                            </a>
+                        </li>`;
                     });
-                    if (cat.children.length > 6) {
+                    if (cat.children.length > 8) {
                         let slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                        html += `<li style="margin-top:5px;"><a href="/collection/${slug}" style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">+${cat.children.length - 6} more →</a></li>`;
+                        let productUrl = `/collection/${slug}`;
+                        if (slug === "trending") productUrl = "/top-selling";
+                        if (slug === "bestsellers") productUrl = "/best-selling";
+                        html += `<li style="margin-top:5px;">
+                            <a href="${productUrl}" 
+                               style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">
+                                +${cat.children.length - 8} more →
+                            </a>
+                        </li>`;
                     }
                 }
                 html += `</ul></div>`;

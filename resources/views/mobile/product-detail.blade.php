@@ -11,9 +11,16 @@
     <link rel="stylesheet" href="{{ asset('mobile/product-styles.css') }}">
 </head>
 <body class="product-detail-page" data-page="product-detail" data-slug="{{ request()->route('slug') }}">
+ <div class="desktop-sticky-header">
 
-    <div class="herovia-announcement">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
+    <div class="herovia-announcement">
+        Free Shipping on Orders Above ₹999 | Use Code: FIRST50
+    </div>
+
     <header class="site-header" id="site-header"></header>
+
+</div>
+
 
     <main class="page-content">
         <div class="container web-product-wrapper">

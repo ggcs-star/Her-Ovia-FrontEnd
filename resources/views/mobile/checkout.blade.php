@@ -10,8 +10,16 @@
     <link rel="stylesheet" href="{{ asset('mobile/checkout.css') }}">
 </head>
 <body class="checkout-page">
-<div class="herovia-announcement">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
-<header class="site-header" id="site-header"></header>
+ <div class="desktop-sticky-header">
+
+    <div class="herovia-announcement">
+        Free Shipping on Orders Above ₹999 | Use Code: FIRST50
+    </div>
+
+    <header class="site-header" id="site-header"></header>
+
+</div>
+
 <main class="checkout-content">
     <div class="checkout-container">
         <h1 class="page-title">Checkout</h1>

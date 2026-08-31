@@ -11,8 +11,16 @@
     
 </head>
 <body class="cart-page" data-page="cart">
-<div class="herovia-announcement">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
-<header class="site-header" id="site-header"></header>
+ <div class="desktop-sticky-header">
+
+    <div class="herovia-announcement">
+        Free Shipping on Orders Above ₹999 | Use Code: FIRST50
+    </div>
+
+    <header class="site-header" id="site-header"></header>
+
+</div>
+
 
 <!-- <div class="safety-alert">
     <i>🔒</i> A gentle reminder to stay alert against prevalent fraudulent practices. MAHERA JEWEL will never ask for OTPs, payments via unofficial links, or personal details for any contests or promotions.

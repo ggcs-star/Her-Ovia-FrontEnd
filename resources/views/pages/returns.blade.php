@@ -185,7 +185,15 @@
     </style>
 </head>
 <body data-page="returns">
+     <div class="desktop-sticky-header">
+
+    <div class="herovia-announcement">
+        Free Shipping on Orders Above ₹999 | Use Code: FIRST50
+    </div>
+
     <header class="site-header" id="site-header"></header>
+
+</div>
     
     <main class="page-content">
         <div class="page-container">
@@ -194,7 +202,7 @@
             <div class="page-header">
                 <h1>Returns & Refund Policy</h1>
                 <p>Effective Date: 2026</p>
-                <p><a href="https://www.maherajewels.com" style="color: #666; text-decoration: none;">www.maherajewels.com</a></p>
+                <p><a href="https://heroviafront.jagods.in" style="color: #666; text-decoration: none;">heroviafront.jagods.in</a></p>
             </div>
             
             <div class="policy-content">
@@ -237,7 +245,7 @@
                     <p>Follow these steps to request a return:</p>
                     <ol>
                         <li>Contact us within 3 days of delivery at:<br>
-                        <strong>Email:</strong> info@maherajewels.com<br>
+                        <strong>Email:</strong> info@herovia.com<br>
                         <strong>Phone:</strong> +91 9653270168 (Mon–Sat, 10AM – 6:30PM)</li>
                         <li>Share your Order ID and a clear photograph of the product, packaging, and intact tag.</li>
                         <li>Our team will review your request within 1–2 business days and confirm eligibility.</li>
@@ -285,7 +293,7 @@
                     <p>For any return or refund queries, reach us at:</p>
                     
                     <div class="contact-box">
-                        <p><strong>📧 Email:</strong> info@maherajewels.com</p>
+                        <p><strong>📧 Email:</strong> info@herovia.com</p>
                         <p><strong>📞 Phone:</strong> +91 9653270168</p>
                         <p><strong>🕐 Hours:</strong> Mon–Sat, 10AM – 6:30PM</p>
                         <p><strong>📍 Registered Address:</strong> 29th Floor, 2901 Siddhi Samarpan, Jaywant Sawant Marg, Dahisar West, Mumbai, Maharashtra, 400 068.</p>
