@@ -68,9 +68,15 @@
 
 <div id="real-content" style="display: none;">
 
-    <div class="herovia-announcement">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
+   <div class="desktop-sticky-header">
+
+    <div class="herovia-announcement">
+        Free Shipping on Orders Above ₹999 | Use Code: FIRST50
+    </div>
 
     <header class="site-header" id="site-header"></header>
+
+</div>
 
     <main class="page-content">
 

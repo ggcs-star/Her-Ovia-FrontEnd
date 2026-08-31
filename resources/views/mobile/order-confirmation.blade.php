@@ -882,11 +882,43 @@
 .logo a img {
     display: block !important;
 }
+
+@media screen and (min-width: 1025px) {
+
+    .desktop-sticky-header {
+        position: sticky !important;
+        top: 0 !important;
+        width: 100% !important;
+        z-index: 999999 !important;
+    }
+
+    .herovia-announcement {
+        position: relative !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    .site-header {
+        position: relative !important;
+        top: auto !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+}
     </style>
 </head>
 <body>
-    <div class="herovia-announcement">Free Shipping on Orders Above ₹999 | Use Code: FIRST50</div>
+    <div class="desktop-sticky-header">
+
+    <div class="herovia-announcement">
+        Free Shipping on Orders Above ₹999 | Use Code: FIRST50
+    </div>
+
     <header class="site-header" id="site-header"></header>
+
+</div>
+
     <div class="order-app">
         <div class="order-container">
             <div id="order-root" class="order-grid">
@@ -1044,12 +1076,186 @@
                     });
             }
         }
-       function setupAllCategoriesPopup() {
+      function setupAllCategoriesPopup() {
+
+    const popup = document.getElementById('allCategoriesPopup');
+    const navItems = document.querySelectorAll('#navMenu .nav-item');
+
+    if (!popup || !navItems.length) return;
+
+    let hideTimeout;
+
+    navItems.forEach(item => {
+
+        item.addEventListener('mouseenter', async function () {
+
+            if (hideTimeout) {
+                clearTimeout(hideTimeout);
+            }
+
+            try {
+
+                const res = await fetch(`${API_BASE_URL}/categories`);
+                const data = await res.json();
+
+                if (!data.success || !data.data) return;
+
+                renderAllCategoriesPopup(data.data);
+
+                popup.style.display = 'block';
+
+            } catch (error) {
+
+                console.error(
+                    'Category popup error:',
+                    error
+                );
+
+            }
+
+        });
+
+        item.addEventListener('mouseleave', function () {
+
+            hideTimeout = setTimeout(() => {
+                popup.style.display = 'none';
+            }, 200);
+
+        });
+
+    });
+
+    popup.addEventListener('mouseenter', function () {
+
+        if (hideTimeout) {
+            clearTimeout(hideTimeout);
+        }
+
+        popup.style.display = 'block';
+
+    });
+
+    popup.addEventListener('mouseleave', function () {
+
+        hideTimeout = setTimeout(() => {
+            popup.style.display = 'none';
+        }, 200);
+
+    });
+}
+    function renderAllCategoriesPopup(categories) {
+
+    const popup = document.getElementById('allCategoriesPopup');
+
+    if (!popup) return;
+
+    const categoriesWithSub = categories.filter(cat =>
+        cat.children &&
+        cat.children.length > 0
+    );
+
+    if (!categoriesWithSub.length) {
+
+        popup.innerHTML = `
+            <div style="
+                padding:40px;
+                text-align:center;
+                color:#999;
+            ">
+                No categories available
+            </div>
+        `;
+
         return;
     }
-    function renderAllCategoriesPopup() {
-        return;
+
+    const columnSize = Math.ceil(
+        categoriesWithSub.length / 5
+    );
+
+    let html = `
+        <div style="
+            max-width:1200px;
+            margin:0 auto;
+            padding:30px;
+            display:grid;
+            grid-template-columns:repeat(5,1fr);
+            gap:25px;
+        ">
+    `;
+
+    for (let i = 0; i < 5; i++) {
+
+        const column = categoriesWithSub.slice(
+            i * columnSize,
+            (i + 1) * columnSize
+        );
+
+        if (!column.length) continue;
+
+        html += `<div>`;
+
+        column.forEach(cat => {
+
+            html += `
+                <div style="margin-bottom:20px;">
+
+                    <h3 style="
+                        font-size:14px;
+                        font-weight:700;
+                        color:#282c3f;
+                        margin-bottom:12px;
+                        border-bottom:2px solid #ff3f6c;
+                        padding-bottom:6px;
+                        display:inline-block;
+                    ">
+                        ${cat.name}
+                    </h3>
+
+                    <ul style="
+                        list-style:none;
+                        padding:0;
+                        margin:12px 0 0;
+                    ">
+            `;
+
+            if (cat.children) {
+
+                cat.children.slice(0, 6).forEach(sub => {
+
+                    html += `
+                        <li style="margin-bottom:8px;">
+                            <a
+                                href="/category/${sub.id}"
+                                style="
+                                    text-decoration:none;
+                                    color:#696b79;
+                                    font-size:13px;
+                                "
+                            >
+                                ${sub.name}
+                            </a>
+                        </li>
+                    `;
+
+                });
+
+            }
+
+            html += `
+                    </ul>
+                </div>
+            `;
+
+        });
+
+        html += `</div>`;
     }
+
+    html += `</div>`;
+
+    popup.innerHTML = html;
+}
         function initWebSearchDropdown() {
             const input = document.getElementById("web-search-input");
             let box = document.getElementById("web-search-suggestions");

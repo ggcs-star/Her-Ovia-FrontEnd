@@ -256,7 +256,16 @@
     </style>
 </head>
 <body data-page="shipping">
+     <div class="desktop-sticky-header">
+
+    <div class="herovia-announcement">
+        Free Shipping on Orders Above ₹999 | Use Code: FIRST50
+    </div>
+
     <header class="site-header" id="site-header"></header>
+
+</div>
+
     
     <main class="page-content">
         <div class="page-container">
@@ -265,7 +274,7 @@
             <div class="page-header">
                 <h1>Shipping Policy</h1>
                 <p>Effective Date: 2026</p>
-                <p><a href="https://www.maherajewels.com" style="color: #666; text-decoration: none;">www.maherajewels.com</a></p>
+                <p><a href="https://heroviafront.jagods.in" style="color: #666; text-decoration: none;">heroviafront.jagods.in</a></p>
             </div>
             
             <div class="policy-content">
@@ -310,7 +319,7 @@
                 <div class="policy-section">
                     <h2>4. Shipment Tracking</h2>
                     <p>Once your order is dispatched, you will receive a tracking number via email. You can use this to monitor your shipment’s status in real time.</p>
-                    <p>If you do not receive a tracking email within 3 business days of placing your order, please contact us at info@maherajewels.com.</p>
+                    <p>If you do not receive a tracking email within 3 business days of placing your order, please contact us at info@herovia.com.</p>
                 </div>
                 
                 <div class="policy-section">
@@ -335,7 +344,7 @@
                     <p>We accept exchanges within 3 days of delivery for items that are unused, unworn, and in their original packaging with all tags intact. We do not offer refunds, except in verified cases of damage or incorrect fulfilment.</p>
                     <p>To initiate an exchange, please contact us within 3 days of delivery at:</p>
                     <ul>
-                        <li><strong>Email:</strong> info@maherajewels.com</li>
+                        <li><strong>Email:</strong> info@herovia.com</li>
                         <li><strong>Phone:</strong> +91 9653270168 (Mon–Sat, 10AM – 6:30PM)</li>
                     </ul>
                     <p>Shipping costs for exchanges are borne by the customer, unless the item received was defective or incorrect.</p>
@@ -343,7 +352,7 @@
                 
                 <div class="policy-section">
                     <h2>8. Non-Serviceable Areas</h2>
-                    <p>We currently ship to most locations within India and internationally. However, certain remote or restricted locations may not be serviceable by our logistics partners. If your pin code or country is not supported at checkout, please contact us at info@maherajewels.com to explore alternative arrangements.</p>
+                    <p>We currently ship to most locations within India and internationally. However, certain remote or restricted locations may not be serviceable by our logistics partners. If your pin code or country is not supported at checkout, please contact us at info@herovia.com to explore alternative arrangements.</p>
                 </div>
                 
                 <div class="policy-section">
@@ -351,10 +360,10 @@
                     <p>For any shipping-related queries, please reach us at:</p>
                     
                     <div class="contact-box">
-                        <p><strong>📧 Email:</strong> info@maherajewels.com</p>
+                        <p><strong>📧 Email:</strong> info@herovia.com</p>
                         <p><strong>📞 Phone:</strong> +91 9653270168</p>
                         <p><strong>🕐 Hours:</strong> Mon–Sat, 10AM – 6:30PM</p>
-                        <p><strong>🌐 Website:</strong> www.maherajewels.com</p>
+                        <p><strong>🌐 Website:</strong> www.herovia.com</p>
                         <p><strong>📍 Registered Address:</strong> 29th Floor, 2901 Siddhi Samarpan, Jaywant Sawant Marg, Dahisar West, Mumbai, Maharashtra, 400 068.</p>
                     </div>
                 </div>

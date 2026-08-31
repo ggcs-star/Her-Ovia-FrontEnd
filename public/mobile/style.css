@@ -5377,12 +5377,63 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .site-header {
-    background: var(--hero-bg) !important;
-    border-bottom: 1px solid var(--hero-border) !important;
+    background: transparent !important;
+    border: none !important;
     padding: 12px 0 !important;
     width: 100% !important;
 }
+/* ===== HEADER BACKGROUND FIX ===== */
 
+/* Sirf upar ka 12px area cream rahe */
+.site-header {
+    background: linear-gradient(
+        to bottom,
+        var(--hero-bg) 0,
+        var(--hero-bg) 12px,
+        transparent 12px,
+        transparent 100%
+    ) !important;
+}
+
+/* Actual desktop header cream */
+.web-header {
+    background: var(--hero-bg) !important;
+    border-bottom: 1px solid var(--hero-border) !important;
+}
+/* ========================================
+   HEADER - NO WHITE GAPS
+   ======================================== */
+
+.site-header {
+    background: var(--hero-bg) !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+}
+
+.web-header {
+    background: var(--hero-bg) !important;
+    border-bottom: 1px solid var(--hero-border) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+
+.web-header .top-bar {
+    margin: 0 !important;
+}
+
+.web-header .main-header {
+    margin: 0 !important;
+}
+
+/* Header ke turant baad white background */
+.web-header + *,
+.site-header + * {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 .site-header .container {
     padding: 0 40px !important;
     max-width: 100% !important;
@@ -7187,10 +7238,6 @@ h1, h2, h3, h4, h5, h6,
     box-shadow: none !important;
 }
 
-.all-categories-popup {
-    display: none !important;
-}
-
 .main-header {
     background: transparent !important;
 }
@@ -7198,7 +7245,7 @@ h1, h2, h3, h4, h5, h6,
 .web-header {
     background: transparent !important;
 }
-/* FIX: Header ke niche sirf ONE line */
+
 .site-header {
     border-bottom: none !important;
 }
@@ -7206,7 +7253,7 @@ h1, h2, h3, h4, h5, h6,
 .web-header {
     border-bottom: 1px solid #DCC0A8 !important;
 }
-/* MOBILE HERO BANNER FIX */
+
 @media (max-width: 768px) {
 
     .hero-section {
@@ -7253,4 +7300,50 @@ h1, h2, h3, h4, h5, h6,
         display: block !important;
         object-fit: contain !important;
     }
+}
+/* ===== REMOVE CREAM STRIP BELOW DESKTOP HEADER ===== */
+
+@media screen and (min-width: 1025px) {
+    .web-header {
+        background: #F8EEE3 !important;
+        border-bottom: 1px solid #DCC0A8 !important;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    .web-header + * {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        background: #ffffff !important;
+    }
+
+    .page-content {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        background: #ffffff !important;
+    }
+}
+
+@media screen and (min-width: 1025px) {
+
+    .desktop-sticky-header {
+        position: sticky !important;
+        top: 0 !important;
+        width: 100% !important;
+        z-index: 999999 !important;
+    }
+
+    .herovia-announcement {
+        position: relative !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    .site-header {
+        position: relative !important;
+        top: auto !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
 }

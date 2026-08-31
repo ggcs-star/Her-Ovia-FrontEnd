@@ -24,9 +24,18 @@
 </head>
 
 <body data-page="category-detail" data-category-id="{{ $categoryId ?? '' }}">
+ <div class="desktop-sticky-header">
+
+    <div class="herovia-announcement">
+        Free Shipping on Orders Above ₹999 | Use Code: FIRST50
+    </div>
+
+    <header class="site-header" id="site-header"></header>
+
+</div>
 
 <!-- Header -->
-<header class="site-header" id="site-header"></header>
+
 
 <main class="page-content">
     <div class="container">

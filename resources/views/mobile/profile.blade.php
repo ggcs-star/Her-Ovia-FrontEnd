@@ -9,7 +9,16 @@
     <link rel="stylesheet" href="{{ asset('mobile/profile.css') }}">
 </head>
 <body class="profile-page">
+     <div class="desktop-sticky-header">
+
+    <div class="herovia-announcement">
+        Free Shipping on Orders Above ₹999 | Use Code: FIRST50
+    </div>
+
     <header class="site-header" id="site-header"></header>
+
+</div>
+
     
     <main class="profile-content">
         <div class="profile-container" id="profile-container">

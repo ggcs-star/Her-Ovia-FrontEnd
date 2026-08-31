@@ -188,7 +188,16 @@
     </style>
 </head>
 <body data-page="privacy">
+     <div class="desktop-sticky-header">
+
+    <div class="herovia-announcement">
+        Free Shipping on Orders Above ₹999 | Use Code: FIRST50
+    </div>
+
     <header class="site-header" id="site-header"></header>
+
+</div>
+
     
     <main class="page-content">
         <div class="page-container">
@@ -205,7 +214,7 @@
                     <p>This Privacy Policy is published in accordance with the Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data of Information) Rules, 2011 under the Information Technology Act, 2000, and the Digital Personal Data Protection Act, 2023.</p>
                     <p>Please read this Privacy Policy carefully. By using our website or services, you agree and consent to the terms herein. If you do not agree, please do not use our website. You provide your unconditional consent under Section 43A and Section 72A of the Information Technology Act, 2000.</p>
                     <div class="highlight">
-                        <strong>📌 Note:</strong> Maherá Jewels ("we", "us", "our", or "Maherá Jewels") is committed to protecting the privacy of all users ("you", "your") who access, browse, purchase from, or otherwise interact with our website (www.maherajewels.com), mobile applications, or customer service channels.
+                        <strong>📌 Note:</strong> Maherá Jewels ("we", "us", "our", or "Maherá Jewels") is committed to protecting the privacy of all users ("you", "your") who access, browse, purchase from, or otherwise interact with our website (heroviafront.jagods.in), mobile applications, or customer service channels.
                     </div>
                     <p>This Privacy Policy may be amended from time to time. We recommend that you review it regularly. Continued use of our website after any update implies your unconditional acceptance of the revised policy.</p>
                 </div>
@@ -311,7 +320,7 @@
                 
                 <div class="policy-section">
                     <h2>6. User Discretion and Opt-Out</h2>
-                    <p>You provide your information voluntarily. You have the right to withdraw consent at any time by writing to us at info@maherajewels.com. Please note that withdrawing consent may affect your ability to use certain features or services on our website.</p>
+                    <p>You provide your information voluntarily. You have the right to withdraw consent at any time by writing to us at info@herovia.com. Please note that withdrawing consent may affect your ability to use certain features or services on our website.</p>
                     <p>You may also update or correct your Personal Information at any time. Please note that we may retain previous versions of your information in our records.</p>
                 </div>
                 
@@ -362,7 +371,7 @@
                     <p>To file a complaint or share feedback, please contact our Grievance Officer:</p>
                     <div class="contact-box" style="margin-top: 10px;">
                         <p><strong>Grievance Officer:</strong> [To be appointed]</p>
-                        <p><strong>Email:</strong> info@maherajewels.com</p>
+                        <p><strong>Email:</strong> info@herovia.com</p>
                         <p><strong>Phone:</strong> +91 9653270168</p>
                         <p><strong>Response Time:</strong> Within 30 days of receipt of complaint</p>
                     </div>
@@ -390,9 +399,9 @@
                     <p>For any privacy-related queries, concerns, or requests, please reach us at:</p>
                     
                     <div class="contact-box">
-                        <p><strong>📧 Email:</strong> info@maherajewels.com</p>
+                        <p><strong>📧 Email:</strong> info@herovia.com</p>
                         <p><strong>📞 Phone:</strong> +91 9653270168 (Mon–Sat, 10AM – 6PM)</p>
-                        <p><strong>🌐 Website:</strong> www.maherajewels.com</p>
+                        <p><strong>🌐 Website:</strong> heroviafront.jagods.in</p>
                         <p><strong>📍 Address:</strong> 29th Floor, 2901 Siddhi Samarpan, Jaywant Sawant Marg, Dahisar West, Mumbai, Maharashtra, 400 068.</p>
                     </div>
                 </div>
