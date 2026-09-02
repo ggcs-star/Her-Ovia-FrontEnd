@@ -6,8 +6,8 @@
     <title>Checkout | Her-Ovia </title>
     <meta name="robots" content="noindex,nofollow">
     <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/checkout.css') }}">
+    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('mobile/checkout.css') }}?v={{ time() }}">
 </head>
 <body class="checkout-page">
  <div class="desktop-sticky-header">
@@ -177,8 +177,8 @@
 <script>
     window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
 </script>
-<script src="{{ asset('mobile/script.js') }}"></script>
-<script src="{{ asset('mobile/checkout.js') }}"></script>
+<script src="{{ asset('mobile/script.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('mobile/checkout.js') }}?v={{ time() }}"></script>
 <div id="confirmModal" class="confirm-modal" style="display: none;">
     <div class="confirm-modal-overlay"></div>
     <div class="confirm-modal-content">

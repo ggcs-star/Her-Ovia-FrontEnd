@@ -7,8 +7,8 @@
     
     <meta name="robots" content="noindex,nofollow">
     <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/orders.css') }}">
+    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('mobile/orders.css') }}?v={{ time() }}">
 </head>
 <body class="orders-page">
      <div class="desktop-sticky-header">
@@ -40,8 +40,8 @@
     <script>
         window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
     </script>
-    <script src="{{ asset('mobile/script.js') }}"></script>
-    <script src="{{ asset('mobile/orders.js') }}"></script>
+    <script src="{{ asset('mobile/script.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('mobile/orders.js') }}?v={{ time() }}"></script>
     @include('mobile.auth.auth')
 
 </body>

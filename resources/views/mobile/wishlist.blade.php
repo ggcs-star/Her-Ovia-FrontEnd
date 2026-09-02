@@ -8,9 +8,10 @@
     <meta name="description" content="View and manage your saved items. Shop your favorite clothes anytime.">
     <meta name="robots" content="noindex, follow">
     
-    <link rel="preload" href="{{ asset('mobile/style.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="{{ asset('mobile/style.css') }}"></noscript>
-    <link rel="stylesheet" href="{{ asset('mobile/wishlist.css') }}">
+    <link rel="preload" href="{{ asset('mobile/style.css') }}?v={{ time() }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}"></noscript>
+    <link rel="stylesheet" href="{{ asset('mobile/wishlist.css') }}?v={{ time() }}">
+
 </head>
 <body class="wishlist-page" data-page="wishlist">
 
@@ -32,8 +33,8 @@
 <script>
     window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
 </script>
-<script src="{{ asset('mobile/script.js') }}" defer></script>
-<script src="{{ asset('mobile/wishlist.js') }}" defer></script>
+<script src="{{ asset('mobile/script.js') }}?v={{ time() }}" defer></script>
+<script src="{{ asset('mobile/wishlist.js') }}?v={{ time() }}" defer></script>
 @include('mobile.auth.auth')
 
 </body>

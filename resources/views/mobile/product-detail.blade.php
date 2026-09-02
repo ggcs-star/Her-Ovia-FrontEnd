@@ -7,8 +7,8 @@
     <meta name="description" content="Shop premium clothing online from Her-Ovia, featuring elegant Indian wear and contemporary styles with secure payment and fast delivery.">
     <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
     <link rel="canonical" href="{{ url()->current() }}">
-    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/product-styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('mobile/product-styles.css') }}?v={{ time() }}">
 </head>
 <body class="product-detail-page" data-page="product-detail" data-slug="{{ request()->route('slug') }}">
  <div class="desktop-sticky-header">
@@ -58,11 +58,8 @@
         window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
     </script>
 
-    <!-- ✅ script.js - Header render karega -->
-    <script src="{{ asset('mobile/script.js') }}"></script>
-
-    <!-- ✅ product-detail.js - Product render karega -->
-    <script src="{{ asset('mobile/product-detail.js') }}"></script>
+    <script src="{{ asset('mobile/script.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('mobile/product-detail.js') }}?v={{ time() }}"></script>
 
     <script>
         // ==========================================

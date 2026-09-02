@@ -8,8 +8,8 @@
     <meta name="description" content="Discover the story behind Maherá Jewels. From 20 years of crafting polki and kundan jewellery to a direct-to-consumer legacy.">
     <meta name="robots" content="index, follow">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
-    <link rel="preload" href="{{ asset('mobile/style.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="{{ asset('mobile/style.css') }}"></noscript>
+    <link rel="preload" href="{{ asset('mobile/style.css') }}?v={{ time() }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}"></noscript>
     <style>
         * {
             margin: 0;
@@ -265,7 +265,7 @@
     <script>
         window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
     </script>
-    <script src="{{ asset('mobile/script.js') }}"></script>
+    <script src="{{ asset('mobile/script.js') }}?v={{ time() }}"></script>
     @include('mobile.auth.auth')
 
     <script>

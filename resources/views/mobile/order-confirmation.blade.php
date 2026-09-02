@@ -45,7 +45,7 @@
             text-align: center;
             padding: 10px 20px;
             font-size: 12px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             width: 100%;
         }
         .site-header {
@@ -843,81 +843,58 @@
                 padding: 6px 12px !important;
             }
         }
-        /* BEFORE - text dikh raha tha */
-.logo {
-    font-size: 20px;
-    font-weight: 800;
-    color: #000;
-    text-decoration: none;
-}
-
-/* AFTER - text hidden */
-.logo {
-    font-size: 0 !important;
-    line-height: 0 !important;
-    display: inline-block !important;
-    text-decoration: none !important;
-}
-
-.logo img {
-    display: block !important;
-    height: 40px !important;
-    width: auto !important;
-    max-width: 150px !important;
-    object-fit: contain !important;
-}
-
-/* Jab tak logo load na ho, kuch na dikhe */
-.logo:not(:has(img[src])) {
-    display: none !important;
-}
-
-/* Ya yeh simple tarika */
-.logo a {
-    display: inline-block !important;
-    font-size: 0 !important;
-    line-height: 0 !important;
-}
-
-.logo a img {
-    display: block !important;
-}
-
-@media screen and (min-width: 1025px) {
-
-    .desktop-sticky-header {
-        position: sticky !important;
-        top: 0 !important;
-        width: 100% !important;
-        z-index: 999999 !important;
-    }
-
-    .herovia-announcement {
-        position: relative !important;
-        width: 100% !important;
-        margin: 0 !important;
-    }
-
-    .site-header {
-        position: relative !important;
-        top: auto !important;
-        width: 100% !important;
-        margin: 0 !important;
-    }
-
-}
+        .logo {
+            font-size: 0 !important;
+            line-height: 0 !important;
+            display: inline-block !important;
+            text-decoration: none !important;
+        }
+        .logo img {
+            display: block !important;
+            height: 40px !important;
+            width: auto !important;
+            max-width: 150px !important;
+            object-fit: contain !important;
+        }
+        .logo:not(:has(img[src])) {
+            display: none !important;
+        }
+        .logo a {
+            display: inline-block !important;
+            font-size: 0 !important;
+            line-height: 0 !important;
+        }
+        .logo a img {
+            display: block !important;
+        }
+        @media screen and (min-width: 1025px) {
+            .desktop-sticky-header {
+                position: sticky !important;
+                top: 0 !important;
+                width: 100% !important;
+                z-index: 999999 !important;
+            }
+            .herovia-announcement {
+                position: relative !important;
+                width: 100% !important;
+                margin: 0 !important;
+            }
+            .site-header {
+                position: relative !important;
+                top: auto !important;
+                width: 100% !important;
+                margin: 0 !important;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="desktop-sticky-header">
-
-    <div class="herovia-announcement">
-        Free Shipping on Orders Above ₹999 | Use Code: FIRST50
+        <div class="herovia-announcement">
+            Free Shipping on Orders Above ₹999 | Use Code: FIRST50
+        </div>
+        <header class="site-header" id="site-header"></header>
     </div>
-
-    <header class="site-header" id="site-header"></header>
-
-</div>
 
     <div class="order-app">
         <div class="order-container">
@@ -928,28 +905,36 @@
             </div>
         </div>
     </div>
+
     <script>
         window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
     </script>
+
     <script>
         const API_BASE_URL = window.API_BASE_URL;
         const token = localStorage.getItem('token');
         const orderId = '{{ $orderId }}';
+
         if (!token) {
             window.location.href = '/user/login';
         }
+
+        // ============================================================
+        // 1. HEADER
+        // ============================================================
         function renderHeader() {
             const header = document.getElementById('site-header');
             if (!header) return;
             const isDesktop = window.innerWidth >= 1025;
+
             if (isDesktop) {
                 fetch(`${API_BASE_URL}/categories`)
                     .then(r => r.json())
-                    .then(data => {
-                        if (data.success && data.data) {
-                            const categories = data.data.slice(0, 5);
+                    .then(catData => {
+                        if (catData.success && catData.data) {
+                            const categories = catData.data.slice(0, 5);
                             const categoriesHtml = categories.map(cat => {
-                                let categorySlug = cat.name.toLowerCase()
+                                let categorySlug = cat.slug || cat.name.toLowerCase()
                                     .replace(/[^a-z0-9]+/g, '-')
                                     .replace(/^-|-$/g, '');
                                 let url = `/collection/${categorySlug}`;
@@ -958,13 +943,16 @@
                                 }
                                 return `<a href="${url}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`;
                             }).join('');
+
+                            window.cachedCategories = catData.data;
+
                             header.innerHTML = `
                                 <div class="web-header">
                                     <div class="main-header">
                                         <div class="logo-area">
                                             <a href="/" class="logo">
-                                                    <img src="" alt="Logo" id="site-logo" class="site-logo" onerror="this.style.display='none'">
-                                                </a>
+                                                <img src="" alt="Logo" id="site-logo" class="site-logo" style="display:none;">
+                                            </a>
                                             <nav class="nav-menu" id="navMenu">${categoriesHtml}</nav>
                                         </div>
                                         <div class="search-area">
@@ -1009,17 +997,21 @@
                                 </div>
                                 <div class="all-categories-popup" id="allCategoriesPopup" style="display:none;"></div>
                             `;
+
+                            // Logo
                             fetch(`${API_BASE_URL}/app-settings`)
-                                .then(res => res.json())
-                                .then(data => {
-                                    if (data.success) {
+                                .then(r => r.json())
+                                .then(settingsData => {
+                                    if (settingsData.success && settingsData.data) {
                                         const logo = document.getElementById('site-logo');
-                                        if (logo && data.data.header_logo) {
-                                            logo.src = data.data.header_logo;
-                                            logo.onerror = function() { this.src = 'https://placehold.co/120x40?text=HER-OVIA'; };
+                                        if (logo && settingsData.data.header_logo) {
+                                            logo.src = settingsData.data.header_logo;
+                                            logo.style.display = 'block';
+                                            logo.onerror = function() { this.style.display = 'none'; };
                                         }
                                     }
                                 });
+
                             setupAllCategoriesPopup();
                             setTimeout(initWebSearchDropdown, 500);
                             setTimeout(updateCartCountBadge, 100);
@@ -1034,7 +1026,7 @@
                             <div class="logo-search-container">
                                 <div class="header-logo">
                                     <a href="/">
-                                        <img src="" alt="Logo" class="site-logo" id="mobile-site-logo" onerror="this.src='https://placehold.co/100x35?text=HER-OVIA'">
+                                        <img src="" alt="Logo" class="site-logo" id="mobile-site-logo" onerror="this.style.display='none'">
                                     </a>
                                 </div>
                                 <div class="search-wrapper">
@@ -1057,348 +1049,337 @@
                         </div>
                     </div>
                 `;
+
                 const searchInput = document.getElementById('landing-search');
                 if (searchInput) {
                     searchInput.addEventListener('focus', () => {
                         window.location.href = '/search';
                     });
                 }
+
                 fetch(`${API_BASE_URL}/app-settings`)
-                    .then(res => res.json())
+                    .then(r => r.json())
                     .then(data => {
                         if (data.success) {
                             const logo = document.getElementById('mobile-site-logo');
                             if (logo && data.data.header_logo) {
                                 logo.src = data.data.header_logo;
-                                logo.onerror = function() { this.src = 'https://placehold.co/100x35?text=HER-OVIA'; };
+                                logo.style.display = 'block';
+                                logo.onerror = function() { this.style.display = 'none'; };
                             }
                         }
                     });
             }
         }
-      function setupAllCategoriesPopup() {
 
-    const popup = document.getElementById('allCategoriesPopup');
-    const navItems = document.querySelectorAll('#navMenu .nav-item');
+        // ============================================================
+        // 2. POPUP SETUP
+        // ============================================================
+        function setupAllCategoriesPopup() {
+            const popup = document.getElementById('allCategoriesPopup');
+            const navItems = document.querySelectorAll('#navMenu .nav-item');
 
-    if (!popup || !navItems.length) return;
+            if (!popup || !navItems.length) return;
 
-    let hideTimeout;
+            let hideTimeout;
 
-    navItems.forEach(item => {
+            navItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    if (hideTimeout) clearTimeout(hideTimeout);
+                    if (window.cachedCategories && window.cachedCategories.length > 0) {
+                        renderAllCategoriesPopup(window.cachedCategories);
+                        popup.style.display = 'block';
+                    }
+                });
 
-        item.addEventListener('mouseenter', async function () {
+                item.addEventListener('mouseleave', function() {
+                    hideTimeout = setTimeout(() => {
+                        popup.style.display = 'none';
+                    }, 200);
+                });
+            });
 
-            if (hideTimeout) {
-                clearTimeout(hideTimeout);
-            }
-
-            try {
-
-                const res = await fetch(`${API_BASE_URL}/categories`);
-                const data = await res.json();
-
-                if (!data.success || !data.data) return;
-
-                renderAllCategoriesPopup(data.data);
-
+            popup.addEventListener('mouseenter', function() {
+                if (hideTimeout) clearTimeout(hideTimeout);
                 popup.style.display = 'block';
+            });
 
-            } catch (error) {
-
-                console.error(
-                    'Category popup error:',
-                    error
-                );
-
-            }
-
-        });
-
-        item.addEventListener('mouseleave', function () {
-
-            hideTimeout = setTimeout(() => {
-                popup.style.display = 'none';
-            }, 200);
-
-        });
-
-    });
-
-    popup.addEventListener('mouseenter', function () {
-
-        if (hideTimeout) {
-            clearTimeout(hideTimeout);
+            popup.addEventListener('mouseleave', function() {
+                hideTimeout = setTimeout(() => {
+                    popup.style.display = 'none';
+                }, 200);
+            });
         }
 
-        popup.style.display = 'block';
+        // ============================================================
+        // 3. RENDER POPUP - NESTED URL
+        // ============================================================
+        function renderAllCategoriesPopup(categories) {
+            const popup = document.getElementById('allCategoriesPopup');
+            if (!popup) return;
 
-    });
+            const categoriesWithSub = categories.filter(cat => cat.children && cat.children.length > 0);
 
-    popup.addEventListener('mouseleave', function () {
+            if (categoriesWithSub.length === 0) {
+                popup.innerHTML = '';
+                return;
+            }
 
-        hideTimeout = setTimeout(() => {
-            popup.style.display = 'none';
-        }, 200);
+            const columnSize = Math.ceil(categoriesWithSub.length / 5);
+            const columns = [];
+            for (let i = 0; i < 5; i++) {
+                columns.push(categoriesWithSub.slice(i * columnSize, (i + 1) * columnSize));
+            }
 
-    });
-}
-    function renderAllCategoriesPopup(categories) {
+            let html = `<div style="max-width:1200px; margin:0 auto; padding:30px; display:grid; grid-template-columns:repeat(5,1fr); gap:25px;">`;
 
-    const popup = document.getElementById('allCategoriesPopup');
+            columns.forEach(col => {
+                if (col.length > 0) {
+                    html += `<div>`;
+                    col.forEach(cat => {
+                        let mainSlug = cat.slug || cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        let mainUrl = `/collection/${mainSlug}`;
+                        if (mainSlug === "trending") mainUrl = "/top-selling";
+                        if (mainSlug === "bestsellers") mainUrl = "/best-selling";
 
-    if (!popup) return;
+                        html += `<div style="margin-bottom:20px;">
+                            <h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">
+                                <a href="${mainUrl}" style="color:#282c3f; text-decoration:none;">${cat.name}</a>
+                            </h3>
+                            <ul style="list-style:none; padding:0; margin-top:12px;">`;
 
-    const categoriesWithSub = categories.filter(cat =>
-        cat.children &&
-        cat.children.length > 0
-    );
+                        if (cat.children && cat.children.length > 0) {
+                            cat.children.slice(0, 8).forEach(sub => {
+                                let subSlug = sub.slug || sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                                let subUrl = `/collection/${mainSlug}/${subSlug}`;
 
-    if (!categoriesWithSub.length) {
+                                html += `<li style="margin-bottom:8px;">
+                                    <a href="${subUrl}" 
+                                       style="text-decoration:none; color:#696b79; font-size:13px; display:block; padding:4px 0; transition:color 0.2s;"
+                                       onmouseover="this.style.color='#ff3f6c'"
+                                       onmouseout="this.style.color='#696b79'">
+                                        ${sub.name}
+                                    </a>
+                                </li>`;
+                            });
 
-        popup.innerHTML = `
-            <div style="
-                padding:40px;
-                text-align:center;
-                color:#999;
-            ">
-                No categories available
-            </div>
-        `;
+                            if (cat.children.length > 8) {
+                                let slug = cat.slug || cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                                let productUrl = `/collection/${slug}`;
+                                if (slug === "trending") productUrl = "/top-selling";
+                                if (slug === "bestsellers") productUrl = "/best-selling";
+                                html += `<li style="margin-top:5px;">
+                                    <a href="${productUrl}" 
+                                       style="color:#ff3f6c; font-size:11px; font-weight:600; text-decoration:none;">
+                                        +${cat.children.length - 8} more →
+                                    </a>
+                                </li>`;
+                            }
+                        }
+                        html += `</ul></div>`;
+                    });
+                    html += `</div>`;
+                }
+            });
+            html += `</div>`;
+            popup.innerHTML = html;
+        }
 
+        // ============================================================
+        // 4. SEARCH DROPDOWN
+        // ============================================================
+        function initWebSearchDropdown() {
+    const input = document.getElementById("web-search-input");
+    if (!input) {
+        setTimeout(initWebSearchDropdown, 500);
         return;
     }
 
-    const columnSize = Math.ceil(
-        categoriesWithSub.length / 5
-    );
-
-    let html = `
-        <div style="
-            max-width:1200px;
-            margin:0 auto;
-            padding:30px;
-            display:grid;
-            grid-template-columns:repeat(5,1fr);
-            gap:25px;
-        ">
-    `;
-
-    for (let i = 0; i < 5; i++) {
-
-        const column = categoriesWithSub.slice(
-            i * columnSize,
-            (i + 1) * columnSize
-        );
-
-        if (!column.length) continue;
-
-        html += `<div>`;
-
-        column.forEach(cat => {
-
-            html += `
-                <div style="margin-bottom:20px;">
-
-                    <h3 style="
-                        font-size:14px;
-                        font-weight:700;
-                        color:#282c3f;
-                        margin-bottom:12px;
-                        border-bottom:2px solid #ff3f6c;
-                        padding-bottom:6px;
-                        display:inline-block;
-                    ">
-                        ${cat.name}
-                    </h3>
-
-                    <ul style="
-                        list-style:none;
-                        padding:0;
-                        margin:12px 0 0;
-                    ">
-            `;
-
-            if (cat.children) {
-
-                cat.children.slice(0, 6).forEach(sub => {
-
-                    html += `
-                        <li style="margin-bottom:8px;">
-                            <a
-                                href="/category/${sub.id}"
-                                style="
-                                    text-decoration:none;
-                                    color:#696b79;
-                                    font-size:13px;
-                                "
-                            >
-                                ${sub.name}
-                            </a>
-                        </li>
-                    `;
-
-                });
-
-            }
-
-            html += `
-                    </ul>
-                </div>
-            `;
-
-        });
-
-        html += `</div>`;
+    // ✅ SUGGESTIONS BOX - PEHLE SE EXIST KARTA HAI
+    let box = document.getElementById("web-search-suggestions");
+    if (!box) {
+        const parent = input.parentElement;
+        const div = document.createElement("div");
+        div.id = "web-search-suggestions";
+        div.className = "web-search-suggestions";
+        parent.appendChild(div);
+        box = document.getElementById("web-search-suggestions");
     }
 
-    html += `</div>`;
+    if (!box) return;
 
-    popup.innerHTML = html;
-}
-        function initWebSearchDropdown() {
-            const input = document.getElementById("web-search-input");
-            let box = document.getElementById("web-search-suggestions");
-            if (!input) {
-                setTimeout(initWebSearchDropdown, 500);
-                return;
-            }
-            if (!box) {
-                const parent = input.parentElement;
-                const div = document.createElement("div");
-                div.id = "web-search-suggestions";
-                parent.appendChild(div);
-                box = document.getElementById("web-search-suggestions");
-            }
-            if (!box) return;
+    // ✅ STYLE SET KARO (SAFE)
+    box.style.display = "none";
+    box.innerHTML = "";
+
+    let timer;
+    let isFetching = false;
+
+    // ✅ INPUT EVENT
+    input.addEventListener("input", function(e) {
+        clearTimeout(timer);
+        const q = this.value.trim();
+        if (q.length === 0) {
             box.style.display = "none";
             box.innerHTML = "";
-            box.className = "";
-            let timer;
-            let isFetching = false;
-            const newInput = input.cloneNode(true);
-            input.parentNode.replaceChild(newInput, input);
-            const freshInput = document.getElementById("web-search-input");
-            const freshBox = document.getElementById("web-search-suggestions");
-            if (!freshInput || !freshBox) return;
-            freshInput.addEventListener("blur", function() {
-                setTimeout(() => {
-                    freshBox.style.display = "none";
-                    freshBox.innerHTML = "";
-                    freshBox.className = "";
-                }, 300);
-            });
-            freshInput.addEventListener("keydown", function(e) {
-                if (e.key === "Enter") {
-                    e.preventDefault();
-                    const q = this.value.trim();
-                    if (q) {
-                        freshBox.style.display = "none";
-                        freshBox.innerHTML = "";
-                        freshBox.className = "";
-                        window.location.href = `/products?search=${encodeURIComponent(q)}`;
-                    }
-                }
-            });
-            freshInput.addEventListener("input", function(e) {
-                clearTimeout(timer);
-                const q = this.value.trim();
-                if (q.length === 0) {
-                    freshBox.style.display = "none";
-                    freshBox.innerHTML = "";
-                    freshBox.className = "";
+            return;
+        }
+        timer = setTimeout(async () => {
+            if (isFetching) return;
+            isFetching = true;
+            try {
+                const apiUrl = window.API_BASE_URL || API_BASE_URL;
+                const res = await fetch(`${apiUrl}/products/suggestions?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+                if (!data.success || !data.data) {
+                    box.style.display = "none";
+                    box.innerHTML = "";
+                    isFetching = false;
                     return;
                 }
-                timer = setTimeout(async () => {
-                    if (isFetching) return;
-                    isFetching = true;
-                    try {
-                        const apiUrl = window.API_BASE_URL || API_BASE_URL;
-                        const res = await fetch(`${apiUrl}/products/suggestions?q=${encodeURIComponent(q)}`, {
-                            headers: {
-                                'Accept': 'application/json',
-                                'Cache-Control': 'no-cache'
-                            }
-                        });
-                        const data = await res.json();
-                        if (!data.success || !data.data) {
-                            freshBox.style.display = "none";
-                            freshBox.innerHTML = "";
-                            freshBox.className = "";
-                            isFetching = false;
-                            return;
-                        }
-                        const products = data.data.products || [];
-                        if (products.length === 0) {
-                            freshBox.style.display = "none";
-                            freshBox.innerHTML = "";
-                            freshBox.className = "";
-                            isFetching = false;
-                            return;
-                        }
-                        let html = "";
-                        products.forEach(p => {
-                            const slug = p.slug || p.id || '';
-                            const name = p.name || p.product_name || 'Product';
-                            const regex = new RegExp(q, 'gi');
-                            const highlighted = name.replace(regex, match => `<span class="highlight">${match}</span>`);
-                            html += `<div class="web-suggestion-item" onclick="window.location.href='/product/${slug}'">${highlighted}</div>`;
-                        });
-                        freshBox.innerHTML = html;
-                        freshBox.className = "active";
-                        freshBox.style.display = "block";
-                    } catch (err) {
-                        freshBox.style.display = "none";
-                        freshBox.innerHTML = "";
-                        freshBox.className = "";
-                    }
+                const products = data.data.products || [];
+                if (products.length === 0) {
+                    box.style.display = "none";
+                    box.innerHTML = "";
                     isFetching = false;
-                }, 300);
-            });
-            document.addEventListener("click", function(e) {
-                if (!freshInput.contains(e.target) && !freshBox.contains(e.target)) {
-                    freshBox.style.display = "none";
-                    freshBox.innerHTML = "";
-                    freshBox.className = "";
+                    return;
                 }
-            });
+                let html = "";
+                products.forEach(p => {
+                    const slug = p.slug || p.id || '';
+                    const name = p.name || p.product_name || '';
+                    if (name) {
+                        html += `<div class="web-suggestion-item" onclick="window.location.href='/product/${slug}'">${name}</div>`;
+                    }
+                });
+                if (html) {
+                    box.innerHTML = html;
+                    box.style.display = "block";
+                    box.className = "web-search-suggestions active";
+                } else {
+                    box.style.display = "none";
+                    box.innerHTML = "";
+                }
+            } catch (err) {
+                box.style.display = "none";
+                box.innerHTML = "";
+            }
+            isFetching = false;
+        }, 300);
+    });
+
+    // ✅ ENTER KEY
+    input.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            const q = this.value.trim();
+            if (q) {
+                box.style.display = "none";
+                box.innerHTML = "";
+                window.location.href = `/products?search=${encodeURIComponent(q)}`;
+            }
         }
+    });
+
+    // ✅ CLICK OUTSIDE
+    document.addEventListener("click", function(e) {
+        if (!input.contains(e.target) && !box.contains(e.target)) {
+            box.style.display = "none";
+            box.innerHTML = "";
+            box.className = "web-search-suggestions";
+        }
+    });
+
+    // ✅ DYNAMIC PLACEHOLDER ROTATION
+    const apiUrl = window.API_BASE_URL || API_BASE_URL;
+    fetch(`${apiUrl}/categories`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.data && data.data.length > 0) {
+                const categories = data.data.map(cat => cat.name);
+                let index = 0;
+                if (categories.length > 0) {
+                    input.placeholder = 'Search for ' + categories[0];
+                }
+                setInterval(function() {
+                    index = (index + 1) % categories.length;
+                    input.placeholder = 'Search for ' + categories[index];
+                }, 3000);
+            }
+        })
+        .catch(function() {
+            const fallback = ['Co-ords set', 'Dresses', 'Kurta Sets'];
+            let index = 0;
+            if (fallback.length > 0) {
+                input.placeholder = 'Search for ' + fallback[0];
+            }
+            setInterval(function() {
+                index = (index + 1) % fallback.length;
+                input.placeholder = 'Search for ' + fallback[index];
+            }, 3000);
+        });
+}
+
+        // ============================================================
+        // 5. CART BADGE
+        // ============================================================
         function updateCartCountBadge() {
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
             let totalItems = cart.length;
-            const updateBadge = (badgeId) => {
-                const badge = document.getElementById(badgeId);
-                if (badge) {
-                    badge.style.display = 'flex';
-                    badge.textContent = totalItems;
-                }
-            };
-            updateBadge('cart-count-badge');
-            updateBadge('web-cart-count-badge');
+            const badge = document.getElementById('web-cart-count-badge');
+            if (badge) {
+                badge.textContent = totalItems;
+                badge.style.display = totalItems > 0 ? 'flex' : 'flex';
+            }
         }
+
+        function updateCartCountForOrderPage() {
+            try {
+                const badge = document.getElementById("web-cart-count-badge");
+                let cart = JSON.parse(localStorage.getItem("cart_items")) ||
+                    JSON.parse(localStorage.getItem("cart")) || [];
+                if (!Array.isArray(cart)) cart = [];
+                let count = cart.length;
+                if (badge) {
+                    badge.textContent = count;
+                    badge.style.display = count > 0 ? "flex" : "flex";
+                }
+            } catch (e) {
+                console.log("Cart count error:", e);
+            }
+        }
+
+        // ============================================================
+        // 6. UTILITY
+        // ============================================================
         function goBack() {
             window.history.back();
         }
         window.goBack = goBack;
+
         function formatMoney(amount) {
             return `₹${Number(amount || 0).toFixed(2)}`;
         }
+
         function formatLongDate(dateStr) {
             if (!dateStr) return '';
             const d = new Date(dateStr);
             if (isNaN(d.getTime())) return '';
             return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
         }
+
         function formatTime(dateStr) {
             if (!dateStr) return '';
             const d = new Date(dateStr);
             return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
         }
+
         function formatShortDateTime(dateStr) {
             if (!dateStr) return '';
             const d = new Date(dateStr);
             return d.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
         }
+
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, function(m) {
@@ -1408,6 +1389,10 @@
                 return m;
             });
         }
+
+        // ============================================================
+        // 7. ORDER STATUS
+        // ============================================================
         const statusMap = {
             pending: { label: 'Order Placed', icon: '📦', color: '#f59e0b', bg: '#fffbeb' },
             confirmed: { label: 'Confirmed', icon: '✅', color: '#3b82f6', bg: '#eff6ff' },
@@ -1416,6 +1401,7 @@
             delivered: { label: 'Delivered', icon: '📦', color: '#10b981', bg: '#ecfdf5' },
             cancelled: { label: 'Cancelled', icon: '❌', color: '#ef4444', bg: '#fef2f2' }
         };
+
         const stepsConfig = [
             { key: 'pending', label: 'Order Placed', icon: '📦', timeKey: 'created_at' },
             { key: 'confirmed', label: 'Confirmed', icon: '✓', timeKey: 'confirmed_at' },
@@ -1423,15 +1409,21 @@
             { key: 'shipped', label: 'Shipped', icon: '🚚', timeKey: 'shipped_at' },
             { key: 'delivered', label: 'Delivered', icon: '🏠', timeKey: 'delivered_at' }
         ];
+
+        // ============================================================
+        // 8. RENDER ORDER
+        // ============================================================
         function renderOrderDetails(order) {
             window.currentOrder = order;
             if (!order) {
                 document.getElementById('order-root').innerHTML = '<div class="error-box" style="grid-column:1/-1">⚠️ Order data unavailable</div>';
                 return;
             }
+
             const statusKey = order.status || 'pending';
             const statusInfo = statusMap[statusKey] || statusMap.pending;
             const isCancelled = statusKey === 'cancelled';
+
             const subtotal = parseFloat(order.subtotal) || 0;
             const shipping = parseFloat(order.shipping) || 0;
             const discount = parseFloat(order.discount) || 0;
@@ -1439,6 +1431,7 @@
             const tax = parseFloat(order.tax) || 0;
             const total = parseFloat(order.total) || (subtotal + shipping + tax + platformFee - discount);
             const totalSavings = discount;
+
             let paymentText = 'Cash on Delivery';
             let paymentIcon = '💵';
             if (order.payment_status === 'paid') {
@@ -1448,6 +1441,7 @@
                 paymentText = 'Cash on Delivery';
                 paymentIcon = '💵';
             }
+
             const addr = order.shipping_address || {};
             const fullName = addr.full_name || addr.name || 'Customer';
             const phone = addr.phone || '';
@@ -1457,6 +1451,7 @@
             const state = addr.state || '';
             const pincode = addr.pincode || addr.postal_code || '';
             const hasAddress = fullName && (addressLine1 || city);
+
             let trackerHtml = '';
             if (!isCancelled) {
                 const currentIdx = stepsConfig.findIndex(s => s.key === statusKey);
@@ -1481,11 +1476,8 @@
                             <div class="step-icon-box">
                                 <div class="step-dot ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}">
                                     ${step.icon}
-                                </div>`;
-                    if (idx < stepsConfig.length - 1) {
-                        trackerHtml += `<div class="step-connector-line ${isCompleted ? 'completed' : ''}"></div>`;
-                    }
-                    trackerHtml += `
+                                </div>
+                                ${idx < stepsConfig.length - 1 ? `<div class="step-connector-line ${isCompleted ? 'completed' : ''}"></div>` : ''}
                             </div>
                             <div class="step-content-box">
                                 <div class="step-label-text">${step.label}</div>
@@ -1497,21 +1489,19 @@
                 trackerHtml += `</div>`;
             } else {
                 trackerHtml = `
-                    <div style="text-align: center; padding: 20px;">
-                        <div style="background: #fef2f2; border-radius: 12px; padding: 16px; color: #dc2626;">
+                    <div style="text-align:center; padding:20px;">
+                        <div style="background:#fef2f2; border-radius:12px; padding:16px; color:#dc2626;">
                             ❌ Order Cancelled
-                            ${order.cancelled_at ? `<div style="font-size: 12px; margin-top: 8px;">on ${formatShortDateTime(order.cancelled_at)}</div>` : ''}
+                            ${order.cancelled_at ? `<div style="font-size:12px; margin-top:8px;">on ${formatShortDateTime(order.cancelled_at)}</div>` : ''}
                         </div>
                     </div>
                 `;
             }
+
             let itemsHtml = '';
             if (order.items && order.items.length) {
                 order.items.forEach(item => {
-                    let imgUrl = item.variant?.image_url
-                        || item.product?.image_url
-                        || item.image
-                        || '';
+                    let imgUrl = item.variant?.image_url || item.product?.image_url || item.image || '';
                     if (imgUrl && !imgUrl.startsWith('http')) {
                         imgUrl = `https://her-ovia.s3.us-east-1.amazonaws.com/${imgUrl}`;
                     }
@@ -1537,6 +1527,7 @@
             } else {
                 itemsHtml = `<div style="text-align:center; padding:28px; color:var(--hero-text-muted);">No items available</div>`;
             }
+
             const priceRows = `
                 <div class="price-detail-row"><span>Subtotal</span><span>${formatMoney(subtotal)}</span></div>
                 <div class="price-detail-row"><span>Shipping</span><span>${shipping > 0 ? formatMoney(shipping) : 'Free'}</span></div>
@@ -1545,17 +1536,20 @@
                 ${discount > 0 ? `<div class="price-detail-row" style="color:#10b981;"><span>Discount</span><span>-${formatMoney(discount)}</span></div>` : ''}
                 <div class="price-detail-row total"><span>Total Amount</span><span>${formatMoney(total)}</span></div>
             `;
+
             const couponHtml = order.coupon_code ? `
                 <div class="coupon-block">
                     <span style="font-size:18px;">🏷️</span>
                     <span style="font-weight:600;">Coupon: ${escapeHtml(order.coupon_code)}</span>
                 </div>
             ` : '';
+
             const savingsHtml = totalSavings > 0 ? `
                 <div style="text-align:center;">
                     <div class="savings-block">💰 You saved ${formatMoney(totalSavings)}</div>
                 </div>
             ` : '';
+
             const addressHtml = hasAddress ? `
                 <div class="address-display">
                     <div style="font-weight:700; margin-bottom:5px;">${escapeHtml(fullName)}</div>
@@ -1566,6 +1560,7 @@
                     </div>
                 </div>
             ` : '';
+
             const mainColumnHtml = `
                 <div class="hero-card">
                     <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
@@ -1585,9 +1580,7 @@
                             ${statusInfo.icon} ${statusInfo.label}
                         </div>
                     </div>
-                    <div class="card-body">
-                        ${trackerHtml}
-                    </div>
+                    <div class="card-body">${trackerHtml}</div>
                 </div>
                 <div class="card">
                     <div class="card-header">
@@ -1596,11 +1589,10 @@
                             <div class="card-title">Order Items (${order.items?.length || 0})</div>
                         </div>
                     </div>
-                    <div class="card-body">
-                        ${itemsHtml}
-                    </div>
+                    <div class="card-body">${itemsHtml}</div>
                 </div>
             `;
+
             const sidebarHtml = `
                 <div class="card">
                     <div class="card-header">
@@ -1623,31 +1615,35 @@
                             <div class="card-title">Delivery Address</div>
                         </div>
                     </div>
-                    <div class="card-body">
-                        ${addressHtml}
-                    </div>
+                    <div class="card-body">${addressHtml}</div>
                 </div>
                 ` : ''}
-                <div class="card" style="border: none; background: transparent; box-shadow: none;">
+                <div class="card" style="border:none; background:transparent; box-shadow:none;">
                     <div class="action-buttons-group">
                         <button class="btn btn-primary" id="viewOrdersDesktop">📋 View All Orders</button>
                         <button class="btn btn-secondary" id="continueShopDesktop">✨ Continue Shopping</button>
                     </div>
                 </div>
             `;
-            const finalGrid = `
+
+            document.getElementById('order-root').innerHTML = `
                 <div class="order-main">${mainColumnHtml}</div>
                 <div class="order-sidebar">${sidebarHtml}</div>
             `;
-            document.getElementById('order-root').innerHTML = finalGrid;
+
             document.getElementById('viewOrdersDesktop')?.addEventListener('click', () => window.location.href = '/orders');
             document.getElementById('continueShopDesktop')?.addEventListener('click', () => window.location.href = '/');
         }
+
+        // ============================================================
+        // 9. FETCH ORDER
+        // ============================================================
         async function fetchOrderData() {
             if (!orderId || orderId === '') {
                 document.getElementById('order-root').innerHTML = '<div class="error-box" style="grid-column:1/-1">⚠️ Invalid Order ID</div>';
                 return;
             }
+
             try {
                 const timestamp = new Date().getTime();
                 const res = await fetch(`${API_BASE_URL}/orders/${orderId}?_=${timestamp}`, {
@@ -1658,8 +1654,10 @@
                         'Pragma': 'no-cache'
                     }
                 });
+
                 const json = await res.json();
                 let order = null;
+
                 if (json.success && json.data) {
                     order = json.data;
                 } else {
@@ -1670,6 +1668,7 @@
                     }
                     if (!order) throw new Error('Order not found');
                 }
+
                 if (order.shipping_address_id && !order.shipping_address) {
                     try {
                         const addrRes = await fetch(`${API_BASE_URL}/user/addresses/${order.shipping_address_id}`, {
@@ -1681,8 +1680,10 @@
                         }
                     } catch (e) { console.warn('Address fetch failed'); }
                 }
+
                 renderOrderDetails(order);
                 localStorage.setItem('last_order_cached', JSON.stringify(order));
+
             } catch (err) {
                 console.error(err);
                 const cached = localStorage.getItem('last_order_cached');
@@ -1698,102 +1699,57 @@
                 document.getElementById('order-root').innerHTML = '<div class="error-box" style="grid-column:1/-1">⚠️ Failed to load order. Check connection.</div>';
             }
         }
+
+        // ============================================================
+        // 10. AUTO REFRESH
+        // ============================================================
         let refreshInterval;
+
         function startAutoRefresh() {
             if (refreshInterval) clearInterval(refreshInterval);
             refreshInterval = setInterval(() => fetchOrderData(), 5000);
         }
-        function applyAppSettingsForOrderPage() {
-            try {
-                const res = fetch(`${API_BASE_URL}/app-settings`)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.success) {
-                            const headerLogo = data.data.header_logo || data.data.app_logo;
-                            const logoImg = document.getElementById('site-logo');
-                            if (logoImg && headerLogo) {
-                                logoImg.src = headerLogo;
-                                logoImg.style.display = 'block';
-                                logoImg.onerror = function() {
-                                    this.style.display = 'none';
-                                };
-                            }
-                            const mobileLogo = document.getElementById('mobile-site-logo');
-                            if (mobileLogo && headerLogo) {
-                                mobileLogo.src = headerLogo;
-                                mobileLogo.style.display = 'block';
-                                mobileLogo.onerror = function() {
-                                    this.style.display = 'none';
-                                };
-                            }
-                            if (data.data.app_name) {
-                                document.title = data.data.app_name;
-                            }
-                        }
-                    });
-            } catch (e) {
-                console.error('Logo load error:', e);
-            }
-        }
-        function updateCartCountForOrderPage() {
-            try {
-                const mobileBadge = document.getElementById("cart-count-badge");
-                const webBadge = document.getElementById("web-cart-count-badge");
-                let cart = JSON.parse(localStorage.getItem("cart_items")) ||
-                    JSON.parse(localStorage.getItem("cart")) ||
-                    JSON.parse(localStorage.getItem("shopping_cart")) || [];
-                if (!Array.isArray(cart)) cart = [];
-                let count = cart.length;
-                if (mobileBadge) {
-                    mobileBadge.textContent = count;
-                    mobileBadge.style.display = count > 0 ? "flex" : "flex";
-                }
-                if (webBadge) {
-                    webBadge.textContent = count;
-                    webBadge.style.display = count > 0 ? "flex" : "flex";
-                }
-            } catch (e) {
-                console.log("Cart count error:", e);
-            }
-        }
+
+        // ============================================================
+        // 11. INIT
+        // ============================================================
         document.body.classList.add('order-confirmation-page');
         renderHeader();
         fetchOrderData();
         startAutoRefresh();
-        setTimeout(applyAppSettingsForOrderPage, 100);
+
         setTimeout(updateCartCountForOrderPage, 800);
+
         window.addEventListener('resize', () => {
             renderHeader();
             setTimeout(() => {
-                applyAppSettingsForOrderPage();
                 if (window.innerWidth >= 1025) {
                     setTimeout(initWebSearchDropdown, 500);
                 }
             }, 300);
         });
+
         document.querySelectorAll('.back-btn-header, [onclick="goBack()"]').forEach(btn => {
             btn.onclick = function(e) {
                 e.preventDefault();
                 window.location.replace('/orders');
             };
         });
+
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
                 initWebSearchDropdown();
             }, 800);
         });
-        setTimeout(function() {
-            const categories = ['Kurta Sets', 'Co-Ord Sets', 'Sarees', 'Lehengas', 'Dupattas'];
-            let index = 0;
-            const input = document.getElementById('web-search-input');
-            if (input) {
-                setInterval(function() {
-                    input.placeholder = 'Search for ' + categories[index];
-                    index = (index + 1) % categories.length;
-                }, 3000);
-            }
-        }, 2000);
+
+        // ============================================================
+        // 12. SHOW LOGIN POPUP
+        // ============================================================
+        window.showLoginPopup = function() {
+            window.location.href = '/login';
+        };
     </script>
+
     @include('mobile.auth.auth')
 </body>
 </html>
