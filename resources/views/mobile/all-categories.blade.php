@@ -7,8 +7,8 @@
     <meta name="description" content="Browse all clothing categories at Her-Ovia including co-ord sets, dresses, kurta sets and more.">
     <link rel="canonical" href="{{ url()->current() }}">
     <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/categories/category-styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('mobile/categories/category-styles.css') }}?v={{ time() }}">
 </head>
 <body data-page="all-categories">
  <div class="desktop-sticky-header">
@@ -37,7 +37,7 @@
     window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
     window.S3_BASE_URL = "{{ env('S3_BASE_URL') }}";
 </script>
-<script src="{{ asset('mobile/categories/all-categories.js') }}"></script>
+<script src="{{ asset('mobile/categories/all-categories.js') }}?v={{ time() }}"></script>
 @include('mobile.auth.auth')
 </body>
 </html>

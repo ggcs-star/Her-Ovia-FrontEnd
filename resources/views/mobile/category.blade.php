@@ -13,9 +13,9 @@
     <link rel="canonical"
         href="{{ url()->current() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}">
     <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/category-styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('mobile/category-styles.css') }}?v={{ time() }}">
 
     <style>
         /* Same responsive styles as all-categories page */
@@ -206,8 +206,8 @@
 <script>
     window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
 </script>
-<script src="{{ asset('mobile/script.js') }}"></script>
-<script src="{{ asset('mobile/filter-fix.js') }}"></script>
+<script src="{{ asset('mobile/script.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('mobile/filter-fix.js') }}?v={{ time() }}"></script>
 
 <!-- Filter Toggle Script -->
 <script>

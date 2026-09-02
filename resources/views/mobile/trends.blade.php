@@ -9,8 +9,8 @@ content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
 
 <title>Trending Reels | Her-Ovia</title>
 
-<link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
-<link rel="stylesheet" href="{{ asset('mobile/trends.css') }}">
+<link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}">
+<link rel="stylesheet" href="{{ asset('mobile/trends.css') }}?v={{ time() }}">
 <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
 <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"> -->
 </head>
@@ -60,8 +60,8 @@ Loading reels...
   </div>
 
 </div>
-<script src="{{ asset('mobile/script.js') }}"></script>
-<script src="{{ asset('mobile/trends.js') }}"></script>
+<script src="{{ asset('mobile/script.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('mobile/trends.js') }}?v={{ time() }}"></script>
 @include('mobile.auth.auth')
 
 </body>

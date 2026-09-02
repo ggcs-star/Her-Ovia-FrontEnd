@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Coupon Terms | Her-ovia</title>
         <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
-        <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
+         <link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}">
         <style>
             body {
                 background: #f8f8f8;

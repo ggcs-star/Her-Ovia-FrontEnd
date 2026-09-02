@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Products | Her-Ovia</title>
     <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/categories/category-styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('mobile/categories/category-styles.css') }}?v={{ time() }}">
     <style>
         .products-grid {
             display: grid;

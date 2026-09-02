@@ -172,7 +172,7 @@ class AllCategoriesPage {
 
         if (isDesktop) {
             const categoriesHtml = this.allCategories.slice(0, 5).map(cat => {
-                let categorySlug = cat.name.toLowerCase()
+                let categorySlug = cat.slug || cat.name.toLowerCase()
                     .replace(/[^a-z0-9]+/g, '-')
                     .replace(/^-|-$/g, '');
 
@@ -400,7 +400,7 @@ class AllCategoriesPage {
 
                     if (cat.children?.length) {
                         cat.children.slice(0, 6).forEach(sub => {
-                            let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                            let subSlug = sub.slug || sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
                             html += `<li style="margin-bottom:8px;"><a href="/collection/${subSlug}" style="text-decoration:none; color:#696b79; font-size:13px;">${escapeHtml(sub.name)}</a></li>`;
                         });
                         if (cat.children.length > 6) {
@@ -552,7 +552,7 @@ class AllCategoriesPage {
             const subHtml = hasChildren ? `
                 <ul class="subcategory-dropdown" id="sub-${cat.id}" style="display:none;">
                     ${cat.children.map(sub => {
-                        let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        let subSlug = sub.slug || sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
                         return `<li><a href="/collection/${subSlug}">${escapeHtml(sub.name)}</a></li>`;
                     }).join('')}
                 </ul>
@@ -667,11 +667,11 @@ function redirectToSubcategory(categoryId) {
                 
                 if (targetCategory) {
                     if (parentCategory) {
-                        const parentSlug = parentCategory.name.toLowerCase()
+                        const parentSlug = parentCategory.slug || parentCategory.name.toLowerCase()
                             .replace(/[^a-z0-9]+/g, '-')
                             .replace(/^-|-$/g, '');
 
-                        const subSlug = targetCategory.name.toLowerCase()
+                        const subSlug = targetCategory.slug || targetCategory.name.toLowerCase()
                             .replace(/[^a-z0-9]+/g, '-')
                             .replace(/^-|-$/g, '');
 
@@ -683,7 +683,7 @@ function redirectToSubcategory(categoryId) {
                             window.location.href = `/collection/${parentSlug}/${subSlug}`;
                         }
                     } else if (targetCategory.children && targetCategory.children.length > 0) {
-                        const slug = targetCategory.name.toLowerCase()
+                        const slug = targetCategory.slug || targetCategory.name.toLowerCase()
                             .replace(/[^a-z0-9]+/g, '-')
                             .replace(/^-|-$/g, '');
                         if (slug === 'trending') {
@@ -694,10 +694,9 @@ function redirectToSubcategory(categoryId) {
                             window.location.href = `/collection/${slug}`;
                         }
                     } else {
-                        const slug = targetCategory.name.toLowerCase()
+                        const slug = targetCategory.slug || targetCategory.name.toLowerCase()
                             .replace(/[^a-z0-9]+/g, '-')
                             .replace(/^-|-$/g, '');
-
                         if (slug === 'trending') {
                             window.location.href = '/top-selling';
                         } else if (slug === 'bestsellers') {

@@ -329,7 +329,7 @@ class RapidRetailsEngine {
     
     popup.addEventListener('mouseleave', hidePopup);
 }
-    renderAllCategoriesPopup() {
+renderAllCategoriesPopup() {
     const popup = document.getElementById('allCategoriesPopup');
     if (!popup) return;
     
@@ -343,7 +343,7 @@ class RapidRetailsEngine {
     if (categoriesWithSub.length === 0) {
         let html = `<div style="max-width:1200px; margin:0 auto; padding:30px; display:grid; grid-template-columns:repeat(4,1fr); gap:20px;">`;
         this.allCategories.slice(0, 8).forEach(cat => {
-            let slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            let slug = cat.slug || cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
             let url = `/collection/${slug}`;
             if (slug === "trending") url = "/top-selling";
             if (slug === "bestsellers") url = "/best-selling";
@@ -366,20 +366,27 @@ class RapidRetailsEngine {
         if (col.length > 0) {
             html += `<div>`;
             col.forEach(cat => {
+                let mainSlug = cat.slug || cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                let mainUrl = `/collection/${mainSlug}`;
+                if (mainSlug === "trending") mainUrl = "/top-selling";
+                if (mainSlug === "bestsellers") mainUrl = "/best-selling";
+                
                 html += `<div style="margin-bottom:20px;">
-                    <h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">${cat.name}</h3>
+                    <h3 style="font-size:14px; font-weight:700; color:#282c3f; margin-bottom:12px; border-bottom:2px solid #ff3f6c; padding-bottom:6px; display:inline-block;">
+                        <a href="${mainUrl}" style="color:#282c3f; text-decoration:none;">${cat.name}</a>
+                    </h3>
                     <ul style="list-style:none; padding:0; margin-top:12px;">`;
+                    
+                // ✅ SIRF DIRECT CHILDREN (SUB-CATEGORY) - SUB-SUB NAHI
                 if (cat.children && cat.children.length > 0) {
                     cat.children.slice(0, 8).forEach(sub => {
-                        let subSlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                        let productUrl = `/collection/${subSlug}`;
-                        if (subSlug === "trending") {
-                            productUrl = "/top-selling";
-                        } else if (subSlug === "bestsellers") {
-                            productUrl = "/best-selling";
-                        }
+                        let subSlug = sub.slug || sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        
+                        // ✅ NESTED URL - /collection/main/sub
+                        let subUrl = `/collection/${mainSlug}/${subSlug}`;
+                        
                         html += `<li style="margin-bottom:8px;">
-                            <a href="${productUrl}" 
+                            <a href="${subUrl}" 
                                style="text-decoration:none; color:#696b79; font-size:13px; display:block; padding:4px 0; transition:color 0.2s;"
                                onmouseover="this.style.color='#ff3f6c'"
                                onmouseout="this.style.color='#696b79'">
@@ -387,8 +394,9 @@ class RapidRetailsEngine {
                             </a>
                         </li>`;
                     });
+                    
                     if (cat.children.length > 8) {
-                        let slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        let slug = cat.slug || cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
                         let productUrl = `/collection/${slug}`;
                         if (slug === "trending") productUrl = "/top-selling";
                         if (slug === "bestsellers") productUrl = "/best-selling";

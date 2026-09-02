@@ -6,8 +6,8 @@
     <title>Shopping Bag | Her-Ovia</title>
     <meta name="robots" content="noindex,nofollow">
     <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('mobile/cart.css') }}">
+    <link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('mobile/cart.css') }}?v={{ time() }}">
     
 </head>
 <body class="cart-page" data-page="cart">
@@ -125,9 +125,9 @@
 <script>
     window.API_BASE_URL = "{{ env('API_BASE_URL') }}";
 </script>
-<script src="{{ asset('mobile/script.js') }}"></script>
-<script src="{{ asset('mobile/cart.js') }}"></script>
-<script src="{{ asset('mobile/wishlist.js') }}"></script>
+<script src="{{ asset('mobile/script.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('mobile/cart.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('mobile/wishlist.js') }}?v={{ time() }}"></script>
 @include('mobile.auth.auth')
 
 </body>
