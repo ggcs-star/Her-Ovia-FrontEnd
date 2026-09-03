@@ -2,10 +2,10 @@
     <div class="container">
         <div class="footer-grid">
 
-            <!-- Column 1: Logo + Address -->
             <div class="footer-col">
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <img id="footer-logo" src="" alt="Logo" class="site-logo" style="height:40px;display:none;">                </div>
+                    <img id="footer-logo" src="" alt="Logo" class="site-logo" style="height:40px;display:none;">
+                </div>
                 <p class="footer-tagline">
                     Your one-stop destination for fashion and lifestyle.
                 </p>
@@ -18,7 +18,6 @@
                 </div>
             </div>
 
-            <!-- Column 2: Categories -->
             <div class="footer-col">
                 <h4>Categories</h4>
                 <ul id="footerCategoriesList">
@@ -26,75 +25,68 @@
                 </ul>
             </div>
 
-        <div class="footer-col">
-            <h4>Quick Links</h4>
-            <ul class="quick-links-list">
-                <li><a href="/about-us">About Us</a></li>
-                <li><a href="/categories">All Categories</a></li>
-                <li><a href="/blog">Blog</a></li>
-            </ul>
-        </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul class="quick-links-list">
+                    <li><a href="/about-us">About Us</a></li>
+                    <li><a href="/categories">All Categories</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                </ul>
+            </div>
 
             <div class="footer-col">
                 <h4>Support</h4>
                 <ul class="footer-support-list">
-                    <!-- <li>Help Center</li> -->
                     <li><a href="/privacy-policy">Privacy Policy</a></li>
                     <li><a href="/terms">Terms & Conditions</a></li>
                     <li><a href="/returns">Returns & Refunds</a></li>
                     <li><a href="/shipping">Shipping Policy</a></li>
                     <li><a href="javascript:void(0)" onclick="checkLoginAndTrack()">Track Order</a></li>
-                    <!-- <li>Contact Us</li>
-                    <li>FAQs</li> -->
-                     
-                    
                 </ul>
             </div>
 
-            <!-- Column 5: Join Us (Social Media) -->
             <div class="footer-col">
-    <h4>Join Us</h4>
-    <div class="social-links">
-        <a href="javascript:void(0);" class="social-link-item" style="text-decoration: none; color: inherit;">
-            <div class="social-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                    <circle cx="12" cy="12" r="4.5"></circle>
-                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                </svg>
+                <h4>Join Us</h4>
+                <div class="social-links">
+                    <a href="javascript:void(0);" class="social-link-item" style="text-decoration: none; color: inherit;">
+                        <div class="social-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <circle cx="12" cy="12" r="4.5"></circle>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                        </div>
+                        <span>Instagram</span>
+                    </a>
+                    <a href="javascript:void(0);" class="social-link-item" style="text-decoration: none; color: inherit;">
+                        <div class="social-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                            </svg>
+                        </div>
+                        <span>Facebook</span>
+                    </a>
+                    <a href="javascript:void(0);" class="social-link-item" style="text-decoration: none; color: inherit;">
+                        <div class="social-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+                                <polygon points="9 15 15 12 9 9 9 15"></polygon>
+                            </svg>
+                        </div>
+                        <span>YouTube</span>
+                    </a>
+                    <a href="javascript:void(0);" class="social-link-item" style="text-decoration: none; color: inherit;">
+                        <div class="social-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M8 3a5 5 0 0 0-5 5c0 7 9 13 9 13s9-6 9-13a5 5 0 0 0-5-5z"></path>
+                                <circle cx="12" cy="8" r="2"></circle>
+                            </svg>
+                        </div>
+                        <span>Pinterest</span>
+                    </a>
+                </div>
             </div>
-            <span>Instagram</span>
-        </a>
-        <a href="javascript:void(0);" class="social-link-item" style="text-decoration: none; color: inherit;">
-            <div class="social-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-                </svg>
-            </div>
-            <span>Facebook</span>
-        </a>
-        <a href="javascript:void(0);" class="social-link-item" style="text-decoration: none; color: inherit;">
-            <div class="social-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
-                    <polygon points="9 15 15 12 9 9 9 15"></polygon>
-                </svg>
-            </div>
-            <span>YouTube</span>
-        </a>
-        <a href="javascript:void(0);" class="social-link-item" style="text-decoration: none; color: inherit;">
-            <div class="social-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M8 3a5 5 0 0 0-5 5c0 7 9 13 9 13s9-6 9-13a5 5 0 0 0-5-5z"></path>
-                    <circle cx="12" cy="8" r="2"></circle>
-                </svg>
-            </div>
-            <span>Pinterest</span>
-        </a>
-    </div>
-</div>
 
-            <!-- Column 6: Contact Information (Now in line with others) -->
             <div class="footer-col">
                 <h4>Contact Us</h4>
                 <ul class="contact-info">
@@ -129,11 +121,11 @@
 
     </div>
 </footer>
+
 <style>
 .site-footer {
     background: var(--hero-bg, #F8EEE3) !important;
     border-top: 1px solid var(--hero-border, #DCC0A8) !important;
-    
     padding: 40px 0 30px;
 }
 
@@ -387,7 +379,6 @@
     stroke: var(--hero-gold, #B88A62) !important;
 }
 
-/* ✅ System fonts */
 .site-footer,
 .footer-col h4,
 .footer-tagline,
@@ -402,81 +393,67 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
 }
 </style>
+
 <script>
+// ✅ CACHE CONFIG
+const CACHE_DURATION = 5 * 60 * 1000;
+
+function getCache(key) {
+    try {
+        const cached = localStorage.getItem('footer_' + key);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed && (Date.now() - parsed.timestamp) < CACHE_DURATION) {
+                return parsed.data;
+            }
+        }
+    } catch(e) {}
+    return null;
+}
+
+function setCache(key, data) {
+    try {
+        localStorage.setItem('footer_' + key, JSON.stringify({
+            data: data,
+            timestamp: Date.now()
+        }));
+    } catch(e) {}
+}
+
 async function initFooter() {
     try {
         if (!window.API_BASE_URL) return;
 
-        const settingsRes = await fetch(`${window.API_BASE_URL}/app-settings`);
-        const settingsData = await settingsRes.json();
+        // ✅ CHECK CACHE
+        const cachedSettings = getCache('app_settings');
+        const cachedOrg = getCache('organization');
+        const cachedCategories = getCache('categories');
+
+        // ✅ RENDER FROM CACHE IF AVAILABLE
+        if (cachedSettings) renderAppSettings(cachedSettings);
+        if (cachedOrg) renderOrganization(cachedOrg);
+        if (cachedCategories) renderCategories(cachedCategories);
+
+        // ✅ FETCH FRESH IN BACKGROUND
+        const [settingsData, orgData, catData] = await Promise.all([
+            fetch(`${window.API_BASE_URL}/app-settings`).then(r => r.json()).catch(() => ({ success: false })),
+            fetch(`${window.API_BASE_URL}/organization/footer-details`).then(r => r.json()).catch(() => ({ success: false })),
+            fetch(`${window.API_BASE_URL}/categories`).then(r => r.json()).catch(() => ({ success: false }))
+        ]);
 
         if (settingsData.success) {
-            const logo = settingsData.data.header_logo;
-            const footerLogo = document.getElementById('footer-logo');
-            if (footerLogo && logo) {
-                footerLogo.src = logo;
-                footerLogo.style.display = 'block';
-                footerLogo.onerror = function() {
-                    this.style.display = 'none';
-                };
-            }
+            setCache('app_settings', settingsData.data);
+            renderAppSettings(settingsData.data);
         }
-const orgRes = await fetch(
-    `${window.API_BASE_URL}/organization/footer-details`
-);
-
-        const orgData = await orgRes.json();
 
         if (orgData.success) {
-
-            const org = orgData.data;
-
-            document.getElementById('footerAddress').textContent =
-            [
-                org.address,
-                org.city,
-                org.state,
-                org.country,
-                org.pincode
-            ]
-            .filter(Boolean)
-            .join(', ');
-
-            document.getElementById('footerEmail').textContent =
-                org.email || '';
-
-            document.getElementById('footerEmail').href =
-                `mailto:${org.email}`;
-
-            document.getElementById('footerPhone').textContent =
-                org.mobile || '';
-
-            document.getElementById('footerPhone').href =
-                `tel:${org.mobile}`;
-
-            document.getElementById('footerHours').textContent =
-                org.business_hours || '';
+            setCache('organization', orgData.data);
+            renderOrganization(orgData.data);
         }
-        const catRes = await fetch(`${window.API_BASE_URL}/categories`);
-        const catData = await catRes.json();
 
         if (catData.success) {
-            const list = document.getElementById('footerCategoriesList');
-            const categories = catData.data.slice(0, 6);
-            if (list) {
-                list.innerHTML = categories.map(cat => {
-                    const slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                    const linkUrl = `/collection/${slug}`;
-                    
-                    return `
-                        <li>
-                            <a href="${linkUrl}">
-                                ${cat.name}
-                            </a>
-                        </li>
-                    `;
-                }).join('');
-            }
+            setCache('categories', catData.data);
+            renderCategories(catData.data);
         }
 
         const yearEl = document.getElementById('footerYear');
@@ -487,6 +464,56 @@ const orgRes = await fetch(
     } catch (err) {
         console.error('Footer error:', err);
     }
+}
+
+function renderAppSettings(settings) {
+    const logo = settings.header_logo;
+    const footerLogo = document.getElementById('footer-logo');
+    if (footerLogo && logo) {
+        footerLogo.src = logo;
+        footerLogo.style.display = 'block';
+        footerLogo.onerror = function() {
+            this.style.display = 'none';
+        };
+    }
+}
+
+function renderOrganization(org) {
+    const addressEl = document.getElementById('footerAddress');
+    if (addressEl) {
+        addressEl.textContent = [
+            org.address, org.city, org.state, org.country, org.pincode
+        ].filter(Boolean).join(', ');
+    }
+
+    const emailEl = document.getElementById('footerEmail');
+    if (emailEl) {
+        emailEl.textContent = org.email || '';
+        emailEl.href = `mailto:${org.email}`;
+    }
+
+    const phoneEl = document.getElementById('footerPhone');
+    if (phoneEl) {
+        phoneEl.textContent = org.mobile || '';
+        phoneEl.href = `tel:${org.mobile}`;
+    }
+
+    const hoursEl = document.getElementById('footerHours');
+    if (hoursEl) {
+        hoursEl.textContent = org.business_hours || '';
+    }
+}
+
+function renderCategories(categories) {
+    const list = document.getElementById('footerCategoriesList');
+    if (!list) return;
+
+    const cats = categories.slice(0, 6);
+    list.innerHTML = cats.map(cat => {
+        const slug = cat.slug || cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const linkUrl = `/collection/${slug}`;
+        return `<li><a href="${linkUrl}">${cat.name}</a></li>`;
+    }).join('');
 }
 
 function checkLoginAndTrack() {

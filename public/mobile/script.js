@@ -35,6 +35,29 @@ class RapidRetailsEngine {
         this.categoriesLoaded = false;
         this.bannersLoaded = false;
         this.productsLoaded = false;
+        this.loadCacheFromStorage();
+    }
+
+    loadCacheFromStorage() {
+        try {
+            const cached = sessionStorage.getItem('landing_cache');
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Date.now() - parsed.timestamp < 300000) {
+                    this.apiCache = new Map(Object.entries(parsed.data));
+                }
+            }
+        } catch(e) {}
+    }
+
+    saveCacheToStorage() {
+        try {
+            const data = {
+                timestamp: Date.now(),
+                data: Object.fromEntries(this.apiCache)
+            };
+            sessionStorage.setItem('landing_cache', JSON.stringify(data));
+        } catch(e) {}
     }
 
     async init() {
@@ -419,9 +442,76 @@ renderAllCategoriesPopup() {
 
     initSearchRedirect() {
         const mobileSearchInput = document.getElementById("landing-search");
-        if (mobileSearchInput) {
-            mobileSearchInput.addEventListener("focus", () => window.location.href = "/search");
-        }
+        if (!mobileSearchInput) return;
+        
+        let suggestionsContainer = null;
+        let abortController = null;
+        let debounceTimer = null;
+        
+        const getContainer = () => {
+            if (!suggestionsContainer) {
+                suggestionsContainer = document.createElement('div');
+                suggestionsContainer.id = 'mobile-search-suggestions';
+                suggestionsContainer.style.cssText = 'position:absolute;top:100%;left:0;right:0;background:white;border-radius:0 0 12px 12px;box-shadow:0 8px 20px rgba(0,0,0,0.1);z-index:9999;max-height:300px;overflow-y:auto;display:none;border:1px solid #e0e0e0;border-top:none;';
+                mobileSearchInput.parentNode.style.position = 'relative';
+                mobileSearchInput.parentNode.appendChild(suggestionsContainer);
+            }
+            return suggestionsContainer;
+        };
+        
+        const fetchSuggestions = async (query) => {
+            if (abortController) abortController.abort();
+            abortController = new AbortController();
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(query)}`, {
+                    signal: abortController.signal
+                });
+                const data = await response.json();
+                
+                const container = getContainer();
+                if (data.success && data.data && data.data.length > 0) {
+                    container.innerHTML = data.data.slice(0, 6).map(p => {
+                        const imgHtml = p.image_url ? `<img src="${this.resolveImage(p.image_url)}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;">` : '';
+                        return `<div style="padding:12px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:12px;" onclick="window.location.href='/product/${p.slug}'">${imgHtml}<div><div style="font-size:14px;font-weight:500;color:#333;">${p.name}</div><div style="font-size:12px;color:#666;">₹${p.price}</div></div></div>`;
+                    }).join('');
+                    container.style.display = 'block';
+                } else {
+                    container.innerHTML = `<div style="padding:16px;color:#999;text-align:center;">No results found</div>`;
+                    container.style.display = 'block';
+                }
+            } catch(e) {
+                if (e.name !== 'AbortError') console.log(e);
+            }
+        };
+        
+        mobileSearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            const container = getContainer();
+            clearTimeout(debounceTimer);
+            if (query.length < 2) {
+                container.style.display = 'none';
+                return;
+            }
+            debounceTimer = setTimeout(() => fetchSuggestions(query), 300);
+        });
+        
+        mobileSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const query = mobileSearchInput.value.trim();
+                if (query) {
+                    window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                }
+            }
+        });
+        
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('mobile-search-suggestions');
+            if (container && !mobileSearchInput.contains(e.target) && !container.contains(e.target)) {
+                container.style.display = 'none';
+            }
+        });
     }
 
     renderBottomNav() {
@@ -482,11 +572,29 @@ renderAllCategoriesPopup() {
     }
 
     async initLanding() {
+        const cacheKey = 'landing_all_data';
+        const cached = this.apiCache.get(cacheKey);
+        
+        if (cached && Date.now() - cached.timestamp < 300000) {
+            this.allCategories = cached.data.categories || [];
+            this.allBanners = cached.data.banners || [];
+            this.topSellingProducts = cached.data.products || [];
+            this.categoriesLoaded = true;
+            this.bannersLoaded = true;
+            this.productsLoaded = true;
+            await this.renderAllSections();
+            this.initialized = true;
+            this.hideSkeleton();
+            this.refreshLandingData();
+            return;
+        }
+        
         const [catsRes, bannersRes, topSellingRes] = await Promise.all([
             fetch(APP_CONFIG.ENDPOINTS.CATEGORIES).then(r => r.json()),
             fetch(APP_CONFIG.ENDPOINTS.BANNERS).then(r => r.json()),
             fetch(APP_CONFIG.ENDPOINTS.TOP_SELLING).then(r => r.json())
         ]);
+        
         if (catsRes.success) {
             this.allCategories = catsRes.data;
             this.categoriesLoaded = true;
@@ -499,9 +607,36 @@ renderAllCategoriesPopup() {
             this.topSellingProducts = Array.isArray(topSellingRes.data) ? topSellingRes.data : (topSellingRes.data.products || []);
             this.productsLoaded = true;
         }
+        
+        this.apiCache.set(cacheKey, {
+            data: {
+                categories: this.allCategories,
+                banners: this.allBanners,
+                products: this.topSellingProducts
+            },
+            timestamp: Date.now()
+        });
+        this.saveCacheToStorage();
+        
         if (this.isLoggedIn) {
             this.fetchUserCategoryOrder().catch(() => {});
         }
+        
+        await this.renderAllSections();
+        this.initialized = true;
+        this.hideSkeleton();
+        
+        window.addEventListener('resize', () => {
+            clearTimeout(this.styleResizeTimer);
+            this.styleResizeTimer = setTimeout(() => {
+                if (this.page === 'landing' && this.initialized) {
+                    this.renderStyleSpotlight();
+                }
+            }, 200);
+        });
+    }
+
+    async renderAllSections() {
         await Promise.all([
             this.renderHeroSlider(),
             this.renderTrending(),
@@ -513,19 +648,55 @@ renderAllCategoriesPopup() {
             this.renderMidBanner(),
             this.renderFeaturedCollections()
         ]);
-        this.initialized = true;
+    }
+
+    hideSkeleton() {
         const skeleton = document.getElementById('skeleton-loader');
         const realContent = document.getElementById('real-content');
         if (skeleton) skeleton.style.display = 'none';
         if (realContent) realContent.style.display = 'block';
-        window.addEventListener('resize', () => {
-            clearTimeout(this.styleResizeTimer);
-            this.styleResizeTimer = setTimeout(() => {
-                if (this.page === 'landing' && this.initialized) {
-                    this.renderStyleSpotlight();
+    }
+
+    async refreshLandingData() {
+        setTimeout(async () => {
+            try {
+                const [catsRes, bannersRes, topSellingRes] = await Promise.all([
+                    fetch(APP_CONFIG.ENDPOINTS.CATEGORIES).then(r => r.json()),
+                    fetch(APP_CONFIG.ENDPOINTS.BANNERS).then(r => r.json()),
+                    fetch(APP_CONFIG.ENDPOINTS.TOP_SELLING).then(r => r.json())
+                ]);
+                
+                let updated = false;
+                if (catsRes.success && JSON.stringify(catsRes.data) !== JSON.stringify(this.allCategories)) {
+                    this.allCategories = catsRes.data;
+                    updated = true;
                 }
-            }, 200);
-        });
+                if (bannersRes.success && JSON.stringify(bannersRes.data) !== JSON.stringify(this.allBanners)) {
+                    this.allBanners = bannersRes.data;
+                    updated = true;
+                }
+                if (topSellingRes.success && topSellingRes.data) {
+                    const newProducts = Array.isArray(topSellingRes.data) ? topSellingRes.data : (topSellingRes.data.products || []);
+                    if (JSON.stringify(newProducts) !== JSON.stringify(this.topSellingProducts)) {
+                        this.topSellingProducts = newProducts;
+                        updated = true;
+                    }
+                }
+                
+                if (updated) {
+                    this.apiCache.set('landing_all_data', {
+                        data: {
+                            categories: this.allCategories,
+                            banners: this.allBanners,
+                            products: this.topSellingProducts
+                        },
+                        timestamp: Date.now()
+                    });
+                    this.saveCacheToStorage();
+                    await this.renderAllSections();
+                }
+            } catch(e) {}
+        }, 3000);
     }
 
     async fetchUserCategoryOrder() {
@@ -1343,4 +1514,34 @@ async function trackPageImpression(pageName) {
             body: JSON.stringify({ page_name: pageName })
         });
     } catch (e) { console.error("Impression Error:", e); }
+}
+window.addEventListener('beforeunload', function() {
+    if (window.app && window.app.apiCache) {
+        try {
+            const data = {
+                timestamp: Date.now(),
+                data: Object.fromEntries(window.app.apiCache)
+            };
+            sessionStorage.setItem('landing_cache', JSON.stringify(data));
+        } catch(e) {}
+    }
+});
+
+window.addEventListener('popstate', function(e) {
+    if (e.state && e.state.page === 'landing' && window.app) {
+        try {
+            const cached = sessionStorage.getItem('landing_cache');
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Date.now() - parsed.timestamp < 300000) {
+                    window.app.apiCache = new Map(Object.entries(parsed.data));
+                    window.app.initLanding();
+                }
+            }
+        } catch(e) {}
+    }
+});
+
+if (window.location.pathname === '/' || window.location.pathname === '') {
+    history.replaceState({ page: 'landing' }, '');
 }
