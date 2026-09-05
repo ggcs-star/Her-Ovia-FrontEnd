@@ -396,7 +396,7 @@
 
 <script>
 // ✅ CACHE CONFIG
-const CACHE_DURATION = 5 * 60 * 1000;
+const CACHE_DURATION = 1 * 60 * 1000;
 
 function getCache(key) {
     try {
@@ -511,7 +511,11 @@ function renderCategories(categories) {
     const cats = categories.slice(0, 6);
     list.innerHTML = cats.map(cat => {
         const slug = cat.slug || cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        const linkUrl = `/collection/${slug}`;
+        let linkUrl = `/collection/${slug}`;
+
+        if (slug === 'trending' || slug === 'bestsellers') {
+            linkUrl = '/top-selling';
+        }
         return `<li><a href="${linkUrl}">${cat.name}</a></li>`;
     }).join('');
 }
