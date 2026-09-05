@@ -117,54 +117,124 @@ async function fetchBrandsForCartItems(cart) {
 }
 
 function getCartItemHTML(item, index, qty, price, itemTotal, isWeb) {
-    const variantType = item.variantType || 'Size';
-    const variantValue = item.variantValue || item.size || '';
+    // ✅ VARIANT VALUE - SAHI SE LE LO
+    let variantType = item.variantType || item.type || 'Size';
+    let variantValue = item.variantValue || item.size || '';
+    
+    // ✅ AGAR VARIANT VALUE EMPTY HAI TOH AVAILABLE VARIANTS SE LE LO
+    if (!variantValue && item.availableVariants && item.availableVariants.length > 0) {
+        const matched = item.availableVariants.find(v => v.id === item.variantId);
+        variantValue = matched?.value || item.availableVariants[0]?.value || '';
+    }
+    
+    // ✅ CHECK: KYA VARIANT HAI?
+    const hasVariant = variantValue && variantValue !== '' && variantValue !== 'Standard';
     const availableVariants = item.availableVariants || [];
     const { mrp, discountPercent } = getPriceInfo(item);
     const formattedDate = getDeliveryDate();
 
+    // ✅ VARIANT DISPLAY - SIRF TAB JAB ACTUAL VARIANT HO
+    let variantDisplayHtml = '';
+    if (hasVariant) {
+        variantDisplayHtml = `
+            <div class="cart-item-variant">
+                <span class="variant-label">${variantType}:</span>
+                <span class="variant-value">${variantValue}</span>
+            </div>
+        `;
+    }
+
     let selectorsHtml = '';
     
     if (isWeb) {
-        const variantsHtml = availableVariants.map(v => `
-            <div class="dropdown-option ${v.value === variantValue ? 'selected' : ''}" 
-                 data-value="${v.value}" data-price="${v.price || 0}" data-original="${v.originalPrice || 0}">
-                ${v.value}
-            </div>
-        `).join('');
-        
-        selectorsHtml = `
-            <div class="selector-wrapper">
-                <div class="selector-trigger" onclick="toggleVariantDropdown(${index})">
+        if (availableVariants.length > 1) {
+            const variantsHtml = availableVariants.map(v => `
+                <div class="dropdown-option ${v.value === variantValue ? 'selected' : ''}" 
+                     data-value="${v.value}" data-price="${v.price || 0}" data-original="${v.originalPrice || 0}">
+                    ${v.value}
+                </div>
+            `).join('');
+            
+            selectorsHtml = `
+                <div class="selector-wrapper">
+                    <div class="selector-trigger" onclick="toggleVariantDropdown(${index})">
+                        <span class="selector-label">${variantType}:</span>
+                        <span class="selector-value">${variantValue || 'Select'}</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="selector-dropdown" id="variant-dropdown-${index}">
+                        <div class="dropdown-options">${variantsHtml}</div>
+                    </div>
+                </div>
+                <div class="selector-wrapper">
+                    <div class="qty-control">
+                        <button class="qty-btn" onclick="updateWebQty(${index}, -1)">−</button>
+                        <input type="number" class="qty-input" id="qty-input-${index}" value="${qty}" min="1" max="99" onchange="updateWebQtyFromInput(${index})">
+                        <button class="qty-btn" onclick="updateWebQty(${index}, 1)">+</button>
+                    </div>
+                </div>
+            `;
+        } else if (hasVariant) {
+            selectorsHtml = `
+                <div class="selector-wrapper">
+                    <div class="selector-label" style="font-size:12px;color:#666;font-weight:500;display:flex;align-items:center;gap:4px;">
+                        ${variantType}: <span style="color:#000;font-weight:600;">${variantValue}</span>
+                    </div>
+                </div>
+                <div class="selector-wrapper">
+                    <div class="qty-control">
+                        <button class="qty-btn" onclick="updateWebQty(${index}, -1)">−</button>
+                        <input type="number" class="qty-input" id="qty-input-${index}" value="${qty}" min="1" max="99" onchange="updateWebQtyFromInput(${index})">
+                        <button class="qty-btn" onclick="updateWebQty(${index}, 1)">+</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            selectorsHtml = `
+                <div class="selector-wrapper">
+                    <div class="qty-control">
+                        <button class="qty-btn" onclick="updateWebQty(${index}, -1)">−</button>
+                        <input type="number" class="qty-input" id="qty-input-${index}" value="${qty}" min="1" max="99" onchange="updateWebQtyFromInput(${index})">
+                        <button class="qty-btn" onclick="updateWebQty(${index}, 1)">+</button>
+                    </div>
+                </div>
+            `;
+        }
+    } else {
+        if (availableVariants.length > 1) {
+            selectorsHtml = `
+                <div class="selector-box" onclick="openSizePopup(${index}, '${variantType}', '${variantValue || ''}')">
                     <span class="selector-label">${variantType}:</span>
-                    <span class="selector-value">${variantValue}</span>
+                    <span class="selector-value">${variantValue || 'Select'}</span>
                     <span class="dropdown-arrow">▼</span>
                 </div>
-                <div class="selector-dropdown" id="variant-dropdown-${index}">
-                    <div class="dropdown-options">${variantsHtml}</div>
+                <div class="selector-box" onclick="openQtyPopup(${index}, ${qty})">
+                    <span class="selector-label">Qty:</span>
+                    <span class="selector-value">${qty}</span>
+                    <span class="dropdown-arrow">▼</span>
                 </div>
-            </div>
-            <div class="selector-wrapper">
-                <div class="qty-control">
-                    <button class="qty-btn" onclick="updateWebQty(${index}, -1)">−</button>
-                    <input type="number" class="qty-input" id="qty-input-${index}" value="${qty}" min="1" max="99" onchange="updateWebQtyFromInput(${index})">
-                    <button class="qty-btn" onclick="updateWebQty(${index}, 1)">+</button>
+            `;
+        } else if (hasVariant) {
+            selectorsHtml = `
+                <div class="selector-box" style="cursor:default;background:#f8f8f8;">
+                    <span class="selector-label">${variantType}:</span>
+                    <span class="selector-value" style="font-weight:600;">${variantValue}</span>
                 </div>
-            </div>
-        `;
-    } else {
-        selectorsHtml = `
-            <div class="selector-box" onclick="openSizePopup(${index}, '${variantType}', '${variantValue}')">
-                <span class="selector-label">${variantType}:</span>
-                <span class="selector-value">${variantValue}</span>
-                <span class="dropdown-arrow">▼</span>
-            </div>
-            <div class="selector-box" onclick="openQtyPopup(${index}, ${qty})">
-                <span class="selector-label">Qty:</span>
-                <span class="selector-value">${qty}</span>
-                <span class="dropdown-arrow">▼</span>
-            </div>
-        `;
+                <div class="selector-box" onclick="openQtyPopup(${index}, ${qty})">
+                    <span class="selector-label">Qty:</span>
+                    <span class="selector-value">${qty}</span>
+                    <span class="dropdown-arrow">▼</span>
+                </div>
+            `;
+        } else {
+            selectorsHtml = `
+                <div class="selector-box" onclick="openQtyPopup(${index}, ${qty})">
+                    <span class="selector-label">Qty:</span>
+                    <span class="selector-value">${qty}</span>
+                    <span class="dropdown-arrow">▼</span>
+                </div>
+            `;
+        }
     }
 
     return `
@@ -177,6 +247,7 @@ function getCartItemHTML(item, index, qty, price, itemTotal, isWeb) {
                 <div class="cart-item-info">
                     <div class="cart-item-brand">${item.brand || ''}</div>
                     <div class="cart-item-name">${item.name}</div>
+                    ${variantDisplayHtml}
                     <div class="cart-item-rating">
                         <span class="stars">★★★★☆</span>
                         <span class="rating-count">4.5 | 33</span>
