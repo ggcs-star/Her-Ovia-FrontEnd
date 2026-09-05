@@ -1,7 +1,7 @@
-const API_BASE_URL = window.API_BASE_URL;
-const CACHE_DURATION = 5 * 60 * 1000;
-
 (function() {
+
+    const API_BASE_URL = window.API_BASE_URL;
+    const CACHE_DURATION = 1 * 60 * 1000;
     if (!document.body.classList.contains('product-detail-page') && !document.body.classList.contains('category-products-page')) return;
     
     let cartItems = JSON.parse(localStorage.getItem('cart')) || [];
@@ -20,26 +20,73 @@ const CACHE_DURATION = 5 * 60 * 1000;
     let currentReviewIndex = 0;
     let imageTimer = null;
     
-    function getCache(key) {
+    // ==========================================================
+    // PRODUCT DETAIL CACHE - STALE WHILE REVALIDATE
+    // Cache is used for instant UI; API remains the source of truth.
+    // ==========================================================
+    const PDP_CACHE_PREFIX = 'pdp_';
+    const PDP_CACHE_VERSION = 2;
+    const pdpInFlight = new Map();
+
+    function readCacheEntry(key) {
         try {
-            const cached = localStorage.getItem('pdp_' + key);
-            if (cached) {
-                const parsed = JSON.parse(cached);
-                if (parsed && (Date.now() - parsed.timestamp) < CACHE_DURATION) {
-                    return parsed.data;
-                }
-            }
-        } catch(e) {}
-        return null;
+            const raw = localStorage.getItem(PDP_CACHE_PREFIX + key);
+            if (!raw) return null;
+
+            const parsed = JSON.parse(raw);
+            if (!parsed || parsed.version !== PDP_CACHE_VERSION || !parsed.timestamp) return null;
+
+            return {
+                data: parsed.data,
+                timestamp: parsed.timestamp,
+                age: Date.now() - parsed.timestamp
+            };
+        } catch (error) {
+            return null;
+        }
     }
-    
+
+    function getCache(key) {
+        const entry = readCacheEntry(key);
+        return entry?.data ?? null;
+    }
+
     function setCache(key, data) {
         try {
-            localStorage.setItem('pdp_' + key, JSON.stringify({
+            localStorage.setItem(PDP_CACHE_PREFIX + key, JSON.stringify({
+                version: PDP_CACHE_VERSION,
                 data: data,
                 timestamp: Date.now()
             }));
-        } catch(e) {}
+        } catch (error) {
+            console.warn('PDP cache write failed:', error);
+        }
+    }
+
+    function hasDataChanged(oldData, newData) {
+        try {
+            return JSON.stringify(oldData) !== JSON.stringify(newData);
+        } catch (error) {
+            return true;
+        }
+    }
+
+    async function fetchJsonOnce(url, cacheKey = '') {
+        const requestKey = cacheKey || url;
+
+        if (pdpInFlight.has(requestKey)) {
+            return pdpInFlight.get(requestKey);
+        }
+
+        const request = fetch(url, { cache: 'no-store' })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .finally(() => pdpInFlight.delete(requestKey));
+
+        pdpInFlight.set(requestKey, request);
+        return request;
     }
     
     function getProductPrice(product) {
@@ -760,63 +807,180 @@ const CACHE_DURATION = 5 * 60 * 1000;
     window.location.href = '/checkout/shipping';
 }
     
+    async function fetchFreshProduct(slug, cachedProduct = null, renderFresh = true) {
+        try {
+            const data = await fetchJsonOnce(`${API_BASE_URL}/products/${encodeURIComponent(slug)}`, 'product_' + slug + '_api');
+
+            if (!data?.success || !data.data) {
+                if (!cachedProduct) showError('Product not found');
+                return null;
+            }
+
+            const freshProduct = data.data;
+            const changed = !cachedProduct || hasDataChanged(cachedProduct, freshProduct);
+
+            setCache('product_' + slug, freshProduct);
+
+            if (changed && renderFresh) {
+                currentProduct = freshProduct;
+                window.currentProduct = freshProduct;
+                renderProduct(freshProduct);
+                startImageAutoScroll();
+            }
+
+            return freshProduct;
+        } catch (error) {
+            console.warn('Product background refresh failed:', error);
+            if (!cachedProduct) showError('Failed to load product');
+            return null;
+        }
+    }
+
     async function fetchProduct() {
         if (document.body.classList.contains('category-products-page')) return;
-        const pathParts = window.location.pathname.split('/');
+
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
         const slug = pathParts[pathParts.length - 1];
-        
+        if (!slug) return;
+
         const cached = getCache('product_' + slug);
+
+        // 1) CACHE FIRST: render immediately.
         if (cached) {
             currentProduct = cached;
             window.currentProduct = cached;
-            await fetchBrandFromCategory();
-            await Promise.all([fetchCoupons(), fetchReviews()]);
+
+            await Promise.all([
+                fetchBrandFromCategory(),
+                fetchCoupons(),
+                fetchReviews()
+            ]);
+
             renderProduct(cached);
             startImageAutoScroll();
+
+            // 2) API SECOND: refresh in background without blocking UI.
+            fetchFreshProduct(slug, cached).then(async freshProduct => {
+                if (!freshProduct) return;
+
+                // Keep brand fresh when API returned changed product data.
+                currentProduct = freshProduct;
+                window.currentProduct = freshProduct;
+                await fetchBrandFromCategory();
+            });
+
             return;
         }
-        
-        try {
-            const response = await fetch(`${API_BASE_URL}/products/${slug}`);
-            const data = await response.json();
-            if (data.success && data.data) {
-                currentProduct = data.data;
-                window.currentProduct = data.data;
-                setCache('product_' + slug, data.data);
-                await fetchBrandFromCategory();
-                await Promise.all([fetchCoupons(), fetchReviews()]);
-                renderProduct(data.data);
-                startImageAutoScroll();
-            } else showError('Product not found');
-        } catch (error) { console.error('Error:', error); showError('Failed to load product'); }
+
+        // 3) NO CACHE: API is required for first render.
+        const freshProduct = await fetchFreshProduct(slug, null, false);
+        if (!freshProduct) return;
+
+        currentProduct = freshProduct;
+        window.currentProduct = freshProduct;
+
+        await Promise.all([
+            fetchBrandFromCategory(),
+            fetchCoupons(),
+            fetchReviews()
+        ]);
+
+        // Render only after product + dependent data are ready.
+        renderProduct(freshProduct);
+        startImageAutoScroll();
     }
     
     async function fetchBrandFromCategory() {
         if (!currentProduct?.category?.id) return;
+
         try {
-            const res = await fetch(`${API_BASE_URL}/categories/${currentProduct.category.id}/products`);
-            const data = await res.json();
-            if (data.success && data.data?.products) {
-                const productInCategory = data.data.products.find(p => p.id == currentProduct.id);
+            const categoryId = currentProduct.category.id;
+            const cacheKey = 'category_products_' + categoryId;
+            const cached = getCache(cacheKey);
+
+            // Use category cache immediately when available.
+            if (cached?.products) {
+                const productInCategory = cached.products.find(p => p.id == currentProduct.id);
                 if (productInCategory?.brand) currentProduct.brand = productInCategory.brand;
+
+                // Always revalidate in background.
+                fetchFreshCategoryProducts(categoryId, cached).then(products => {
+                    const productInCategoryFresh = products?.find(p => p.id == currentProduct.id);
+                    if (productInCategoryFresh?.brand && productInCategoryFresh.brand !== currentProduct.brand) {
+                        currentProduct.brand = productInCategoryFresh.brand;
+                    }
+                });
+                return;
             }
-        } catch (error) { console.error('Error fetching brand:', error); }
+
+            const products = await fetchFreshCategoryProducts(categoryId);
+            const productInCategory = products?.find(p => p.id == currentProduct.id);
+            if (productInCategory?.brand) currentProduct.brand = productInCategory.brand;
+        } catch (error) {
+            console.error('Error fetching brand:', error);
+        }
+    }
+
+    async function fetchFreshCategoryProducts(categoryId, cachedProducts = null) {
+        try {
+            const data = await fetchJsonOnce(
+                `${API_BASE_URL}/categories/${categoryId}/products`,
+                'category_products_api_' + categoryId
+            );
+
+            if (!data?.success || !data.data?.products) return cachedProducts?.products || [];
+
+            const products = data.data.products;
+            if (!cachedProducts || hasDataChanged(cachedProducts.products, products)) {
+                setCache('category_products_' + categoryId, { products });
+            } else {
+                // Refresh timestamp even when payload is identical.
+                setCache('category_products_' + categoryId, { products });
+            }
+
+            return products;
+        } catch (error) {
+            console.warn('Category products refresh failed:', error);
+            return cachedProducts?.products || [];
+        }
     }
     
     async function fetchCoupons() {
         const cached = getCache('coupons');
+
+        // Cache first: offers can render immediately.
         if (cached) {
             allCoupons = cached;
-            return;
+
+            // API refresh in background.
+            fetchFreshCoupons(cached).then(freshCoupons => {
+                if (!freshCoupons) return;
+                if (hasDataChanged(cached, freshCoupons)) {
+                    allCoupons = freshCoupons;
+                    setCache('coupons', freshCoupons);
+                    renderOffers();
+                }
+            });
+
+            return cached;
         }
+
+        const freshCoupons = await fetchFreshCoupons();
+        allCoupons = freshCoupons || [];
+        return allCoupons;
+    }
+
+    async function fetchFreshCoupons(cachedCoupons = null) {
         try {
-            const res = await fetch(`${API_BASE_URL}/coupons`);
-            const data = await res.json();
-            if (data.success && data.data) {
-                allCoupons = data.data;
-                setCache('coupons', data.data);
-            }
-        } catch (error) { console.error('Error fetching coupons:', error); allCoupons = []; }
+            const data = await fetchJsonOnce(`${API_BASE_URL}/coupons`, 'coupons_api');
+            if (!data?.success || !data.data) return cachedCoupons || [];
+
+            setCache('coupons', data.data);
+            return data.data;
+        } catch (error) {
+            console.warn('Coupons refresh failed:', error);
+            return cachedCoupons || [];
+        }
     }
     
     async function fetchReviews() {
@@ -831,26 +995,47 @@ const CACHE_DURATION = 5 * 60 * 1000;
         const similarSection = document.querySelector('.pdp-similar');
         const grid = document.getElementById('similarGrid');
         if (!grid || !similarSection) return;
+
         const categoryId = currentProduct?.category?.id;
-        if (!categoryId) { similarSection.style.display = 'none'; return; }
-        
-        const cached = getCache('similar_' + currentProduct?.id);
-        if (cached) {
-            renderSimilarProducts(cached, grid, similarSection);
+        const productId = currentProduct?.id;
+        if (!categoryId || !productId) {
+            similarSection.style.display = 'none';
             return;
         }
-        
+
+        const cacheKey = 'similar_' + productId;
+        const cached = getCache(cacheKey);
+
+        // Cache first.
+        if (cached) {
+            renderSimilarProducts(cached, grid, similarSection);
+
+            // Fresh category products in background.
+            fetchFreshCategoryProducts(categoryId).then(products => {
+                const freshSimilar = (products || []).filter(p => p.id != productId).slice(0, 8);
+                if (hasDataChanged(cached, freshSimilar)) {
+                    setCache(cacheKey, freshSimilar);
+                    renderSimilarProducts(freshSimilar, grid, similarSection);
+                }
+            });
+
+            return;
+        }
+
         try {
-            const res = await fetch(`${API_BASE_URL}/categories/${categoryId}/products`);
-            const data = await res.json();
-            if (data.success && data.data?.products) {
-                const otherProducts = data.data.products.filter(p => p.id != currentProduct.id).slice(0, 8);
-                if (otherProducts.length > 0) {
-                    setCache('similar_' + currentProduct?.id, otherProducts);
-                    renderSimilarProducts(otherProducts, grid, similarSection);
-                } else similarSection.style.display = 'none';
-            } else similarSection.style.display = 'none';
-        } catch (error) { console.error('Error fetching similar products:', error); similarSection.style.display = 'none'; }
+            const products = await fetchFreshCategoryProducts(categoryId);
+            const otherProducts = (products || []).filter(p => p.id != productId).slice(0, 8);
+
+            if (otherProducts.length > 0) {
+                setCache(cacheKey, otherProducts);
+                renderSimilarProducts(otherProducts, grid, similarSection);
+            } else {
+                similarSection.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error fetching similar products:', error);
+            similarSection.style.display = 'none';
+        }
     }
     
     function renderSimilarProducts(otherProducts, grid, similarSection) {
@@ -869,18 +1054,37 @@ const CACHE_DURATION = 5 * 60 * 1000;
     
     async function fetchAppSettingsForProductPage() {
         const cached = getCache('app_settings');
+
+        // Instant cached logo/settings.
         if (cached) {
             applyAppSettings(cached);
-            return;
+
+            // Fresh API check in background.
+            fetchFreshAppSettings(cached).then(freshSettings => {
+                if (freshSettings && hasDataChanged(cached, freshSettings)) {
+                    applyAppSettings(freshSettings);
+                }
+            });
+
+            return cached;
         }
+
+        const freshSettings = await fetchFreshAppSettings();
+        if (freshSettings) applyAppSettings(freshSettings);
+        return freshSettings;
+    }
+
+    async function fetchFreshAppSettings(cachedSettings = null) {
         try {
-            const response = await fetch(`${API_BASE_URL}/app-settings`);
-            const data = await response.json();
-            if (data.success) {
-                setCache('app_settings', data.data);
-                applyAppSettings(data.data);
-            }
-        } catch (error) { console.error('Error fetching app settings:', error); }
+            const data = await fetchJsonOnce(`${API_BASE_URL}/app-settings`, 'app_settings_api');
+            if (!data?.success) return cachedSettings;
+
+            setCache('app_settings', data.data);
+            return data.data;
+        } catch (error) {
+            console.warn('App settings refresh failed:', error);
+            return cachedSettings;
+        }
     }
     
     function applyAppSettings(settings) {
@@ -893,23 +1097,48 @@ const CACHE_DURATION = 5 * 60 * 1000;
         if (mobileLogo && headerLogo) mobileLogo.src = headerLogo;
     }
     
-    function loadProductDesktopCategories() {
+    async function loadProductDesktopCategories() {
         const navMenu = document.getElementById('productDesktopNavMenu');
         const popup = document.getElementById('productDesktopPopup');
         if (!navMenu) return;
-        
+
+        // Prefer the shared service from common script.js.
+        if (window.landingService?.getCategories) {
+            try {
+                const categories = await window.landingService.getCategories();
+                if (categories?.length) renderDesktopCategories(categories, navMenu, popup);
+                return;
+            } catch (error) {
+                console.warn('Shared category service failed:', error);
+            }
+        }
+
         const cached = getCache('categories');
         if (cached) {
             renderDesktopCategories(cached, navMenu, popup);
+
+            fetchFreshCategories(cached).then(fresh => {
+                if (fresh && hasDataChanged(cached, fresh)) {
+                    renderDesktopCategories(fresh, navMenu, popup);
+                }
+            });
             return;
         }
-        
-        fetch(`${API_BASE_URL}/categories`).then(res => res.json()).then(data => {
-            if (data.success) {
-                setCache('categories', data.data);
-                renderDesktopCategories(data.data, navMenu, popup);
-            }
-        }).catch(err => console.error('Error loading categories:', err));
+
+        const fresh = await fetchFreshCategories();
+        if (fresh?.length) renderDesktopCategories(fresh, navMenu, popup);
+    }
+
+    async function fetchFreshCategories(cachedCategories = null) {
+        try {
+            const data = await fetchJsonOnce(`${API_BASE_URL}/categories`, 'categories_api');
+            if (!data?.success || !Array.isArray(data.data)) return cachedCategories || [];
+            setCache('categories', data.data);
+            return data.data;
+        } catch (error) {
+            console.warn('Categories refresh failed:', error);
+            return cachedCategories || [];
+        }
     }
     
     function renderDesktopCategories(categories, navMenu, popup) {
@@ -1123,42 +1352,9 @@ const CACHE_DURATION = 5 * 60 * 1000;
         updateCartBadge();
         fetchProduct();
         fetchAppSettingsForProductPage();
-        setTimeout(() => loadProductDesktopCategories(), 300);
+        loadProductDesktopCategories();
     });
 })();
-
-setTimeout(function() {
-    let categories = ['Necklace', 'Earrings', 'Maang Tikka', 'Bridal Sets', 'Bangles'];
-    let index = 0;
-    let isRotating = false;
-    let intervalId = null;
-    const input = document.getElementById('web-search-input');
-    if (!input) return;
-    async function fetchCategories() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/categories`);
-            const data = await response.json();
-            if (data.success && data.data.length > 0) {
-                categories = data.data.map(cat => cat.name);
-                if (!isRotating) startRotation();
-            } else {
-                if (!isRotating) startRotation();
-            }
-        } catch(e) {
-            if (!isRotating) startRotation();
-        }
-    }
-    function startRotation() {
-        if (isRotating) return;
-        isRotating = true;
-        input.placeholder = 'Search for ' + categories[0];
-        intervalId = setInterval(function() {
-            input.placeholder = 'Search for ' + categories[index];
-            index = (index + 1) % categories.length;
-        }, 3000);
-    }
-    fetchCategories();
-}, 2000);
 
 window.loadSimilarHoverImage = function(imgElement) {
     if (imgElement.dataset.loading === 'true') return;
@@ -1193,56 +1389,3 @@ window.loadSimilarHoverImage = function(imgElement) {
         });
 };
 
-(function() {
-    if (!document.body.classList.contains('product-detail-page')) return;
-    setTimeout(function() {
-        const input = document.getElementById('web-search-input');
-        if (!input) return;
-        let suggestionsBox = document.getElementById('web-search-suggestions');
-        if (!suggestionsBox) {
-            const parent = input.parentElement;
-            const div = document.createElement('div');
-            div.id = 'web-search-suggestions';
-            div.className = 'web-search-suggestions';
-            div.style.display = 'none';
-            parent.appendChild(div);
-            suggestionsBox = div;
-        }
-        let timer;
-        const renderSuggestions = (products) => {
-            let html = products.length ? products.map(p => `<div class="web-suggestion-item" onclick="window.location.href='/product/${p.slug}'">${p.name}</div>`).join('') : '<div class="web-suggestion-item">No results found</div>';
-            suggestionsBox.innerHTML = html;
-            suggestionsBox.style.display = 'block';
-        };
-        input.addEventListener("keydown", function(e) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                const q = this.value.trim();
-                if (q) {
-                    window.location.href = `/products?search=${encodeURIComponent(q)}`;
-                }
-            }
-        });
-        input.addEventListener("input", async (e) => {
-            clearTimeout(timer);
-            const q = e.target.value.trim();
-            if (q.length === 0) {
-                suggestionsBox.style.display = 'none';
-                suggestionsBox.innerHTML = '';
-                return;
-            }
-            timer = setTimeout(async () => {
-                try {
-                    const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`);
-                    const data = await res.json();
-                    if (data.success) renderSuggestions(data.data.products || []);
-                } catch(err) {}
-            }, 200);
-        });
-        document.addEventListener("click", (e) => {
-            if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
-                suggestionsBox.style.display = 'none';
-            }
-        });
-    }, 500);
-})();

@@ -2,12 +2,29 @@ const API_BASE_URL = window.API_BASE_URL || '';
 
 // ========== HELPER FUNCTIONS ==========
 function getCart() {
-    return JSON.parse(localStorage.getItem('cart')) || [];
+    try {
+        const cart = JSON.parse(localStorage.getItem('cart'));
+        return Array.isArray(cart) ? cart : [];
+    } catch (error) {
+        console.warn('Invalid cart data found. Resetting cart.');
+        localStorage.removeItem('cart');
+        return [];
+    }
 }
 
 function saveCart(cart) {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    const safeCart = Array.isArray(cart) ? cart : [];
+
+    try {
+        localStorage.setItem('cart', JSON.stringify(safeCart));
+    } catch (error) {
+        console.error('Unable to save cart:', error);
+        showToast('Unable to update cart', 'error');
+        return false;
+    }
+
     updateCartCountBadge();
+    return true;
 }
 
 function updateCartCountBadge() {
@@ -86,34 +103,168 @@ function getPriceInfo(item) {
 }
 
 // ========== CART RENDERING ==========
-async function fetchBrandsForCartItems(cart) {
-    if (!cart?.length) return cart;
-    const updatedCart = [...cart];
-    
-    for (let i = 0; i < updatedCart.length; i++) {
-        const item = updatedCart[i];
-        const hasBrand = item.brand && item.brand !== 'RAPID RETAIL' && item.brand !== 'H&M';
-        
-        if (!hasBrand && item.categoryId) {
-            try {
-                const res = await fetch(`${API_BASE_URL}/categories/${item.categoryId}/products`);
-                const data = await res.json();
-                if (data.success && data.data?.products) {
-                    const productInCategory = data.data.products.find(p => p.id == item.id);
-                    if (productInCategory?.brand) updatedCart[i].brand = productInCategory.brand;
-                }
-            } catch (error) { console.error('Error fetching brand:', error); }
-        }
-        
-        if ((!item.mrp || item.mrp === 0) && item.availableVariants?.length) {
-            const matchedVariant = item.availableVariants.find(v => v.value === item.variantValue);
-            if (matchedVariant?.originalPrice) {
-                updatedCart[i].mrp = matchedVariant.originalPrice;
-                updatedCart[i].originalPrice = matchedVariant.originalPrice;
-            }
+const CART_CACHE_DURATION = 1 * 60 * 1000;
+const cartCategoryCache = new Map();
+const cartCategoryInFlight = new Map();
+
+function readCartCategoryCache(categoryId) {
+    try {
+        const raw = localStorage.getItem(`cart_category_products_${categoryId}`);
+        if (!raw) return null;
+
+        const entry = JSON.parse(raw);
+        if (!entry || !Array.isArray(entry.products)) return null;
+
+        return {
+            products: entry.products,
+            timestamp: Number(entry.timestamp) || 0
+        };
+    } catch (error) {
+        console.warn('Cart category cache read failed:', error);
+        return null;
+    }
+}
+
+function writeCartCategoryCache(categoryId, products) {
+    const entry = {
+        products: Array.isArray(products) ? products : [],
+        timestamp: Date.now()
+    };
+
+    cartCategoryCache.set(String(categoryId), entry);
+
+    try {
+        localStorage.setItem(
+            `cart_category_products_${categoryId}`,
+            JSON.stringify(entry)
+        );
+    } catch (error) {
+        console.warn('Cart category cache write failed:', error);
+    }
+
+    return entry;
+}
+
+async function fetchCategoryProductsForCart(categoryId, forceRefresh = false) {
+    if (!categoryId) return null;
+
+    const key = String(categoryId);
+    const memoryCache = cartCategoryCache.get(key);
+    const localCache = memoryCache || readCartCategoryCache(categoryId);
+
+    if (!forceRefresh && localCache?.products?.length) {
+        cartCategoryCache.set(key, localCache);
+
+        if (Date.now() - localCache.timestamp < CART_CACHE_DURATION) {
+            return localCache.products;
         }
     }
-    return updatedCart;
+
+    if (cartCategoryInFlight.has(key)) {
+        return cartCategoryInFlight.get(key);
+    }
+
+    const request = fetch(`${API_BASE_URL}/categories/${encodeURIComponent(categoryId)}/products`, {
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store'
+    })
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            if (!data?.success || !Array.isArray(data.data?.products)) {
+                throw new Error('Invalid category products response');
+            }
+
+            writeCartCategoryCache(categoryId, data.data.products);
+            return data.data.products;
+        })
+        .finally(() => {
+            cartCategoryInFlight.delete(key);
+        });
+
+    cartCategoryInFlight.set(key, request);
+    return request;
+}
+
+async function enrichCartBrands(cart, forceRefresh = false) {
+    if (!Array.isArray(cart) || !cart.length) return cart;
+
+    const result = cart.map(item => ({ ...item }));
+    const categoryIds = [...new Set(
+        result
+            .filter(item => {
+                const hasBrand = item.brand &&
+                    item.brand !== 'RAPID RETAIL' &&
+                    item.brand !== 'H&M';
+                return !hasBrand && item.categoryId;
+            })
+            .map(item => String(item.categoryId))
+    )];
+
+    if (!categoryIds.length) return result;
+
+    const categoryResults = await Promise.allSettled(
+        categoryIds.map(categoryId =>
+            fetchCategoryProductsForCart(categoryId, forceRefresh)
+        )
+    );
+
+    const productsByCategory = new Map();
+
+    categoryResults.forEach((result, index) => {
+        if (result.status === 'fulfilled' && Array.isArray(result.value)) {
+            productsByCategory.set(categoryIds[index], result.value);
+        }
+    });
+
+    let changed = false;
+
+    result.forEach(item => {
+        const products = productsByCategory.get(String(item.categoryId));
+        if (!products) return;
+
+        const product = products.find(p => p.id == item.id);
+        if (product?.brand && product.brand !== item.brand) {
+            item.brand = product.brand;
+            changed = true;
+        }
+
+        if ((!item.mrp || item.mrp === 0) && item.availableVariants?.length) {
+            const matchedVariant = item.availableVariants.find(
+                v => v.value === item.variantValue
+            );
+
+            if (matchedVariant?.originalPrice) {
+                item.mrp = matchedVariant.originalPrice;
+                item.originalPrice = matchedVariant.originalPrice;
+                changed = true;
+            }
+        }
+    });
+
+    if (changed) {
+        localStorage.setItem('cart', JSON.stringify(result));
+        updateCartCountBadge();
+    }
+
+    return result;
+}
+
+function refreshCartDataInBackground(cart) {
+    enrichCartBrands(cart, true)
+        .then(updatedCart => {
+            if (!Array.isArray(updatedCart)) return;
+
+            const currentCart = getCart();
+            if (JSON.stringify(currentCart) !== JSON.stringify(updatedCart)) {
+                renderCart(updatedCart);
+            }
+        })
+        .catch(error => {
+            console.warn('Background cart refresh failed:', error);
+        });
 }
 
 function getCartItemHTML(item, index, qty, price, itemTotal, isWeb) {
@@ -177,8 +328,10 @@ function getCartItemHTML(item, index, qty, price, itemTotal, isWeb) {
         } else if (hasVariant) {
             selectorsHtml = `
                 <div class="selector-wrapper">
-                    <div class="selector-label" style="font-size:12px;color:#666;font-weight:500;display:flex;align-items:center;gap:4px;">
-                        ${variantType}: <span style="color:#000;font-weight:600;">${variantValue}</span>
+                    <div class="selector-trigger" style="cursor:default;">
+                        <span class="selector-label">${variantType}:</span>
+                        <span class="selector-value">${variantValue}</span>
+                        <span class="dropdown-arrow">▼</span>
                     </div>
                 </div>
                 <div class="selector-wrapper">
@@ -203,7 +356,7 @@ function getCartItemHTML(item, index, qty, price, itemTotal, isWeb) {
     } else {
         if (availableVariants.length > 1) {
             selectorsHtml = `
-                <div class="selector-box" onclick="openSizePopup(${index}, '${variantType}', '${variantValue || ''}')">
+                <div class="selector-box" onclick="openSizePopup(${index}, ${JSON.stringify(variantType)}, ${JSON.stringify(variantValue || '')})">
                     <span class="selector-label">${variantType}:</span>
                     <span class="selector-value">${variantValue || 'Select'}</span>
                     <span class="dropdown-arrow">▼</span>
@@ -356,18 +509,16 @@ function renderCart(items) {
 }
 
 function loadCart() {
-    let cart = getCart();
+    const cart = getCart();
+
     console.log('📦 Cart from localStorage:', cart.length);
-    
-    cart.forEach((item, idx) => {
-        console.log(`Item ${idx}: ${item.name} - Price: ${item.price}, MRP: ${item.mrp}, Variant: ${item.variantValue}`);
-    });
 
-    fetchBrandsForCartItems(cart).then(updatedCart => {
-        renderCart(updatedCart);
-    });
+    // Render immediately from the local cart.
+    // The cart should never wait for a non-critical API request.
+    renderCart(cart);
 
- 
+    // Enrich missing/old metadata in the background.
+    refreshCartDataInBackground(cart);
 }
 
 // ========== CART ITEM ACTIONS ==========
@@ -382,8 +533,9 @@ function removeItem(index) {
     }
     
     const token = localStorage.getItem('token');
-    if (token && window.cartItemIds?.[index]) {
-        fetch(`${API_BASE_URL}/cart/remove/${window.cartItemIds[index]}`, {
+    const serverCartItemId = window.cartItemIds?.[index];
+    if (token && serverCartItemId) {
+        fetch(`${API_BASE_URL}/cart/remove/${serverCartItemId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
         }).catch(err => console.warn('Server remove failed:', err));
@@ -491,7 +643,7 @@ function openSizePopup(index, variantType, currentValue) {
     const availableVariants = cart[index].availableVariants || [];
     const optionsHtml = `<div class="popup-options-grid">${availableVariants.map(v => `
         <div class="popup-option ${v.value === currentValue ? 'selected' : ''}" 
-             onclick="selectSizeFromPopup(${index}, '${v.value}', ${v.price || 0}, ${v.originalPrice || 0})">
+             onclick="selectSizeFromPopup(${index}, ${JSON.stringify(v.value)}, ${Number(v.price) || 0}, ${Number(v.originalPrice) || 0})">
             ${v.value}
         </div>
     `).join('')}</div>`;

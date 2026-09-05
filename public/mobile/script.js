@@ -16,6 +16,296 @@ const APP_CONFIG = {
     FALLBACK_IMAGE: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop',
 };
 
+class ApiClient {
+    constructor(baseUrl) {
+        this.baseUrl = String(baseUrl || '').replace(/\/+$/, '');
+    }
+
+    buildUrl(path) {
+        if (/^https?:\/\//i.test(path)) return path;
+        return `${this.baseUrl}/${String(path).replace(/^\/+/, '')}`;
+    }
+
+    async get(path, options = {}) {
+        const response = await fetch(this.buildUrl(path), {
+            method: 'GET',
+            ...options,
+            headers: {
+                Accept: 'application/json',
+                ...(options.headers || {}),
+            },
+        });
+
+        let data;
+        try {
+            data = await response.json();
+        } catch (_) {
+            throw new Error(`Invalid JSON response (${response.status})`);
+        }
+
+        if (!response.ok) {
+            const error = new Error(data?.message || `API request failed (${response.status})`);
+            error.status = response.status;
+            error.data = data;
+            throw error;
+        }
+
+        return data;
+    }
+
+    async post(path, body, options = {}) {
+        const response = await fetch(this.buildUrl(path), {
+            method: 'POST',
+            ...options,
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                ...(options.headers || {}),
+            },
+            body: JSON.stringify(body),
+        });
+
+        let data;
+        try {
+            data = await response.json();
+        } catch (_) {
+            throw new Error(`Invalid JSON response (${response.status})`);
+        }
+
+        if (!response.ok) {
+            const error = new Error(data?.message || `API request failed (${response.status})`);
+            error.status = response.status;
+            error.data = data;
+            throw error;
+        }
+
+        return data;
+    }
+}
+
+class LandingService {
+    constructor(api) {
+        this.api = api;
+        this.cacheKey = 'landing_all_data';
+        this.settingsCacheKey = 'app_settings_cache';
+        this.cacheTtl = 5 * 60 * 1000;
+        this.settingsTtl = 1 * 60 * 1000;
+        this.memoryCache = new Map();
+        this.inFlight = new Map();
+    }
+
+    readCache(key) {
+        const memory = this.memoryCache.get(key);
+        if (memory && Date.now() - memory.timestamp < this.getTtl(key)) {
+            return memory.data;
+        }
+        if (memory) this.memoryCache.delete(key);
+
+        try {
+            const raw = sessionStorage.getItem(key);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (!parsed?.timestamp || !('data' in parsed)) return null;
+
+            const ttl = this.getTtl(key);
+            if (Date.now() - parsed.timestamp >= ttl) {
+                sessionStorage.removeItem(key);
+                return null;
+            }
+
+            this.memoryCache.set(key, parsed);
+            return parsed.data;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    getTtl(key) {
+        if (key === this.settingsCacheKey) return this.settingsTtl;
+        return this.cacheTtl;
+    }
+
+    writeCache(key, data) {
+        const payload = { timestamp: Date.now(), data };
+        this.memoryCache.set(key, payload);
+        try {
+            sessionStorage.setItem(key, JSON.stringify(payload));
+        } catch (_) {}
+    }
+
+    normalizeProducts(response) {
+        if (!response?.success || !response.data) return [];
+        return Array.isArray(response.data)
+            ? response.data
+            : (response.data.products || []);
+    }
+
+    async getLandingData({ forceRefresh = false } = {}) {
+        if (!forceRefresh) {
+            const cached = this.readCache(this.cacheKey);
+            if (cached) return cached;
+        }
+
+        const [categories, banners, topSelling] = await Promise.all([
+            this.getCategories({ forceRefresh }),
+            this.getBanners({ forceRefresh }),
+            this.getTopSelling({ forceRefresh }),
+        ]);
+
+        const data = {
+            categories: Array.isArray(categories) ? categories : [],
+            banners: Array.isArray(banners) ? banners : [],
+            products: Array.isArray(topSelling) ? topSelling : this.normalizeProducts(topSelling),
+        };
+
+        this.writeCache(this.cacheKey, data);
+        return data;
+    }
+
+    async getCategories({ forceRefresh = false } = {}) {
+        const cacheKey = 'categories_all';
+        const cached = forceRefresh ? null : this.readCache(cacheKey);
+        if (cached) return cached;
+
+        if (!forceRefresh && this.inFlight.has(cacheKey)) {
+            return this.inFlight.get(cacheKey);
+        }
+
+        const promise = this.api.get('/categories')
+            .then(response => {
+                const data = response?.success ? (response.data || []) : [];
+                this.writeCache(cacheKey, data);
+                return data;
+            })
+            .finally(() => {
+                this.inFlight.delete(cacheKey);
+            });
+
+        this.inFlight.set(cacheKey, promise);
+        return promise;
+    }
+
+    async getBanners({ forceRefresh = false } = {}) {
+        const cacheKey = 'banners_all';
+        const cached = forceRefresh ? null : this.readCache(cacheKey);
+        if (cached) return cached;
+
+        if (!forceRefresh && this.inFlight.has(cacheKey)) {
+            return this.inFlight.get(cacheKey);
+        }
+
+        const promise = this.api.get('/banners')
+            .then(response => {
+                const data = response?.success ? (response.data || []) : [];
+                this.writeCache(cacheKey, data);
+                return data;
+            })
+            .finally(() => this.inFlight.delete(cacheKey));
+
+        this.inFlight.set(cacheKey, promise);
+        return promise;
+    }
+
+    async getTopSelling({ forceRefresh = false } = {}) {
+        const cacheKey = 'top_selling_all';
+        const cached = forceRefresh ? null : this.readCache(cacheKey);
+        if (cached) return cached;
+
+        if (!forceRefresh && this.inFlight.has(cacheKey)) {
+            return this.inFlight.get(cacheKey);
+        }
+
+        const promise = this.api.get('/products/top-selling')
+            .then(response => this.normalizeProducts(response))
+            .then(products => {
+                this.writeCache(cacheKey, products);
+                return products;
+            })
+            .finally(() => this.inFlight.delete(cacheKey));
+
+        this.inFlight.set(cacheKey, promise);
+        return promise;
+    }
+
+    async getCategoryProducts(categoryId, { forceRefresh = false } = {}) {
+        const cacheKey = `products_${categoryId}`;
+        const cached = forceRefresh ? null : this.readCache(cacheKey);
+        if (cached) return cached;
+
+        const promiseKey = `category_products_${categoryId}`;
+        if (!forceRefresh && this.inFlight.has(promiseKey)) {
+            return this.inFlight.get(promiseKey);
+        }
+
+        const promise = this.api.get(`/categories/${encodeURIComponent(categoryId)}/products`)
+            .then(response => {
+                const products = response?.success ? (response?.data?.products || []) : [];
+                this.writeCache(cacheKey, products);
+                return products;
+            })
+            .finally(() => {
+                this.inFlight.delete(promiseKey);
+            });
+
+        this.inFlight.set(promiseKey, promise);
+        return promise;
+    }
+
+    async getAppSettings({ forceRefresh = false } = {}) {
+        const cached = forceRefresh ? null : this.readCache(this.settingsCacheKey);
+        if (cached) return cached;
+        if (!forceRefresh && this.settingsPromise) return this.settingsPromise;
+
+        this.settingsPromise = this.api.get('/app-settings')
+            .then(response => {
+                const data = response?.success ? (response.data || {}) : {};
+                this.writeCache(this.settingsCacheKey, data);
+                return data;
+            })
+            .finally(() => {
+                this.settingsPromise = null;
+            });
+
+        return this.settingsPromise;
+    }
+
+    async getSearchSuggestions(query, signal) {
+        return fetch(
+            this.api.buildUrl(`/products/suggestions?q=${encodeURIComponent(query)}`),
+            {
+                signal,
+                headers: { Accept: 'application/json' },
+            }
+        ).then(async response => {
+            const data = await response.json().catch(() => null);
+            if (!response.ok) {
+                const error = new Error(data?.message || `Suggestion API failed (${response.status})`);
+                error.status = response.status;
+                throw error;
+            }
+            return data;
+        });
+    }
+
+    getProduct(slug) {
+        return this.api.get(`/products/${encodeURIComponent(slug)}`);
+    }
+
+    getUserCategoryOrder(token) {
+        return this.api.get('/categories/order', {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+    }
+
+    trackPageImpression(pageName) {
+        return this.api.post('/page-impression', { page_name: pageName });
+    }
+}
+
+const API = new ApiClient(window.API_BASE_URL || '');
+const landingService = new LandingService(API);
+
+
 class RapidRetailsEngine {
     constructor() {
         this.page = document.body.dataset.page || 'landing';
@@ -61,11 +351,31 @@ class RapidRetailsEngine {
     }
 
     async init() {
-        await this.fetchAppSettings();
-        if (this.page === 'landing') await this.initLanding();
+        // Rehydrate shared landing cache before first header paint when available.
+        const cachedLanding = landingService.readCache(landingService.cacheKey);
+        if (cachedLanding) {
+            this.allCategories = cachedLanding.categories || [];
+            this.allBanners = cachedLanding.banners || [];
+            this.topSellingProducts = cachedLanding.products || [];
+            this.categoriesLoaded = this.allCategories.length > 0;
+            this.bannersLoaded = this.allBanners.length > 0;
+            this.productsLoaded = this.topSellingProducts.length > 0;
+        }
+
+        // Critical UI first: never block header/navigation on API calls.
         this.renderHeader();
         this.renderBottomNav();
         this.initSearchRedirect();
+
+        // Data loads independently in the background.
+        this.fetchAppSettings().catch(() => {});
+
+        if (this.page === 'landing') {
+            this.initLanding().catch(error => {
+                console.error('Landing initialization error:', error);
+            });
+        }
+
         let resizeTimer;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimer);
@@ -114,19 +424,25 @@ class RapidRetailsEngine {
     if (!header) return;
     const isDesktop = window.innerWidth >= 1025;
     if (isDesktop) {
-        if (!this.allCategories || this.allCategories.length === 0) {
-            fetch(APP_CONFIG.ENDPOINTS.CATEGORIES)
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        this.allCategories = data.data;
-                        this.categoriesLoaded = true;
+        const hasCategories = Array.isArray(this.allCategories) && this.allCategories.length > 0;
+
+       if (!hasCategories && !this.headerCategoriesPromise) {
+            this.headerCategoriesPromise = landingService.getCategories()
+                .then(categories => {
+                    this.allCategories = Array.isArray(categories) ? categories : [];
+                    this.categoriesLoaded = this.allCategories.length > 0;
+
+                    if (this.allCategories.length > 0) {
                         this.renderHeader();
                     }
+                })
+                .catch(() => {})
+                .finally(() => {
+                    this.headerCategoriesPromise = null;
                 });
-            return;
         }
-        const topCategories = this.allCategories.slice(0, 5);
+
+        const topCategories = hasCategories ? this.allCategories.slice(0, 5) : [];
         const categoriesHtml = topCategories.map(cat => {
             let url = `/collection/${cat.slug}`;
             if (cat.slug === "trending") url = "/top-selling";
@@ -134,7 +450,6 @@ class RapidRetailsEngine {
             return `<a href="${url}" class="nav-item" data-cat-id="${cat.id}" data-cat-name="${cat.name}">${cat.name.toUpperCase()}</a>`;
         }).join('');
         
-        // 🔥 IMPORTANT: Popup ka HTML sahi se add karo
         header.innerHTML = `
             <div class="web-header">
                 <div class="main-header">
@@ -191,17 +506,14 @@ class RapidRetailsEngine {
                     </div>
                 </div>
             </div>
-            <!-- 🔥 POPUP - VISIBLE HONE KE LIYE STYLE ADD KARO -->
 <div class="all-categories-popup" id="allCategoriesPopup" style="display:none; position:absolute; top:100%; left:0; width:100%; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:9999; border-top:1px solid #f0f0f0; max-height:500px; overflow-y:auto;"></div>
         `;
         
-        // 🔥 POPUP SETUP - HAR BAAR CALL KARO
         this.setupAllCategoriesPopup();
         this.initWebSearchDropdown();
         this.applyAppSettings();
         setTimeout(() => updateCartCountBadge(), 0);
     } else {
-        // Mobile header - waise hi rakho
         const isCartPage = document.body.classList.contains('cart-page');
         const isCheckoutPage = document.body.classList.contains('checkout-page');
         const isProfilePage = document.body.classList.contains('profile-page');
@@ -247,67 +559,190 @@ class RapidRetailsEngine {
 }
 
     initWebSearchDropdown() {
-        setTimeout(() => {
-            const input = document.getElementById("web-search-input");
-            if (!input) return;
-            let suggestionsBox = document.getElementById("web-search-suggestions");
+        const input = document.getElementById("web-search-input");
+        if (!input) return;
+
+        let suggestionsBox = document.getElementById("web-search-suggestions");
+
             if (!suggestionsBox) {
                 const parent = input.parentElement;
                 const div = document.createElement("div");
+
                 div.id = "web-search-suggestions";
                 div.className = "web-search-suggestions";
                 div.style.display = "none";
+
                 parent.appendChild(div);
                 suggestionsBox = div;
             }
+
             let timer;
             let currentController = null;
+
+            const escapeHtml = (value) => {
+                const div = document.createElement("div");
+                div.textContent = value ?? "";
+                return div.innerHTML;
+            };
+
             const fetchAndShowSuggestions = async (q) => {
-                if (currentController) currentController.abort();
+                if (currentController) {
+                    currentController.abort();
+                }
+
                 currentController = new AbortController();
+
                 try {
-                    const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`, {
-                        signal: currentController.signal
-                    });
-                    const data = await res.json();
-                    if (!data.success) return;
-                    const products = data.data.products || [];
-                    let html = "";
-                    products.forEach(p => {
-                        html += `<div class="web-suggestion-item" onclick="window.location.href='/product/${p.slug}'">${p.name}</div>`;
-                    });
-                    if (html === "") {
-                        html = `<div class="web-suggestion-item">No results found for "${q}"</div>`;
+                    const data = await landingService.getSearchSuggestions(
+                        q,
+                        currentController.signal
+                    );
+
+                    if (!data?.success || !data?.data) {
+                        suggestionsBox.style.display = "none";
+                        return;
                     }
-                    suggestionsBox.innerHTML = html;
+
+                    const products = Array.isArray(data.data.products)
+                        ? data.data.products
+                        : [];
+
+                    const categories = Array.isArray(data.data.categories)
+                        ? data.data.categories
+                        : [];
+
+                    const subcategories = Array.isArray(data.data.subcategories)
+                        ? data.data.subcategories
+                        : [];
+
+                    const brands = Array.isArray(data.data.brands)
+                        ? data.data.brands
+                        : [];
+
+                    const suggestions = [
+                        ...products.slice(0, 6).map(product => ({
+                            name: product.name || product.product_name || "",
+                            url: `/product/${encodeURIComponent(product.slug || product.id || "")}`
+                        })),
+
+                        ...categories.slice(0, 6).map(category => {
+                            const slug = category.slug || slugify(category.name);
+
+                            let url = `/collection/${encodeURIComponent(slug)}`;
+
+                            if (slug === "trending") {
+                                url = "/top-selling";
+                            } else if (slug === "bestsellers") {
+                                url = "/best-selling";
+                            }
+
+                            return {
+                                name: category.name || "",
+                                url
+                            };
+                        }),
+
+                        ...subcategories.slice(0, 6).map(subcategory => {
+                            const subSlug =
+                                subcategory.slug || slugify(subcategory.name);
+
+                            const parentSlug =
+                                subcategory.parent?.slug ||
+                                subcategory.parent_slug ||
+                                (
+                                    subcategory.parent?.name
+                                        ? slugify(subcategory.parent.name)
+                                        : ""
+                                );
+
+                            const url = parentSlug
+                                ? `/collection/${encodeURIComponent(parentSlug)}/${encodeURIComponent(subSlug)}`
+                                : `/collection/${encodeURIComponent(subSlug)}`;
+
+                            return {
+                                name: subcategory.name || "",
+                                url
+                            };
+                        }),
+
+                        ...brands.slice(0, 6).map(brand => {
+                            const brandName =
+                                typeof brand === "string"
+                                    ? brand
+                                    : brand.name || brand.brand || "";
+
+                            return {
+                                name: brandName,
+                                url: `/products?search=${encodeURIComponent(brandName)}`
+                            };
+                        })
+                    ].filter(item => item.name);
+
+                    if (!suggestions.length) {
+                        suggestionsBox.innerHTML = "";
+                        suggestionsBox.style.display = "none";
+                        return;
+                    }
+
+                    suggestionsBox.innerHTML = suggestions.map(item => `
+                        <div
+                            class="web-suggestion-item"
+                            onclick="window.location.href='${item.url}'"
+                        >
+                            ${escapeHtml(item.name)}
+                        </div>
+                    `).join("");
+
                     suggestionsBox.style.display = "block";
+
                 } catch (err) {
-                    if (err.name !== 'AbortError') console.log(err);
+                    if (err.name !== "AbortError") {
+                        console.log(err);
+                    }
+
+                    suggestionsBox.innerHTML = "";
+                    suggestionsBox.style.display = "none";
                 }
             };
-            input.addEventListener("input", async (e) => {
+
+            input.addEventListener("input", (e) => {
                 clearTimeout(timer);
+
                 const q = e.target.value.trim();
-                if (q.length === 0) {
+
+                if (q.length < 2) {
                     suggestionsBox.style.display = "none";
                     suggestionsBox.innerHTML = "";
                     return;
                 }
-                timer = setTimeout(() => fetchAndShowSuggestions(q), 200);
+
+                timer = setTimeout(() => {
+                    fetchAndShowSuggestions(q);
+                }, 100);
             });
-            input.addEventListener("keydown", function(e) {
+
+            input.addEventListener("keydown", (e) => {
                 if (e.key !== "Enter") return;
+
                 e.preventDefault();
+
                 const q = input.value.trim();
+
                 if (!q) return;
-                window.location.href = `/products?search=${encodeURIComponent(q)}`;
+
+                window.location.href =
+                    `/products?search=${encodeURIComponent(q)}`;
             });
+
             document.addEventListener("click", (e) => {
-                if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                if (
+                    !input.contains(e.target) &&
+                    !suggestionsBox.contains(e.target)
+                ) {
                     suggestionsBox.style.display = "none";
                 }
             });
-        }, 500);
+
     }
 
     setupAllCategoriesPopup() {
@@ -323,7 +758,6 @@ class RapidRetailsEngine {
     const showPopup = () => {
         if (hideTimeout) clearTimeout(hideTimeout);
         this.renderAllCategoriesPopup();
-        // 🔥 DIRECT STYLE SET KARO - visibility/or display remove karo
         popup.style.display = 'block';
         popup.style.opacity = '1';
         popup.style.visibility = 'visible';
@@ -331,7 +765,6 @@ class RapidRetailsEngine {
     
     const hidePopup = () => {
         hideTimeout = setTimeout(() => {
-            // 🔥 HIDE KARTE WAQT SIRF DISPLAY NONE KARO
             popup.style.display = 'none';
             popup.style.opacity = '0';
             popup.style.visibility = 'hidden';
@@ -400,12 +833,10 @@ renderAllCategoriesPopup() {
                     </h3>
                     <ul style="list-style:none; padding:0; margin-top:12px;">`;
                     
-                // ✅ SIRF DIRECT CHILDREN (SUB-CATEGORY) - SUB-SUB NAHI
                 if (cat.children && cat.children.length > 0) {
                     cat.children.slice(0, 8).forEach(sub => {
                         let subSlug = sub.slug || sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
                         
-                        // ✅ NESTED URL - /collection/main/sub
                         let subUrl = `/collection/${mainSlug}/${subSlug}`;
                         
                         html += `<li style="margin-bottom:8px;">
@@ -442,74 +873,253 @@ renderAllCategoriesPopup() {
 
     initSearchRedirect() {
         const mobileSearchInput = document.getElementById("landing-search");
+
         if (!mobileSearchInput) return;
-        
+
         let suggestionsContainer = null;
         let abortController = null;
         let debounceTimer = null;
-        
+
+        const escapeHtml = (value) => {
+            const div = document.createElement("div");
+            div.textContent = value ?? "";
+            return div.innerHTML;
+        };
+
         const getContainer = () => {
             if (!suggestionsContainer) {
-                suggestionsContainer = document.createElement('div');
-                suggestionsContainer.id = 'mobile-search-suggestions';
-                suggestionsContainer.style.cssText = 'position:absolute;top:100%;left:0;right:0;background:white;border-radius:0 0 12px 12px;box-shadow:0 8px 20px rgba(0,0,0,0.1);z-index:9999;max-height:300px;overflow-y:auto;display:none;border:1px solid #e0e0e0;border-top:none;';
-                mobileSearchInput.parentNode.style.position = 'relative';
-                mobileSearchInput.parentNode.appendChild(suggestionsContainer);
+                suggestionsContainer = document.createElement("div");
+
+                suggestionsContainer.id = "mobile-search-suggestions";
+
+                suggestionsContainer.style.cssText =
+                    "position:absolute;top:100%;left:0;right:0;background:white;border-radius:0 0 12px 12px;box-shadow:0 8px 20px rgba(0,0,0,0.1);z-index:9999;max-height:300px;overflow-y:auto;display:none;border:1px solid #e0e0e0;border-top:none;";
+
+                mobileSearchInput.parentNode.style.position = "relative";
+
+                mobileSearchInput.parentNode.appendChild(
+                    suggestionsContainer
+                );
             }
+
             return suggestionsContainer;
         };
-        
+
         const fetchSuggestions = async (query) => {
-            if (abortController) abortController.abort();
+
+            if (abortController) {
+                abortController.abort();
+            }
+
             abortController = new AbortController();
-            
+
             try {
-                const response = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(query)}`, {
-                    signal: abortController.signal
-                });
-                const data = await response.json();
-                
+                const data =
+                    await landingService.getSearchSuggestions(
+                        query,
+                        abortController.signal
+                    );
+
                 const container = getContainer();
-                if (data.success && data.data && data.data.length > 0) {
-                    container.innerHTML = data.data.slice(0, 6).map(p => {
-                        const imgHtml = p.image_url ? `<img src="${this.resolveImage(p.image_url)}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;">` : '';
-                        return `<div style="padding:12px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:12px;" onclick="window.location.href='/product/${p.slug}'">${imgHtml}<div><div style="font-size:14px;font-weight:500;color:#333;">${p.name}</div><div style="font-size:12px;color:#666;">₹${p.price}</div></div></div>`;
-                    }).join('');
-                    container.style.display = 'block';
-                } else {
-                    container.innerHTML = `<div style="padding:16px;color:#999;text-align:center;">No results found</div>`;
-                    container.style.display = 'block';
+
+                if (!data?.success || !data?.data) {
+                    container.style.display = "none";
+                    return;
                 }
-            } catch(e) {
-                if (e.name !== 'AbortError') console.log(e);
+
+                const products = Array.isArray(data.data.products)
+                    ? data.data.products
+                    : [];
+
+                const categories = Array.isArray(data.data.categories)
+                    ? data.data.categories
+                    : [];
+
+                const subcategories = Array.isArray(data.data.subcategories)
+                    ? data.data.subcategories
+                    : [];
+
+                const brands = Array.isArray(data.data.brands)
+                    ? data.data.brands
+                    : [];
+
+                let html = "";
+
+                /*
+                * PRODUCTS
+                */
+                products.slice(0, 6).forEach(product => {
+
+                    const imageHtml = product.image_url
+                        ? `
+                            <img
+                                src="${this.resolveImage(product.image_url)}"
+                                style="width:40px;height:40px;object-fit:cover;border-radius:4px;"
+                                onerror="this.style.display='none'"
+                            >
+                        `
+                        : "";
+
+                    html += `
+                        <div
+                            style="padding:12px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:12px;"
+                            onclick="window.location.href='/product/${encodeURIComponent(product.slug)}'"
+                        >
+                            ${imageHtml}
+
+                            <div>
+                                <div style="font-size:14px;font-weight:500;color:#333;">
+                                    ${escapeHtml(product.name)}
+                                </div>
+
+                                <div style="font-size:12px;color:#666;">
+                                    Product
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                /*
+                * CATEGORIES
+                */
+                categories.slice(0, 6).forEach(category => {
+
+                    html += `
+                        <div
+                            style="padding:12px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;"
+                            onclick="window.location.href='/collection/${encodeURIComponent(category.slug)}'"
+                        >
+                            <div style="font-size:14px;font-weight:500;color:#333;">
+                                ${escapeHtml(category.name)}
+                            </div>
+
+                            <div style="font-size:12px;color:#666;">
+                                Category
+                            </div>
+                        </div>
+                    `;
+                });
+
+                /*
+                * SUBCATEGORIES
+                */
+                subcategories.slice(0, 6).forEach(subcategory => {
+
+                    const parentSlug =
+                        subcategory.parent?.slug;
+
+                    const url = parentSlug
+                        ? `/collection/${encodeURIComponent(parentSlug)}/${encodeURIComponent(subcategory.slug)}`
+                        : `/collection/${encodeURIComponent(subcategory.slug)}`;
+
+                    html += `
+                        <div
+                            style="padding:12px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;"
+                            onclick="window.location.href='${url}'"
+                        >
+                            <div style="font-size:14px;font-weight:500;color:#333;">
+                                ${escapeHtml(subcategory.name)}
+                            </div>
+
+                            <div style="font-size:12px;color:#666;">
+                                Subcategory
+                            </div>
+                        </div>
+                    `;
+                });
+
+                /*
+                * BRANDS
+                */
+                brands.slice(0, 6).forEach(brand => {
+
+                    const brandName =
+                        typeof brand === "string"
+                            ? brand
+                            : brand.name;
+
+                    html += `
+                        <div
+                            style="padding:12px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;"
+                            onclick="window.location.href='/products?search=${encodeURIComponent(brandName)}'"
+                        >
+                            <div style="font-size:14px;font-weight:500;color:#333;">
+                                ${escapeHtml(brandName)}
+                            </div>
+
+                            <div style="font-size:12px;color:#666;">
+                                Brand
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (!html) {
+                    container.innerHTML = `
+                        <div style="padding:16px;color:#999;text-align:center;">
+                            No results found
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = html;
+                }
+
+                container.style.display = "block";
+
+            } catch (e) {
+                if (e.name !== "AbortError") {
+                    console.log(e);
+                }
             }
         };
-        
-        mobileSearchInput.addEventListener('input', (e) => {
+
+        mobileSearchInput.addEventListener("input", (e) => {
+
             const query = e.target.value.trim();
+
             const container = getContainer();
+
             clearTimeout(debounceTimer);
+
             if (query.length < 2) {
-                container.style.display = 'none';
+                container.style.display = "none";
+                container.innerHTML = "";
                 return;
             }
-            debounceTimer = setTimeout(() => fetchSuggestions(query), 300);
+
+            debounceTimer = setTimeout(() => {
+                fetchSuggestions(query);
+            }, 100);
         });
-        
-        mobileSearchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const query = mobileSearchInput.value.trim();
-                if (query) {
-                    window.location.href = `/search?q=${encodeURIComponent(query)}`;
-                }
+
+        mobileSearchInput.addEventListener("keydown", (e) => {
+
+            if (e.key !== "Enter") return;
+
+            e.preventDefault();
+
+            const query = mobileSearchInput.value.trim();
+
+            if (query) {
+                window.location.href =
+                    `/products?search=${encodeURIComponent(query)}`;
             }
         });
-        
-        document.addEventListener('click', (e) => {
-            const container = document.getElementById('mobile-search-suggestions');
-            if (container && !mobileSearchInput.contains(e.target) && !container.contains(e.target)) {
-                container.style.display = 'none';
+
+        document.addEventListener("click", (e) => {
+
+            const container =
+                document.getElementById(
+                    "mobile-search-suggestions"
+                );
+
+            if (
+                container &&
+                !mobileSearchInput.contains(e.target) &&
+                !container.contains(e.target)
+            ) {
+                container.style.display = "none";
             }
         });
     }
@@ -572,71 +1182,50 @@ renderAllCategoriesPopup() {
     }
 
     async initLanding() {
-        const cacheKey = 'landing_all_data';
-        const cached = this.apiCache.get(cacheKey);
-        
-        if (cached && Date.now() - cached.timestamp < 300000) {
-            this.allCategories = cached.data.categories || [];
-            this.allBanners = cached.data.banners || [];
-            this.topSellingProducts = cached.data.products || [];
+        const cached = landingService.readCache(landingService.cacheKey);
+
+        if (cached) {
+            this.allCategories = cached.categories || [];
+            this.allBanners = cached.banners || [];
+            this.topSellingProducts = cached.products || [];
             this.categoriesLoaded = true;
             this.bannersLoaded = true;
             this.productsLoaded = true;
+
             await this.renderAllSections();
             this.initialized = true;
             this.hideSkeleton();
+
             this.refreshLandingData();
             return;
         }
-        
-        const [catsRes, bannersRes, topSellingRes] = await Promise.all([
-            fetch(APP_CONFIG.ENDPOINTS.CATEGORIES).then(r => r.json()),
-            fetch(APP_CONFIG.ENDPOINTS.BANNERS).then(r => r.json()),
-            fetch(APP_CONFIG.ENDPOINTS.TOP_SELLING).then(r => r.json())
-        ]);
-        
-        if (catsRes.success) {
-            this.allCategories = catsRes.data;
+
+        try {
+            const data = await landingService.getLandingData();
+
+            this.allCategories = data.categories || [];
+            this.allBanners = data.banners || [];
+            this.topSellingProducts = data.products || [];
             this.categoriesLoaded = true;
-        }
-        if (bannersRes.success) {
-            this.allBanners = bannersRes.data;
             this.bannersLoaded = true;
-        }
-        if (topSellingRes.success && topSellingRes.data) {
-            this.topSellingProducts = Array.isArray(topSellingRes.data) ? topSellingRes.data : (topSellingRes.data.products || []);
             this.productsLoaded = true;
+
+            if (this.isLoggedIn) {
+                this.fetchUserCategoryOrder().catch(() => {});
+            }
+
+            await this.renderAllSections();
+            this.initialized = true;
+            this.hideSkeleton();
+
+        } catch (error) {
+            console.error('Landing data error:', error);
+            this.hideSkeleton();
         }
-        
-        this.apiCache.set(cacheKey, {
-            data: {
-                categories: this.allCategories,
-                banners: this.allBanners,
-                products: this.topSellingProducts
-            },
-            timestamp: Date.now()
-        });
-        this.saveCacheToStorage();
-        
-        if (this.isLoggedIn) {
-            this.fetchUserCategoryOrder().catch(() => {});
-        }
-        
-        await this.renderAllSections();
-        this.initialized = true;
-        this.hideSkeleton();
-        
-        window.addEventListener('resize', () => {
-            clearTimeout(this.styleResizeTimer);
-            this.styleResizeTimer = setTimeout(() => {
-                if (this.page === 'landing' && this.initialized) {
-                    this.renderStyleSpotlight();
-                }
-            }, 200);
-        });
     }
 
     async renderAllSections() {
+        // Critical above-the-fold/primary sections.
         await Promise.all([
             this.renderHeroSlider(),
             this.renderTrending(),
@@ -645,9 +1234,19 @@ renderAllCategoriesPopup() {
             this.renderDynamicCollections(),
             this.renderFeaturedLook(),
             this.renderTwoCollections(),
-            this.renderMidBanner(),
-            this.renderFeaturedCollections()
+            this.renderMidBanner()
         ]);
+
+        // Secondary section must never block the first paint.
+        const renderFeatured = () => {
+            this.renderFeaturedCollections().catch(() => {});
+        };
+
+        if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(renderFeatured, { timeout: 1200 });
+        } else {
+            setTimeout(renderFeatured, 0);
+        }
     }
 
     hideSkeleton() {
@@ -660,55 +1259,31 @@ renderAllCategoriesPopup() {
     async refreshLandingData() {
         setTimeout(async () => {
             try {
-                const [catsRes, bannersRes, topSellingRes] = await Promise.all([
-                    fetch(APP_CONFIG.ENDPOINTS.CATEGORIES).then(r => r.json()),
-                    fetch(APP_CONFIG.ENDPOINTS.BANNERS).then(r => r.json()),
-                    fetch(APP_CONFIG.ENDPOINTS.TOP_SELLING).then(r => r.json())
-                ]);
-                
-                let updated = false;
-                if (catsRes.success && JSON.stringify(catsRes.data) !== JSON.stringify(this.allCategories)) {
-                    this.allCategories = catsRes.data;
-                    updated = true;
-                }
-                if (bannersRes.success && JSON.stringify(bannersRes.data) !== JSON.stringify(this.allBanners)) {
-                    this.allBanners = bannersRes.data;
-                    updated = true;
-                }
-                if (topSellingRes.success && topSellingRes.data) {
-                    const newProducts = Array.isArray(topSellingRes.data) ? topSellingRes.data : (topSellingRes.data.products || []);
-                    if (JSON.stringify(newProducts) !== JSON.stringify(this.topSellingProducts)) {
-                        this.topSellingProducts = newProducts;
-                        updated = true;
-                    }
-                }
-                
-                if (updated) {
-                    this.apiCache.set('landing_all_data', {
-                        data: {
-                            categories: this.allCategories,
-                            banners: this.allBanners,
-                            products: this.topSellingProducts
-                        },
-                        timestamp: Date.now()
-                    });
-                    this.saveCacheToStorage();
-                    await this.renderAllSections();
-                }
-            } catch(e) {}
+                const data = await landingService.getLandingData({ forceRefresh: true });
+
+                const changed =
+                    JSON.stringify(data.categories) !== JSON.stringify(this.allCategories) ||
+                    JSON.stringify(data.banners) !== JSON.stringify(this.allBanners) ||
+                    JSON.stringify(data.products) !== JSON.stringify(this.topSellingProducts);
+
+                if (!changed) return;
+
+                this.allCategories = data.categories || [];
+                this.allBanners = data.banners || [];
+                this.topSellingProducts = data.products || [];
+
+                await this.renderAllSections();
+            } catch (_) {}
         }, 3000);
     }
 
     async fetchUserCategoryOrder() {
         try {
-            const response = await fetch(`${API_BASE_URL}/categories/order`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Accept': 'application/json'
-                }
-            });
-            const data = await response.json();
-            if (data.success && data.data.length > 0) {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const data = await landingService.getUserCategoryOrder(token);
+            if (data?.success && Array.isArray(data.data) && data.data.length > 0) {
                 this.userCategories = data.data;
             }
         } catch (error) {
@@ -771,16 +1346,13 @@ renderAllCategoriesPopup() {
 
     async fetchAppSettings() {
         if (this.settingsLoaded) return;
+
         try {
-            const response = await fetch(APP_CONFIG.ENDPOINTS.APP_SETTINGS);
-            const data = await response.json();
-            if (data.success) {
-                this.appSettings = data.data;
-                this.settingsLoaded = true;
-                this.applyAppSettings();
-            }
+            this.appSettings = await landingService.getAppSettings();
+            this.settingsLoaded = true;
+            this.applyAppSettings();
         } catch (error) {
-            console.error("Error loading app settings:", error);
+            console.error('Error loading app settings:', error);
         }
     }
 
@@ -952,23 +1524,6 @@ renderAllCategoriesPopup() {
         if (!displayItems.length) {
             return;
         }
-        displayItems.forEach(async (item) => {
-            if (item.slug) {
-                try {
-                    const response = await fetch(`${API_BASE_URL}/products/${item.slug}`);
-                    const data = await response.json();
-                    if (data.success && data.data) {
-                        const galleryImages = data.data.gallery_images || [];
-                        const hoverImage = galleryImages[1] || galleryImages[0];
-                        if (hoverImage) {
-                            const img = new Image();
-                            img.src = this.resolveImage(hoverImage);
-                            item.hoverImage = this.resolveImage(hoverImage);
-                        }
-                    }
-                } catch (e) {}
-            }
-        });
         const itemsHtml = displayItems.map(item => {
             const brand = item.brand || 'Premium Brand';
             const name = item.name || 'Fashion Item';
@@ -1017,6 +1572,36 @@ renderAllCategoriesPopup() {
         </div>`;
     }
 
+    async loadSpotlightHoverImage(img) {
+        if (!img) return;
+
+        if (img.dataset.hoverLoaded === 'true') {
+            if (img.dataset.hover) img.src = img.dataset.hover;
+            return;
+        }
+
+        const slug = img.dataset.productSlug;
+        if (!slug || img.dataset.hoverLoaded === 'loading') return;
+
+        img.dataset.hoverLoaded = 'loading';
+
+        try {
+            const data = await landingService.getProduct(slug);
+            const galleryImages = data?.success ? (data.data?.gallery_images || []) : [];
+            const hoverImage = galleryImages[1] || galleryImages[0];
+
+            if (hoverImage) {
+                const resolved = this.resolveImage(hoverImage);
+                img.dataset.hover = resolved;
+                img.src = resolved;
+            }
+
+            img.dataset.hoverLoaded = 'true';
+        } catch (_) {
+            img.dataset.hoverLoaded = 'true';
+        }
+    }
+
     renderDynamicCollections() {
         const container = document.getElementById('dynamic-collections');
         if (!container) return;
@@ -1055,65 +1640,134 @@ renderAllCategoriesPopup() {
         container.innerHTML = html;
     }
 
-    renderFeaturedCollections() {
+    async renderFeaturedCollections() {
         const container = document.getElementById('dynamic-featured-collections');
         if (!container) return;
-        const products = this.topSellingProducts || [];
-        if (products.length === 0) {
-            container.innerHTML = `
-                <div class="herovia-featured-cards-grid">
-                    <div class="herovia-featured-card">
-                        <div class="herovia-featured-card-image" style="background: linear-gradient(135deg, #ede8e2, #d5ccc4);"></div>
-                        <div class="herovia-featured-card-content">
-                            <h3>No Products Found</h3>
-                            <p>Please add products to display.</p>
-                        </div>
-                    </div>
-                </div>
-            `;
+
+        const categories = this.allCategories || [];
+
+        if (!categories.length) {
             return;
         }
-        const displayProducts = products.slice(0, 3);
-        const labels = ['EVERYDAY', 'WEDDING', 'FESTIVE' ];
+
+        // First 3 main categories
+        const mainCategories = categories.slice(0, 3);
+
+        const labels = ['EVERYDAY', 'WEDDING', 'FESTIVE'];
+
         const descs = [
             'Timeless pieces for your most beautiful day.',
             'Celebrate every moment with effortless elegance.',
             'Effortless style for the woman on the go.'
         ];
-        let html = `<div class="herovia-featured-cards-grid">`;
-        displayProducts.forEach((product, index) => {
-            const productName = product.name || 'Product';
-            const productSlug = product.slug || '#';
-            const productPrice = this.getProductPrice(product);
-            const productImage = this.resolveImage(product.image_url) || '';
-            const label = labels[index] || 'TOP PICK';
-            let desc = descs[index] || 'Premium quality product';
-            if (product.short_description && product.short_description.length > 0) {
-                desc = product.short_description;
-            } else if (product.description && product.description.length > 0) {
-                desc = product.description.length > 80 ? product.description.substring(0, 80) + '...' : product.description;
-            }
-            const galleryImages = product.gallery_images || [];
-            const imageUrl = galleryImages.length > 0 ? this.resolveImage(galleryImages[0]) : productImage;
-            html += `
-                <div class="herovia-featured-card" onclick="window.location.href='/product/${productSlug}'">
-                    <div class="herovia-featured-card-image" 
-                         style="${imageUrl ? `background-image: url('${imageUrl}'); background-size: cover; background-position: center;` : 'background: linear-gradient(135deg, #ede8e2, #d5ccc4);'}">
-                        <span class="herovia-featured-card-tag">${label}</span>
-                    </div>
-                    <div class="herovia-featured-card-content">
-                        <h3>${productName}</h3>
-                        <p>${desc}</p>
-                        <div class="herovia-featured-card-bottom">
-                            <span class="herovia-featured-card-price">₹${productPrice}</span>
-                            <a href="/product/${productSlug}" class="herovia-featured-card-link">Explore →</a>
+
+        try {
+            const categoryProducts = await Promise.all(
+                mainCategories.map(async (mainCategory) => {
+
+                    // First subcategory
+                    const firstSubCategory = mainCategory?.children?.[0];
+
+                    if (!firstSubCategory) {
+                        return {
+                            category: mainCategory,
+                            product: null
+                        };
+                    }
+
+                    // If first subcategory has sub-subcategories,
+                    // use first sub-subcategory.
+                    const firstSubSubCategory = firstSubCategory?.children?.[0];
+
+                    const targetCategory = firstSubSubCategory || firstSubCategory;
+
+                    const products = await landingService.getCategoryProducts(
+                        targetCategory.id
+                    );
+
+                    return {
+                        category: mainCategory,
+                        product: products?.[0] || null
+                    };
+                })
+            );
+
+            let html = `<div class="herovia-featured-cards-grid">`;
+
+            categoryProducts.forEach(({ category, product }, index) => {
+
+                if (!product) {
+                    return;
+                }
+
+                const productName = product.name || 'Product';
+                const productSlug = product.slug || product.id || '#';
+                const productPrice = this.getProductPrice(product);
+
+                const productImage =
+                    product.gallery_images?.length
+                        ? this.resolveImage(product.gallery_images[0])
+                        : this.resolveImage(product.image_url);
+
+                const label = labels[index] || 'TOP PICK';
+
+                let desc = descs[index] || 'Premium quality product';
+
+                if (product.short_description) {
+                    desc = product.short_description;
+                } else if (product.description) {
+                    desc = product.description.length > 80
+                        ? product.description.substring(0, 80) + '...'
+                        : product.description;
+                }
+
+                html += `
+                    <div class="herovia-featured-card"
+                        onclick="window.location.href='/product/${productSlug}'">
+
+                        <div class="herovia-featured-card-image"
+                            style="${productImage
+                                ? `background-image: url('${productImage}'); background-size: cover; background-position: center;`
+                                : 'background: linear-gradient(135deg, #ede8e2, #d5ccc4);'}">
+
+                            <span class="herovia-featured-card-tag">
+                                ${label}
+                            </span>
+
+                        </div>
+
+                        <div class="herovia-featured-card-content">
+
+                            <h3>${productName}</h3>
+
+                            <p>${desc}</p>
+
+                            <div class="herovia-featured-card-bottom">
+
+                                <span class="herovia-featured-card-price">
+                                    ₹${productPrice}
+                                </span>
+
+                                <a href="/product/${productSlug}"
+                                class="herovia-featured-card-link">
+                                    Explore →
+                                </a>
+
+                            </div>
+
                         </div>
                     </div>
-                </div>
-            `;
-        });
-        html += `</div>`;
-        container.innerHTML = html;
+                `;
+            });
+
+            html += `</div>`;
+
+            container.innerHTML = html;
+
+        } catch (error) {
+            console.error('Featured collections loading error:', error);
+            container.innerHTML = '';
+        }
     }
 
     renderFeaturedLook() {
@@ -1365,32 +2019,29 @@ renderAllCategoriesPopup() {
 }
 
 function redirectToSubcategory(categoryId) {
-    fetch(`${API_BASE_URL}/categories`)
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                window.location.href = `/products?category=${categoryId}`;
-                return;
-            }
-            const category = data.data.find(c => c.id == categoryId);
-            if (!category) {
-                window.location.href = `/products?category=${categoryId}`;
-                return;
-            }
-            if (category.slug === "trending") {
-                window.location.href = "/top-selling";
-                return;
-            }
-            if (category.slug === "bestsellers") {
-                window.location.href = "/best-selling";
-                return;
-            }
-            if (category.children && category.children.length > 0) {
-                window.location.href = `/collection/${category.slug}`;
-            } else {
-                window.location.href = `/products?category=${categoryId}`;
-            }
-        });
+    const categories = window.app?.allCategories || [];
+    const category = categories.find(c => c.id == categoryId);
+
+    if (!category) {
+        window.location.href = `/products?category=${categoryId}`;
+        return;
+    }
+
+    if (category.slug === 'trending') {
+        window.location.href = '/top-selling';
+        return;
+    }
+
+    if (category.slug === 'bestsellers') {
+        window.location.href = '/best-selling';
+        return;
+    }
+
+    if (category.children && category.children.length > 0) {
+        window.location.href = `/collection/${category.slug}`;
+    } else {
+        window.location.href = `/products?category=${categoryId}`;
+    }
 }
 
 window.goBack = function() {
@@ -1426,30 +2077,32 @@ function updateCartCountBadge() {
 
 async function fetchFooterSettings() {
     try {
-        const response = await fetch(`${API_BASE_URL}/app-settings`);
-        const data = await response.json();
-        if (data.success) {
-            const appName = data.data.app_name;
-            const footerAppName = document.getElementById('footerAppName');
-            const footerAppNameBottom = document.getElementById('footerAppNameBottom');
-            if (footerAppName) footerAppName.textContent = appName;
-            if (footerAppNameBottom) footerAppNameBottom.textContent = appName;
-        }
-    } catch (error) { console.error('Error fetching app settings:', error); }
+        const data = await landingService.getAppSettings();
+        const appName = data?.app_name || '';
+        const footerAppName = document.getElementById('footerAppName');
+        const footerAppNameBottom = document.getElementById('footerAppNameBottom');
+
+        if (footerAppName) footerAppName.textContent = appName;
+        if (footerAppNameBottom) footerAppNameBottom.textContent = appName;
+    } catch (error) {
+        console.error('Error fetching app settings:', error);
+    }
 }
 
 async function fetchCategoriesForFooter() {
+    const listContainer = document.getElementById('footerCategoriesList');
+    if (!listContainer) return;
+
     try {
-        const response = await fetch(`${API_BASE_URL}/categories`);
-        const data = await response.json();
-        if (data.success && data.data.length > 0) {
-            const categories = data.data.slice(0, 6);
-            const listContainer = document.getElementById('footerCategoriesList');
-            if (listContainer) {
-                listContainer.innerHTML = categories.map(cat => `<li><a href="/category/${cat.id}">${cat.name}</a></li>`).join('');
-            }
+        const categories = (await landingService.getCategories()).slice(0, 6);
+        if (categories.length) {
+            listContainer.innerHTML = categories
+                .map(cat => `<li><a href="/category/${cat.id}">${cat.name}</a></li>`)
+                .join('');
         }
-    } catch (error) { console.error('Error fetching categories:', error); }
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+    }
 }
 
 const footerYear = document.getElementById('footerYear');
@@ -1476,44 +2129,54 @@ window.addEventListener("DOMContentLoaded", function() {
 });
 
 (function() {
-    let categories = ['Necklace', 'Earrings', 'Maang Tikka', 'Bridal Sets', 'Bangles'];
+    const fallbackCategories = ['Co-ords set', 'Dresses', 'Kurta Sets'];
+    let categories = fallbackCategories.slice();
     let index = 0;
     let intervalId = null;
 
     function startRotation(input) {
         if (intervalId) clearInterval(intervalId);
-        intervalId = setInterval(function() {
-            if (input && categories.length > 0) {
-                input.placeholder = 'Search for ' + categories[index];
-                index = (index + 1) % categories.length;
-            }
+        if (!input || !categories.length) return;
+
+        input.placeholder = 'Search for ' + categories[0];
+        intervalId = setInterval(() => {
+            index = (index + 1) % categories.length;
+            input.placeholder = 'Search for ' + categories[index];
         }, 3000);
     }
 
-    async function fetchAndRotate() {
-        const input = document.getElementById('web-search-input');
-        if (!input) { setTimeout(fetchAndRotate, 500); return; }
+    async function initPlaceholder() {
         try {
-            const response = await fetch(`${API_BASE_URL}/categories`);
-            const data = await response.json();
-            if (data.success && data.data && data.data.length > 0) {
-                categories = data.data.map(cat => cat.name);
+            const data = await landingService.getCategories();
+            const names = data.map(cat => cat.name).filter(Boolean);
+
+            if (names.length) {
+                categories = names;
             }
-        } catch (e) {}
-        input.placeholder = 'Search for ' + categories[0];
+        } catch (_) {}
+
+        const input =
+            document.getElementById('web-search-input') ||
+            document.getElementById('landing-search');
+
+        if (!input) return;
+
         startRotation(input);
     }
-    fetchAndRotate();
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPlaceholder, { once: true });
+    } else {
+        initPlaceholder();
+    }
 })();
 
 async function trackPageImpression(pageName) {
     try {
-        await fetch(`${API_BASE_URL}/page-impression`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ page_name: pageName })
-        });
-    } catch (e) { console.error("Impression Error:", e); }
+        await landingService.trackPageImpression(pageName);
+    } catch (e) {
+        console.error('Impression Error:', e);
+    }
 }
 window.addEventListener('beforeunload', function() {
     if (window.app && window.app.apiCache) {
@@ -1545,3 +2208,842 @@ window.addEventListener('popstate', function(e) {
 if (window.location.pathname === '/' || window.location.pathname === '') {
     history.replaceState({ page: 'landing' }, '');
 }
+
+class ProductPage {
+    constructor() {
+        this.grid = document.getElementById('productsGrid');
+        this.subStrip = document.getElementById('subStrip');
+        this.categoryFilters = document.getElementById('desktopCategoryFilters');
+        this.categoryTitle = document.getElementById('categoryFilterTitle');
+        this.priceFilters = document.getElementById('desktopPriceFilters');
+        this.brandFilters = document.getElementById('desktopBrandFilters');
+        this.discountFilters = document.getElementById('desktopDiscountFilters');
+
+        this.currentProducts = [];
+        this.originalProducts = [];
+        this.allCategories = [];
+        this.mainCategoryData = null;
+        this.currentSubId = null;
+        this.priceSlider = null;
+        this.maxPrice = null;
+        this.productLoadToken = 0;
+        this.initialized = false;
+    }
+
+    escape(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    slug(value) {
+        return String(value ?? '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    }
+
+    categorySlug(category) {
+        return category?.slug || this.slug(category?.name);
+    }
+
+    getPrice(product) {
+        const value =
+            product?.product_price && product.product_price !== '0.00'
+                ? product.product_price
+                : (product?.final_price ?? product?.price ?? 0);
+
+        return Number.parseFloat(value) || 0;
+    }
+
+    getMrp(product) {
+        return Number.parseFloat(
+            product?.price || product?.product_price || 0
+        ) || 0;
+    }
+
+    getDiscount(product) {
+        const mrp = Number.parseFloat(product?.price || product?.product_price || 0);
+        const finalPrice = Number.parseFloat(product?.final_price || 0);
+
+        if (mrp > finalPrice && finalPrice > 0) {
+            return Math.round(((mrp - finalPrice) / mrp) * 100);
+        }
+
+        return 0;
+    }
+
+    formatPrice(value) {
+        return `₹${Number(value || 0).toLocaleString('en-IN')}`;
+    }
+
+    getFallbackImage() {
+        return APP_CONFIG.FALLBACK_IMAGE;
+    }
+
+    async loadCategories() {
+        try {
+            this.allCategories = await landingService.getCategories();
+            if (!Array.isArray(this.allCategories)) this.allCategories = [];
+            return this.allCategories;
+        } catch (error) {
+            console.error('Category loading error:', error);
+            this.allCategories = [];
+            return [];
+        }
+    }
+
+    findCategory(categories, categoryId) {
+        for (const category of categories || []) {
+            if (String(category.id) === String(categoryId)) return category;
+
+            const found = this.findCategory(category.children, categoryId);
+            if (found) return found;
+        }
+
+        return null;
+    }
+
+    findInitialCategory(categories) {
+        const pathMatch = window.location.pathname.match(
+            /\/collection\/([^/]+)(?:\/([^/]+))?/
+        );
+
+        let mainCategory = null;
+        let targetSubId = null;
+        let targetSubSubId = null;
+
+        if (pathMatch?.[1]) {
+            const mainSlug = pathMatch[1];
+            const subSlug = pathMatch[2] || null;
+
+            mainCategory = categories.find(
+                category => this.categorySlug(category) === mainSlug
+            );
+
+            if (mainCategory) {
+                if (subSlug) {
+                    for (const sub of mainCategory.children || []) {
+                        const subCategorySlug = this.categorySlug(sub);
+
+                        if (subCategorySlug === subSlug) {
+                            targetSubId = sub.id;
+                            break;
+                        }
+
+                        for (const subSub of sub.children || []) {
+                            if (this.categorySlug(subSub) === subSlug) {
+                                targetSubSubId = subSub.id;
+                                targetSubId = sub.id;
+                                break;
+                            }
+                        }
+
+                        if (targetSubId) break;
+                    }
+                }
+
+                if (!targetSubId && mainCategory.children?.length) {
+                    const firstSub = mainCategory.children[0];
+                    targetSubId = firstSub.children?.length
+                        ? firstSub.children[0].id
+                        : firstSub.id;
+                }
+            }
+        }
+
+        if (!mainCategory && categories.length) {
+            mainCategory = categories[0];
+            const firstSub = mainCategory.children?.[0];
+
+            if (firstSub) {
+                targetSubId = firstSub.children?.length
+                    ? firstSub.children[0].id
+                    : firstSub.id;
+            } else {
+                targetSubId = mainCategory.id;
+            }
+        }
+
+        if (targetSubSubId) targetSubId = targetSubSubId;
+
+        return { mainCategory, targetSubId };
+    }
+
+    renderSubcategories(category) {
+        if (!this.subStrip) return;
+
+        const children = [];
+        for (const child of category?.children || []) {
+            children.push(child);
+            for (const nested of child.children || []) {
+                children.push(nested);
+            }
+        }
+
+        if (!children.length) {
+            this.subStrip.innerHTML = '';
+            this.subStrip.style.display = 'none';
+            return;
+        }
+
+        this.subStrip.innerHTML = children.map(item => {
+            const image = this.escape(
+                item.image_url || this.getFallbackImage()
+            );
+            const name = this.escape(item.name || '');
+            const active = String(item.id) === String(this.currentSubId);
+
+            return `
+                <div class="sub-item ${active ? 'active' : ''}"
+                     data-subid="${this.escape(item.id)}"
+                     role="button"
+                     tabindex="0">
+                    <div class="sub-img">
+                        <img src="${image}"
+                             alt="${name}"
+                             loading="lazy"
+                             onerror="this.src='${this.getFallbackImage()}'">
+                    </div>
+                    <div class="sub-name">${name}</div>
+                </div>
+            `;
+        }).join('');
+
+        this.subStrip.style.display = 'flex';
+    }
+
+    renderCategoryFilters(category) {
+        if (!this.categoryFilters || !this.categoryTitle) return;
+
+        const children = category?.children || [];
+
+        if (!children.length) {
+            this.categoryFilters.innerHTML = '';
+            this.categoryTitle.textContent = 'CATEGORY';
+            return;
+        }
+
+        this.categoryTitle.textContent = category?.name || 'CATEGORY';
+
+        this.categoryFilters.innerHTML = children.map(item => `
+            <label class="filter-option">
+                <input type="checkbox"
+                    class="desktop-category-filter"
+                    value="${this.escape(item.id)}">
+                ${this.escape(item.name)}
+            </label>
+        `).join('');
+    }
+
+        renderPriceFilter(products) {
+            if (!this.priceFilters) return;
+
+            const prices = products.map(product => this.getPrice(product)).filter(Boolean);
+
+            if (!prices.length) {
+                this.priceFilters.innerHTML = '';
+                this.priceSlider = null;
+                this.maxPrice = null;
+                return;
+            }
+
+            const max = Math.max(...prices) + 100;
+            this.maxPrice = max;
+
+            this.priceFilters.innerHTML = `
+                <div class="price-slider-wrap">
+                    <input type="range" id="priceRangeSlider" min="0" max="100" value="100">
+                    <div class="price-labels">
+                        <span>₹0</span>
+                        <span>${this.formatPrice(max)}</span>
+                    </div>
+                </div>
+            `;
+
+            this.priceSlider = document.getElementById('priceRangeSlider');
+            this.priceSlider?.addEventListener('input', event => {
+                const percentage = Number(event.target.value) / 100;
+                const currentMax = Math.round(percentage * max);
+
+                const labels = this.priceSlider.parentElement.querySelector('.price-labels');
+                if (labels) {
+                    labels.innerHTML = `<span>₹0</span><span>${this.formatPrice(currentMax)}</span>`;
+                }
+
+                this.maxPrice = currentMax;
+                this.applyAllFilters();
+            });
+        }
+
+    renderBrandFilter(products) {
+        if (!this.brandFilters) return;
+
+        const brands = [...new Set(
+            products.map(product => product.brand).filter(Boolean)
+        )].sort((a, b) => String(a).localeCompare(String(b)));
+
+        this.brandFilters.innerHTML = brands.map(brand => `
+            <label class="filter-option">
+                <input type="checkbox"
+                       class="desktop-brand-filter"
+                       value="${this.escape(brand)}">
+                ${this.escape(brand)}
+            </label>
+        `).join('');
+    }
+
+    renderDiscountFilter(products) {
+        if (!this.discountFilters) return;
+
+        const discounts = [...new Set(
+            products.map(product => this.getDiscount(product)).filter(value => value > 0)
+        )].sort((a, b) => a - b);
+
+        this.discountFilters.innerHTML = discounts.map(discount => `
+            <label class="filter-option">
+                <input type="checkbox"
+                       class="desktop-discount-filter"
+                       value="${discount}">
+                ${discount}% & above
+            </label>
+        `).join('');
+    }
+
+    updateFilters(products) {
+        this.renderPriceFilter(products);
+        this.renderBrandFilter(products);
+        this.renderDiscountFilter(products);
+    }
+
+    getWishlist() {
+        try {
+            const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+            return Array.isArray(wishlist) ? wishlist : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    renderProducts(products) {
+        if (!this.grid) return;
+
+        if (!Array.isArray(products) || !products.length) {
+            this.grid.innerHTML = '<div class="loading">No products found</div>';
+            return;
+        }
+
+        const wishlist = this.getWishlist();
+        const wishlistIds = new Set(wishlist.map(item => String(item.id)));
+        const fallback = this.getFallbackImage();
+
+        this.grid.innerHTML = products.map(product => {
+            const id = product.id;
+            const slug = product.slug || id;
+            const name = product.name || product.product_name || 'Product';
+            const brand = product.brand || 'RAPID RETAIL';
+            const price = this.getPrice(product);
+            const mrp = this.getMrp(product);
+            const discount = this.getDiscount(product);
+            const inWishlist = wishlistIds.has(String(id));
+            const image = product.image_url || fallback;
+
+            const safeProduct = encodeURIComponent(JSON.stringify({
+                id,
+                name,
+                price,
+                image,
+                brand,
+                slug
+            }));
+
+            return `
+                <article class="card"
+                         data-product-id="${this.escape(id)}"
+                         data-product-slug="${this.escape(slug)}">
+                    <div class="img-box">
+                        <img src="${this.escape(image)}"
+                             alt="${this.escape(name)}"
+                             loading="lazy"
+                             onerror="this.src='${fallback}'">
+                        ${discount > 20 ? '<span class="badge">Best Seller</span>' : ''}
+                        <button type="button"
+                                class="wishlist ${inWishlist ? 'active' : ''}"
+                                data-product="${safeProduct}"
+                                aria-label="${inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}">
+                            ${inWishlist ? '❤️' : '♡'}
+                        </button>
+                    </div>
+                    <div class="info">
+                        <div class="brand">${this.escape(brand)}</div>
+                        <div class="name">${this.escape(name)}</div>
+                        <div class="price">
+                            <span class="current">${this.formatPrice(price)}</span>
+                            ${mrp > price ? `<span class="original">${this.formatPrice(mrp)}</span>` : ''}
+                            ${discount > 0 ? `<span class="off">${discount}% Off</span>` : ''}
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join('');
+    }
+
+    async loadProducts(categoryId) {
+        if (!categoryId || !this.grid) return;
+
+        const requestToken = ++this.productLoadToken;
+        this.currentSubId = categoryId;
+
+        this.grid.innerHTML = '<div class="loading">Loading products...</div>';
+
+        try {
+            let products = await landingService.getCategoryProducts(categoryId);
+
+            // If the selected category has no direct products, use its first child.
+            if (!products.length) {
+                const category = this.findCategory(this.allCategories, categoryId);
+                const child = category?.children?.[0];
+
+                if (child) {
+                    products = await landingService.getCategoryProducts(child.id);
+                    this.currentSubId = child.id;
+                }
+            }
+
+            if (requestToken !== this.productLoadToken) return;
+
+            this.currentProducts = products;
+            this.originalProducts = products.slice();
+
+            this.renderProducts(products);
+            this.updateFilters(products);
+        } catch (error) {
+            if (requestToken !== this.productLoadToken) return;
+            console.error('Product loading error:', error);
+            this.grid.innerHTML = '<div class="loading">Error loading products</div>';
+        }
+    }
+
+    async loadSearchProducts(query) {
+        const q = String(query || '').trim();
+        if (!q || !this.grid) return;
+
+        const requestToken = ++this.productLoadToken;
+        this.currentSubId = null;
+        this.grid.innerHTML = '<div class="loading">Loading products...</div>';
+
+        try {
+            const response = await API.get(`/products/search?q=${encodeURIComponent(q)}`);
+
+            if (requestToken !== this.productLoadToken) return;
+
+            const products = Array.isArray(response?.data?.products)
+                ? response.data.products
+                : Array.isArray(response?.data)
+                    ? response.data
+                    : [];
+
+            this.currentProducts = products;
+            this.originalProducts = products.slice();
+
+            this.renderProducts(products);
+            this.updateFilters(products);
+        } catch (error) {
+            if (requestToken !== this.productLoadToken) return;
+            console.error('Search products loading error:', error);
+            this.currentProducts = [];
+            this.originalProducts = [];
+            this.grid.innerHTML = '<div class="loading">No products found</div>';
+        }
+    }
+
+    getSelectedValues(selector) {
+        return [...document.querySelectorAll(`${selector}:checked`)]
+            .map(input => input.value);
+    }
+
+    async applyAllFilters() {
+        const categoryIds = this.getSelectedValues('.desktop-category-filter');
+        const brands = new Set(this.getSelectedValues('.desktop-brand-filter'));
+        const discounts = this.getSelectedValues('.desktop-discount-filter')
+            .map(Number)
+            .filter(Number.isFinite);
+
+        // One category only: use the already supported category endpoint.
+        if (categoryIds.length === 1 && !brands.size && !discounts.length) {
+            await this.loadProducts(categoryIds[0]);
+            return;
+        }
+
+        let sourceProducts = this.originalProducts;
+
+        if (categoryIds.length > 1) {
+            this.grid.innerHTML = '<div class="loading">Loading products...</div>';
+
+            const result = await Promise.all(
+                categoryIds.map(id => landingService.getCategoryProducts(id))
+            );
+
+            const seen = new Set();
+            sourceProducts = result.flat().filter(product => {
+                const key = String(product.id);
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+
+            this.currentProducts = sourceProducts;
+        }
+
+        let filtered = sourceProducts.slice();
+
+        if (brands.size) {
+            filtered = filtered.filter(product => brands.has(String(product.brand)));
+        }
+
+        if (discounts.length) {
+            filtered = filtered.filter(product => {
+                const discount = this.getDiscount(product);
+                return discounts.some(min => discount >= min);
+            });
+        }
+
+        if (this.maxPrice != null) {
+            filtered = filtered.filter(product => this.getPrice(product) <= this.maxPrice);
+        }
+
+        this.renderProducts(filtered);
+    }
+
+    resetFilters() {
+        document.querySelectorAll(
+            '.desktop-category-filter, .desktop-brand-filter, .desktop-discount-filter'
+        ).forEach(input => {
+            input.checked = false;
+        });
+
+        if (this.priceSlider) this.priceSlider.value = 100;
+        this.maxPrice = null;
+
+        if (this.originalProducts.length) {
+            this.renderProducts(this.originalProducts);
+            this.updateFilters(this.originalProducts);
+        }
+    }
+
+    toggleFilter(header) {
+        const group = header?.parentElement;
+        if (!group) return;
+
+        group.classList.toggle('closed');
+
+        const arrow = header.querySelector('.filter-arrow');
+        if (arrow) {
+            arrow.textContent = group.classList.contains('closed') ? '+' : '−';
+        }
+    }
+
+    toggleWishlist(event, button) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        let product;
+        try {
+            product = JSON.parse(decodeURIComponent(button.dataset.product || ''));
+        } catch (_) {
+            return;
+        }
+
+        const wishlist = this.getWishlist();
+        const index = wishlist.findIndex(item => String(item.id) === String(product.id));
+
+        if (index >= 0) {
+            wishlist.splice(index, 1);
+            button.textContent = '♡';
+            button.classList.remove('active');
+            button.setAttribute('aria-label', 'Add to wishlist');
+        } else {
+            wishlist.push(product);
+            button.textContent = '❤️';
+            button.classList.add('active');
+            button.setAttribute('aria-label', 'Remove from wishlist');
+        }
+
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+
+        if (typeof updateCartCountBadge === 'function') {
+            updateCartCountBadge();
+        }
+    }
+
+    setupEvents() {
+        if (!this.grid) return;
+
+        this.grid.addEventListener('click', event => {
+            const wishlistButton = event.target.closest('.wishlist');
+
+            if (wishlistButton) {
+                this.toggleWishlist(event, wishlistButton);
+                return;
+            }
+
+            const card = event.target.closest('.card');
+            const slug = card?.dataset.productSlug;
+
+            if (slug) {
+                window.location.href = `/product/${encodeURIComponent(slug)}`;
+            }
+        });
+
+        this.subStrip?.addEventListener('click', event => {
+            const item = event.target.closest('.sub-item');
+            if (!item) return;
+            this.changeSubcategory(item.dataset.subid);
+        });
+
+        this.subStrip?.addEventListener('keydown', event => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+
+            const item = event.target.closest('.sub-item');
+            if (!item) return;
+
+            event.preventDefault();
+            this.changeSubcategory(item.dataset.subid);
+        });
+
+        document.addEventListener('change', event => {
+            if (
+                event.target.matches(
+                    '.desktop-category-filter, .desktop-brand-filter, .desktop-discount-filter'
+                )
+            ) {
+                this.applyAllFilters();
+            }
+        });
+    }
+
+    async changeSubcategory(categoryId) {
+        document.querySelectorAll('.sub-item').forEach(item => {
+            item.classList.toggle(
+                'active',
+                String(item.dataset.subid) === String(categoryId)
+            );
+        });
+
+        await this.loadProducts(categoryId);
+    }
+
+    setupMobileFilterPopup() {
+        window.showFilterPopup = () => {
+            const overlay = document.getElementById('filterPopupOverlay');
+            const content = document.getElementById('mobileFilterContent');
+
+            if (!overlay || !content) return;
+
+            const buildGroup = (title, selector, className) => {
+                const checks = [...document.querySelectorAll(selector)];
+                if (!checks.length) return '';
+
+                return `
+                    <section class="mobile-filter-group">
+                        <div class="mobile-filter-title">${title}</div>
+                        ${checks.map(check => `
+                            <label class="filter-checkbox">
+                                <input type="checkbox"
+                                       class="${className}"
+                                       value="${this.escape(check.value)}"
+                                       ${check.checked ? 'checked' : ''}>
+                                ${this.escape(check.parentElement.textContent.trim())}
+                            </label>
+                        `).join('')}
+                    </section>
+                `;
+            };
+
+            content.innerHTML = [
+                buildGroup('CATEGORY', '.desktop-category-filter', 'mobile-category-filter'),
+                buildGroup('BRANDS', '.desktop-brand-filter', 'mobile-brand-filter'),
+                buildGroup('DISCOUNT', '.desktop-discount-filter', 'mobile-discount-filter')
+            ].join('');
+
+            overlay.classList.add('active');
+            overlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.hideFilterPopup = () => {
+            const overlay = document.getElementById('filterPopupOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                overlay.style.display = 'none';
+            }
+            document.body.style.overflow = '';
+        };
+
+        window.applyMobileFilters = () => {
+            document.querySelectorAll('.mobile-category-filter').forEach(input => {
+                const desktop = document.querySelector(
+                    `.desktop-category-filter[value="${CSS.escape(input.value)}"]`
+                );
+                if (desktop) desktop.checked = input.checked;
+            });
+
+            document.querySelectorAll('.mobile-brand-filter').forEach(input => {
+                const desktop = [...document.querySelectorAll('.desktop-brand-filter')]
+                    .find(item => item.value === input.value);
+                if (desktop) desktop.checked = input.checked;
+            });
+
+            document.querySelectorAll('.mobile-discount-filter').forEach(input => {
+                const desktop = document.querySelector(
+                    `.desktop-discount-filter[value="${CSS.escape(input.value)}"]`
+                );
+                if (desktop) desktop.checked = input.checked;
+            });
+
+            this.applyAllFilters();
+            window.hideFilterPopup();
+        };
+
+        window.resetMobileFilters = () => {
+            document.querySelectorAll(
+                '.mobile-category-filter, .mobile-brand-filter, .mobile-discount-filter'
+            ).forEach(input => {
+                input.checked = false;
+            });
+        };
+    }
+
+    setupSortPopup() {
+        window.showSortPopup = () => {
+            const overlay = document.getElementById('sortPopupOverlay');
+            if (!overlay) return;
+            overlay.classList.add('active');
+            overlay.style.display = 'flex';
+        };
+
+        window.hideSortPopup = () => {
+            const overlay = document.getElementById('sortPopupOverlay');
+            if (!overlay) return;
+            overlay.classList.remove('active');
+            overlay.style.display = 'none';
+        };
+
+        window.applySort = () => {
+            const selected = document.querySelector('input[name="sort"]:checked');
+            if (!selected) return;
+
+            const sorted = this.currentProducts.slice();
+
+            if (selected.value === 'price-low') {
+                sorted.sort((a, b) => this.getPrice(a) - this.getPrice(b));
+            } else if (selected.value === 'price-high') {
+                sorted.sort((a, b) => this.getPrice(b) - this.getPrice(a));
+            }
+
+            this.renderProducts(sorted);
+            window.hideSortPopup();
+        };
+    }
+
+    async init() {
+        if (this.initialized || !this.grid) return;
+        this.initialized = true;
+
+        this.setupEvents();
+        this.setupSortPopup();
+        this.setupMobileFilterPopup();
+
+        const currentPath = window.location.pathname.replace(/\/+$/, '');
+
+        // Top-selling page does not need the category tree. Load products immediately.
+        if (currentPath === '/top-selling') {
+            this.mainCategoryData = null;
+            this.currentSubId = null;
+
+            try {
+                const products = await landingService.getTopSelling();
+
+                this.currentProducts = products;
+                this.originalProducts = products.slice();
+
+                this.renderProducts(products);
+                this.updateFilters(products);
+            } catch (error) {
+                console.error('Top selling products loading error:', error);
+                this.grid.innerHTML = '<div class="loading">Error loading products</div>';
+            }
+
+            return;
+        }
+
+        const searchQuery = new URLSearchParams(window.location.search).get('search');
+        if (searchQuery?.trim()) {
+            await this.loadSearchProducts(searchQuery);
+            return;
+        }
+
+        // Collection pages need the category tree. Shared cache prevents duplicate requests.
+        const categories = await this.loadCategories();
+
+        const { mainCategory, targetSubId } =
+            this.findInitialCategory(categories);
+
+        this.mainCategoryData = mainCategory;
+
+        if (!mainCategory || !targetSubId) {
+            this.grid.innerHTML = '<div class="loading">No category found</div>';
+            return;
+        }
+
+        this.currentSubId = targetSubId;
+
+        const pathMatch = window.location.pathname.match(
+    /\/collection\/([^/]+)(?:\/([^/]+))?/
+);
+
+const hasSubcategory = Boolean(pathMatch?.[2]);
+
+let currentFilterCategory;
+
+if (hasSubcategory) {
+    // Direct subcategory URL:
+    // /collection/co-ords/printed-co-ords
+    // => Printed Co-ords ke children filter me dikhenge
+    currentFilterCategory =
+        this.findCategory(categories, targetSubId) || mainCategory;
+} else {
+    // Main category URL:
+    // /collection/co-ords
+    // => First subcategory ke children filter me dikhenge
+    const firstSubCategory = mainCategory?.children?.[0];
+
+    if (firstSubCategory?.children?.length) {
+        currentFilterCategory = firstSubCategory;
+    } else {
+        currentFilterCategory = mainCategory;
+    }
+}
+
+this.renderCategoryFilters(currentFilterCategory);
+this.renderSubcategories(mainCategory);
+await this.loadProducts(targetSubId);
+    }
+}
+
+window.productPage = new ProductPage();
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.body.dataset.page === 'products') {
+        window.productPage.init();
+    }
+});
+
+window.applyFilters = () => window.productPage?.applyAllFilters();
+window.resetAllFilters = () => window.productPage?.resetFilters();
+window.toggleFilter = header => window.productPage?.toggleFilter(header);
+window.toggleWish = (event, button) => window.productPage?.toggleWishlist(event, button);
+window.changeSubcategory = id => window.productPage?.changeSubcategory(id);

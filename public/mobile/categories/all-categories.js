@@ -292,26 +292,142 @@ class AllCategoriesPage {
             let timer;
             let currentController = null;
 
-            const renderSuggestions = (products) => {
-                const html = products.length ? 
-                    products.map(p => `<div class="web-suggestion-item" role="button" tabindex="0" onclick="window.location.href='/product/${p.slug}'" onkeypress="if(event.key==='Enter') window.location.href='/product/${p.slug}'">${escapeHtml(p.name)}</div>`).join('') :
-                    '';
+            const slugify = (value) => {
+                return String(value || '')
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+            };
+
+            const renderSuggestions = (data) => {
+                const products = Array.isArray(data?.products) ? data.products : [];
+                const categories = Array.isArray(data?.categories) ? data.categories : [];
+                const subcategories = Array.isArray(data?.subcategories) ? data.subcategories : [];
+                const brands = Array.isArray(data?.brands) ? data.brands : [];
+
+                let html = '';
+
+                if (products.length) {
+                    html += `
+                        <div class="search-suggestion-group">
+                            <div class="search-suggestion-title">Products</div>
+                            ${products.map(p => `
+                                <div class="web-suggestion-item"
+                                    role="button"
+                                    tabindex="0"
+                                    onclick="window.location.href='/product/${encodeURIComponent(p.slug)}'"
+                                    onkeypress="if(event.key==='Enter') window.location.href='/product/${encodeURIComponent(p.slug)}'">
+                                    ${escapeHtml(p.name)}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                if (categories.length) {
+                    html += `
+                        <div class="search-suggestion-group">
+                            <div class="search-suggestion-title">Categories</div>
+                            ${categories.map(cat => {
+                                const slug = cat.slug || slugify(cat.name);
+
+                                let url = `/collection/${encodeURIComponent(slug)}`;
+
+                                if (slug === 'trending') {
+                                    url = '/top-selling';
+                                } else if (slug === 'bestsellers') {
+                                    url = '/best-selling';
+                                }
+
+                                return `
+                                    <div class="web-suggestion-item"
+                                        role="button"
+                                        tabindex="0"
+                                        onclick="window.location.href='${url}'"
+                                        onkeypress="if(event.key==='Enter') window.location.href='${url}'">
+                                        ${escapeHtml(cat.name)}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                }
+
+                if (subcategories.length) {
+                    html += `
+                        <div class="search-suggestion-group">
+                            <div class="search-suggestion-title">Subcategories</div>
+                            ${subcategories.map(sub => {
+                                const subSlug = sub.slug || slugify(sub.name);
+
+                                const parentSlug =
+                                    sub.parent?.slug ||
+                                    sub.parent_slug ||
+                                    (sub.parent?.name ? slugify(sub.parent.name) : '');
+
+                                const url = parentSlug
+                                    ? `/collection/${encodeURIComponent(parentSlug)}/${encodeURIComponent(subSlug)}`
+                                    : `/collection/${encodeURIComponent(subSlug)}`;
+
+                                return `
+                                    <div class="web-suggestion-item"
+                                        role="button"
+                                        tabindex="0"
+                                        onclick="window.location.href='${url}'"
+                                        onkeypress="if(event.key==='Enter') window.location.href='${url}'">
+                                        ${escapeHtml(sub.name)}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                }
+
+                if (brands.length) {
+                    html += `
+                        <div class="search-suggestion-group">
+                            <div class="search-suggestion-title">Brands</div>
+                            ${brands.map(brand => {
+                                const brandName =
+                                    typeof brand === 'string'
+                                        ? brand
+                                        : brand.name || brand.brand || '';
+
+                                return `
+                                    <div class="web-suggestion-item"
+                                        role="button"
+                                        tabindex="0"
+                                        onclick="window.location.href='/products?search=${encodeURIComponent(brandName)}'"
+                                        onkeypress="if(event.key==='Enter') window.location.href='/search?q=${encodeURIComponent(brandName)}'">
+                                        ${escapeHtml(brandName)}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                }
+
                 suggestionsBox.innerHTML = html;
-                suggestionsBox.style.display = products.length ? "block" : "none";
+                suggestionsBox.style.display = html ? "block" : "none";
             };
 
             input.addEventListener("keydown", function(e) {
                 if (e.key === "Enter") {
                     e.preventDefault();
+
                     const q = this.value.trim();
+
                     if (q) {
-                        window.location.href = `/products?search=${encodeURIComponent(q)}`;
+                        window.location.href =
+                            `/products?search=${encodeURIComponent(q)}`;
                     }
                 }
             });
 
             input.addEventListener("input", async (e) => {
                 clearTimeout(timer);
+
                 const q = e.target.value.trim();
 
                 if (q.length === 0) {
@@ -320,29 +436,56 @@ class AllCategoriesPage {
                     return;
                 }
 
-                if (currentController) currentController.abort();
+                if (currentController) {
+                    currentController.abort();
+                }
+
                 currentController = new AbortController();
 
-                try {
-                    timer = setTimeout(async () => {
-                        const res = await fetch(`${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`, {
-                            signal: currentController.signal
-                        });
-                        const data = await res.json();
-                        if (data.success && data.data?.products) {
-                            renderSuggestions(data.data.products);
+                timer = setTimeout(async () => {
+                    try {
+                        const res = await fetch(
+                            `${API_BASE_URL}/products/suggestions?q=${encodeURIComponent(q)}`,
+                            {
+                                signal: currentController.signal,
+                                headers: {
+                                    Accept: 'application/json'
+                                }
+                            }
+                        );
+
+                        if (!res.ok) {
+                            throw new Error(`HTTP ${res.status}`);
                         }
-                    }, 300);
-                } catch (err) {
-                    if (err.name !== 'AbortError') console.log(err);
-                }
+
+                        const data = await res.json();
+
+                        if (data.success && data.data) {
+                            renderSuggestions(data.data);
+                        } else {
+                            suggestionsBox.innerHTML = "";
+                            suggestionsBox.style.display = "none";
+                        }
+
+                    } catch (err) {
+                        if (err.name !== 'AbortError') {
+                            console.log(err);
+                            suggestionsBox.innerHTML = "";
+                            suggestionsBox.style.display = "none";
+                        }
+                    }
+                }, 300);
             });
 
             document.addEventListener("click", (e) => {
-                if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                if (
+                    !input.contains(e.target) &&
+                    !suggestionsBox.contains(e.target)
+                ) {
                     suggestionsBox.style.display = "none";
                 }
             });
+
         }, 300);
     }
 
