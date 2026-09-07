@@ -640,6 +640,22 @@ window.showForgotPopup = showForgotPopup;
 </script>
 
 <style>
+    html:has(#auth-popup),
+body:has(#auth-popup) {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+}
+
+#auth-popup {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 2147483647 !important;
+    background: rgba(0, 0, 0, 0.48) !important;
+    overscroll-behavior: contain;
+}
+
     @media (max-width: 768px) {
 
     #auth-popup {

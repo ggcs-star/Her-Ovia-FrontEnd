@@ -311,7 +311,6 @@ class AllCategoriesPage {
                 if (products.length) {
                     html += `
                         <div class="search-suggestion-group">
-                            <div class="search-suggestion-title">Products</div>
                             ${products.map(p => `
                                 <div class="web-suggestion-item"
                                     role="button"
@@ -328,7 +327,7 @@ class AllCategoriesPage {
                 if (categories.length) {
                     html += `
                         <div class="search-suggestion-group">
-                            <div class="search-suggestion-title">Categories</div>
+                            
                             ${categories.map(cat => {
                                 const slug = cat.slug || slugify(cat.name);
 
@@ -357,7 +356,7 @@ class AllCategoriesPage {
                 if (subcategories.length) {
                     html += `
                         <div class="search-suggestion-group">
-                            <div class="search-suggestion-title">Subcategories</div>
+                            
                             ${subcategories.map(sub => {
                                 const subSlug = sub.slug || slugify(sub.name);
 
@@ -387,7 +386,7 @@ class AllCategoriesPage {
                 if (brands.length) {
                     html += `
                         <div class="search-suggestion-group">
-                            <div class="search-suggestion-title">Brands</div>
+                           
                             ${brands.map(brand => {
                                 const brandName =
                                     typeof brand === 'string'
@@ -408,8 +407,17 @@ class AllCategoriesPage {
                     `;
                 }
 
-                suggestionsBox.innerHTML = html;
-                suggestionsBox.style.display = html ? "block" : "none";
+                if (html) {
+                    suggestionsBox.innerHTML = html;
+                    suggestionsBox.style.display = "block";
+                } else {
+                    suggestionsBox.innerHTML = `
+                        <div style="padding:16px;color:#999;text-align:center;">
+                            No results found
+                        </div>
+                    `;
+                    suggestionsBox.style.display = "block";
+                }
             };
 
             input.addEventListener("keydown", function(e) {
@@ -463,8 +471,12 @@ class AllCategoriesPage {
                         if (data.success && data.data) {
                             renderSuggestions(data.data);
                         } else {
-                            suggestionsBox.innerHTML = "";
-                            suggestionsBox.style.display = "none";
+                            suggestionsBox.innerHTML = `
+                                <div style="padding:16px;color:#999;text-align:center;">
+                                    No results found
+                                </div>
+                            `;
+                            suggestionsBox.style.display = "block";
                         }
 
                     } catch (err) {

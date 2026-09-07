@@ -679,8 +679,12 @@ class RapidRetailsEngine {
                     ].filter(item => item.name);
 
                     if (!suggestions.length) {
-                        suggestionsBox.innerHTML = "";
-                        suggestionsBox.style.display = "none";
+                        suggestionsBox.innerHTML = `
+                            <div style="padding:16px;color:#999;text-align:center;">
+                                No results found
+                            </div>
+                        `;
+                        suggestionsBox.style.display = "block";
                         return;
                     }
 
@@ -1708,6 +1712,15 @@ renderAllCategoriesPopup() {
                     product.gallery_images?.length
                         ? this.resolveImage(product.gallery_images[0])
                         : this.resolveImage(product.image_url);
+                const hoverImage =
+                    product.gallery_images?.length > 1
+                        ? this.resolveImage(product.gallery_images[1])
+                        : productImage;
+
+                if (hoverImage) {
+                    const preloadImage = new Image();
+                    preloadImage.src = hoverImage;
+                }
 
                 const label = labels[index] || 'TOP PICK';
 
@@ -1728,7 +1741,9 @@ renderAllCategoriesPopup() {
                         <div class="herovia-featured-card-image"
                             style="${productImage
                                 ? `background-image: url('${productImage}'); background-size: cover; background-position: center;`
-                                : 'background: linear-gradient(135deg, #ede8e2, #d5ccc4);'}">
+                                : 'background: linear-gradient(135deg, #ede8e2, #d5ccc4);'}"
+                            onmouseenter="this.style.backgroundImage='url(${hoverImage})'"
+                            onmouseleave="this.style.backgroundImage='url(${productImage})'">
 
                             <span class="herovia-featured-card-tag">
                                 ${label}
@@ -2226,6 +2241,7 @@ class ProductPage {
         this.currentSubId = null;
         this.priceSlider = null;
         this.maxPrice = null;
+        this.priceFilterActive = false;
         this.productLoadToken = 0;
         this.initialized = false;
     }
@@ -2452,7 +2468,7 @@ class ProductPage {
             }
 
             const max = Math.max(...prices) + 100;
-            this.maxPrice = max;
+            // this.maxPrice = max;
 
             this.priceFilters.innerHTML = `
                 <div class="price-slider-wrap">
@@ -2475,6 +2491,7 @@ class ProductPage {
                 }
 
                 this.maxPrice = currentMax;
+                this.priceFilterActive = true;
                 this.applyAllFilters();
             });
         }
@@ -2549,27 +2566,43 @@ class ProductPage {
             const mrp = this.getMrp(product);
             const discount = this.getDiscount(product);
             const inWishlist = wishlistIds.has(String(id));
-            const image = product.image_url || fallback;
+
+            const galleryImages = Array.isArray(product.gallery_images)
+                ? product.gallery_images
+                : [];
+
+            const mainImage = galleryImages.length
+                ? galleryImages[0]
+                : (product.image_url || fallback);
+
+            const hoverImage = galleryImages[1] || mainImage;
 
             const safeProduct = encodeURIComponent(JSON.stringify({
                 id,
                 name,
                 price,
-                image,
+                image: mainImage,
                 brand,
                 slug
             }));
 
             return `
                 <article class="card"
-                         data-product-id="${this.escape(id)}"
-                         data-product-slug="${this.escape(slug)}">
+                        data-product-id="${this.escape(id)}"
+                        data-product-slug="${this.escape(slug)}">
+
                     <div class="img-box">
-                        <img src="${this.escape(image)}"
-                             alt="${this.escape(name)}"
-                             loading="lazy"
-                             onerror="this.src='${fallback}'">
+                        <img src="${this.escape(mainImage)}"
+                            alt="${this.escape(name)}"
+                            loading="lazy"
+                            data-main-image="${this.escape(mainImage)}"
+                            data-hover-image="${this.escape(hoverImage)}"
+                            onmouseenter="this.src=this.dataset.hoverImage"
+                            onmouseleave="this.src=this.dataset.mainImage"
+                            onerror="this.src='${fallback}'">
+
                         ${discount > 20 ? '<span class="badge">Best Seller</span>' : ''}
+
                         <button type="button"
                                 class="wishlist ${inWishlist ? 'active' : ''}"
                                 data-product="${safeProduct}"
@@ -2577,13 +2610,22 @@ class ProductPage {
                             ${inWishlist ? '❤️' : '♡'}
                         </button>
                     </div>
+
                     <div class="info">
                         <div class="brand">${this.escape(brand)}</div>
+
                         <div class="name">${this.escape(name)}</div>
+
                         <div class="price">
                             <span class="current">${this.formatPrice(price)}</span>
-                            ${mrp > price ? `<span class="original">${this.formatPrice(mrp)}</span>` : ''}
-                            ${discount > 0 ? `<span class="off">${discount}% Off</span>` : ''}
+
+                            ${mrp > price
+                                ? `<span class="original">${this.formatPrice(mrp)}</span>`
+                                : ''}
+
+                            ${discount > 0
+                                ? `<span class="off">${discount}% Off</span>`
+                                : ''}
                         </div>
                     </div>
                 </article>
@@ -2665,22 +2707,16 @@ class ProductPage {
             .map(input => input.value);
     }
 
-    async applyAllFilters() {
+    async applyAllFilters({ refreshPriceRange = false } = {}) {
         const categoryIds = this.getSelectedValues('.desktop-category-filter');
         const brands = new Set(this.getSelectedValues('.desktop-brand-filter'));
         const discounts = this.getSelectedValues('.desktop-discount-filter')
             .map(Number)
             .filter(Number.isFinite);
 
-        // One category only: use the already supported category endpoint.
-        if (categoryIds.length === 1 && !brands.size && !discounts.length) {
-            await this.loadProducts(categoryIds[0]);
-            return;
-        }
-
         let sourceProducts = this.originalProducts;
 
-        if (categoryIds.length > 1) {
+        if (categoryIds.length > 0) {
             this.grid.innerHTML = '<div class="loading">Loading products...</div>';
 
             const result = await Promise.all(
@@ -2688,31 +2724,49 @@ class ProductPage {
             );
 
             const seen = new Set();
+
             sourceProducts = result.flat().filter(product => {
                 const key = String(product.id);
-                if (seen.has(key)) return false;
+
+                if (seen.has(key)) {
+                    return false;
+                }
+
                 seen.add(key);
                 return true;
             });
 
             this.currentProducts = sourceProducts;
+        } else {
+            this.currentProducts = this.originalProducts.slice();
+        }
+
+        if (refreshPriceRange) {
+            this.priceFilterActive = false;
+            this.maxPrice = null;
+            this.renderPriceFilter(sourceProducts);
         }
 
         let filtered = sourceProducts.slice();
 
         if (brands.size) {
-            filtered = filtered.filter(product => brands.has(String(product.brand)));
+            filtered = filtered.filter(product =>
+                brands.has(String(product.brand))
+            );
         }
 
         if (discounts.length) {
             filtered = filtered.filter(product => {
                 const discount = this.getDiscount(product);
+
                 return discounts.some(min => discount >= min);
             });
         }
 
-        if (this.maxPrice != null) {
-            filtered = filtered.filter(product => this.getPrice(product) <= this.maxPrice);
+        if (this.priceFilterActive && this.maxPrice != null) {
+            filtered = filtered.filter(
+                product => this.getPrice(product) <= this.maxPrice
+            );
         }
 
         this.renderProducts(filtered);
@@ -2727,6 +2781,7 @@ class ProductPage {
 
         if (this.priceSlider) this.priceSlider.value = 100;
         this.maxPrice = null;
+        this.priceFilterActive = false;
 
         if (this.originalProducts.length) {
             this.renderProducts(this.originalProducts);
@@ -2815,9 +2870,17 @@ class ProductPage {
         });
 
         document.addEventListener('change', event => {
+            if (event.target.matches('.desktop-category-filter')) {
+                this.applyAllFilters({
+                    refreshPriceRange: true
+                });
+
+                return;
+            }
+
             if (
                 event.target.matches(
-                    '.desktop-category-filter, .desktop-brand-filter, .desktop-discount-filter'
+                    '.desktop-brand-filter, .desktop-discount-filter'
                 )
             ) {
                 this.applyAllFilters();
@@ -3010,15 +3073,11 @@ const hasSubcategory = Boolean(pathMatch?.[2]);
 let currentFilterCategory;
 
 if (hasSubcategory) {
-    // Direct subcategory URL:
-    // /collection/co-ords/printed-co-ords
-    // => Printed Co-ords ke children filter me dikhenge
+ 
     currentFilterCategory =
         this.findCategory(categories, targetSubId) || mainCategory;
 } else {
-    // Main category URL:
-    // /collection/co-ords
-    // => First subcategory ke children filter me dikhenge
+    
     const firstSubCategory = mainCategory?.children?.[0];
 
     if (firstSubCategory?.children?.length) {

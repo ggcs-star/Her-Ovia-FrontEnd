@@ -1248,9 +1248,6 @@
                 if (products.length) {
                     html += `
                         <div class="search-suggestion-group">
-                            <div class="search-suggestion-title">
-                                Products
-                            </div>
 
                             ${products.map(p => {
                                 const slug = p.slug || p.id || "";
@@ -1278,10 +1275,6 @@
                 if (categories.length) {
                     html += `
                         <div class="search-suggestion-group">
-                            <div class="search-suggestion-title">
-                                Categories
-                            </div>
-
                             ${categories.map(cat => {
                                 const slug = cat.slug || slugify(cat.name);
 
@@ -1313,10 +1306,6 @@
                 if (subcategories.length) {
                     html += `
                         <div class="search-suggestion-group">
-                            <div class="search-suggestion-title">
-                                Subcategories
-                            </div>
-
                             ${subcategories.map(sub => {
                                 const subSlug =
                                     sub.slug || slugify(sub.name);
@@ -1354,10 +1343,6 @@
                 if (brands.length) {
                     html += `
                         <div class="search-suggestion-group">
-                            <div class="search-suggestion-title">
-                                Brands
-                            </div>
-
                             ${brands.map(brand => {
                                 const brandName =
                                     typeof brand === "string"
@@ -1389,9 +1374,13 @@
                     box.style.display = "block";
                     box.className = "web-search-suggestions active";
                 } else {
-                    box.innerHTML = "";
-                    box.style.display = "none";
-                    box.className = "web-search-suggestions";
+                    box.innerHTML = `
+                        <div class="web-suggestion-item" style="text-align:center; color:#696b79; cursor:default;">
+                            No Results Found
+                        </div>
+                    `;
+                    box.style.display = "block";
+                    box.className = "web-search-suggestions active";
                 }
             };
 
