@@ -679,8 +679,12 @@ class RapidRetailsEngine {
                     ].filter(item => item.name);
 
                     if (!suggestions.length) {
-                        suggestionsBox.innerHTML = "";
-                        suggestionsBox.style.display = "none";
+                        suggestionsBox.innerHTML = `
+                            <div style="padding:16px;color:#999;text-align:center;">
+                                No results found
+                            </div>
+                        `;
+                        suggestionsBox.style.display = "block";
                         return;
                     }
 
@@ -1708,6 +1712,15 @@ renderAllCategoriesPopup() {
                     product.gallery_images?.length
                         ? this.resolveImage(product.gallery_images[0])
                         : this.resolveImage(product.image_url);
+                const hoverImage =
+                    product.gallery_images?.length > 1
+                        ? this.resolveImage(product.gallery_images[1])
+                        : productImage;
+
+                if (hoverImage) {
+                    const preloadImage = new Image();
+                    preloadImage.src = hoverImage;
+                }
 
                 const label = labels[index] || 'TOP PICK';
 
@@ -1728,7 +1741,9 @@ renderAllCategoriesPopup() {
                         <div class="herovia-featured-card-image"
                             style="${productImage
                                 ? `background-image: url('${productImage}'); background-size: cover; background-position: center;`
-                                : 'background: linear-gradient(135deg, #ede8e2, #d5ccc4);'}">
+                                : 'background: linear-gradient(135deg, #ede8e2, #d5ccc4);'}"
+                            onmouseenter="this.style.backgroundImage='url(${hoverImage})'"
+                            onmouseleave="this.style.backgroundImage='url(${productImage})'">
 
                             <span class="herovia-featured-card-tag">
                                 ${label}
@@ -2549,27 +2564,43 @@ class ProductPage {
             const mrp = this.getMrp(product);
             const discount = this.getDiscount(product);
             const inWishlist = wishlistIds.has(String(id));
-            const image = product.image_url || fallback;
+
+            const galleryImages = Array.isArray(product.gallery_images)
+                ? product.gallery_images
+                : [];
+
+            const mainImage = galleryImages.length
+                ? galleryImages[0]
+                : (product.image_url || fallback);
+
+            const hoverImage = galleryImages[1] || mainImage;
 
             const safeProduct = encodeURIComponent(JSON.stringify({
                 id,
                 name,
                 price,
-                image,
+                image: mainImage,
                 brand,
                 slug
             }));
 
             return `
                 <article class="card"
-                         data-product-id="${this.escape(id)}"
-                         data-product-slug="${this.escape(slug)}">
+                        data-product-id="${this.escape(id)}"
+                        data-product-slug="${this.escape(slug)}">
+
                     <div class="img-box">
-                        <img src="${this.escape(image)}"
-                             alt="${this.escape(name)}"
-                             loading="lazy"
-                             onerror="this.src='${fallback}'">
+                        <img src="${this.escape(mainImage)}"
+                            alt="${this.escape(name)}"
+                            loading="lazy"
+                            data-main-image="${this.escape(mainImage)}"
+                            data-hover-image="${this.escape(hoverImage)}"
+                            onmouseenter="this.src=this.dataset.hoverImage"
+                            onmouseleave="this.src=this.dataset.mainImage"
+                            onerror="this.src='${fallback}'">
+
                         ${discount > 20 ? '<span class="badge">Best Seller</span>' : ''}
+
                         <button type="button"
                                 class="wishlist ${inWishlist ? 'active' : ''}"
                                 data-product="${safeProduct}"
@@ -2577,13 +2608,22 @@ class ProductPage {
                             ${inWishlist ? '❤️' : '♡'}
                         </button>
                     </div>
+
                     <div class="info">
                         <div class="brand">${this.escape(brand)}</div>
+
                         <div class="name">${this.escape(name)}</div>
+
                         <div class="price">
                             <span class="current">${this.formatPrice(price)}</span>
-                            ${mrp > price ? `<span class="original">${this.formatPrice(mrp)}</span>` : ''}
-                            ${discount > 0 ? `<span class="off">${discount}% Off</span>` : ''}
+
+                            ${mrp > price
+                                ? `<span class="original">${this.formatPrice(mrp)}</span>`
+                                : ''}
+
+                            ${discount > 0
+                                ? `<span class="off">${discount}% Off</span>`
+                                : ''}
                         </div>
                     </div>
                 </article>
@@ -2671,12 +2711,6 @@ class ProductPage {
         const discounts = this.getSelectedValues('.desktop-discount-filter')
             .map(Number)
             .filter(Number.isFinite);
-
-        // One category only: use the already supported category endpoint.
-        if (categoryIds.length === 1 && !brands.size && !discounts.length) {
-            await this.loadProducts(categoryIds[0]);
-            return;
-        }
 
         let sourceProducts = this.originalProducts;
 
