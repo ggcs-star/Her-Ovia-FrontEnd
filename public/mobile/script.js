@@ -2241,6 +2241,7 @@ class ProductPage {
         this.currentSubId = null;
         this.priceSlider = null;
         this.maxPrice = null;
+        this.priceFilterActive = false;
         this.productLoadToken = 0;
         this.initialized = false;
     }
@@ -2467,7 +2468,7 @@ class ProductPage {
             }
 
             const max = Math.max(...prices) + 100;
-            this.maxPrice = max;
+            // this.maxPrice = max;
 
             this.priceFilters.innerHTML = `
                 <div class="price-slider-wrap">
@@ -2490,6 +2491,7 @@ class ProductPage {
                 }
 
                 this.maxPrice = currentMax;
+                this.priceFilterActive = true;
                 this.applyAllFilters();
             });
         }
@@ -2705,7 +2707,7 @@ class ProductPage {
             .map(input => input.value);
     }
 
-    async applyAllFilters() {
+    async applyAllFilters({ refreshPriceRange = false } = {}) {
         const categoryIds = this.getSelectedValues('.desktop-category-filter');
         const brands = new Set(this.getSelectedValues('.desktop-brand-filter'));
         const discounts = this.getSelectedValues('.desktop-discount-filter')
@@ -2714,7 +2716,7 @@ class ProductPage {
 
         let sourceProducts = this.originalProducts;
 
-        if (categoryIds.length > 1) {
+        if (categoryIds.length > 0) {
             this.grid.innerHTML = '<div class="loading">Loading products...</div>';
 
             const result = await Promise.all(
@@ -2722,31 +2724,49 @@ class ProductPage {
             );
 
             const seen = new Set();
+
             sourceProducts = result.flat().filter(product => {
                 const key = String(product.id);
-                if (seen.has(key)) return false;
+
+                if (seen.has(key)) {
+                    return false;
+                }
+
                 seen.add(key);
                 return true;
             });
 
             this.currentProducts = sourceProducts;
+        } else {
+            this.currentProducts = this.originalProducts.slice();
+        }
+
+        if (refreshPriceRange) {
+            this.priceFilterActive = false;
+            this.maxPrice = null;
+            this.renderPriceFilter(sourceProducts);
         }
 
         let filtered = sourceProducts.slice();
 
         if (brands.size) {
-            filtered = filtered.filter(product => brands.has(String(product.brand)));
+            filtered = filtered.filter(product =>
+                brands.has(String(product.brand))
+            );
         }
 
         if (discounts.length) {
             filtered = filtered.filter(product => {
                 const discount = this.getDiscount(product);
+
                 return discounts.some(min => discount >= min);
             });
         }
 
-        if (this.maxPrice != null) {
-            filtered = filtered.filter(product => this.getPrice(product) <= this.maxPrice);
+        if (this.priceFilterActive && this.maxPrice != null) {
+            filtered = filtered.filter(
+                product => this.getPrice(product) <= this.maxPrice
+            );
         }
 
         this.renderProducts(filtered);
@@ -2761,6 +2781,7 @@ class ProductPage {
 
         if (this.priceSlider) this.priceSlider.value = 100;
         this.maxPrice = null;
+        this.priceFilterActive = false;
 
         if (this.originalProducts.length) {
             this.renderProducts(this.originalProducts);
@@ -2849,9 +2870,17 @@ class ProductPage {
         });
 
         document.addEventListener('change', event => {
+            if (event.target.matches('.desktop-category-filter')) {
+                this.applyAllFilters({
+                    refreshPriceRange: true
+                });
+
+                return;
+            }
+
             if (
                 event.target.matches(
-                    '.desktop-category-filter, .desktop-brand-filter, .desktop-discount-filter'
+                    '.desktop-brand-filter, .desktop-discount-filter'
                 )
             ) {
                 this.applyAllFilters();
@@ -3044,15 +3073,11 @@ const hasSubcategory = Boolean(pathMatch?.[2]);
 let currentFilterCategory;
 
 if (hasSubcategory) {
-    // Direct subcategory URL:
-    // /collection/co-ords/printed-co-ords
-    // => Printed Co-ords ke children filter me dikhenge
+ 
     currentFilterCategory =
         this.findCategory(categories, targetSubId) || mainCategory;
 } else {
-    // Main category URL:
-    // /collection/co-ords
-    // => First subcategory ke children filter me dikhenge
+    
     const firstSubCategory = mainCategory?.children?.[0];
 
     if (firstSubCategory?.children?.length) {
