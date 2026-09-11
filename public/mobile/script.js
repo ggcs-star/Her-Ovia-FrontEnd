@@ -351,7 +351,6 @@ class RapidRetailsEngine {
     }
 
     async init() {
-        // Rehydrate shared landing cache before first header paint when available.
         const cachedLanding = landingService.readCache(landingService.cacheKey);
         if (cachedLanding) {
             this.allCategories = cachedLanding.categories || [];
@@ -362,12 +361,10 @@ class RapidRetailsEngine {
             this.productsLoaded = this.topSellingProducts.length > 0;
         }
 
-        // Critical UI first: never block header/navigation on API calls.
         this.renderHeader();
         this.renderBottomNav();
         this.initSearchRedirect();
 
-        // Data loads independently in the background.
         this.fetchAppSettings().catch(() => {});
 
         if (this.page === 'landing') {
@@ -514,49 +511,353 @@ class RapidRetailsEngine {
         this.applyAppSettings();
         setTimeout(() => updateCartCountBadge(), 0);
     } else {
-        const isCartPage = document.body.classList.contains('cart-page');
-        const isCheckoutPage = document.body.classList.contains('checkout-page');
-        const isProfilePage = document.body.classList.contains('profile-page');
-        const isOrdersPage = document.body.classList.contains('orders-page');
-        const isWishlistPage = document.body.classList.contains('wishlist-page');
-        const isOrderConfirmationPage = document.body.classList.contains('order-confirmation-page');
-        const isTermsPage = document.body.classList.contains('terms-page') || window.location.pathname === '/terms';
-        const isReturnsPage = document.body.classList.contains('returns-page') || window.location.pathname === '/returns';
-        const isPrivacyPage = document.body.classList.contains('privacy-page') || window.location.pathname === '/privacy-policy';
-        const showBackButton = isCartPage || isCheckoutPage || isProfilePage || isOrdersPage || isWishlistPage || isOrderConfirmationPage || isTermsPage || isReturnsPage || isPrivacyPage;
+    const isLandingPage = this.page === 'landing';
+    if (isLandingPage) {
+        header.innerHTML = `
+            <div class="mobile-landing-header">
+
+                <!-- MENU -->
+                <button
+                    type="button"
+                    class="mobile-menu-btn"
+                    id="mobile-menu-btn"
+                    aria-label="Open menu"
+                >
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <!-- LOGO -->
+                <a href="/" class="mobile-landing-logo">
+                    <img
+                        src="${this.appSettings?.header_logo || ''}"
+                        alt="Logo"
+                        class="site-logo"
+                        id="site-logo"
+                        onerror="this.style.display='none'"
+                    >
+                </a>
+
+                <!-- SEARCH -->
+                <button
+                    type="button"
+                    class="mobile-header-icon"
+                    aria-label="Search"
+                    onclick="window.location.href='/search'"
+                >
+                    <svg
+                        width="21"
+                        height="21"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <circle cx="10" cy="10" r="7"></circle>
+                        <line x1="21" y1="21" x2="15" y2="15"></line>
+                    </svg>
+                </button>
+
+                <!-- WISHLIST -->
+                <a
+                    href="/wishlist"
+                    class="mobile-header-icon"
+                    aria-label="Wishlist"
+                >
+                    <svg
+                        width="21"
+                        height="21"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </a>
+
+                <!-- CART -->
+                <a
+                    href="/cart"
+                    class="mobile-header-icon mobile-cart-icon"
+                    aria-label="Cart"
+                >
+                    <span class="mobile-cart-wrapper">
+                        <svg
+                            width="21"
+                            height="21"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <circle cx="9" cy="21" r="1.5"></circle>
+                            <circle cx="18" cy="21" r="1.5"></circle>
+                            <path d="M2 2h3l3 12h11l2-8H6"></path>
+                        </svg>
+
+                        <span id="mobile-cart-count-badge">0</span>
+                    </span>
+                </a>
+
+            </div>
+
+            <!-- CATEGORY MENU -->
+            <div
+                class="mobile-category-menu"
+                id="mobile-category-menu"
+                style="display:none;"
+            >
+                <div
+                    class="mobile-category-menu-inner"
+                    id="mobile-category-menu-inner"
+                ></div>
+            </div>
+        `;
+
+        const menuButton =
+            document.getElementById('mobile-menu-btn');
+
+        const categoryMenu =
+            document.getElementById('mobile-category-menu');
+
+        const categoryMenuInner =
+            document.getElementById('mobile-category-menu-inner');
+
+        if (menuButton && categoryMenu) {
+            menuButton.addEventListener('click', async () => {
+
+                const isOpen =
+                    categoryMenu.classList.toggle('active');
+
+                menuButton.classList.toggle(
+                    'active',
+                    isOpen
+                );
+
+                if (!isOpen) return;
+
+                if (
+                    !Array.isArray(this.allCategories) ||
+                    !this.allCategories.length
+                ) {
+                    try {
+                        const categories =
+                            await landingService.getCategories();
+
+                        this.allCategories =
+                            Array.isArray(categories)
+                                ? categories
+                                : [];
+
+                        this.categoriesLoaded =
+                            this.allCategories.length > 0;
+
+                    } catch (_) {
+                        this.allCategories = [];
+                    }
+                }
+                if (categoryMenuInner) {
+                    categoryMenuInner.innerHTML =
+                        this.allCategories.map(cat => {
+
+                            let url =
+                                `/collection/${cat.slug}`;
+
+                            if (cat.slug === 'trending') {
+                                url = '/top-selling';
+                            }
+
+                            if (cat.slug === 'bestsellers') {
+                                url = '/best-selling';
+                            }
+
+                            return `
+                                <a
+                                    href="${url}"
+                                    class="mobile-category-item"
+                                >
+                                    ${cat.name}
+                                </a>
+                            `;
+                        }).join('');
+                }
+            });
+        }
+        
+        this.applyAppSettings();
+
+       
+        setTimeout(() => {
+
+            if (
+                typeof updateCartCountBadge === 'function'
+            ) {
+                updateCartCountBadge();
+            }
+
+            const mobileBadge =
+                document.getElementById(
+                    'mobile-cart-count-badge'
+                );
+
+            const existingBadge =
+                document.getElementById(
+                    'cart-count-badge'
+                );
+
+            const webBadge =
+                document.getElementById(
+                    'web-cart-count-badge'
+                );
+
+            if (mobileBadge) {
+
+                if (existingBadge) {
+                    mobileBadge.textContent =
+                        existingBadge.textContent || '0';
+                } else if (webBadge) {
+                    mobileBadge.textContent =
+                        webBadge.textContent || '0';
+                }
+            }
+
+        }, 0);
+
+    } else {
+
+        const isCartPage =
+            document.body.classList.contains('cart-page');
+
+        const isCheckoutPage =
+            document.body.classList.contains('checkout-page');
+
+        const isProfilePage =
+            document.body.classList.contains('profile-page');
+
+        const isOrdersPage =
+            document.body.classList.contains('orders-page');
+
+        const isWishlistPage =
+            document.body.classList.contains('wishlist-page');
+
+        const isOrderConfirmationPage =
+            document.body.classList.contains(
+                'order-confirmation-page'
+            );
+
+        const isTermsPage =
+            document.body.classList.contains('terms-page') ||
+            window.location.pathname === '/terms';
+
+        const isReturnsPage =
+            document.body.classList.contains('returns-page') ||
+            window.location.pathname === '/returns';
+
+        const isPrivacyPage =
+            document.body.classList.contains('privacy-page') ||
+            window.location.pathname === '/privacy-policy';
+
+        const showBackButton =
+            isCartPage ||
+            isCheckoutPage ||
+            isProfilePage ||
+            isOrdersPage ||
+            isWishlistPage ||
+            isOrderConfirmationPage ||
+            isTermsPage ||
+            isReturnsPage ||
+            isPrivacyPage;
+
         header.innerHTML = `
             <div class="container">
                 <div class="header-container">
-                    ${showBackButton ? '<button class="back-btn-header" onclick="goBack()">←</button>' : ''}
+
+                    ${
+                        showBackButton
+                            ? '<button class="back-btn-header" onclick="goBack()">←</button>'
+                            : ''
+                    }
+
                     <div class="logo-search-container">
+
                         <div class="header-logo">
                             <a href="/">
-                                <img src="${this.appSettings?.header_logo || ''}" alt="Logo" class="site-logo" id="site-logo" onerror="this.style.display='none'">
+                                <img
+                                    src="${this.appSettings?.header_logo || ''}"
+                                    alt="Logo"
+                                    class="site-logo"
+                                    id="site-logo"
+                                    onerror="this.style.display='none'"
+                                >
                             </a>
                         </div>
+
                         <div class="search-wrapper">
-                            <input id="landing-search" type="text" placeholder="Search for Category, Product ...">
-                            <button class="search-icon-btn" onclick="window.location.href='/search'" style="background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="10" cy="10" r="7"/>
-                                    <line x1="21" y1="21" x2="15" y2="15"/>
+                            <input
+                                id="landing-search"
+                                type="text"
+                                placeholder="Search for Category, Product ..."
+                            >
+
+                            <button
+                                class="search-icon-btn"
+                                onclick="window.location.href='/search'"
+                                style="background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;"
+                            >
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <circle
+                                        cx="10"
+                                        cy="10"
+                                        r="7"
+                                    />
+                                    <line
+                                        x1="21"
+                                        y1="21"
+                                        x2="15"
+                                        y2="15"
+                                    />
                                 </svg>
                             </button>
                         </div>
+
                     </div>
+
                     <div class="header-icons">
-                        <button class="header-icon-btn" onclick="window.location.href='/wishlist'">
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2">
+
+                        <button
+                            class="header-icon-btn"
+                            onclick="window.location.href='/wishlist'"
+                        >
+                            <svg
+                                width="28"
+                                height="28"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="#333333"
+                                stroke-width="2"
+                            >
                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                             </svg>
                         </button>
+
                     </div>
+
                 </div>
             </div>
         `;
     }
+
     this.applyAppSettings();
-}
+}}
 
     initWebSearchDropdown() {
         const input = document.getElementById("web-search-input");
@@ -984,9 +1285,6 @@ renderAllCategoriesPopup() {
                     `;
                 });
 
-                /*
-                * CATEGORIES
-                */
                 categories.slice(0, 6).forEach(category => {
 
                     html += `
@@ -1005,9 +1303,6 @@ renderAllCategoriesPopup() {
                     `;
                 });
 
-                /*
-                * SUBCATEGORIES
-                */
                 subcategories.slice(0, 6).forEach(subcategory => {
 
                     const parentSlug =
@@ -1033,9 +1328,6 @@ renderAllCategoriesPopup() {
                     `;
                 });
 
-                /*
-                * BRANDS
-                */
                 brands.slice(0, 6).forEach(brand => {
 
                     const brandName =
@@ -1229,7 +1521,6 @@ renderAllCategoriesPopup() {
     }
 
     async renderAllSections() {
-        // Critical above-the-fold/primary sections.
         await Promise.all([
             this.renderHeroSlider(),
             this.renderTrending(),
@@ -1241,7 +1532,6 @@ renderAllCategoriesPopup() {
             this.renderMidBanner()
         ]);
 
-        // Secondary section must never block the first paint.
         const renderFeatured = () => {
             this.renderFeaturedCollections().catch(() => {});
         };
@@ -1354,7 +1644,10 @@ renderAllCategoriesPopup() {
         try {
             this.appSettings = await landingService.getAppSettings();
             this.settingsLoaded = true;
+
+            this.renderHeader();
             this.applyAppSettings();
+
         } catch (error) {
             console.error('Error loading app settings:', error);
         }
@@ -1607,42 +1900,105 @@ renderAllCategoriesPopup() {
     }
 
     renderDynamicCollections() {
-        const container = document.getElementById('dynamic-collections');
-        if (!container) return;
-        const categories = this.allCategories || [];
-        if (categories.length === 0) {
-            setTimeout(() => this.renderDynamicCollections(), 100);
-            return;
-        }
-        const displayCategories = categories.slice(0, 3);
-        const numbers = ['01', '02', '03'];
-        const titles = ['THE TIMELESS EDIT', 'MODERN EASE', 'AFTER DARK'];
-        const linkTexts = ['Explore the collection →', 'Explore co-ords →', 'Explore occasion wear →'];
-        let html = '';
-        displayCategories.forEach((cat, index) => {
-            const isLarge = index === 0;
-            const number = numbers[index] || `0${index + 1}`;
-            const title = titles[index] || cat.name.toUpperCase();
-            const slug = cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-');
-            const imageUrl = this.resolveImage(cat.image_url) || '';
-            const linkText = linkTexts[index] || `Explore ${cat.name.toLowerCase()} →`;
-            html += `
-                <article class="herovia-collection-card ${isLarge ? 'large' : 'small'}" 
-                         id="${slug}"
-                         onclick="window.location.href='/collection/${slug}'">
-                    <div class="herovia-collection-image" 
-                         style="${imageUrl ? `background-image: url('${imageUrl}'); background-size: cover; background-position: center;` : 'background: linear-gradient(135deg, #ede8e2, #d5ccc4);'}">
-                    </div>
-                    <div class="herovia-collection-overlay">
-                        <p>${number} · ${title}</p>
-                        <h3>${cat.name}</h3>
-                        <a href="/collection/${slug}">${linkText}</a>
-                    </div>
-                </article>
-            `;
-        });
-        container.innerHTML = html;
+    const container = document.getElementById('dynamic-collections');
+
+    if (!container) return;
+
+    const categories = Array.isArray(this.allCategories)
+        ? this.allCategories.slice(0, 3)
+        : [];
+
+    if (!categories.length) {
+        container.innerHTML = '';
+        return;
     }
+    const escapeHtml = (value) => {
+        const div = document.createElement('div');
+        div.textContent = value ?? '';
+        return div.innerHTML;
+    };
+
+    const getCategoryUrl = (cat) => {
+        const slug = cat.slug || cat.name
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+
+        if (slug === 'trending') {
+            return '/top-selling';
+        }
+
+        if (slug === 'bestsellers') {
+            return '/best-selling';
+        }
+
+        return `/collection/${slug}`;
+    };
+
+    const createCard = (cat, index, large = false) => {
+        const imageUrl = this.resolveImage(cat.image_url);
+        const url = getCategoryUrl(cat);
+
+        return `
+            <article
+                class="herovia-category-feature-card ${large ? 'large' : 'small'}"
+                onclick="window.location.href='${url}'"
+            >
+
+                <div class="herovia-category-feature-content">
+
+                    <span class="herovia-category-feature-number">
+                        ${String(index + 1).padStart(2, '0')} ·
+                    </span>
+
+                    <h3>${escapeHtml(cat.name)}</h3>
+
+                    <p>
+                        ${large
+                            ? 'Effortless style for every moment.'
+                            : 'Traditional charm, modern you.'
+                        }
+                    </p>
+
+                    <a href="${url}" onclick="event.stopPropagation();">
+                        Explore ${escapeHtml(cat.name)} →
+                    </a>
+
+                </div>
+
+                <div class="herovia-category-feature-image">
+                    ${
+                        imageUrl
+                            ? `<img
+                                src="${imageUrl}"
+                                alt="${escapeHtml(cat.name)}"
+                                loading="lazy"
+                            >`
+                            : ''
+                    }
+                </div>
+
+            </article>
+        `;
+    };
+
+    let html = '';
+
+    if (categories[0]) {
+        html += createCard(categories[0], 0, true);
+    }
+
+    if (categories[1]) {
+        html += createCard(categories[1], 1, false);
+    }
+
+    if (categories[2]) {
+        html += createCard(categories[2], 2, false);
+    }
+
+    container.innerHTML = html;
+}
 
     async renderFeaturedCollections() {
         const container = document.getElementById('dynamic-featured-collections');
@@ -2925,11 +3281,78 @@ class ProductPage {
                     </section>
                 `;
             };
+            const buildSubCategoryNavigation = () => {
+                const mainCategory = this.mainCategoryData;
+
+                if (!mainCategory?.children?.length) {
+                    return '';
+                }
+
+                const currentCategory = mainCategory.children.find(category => {
+                    if (String(category.id) === String(this.currentSubId)) {
+                        return true;
+                    }
+
+                    return (category.children || []).some(
+                        child => String(child.id) === String(this.currentSubId)
+                    );
+                });
+
+                const subCategories = mainCategory.children.filter(
+                    category => String(category.id) !== String(currentCategory?.id)
+                );
+
+                if (!subCategories.length) {
+                    return '';
+                }
+
+                const mainSlug = this.categorySlug(mainCategory);
+
+                return `
+                    <section class="mobile-filter-group mobile-subcategory-navigation">
+                        <div class="mobile-filter-title">SUB CATEGORY</div>
+
+                        <div class="mobile-subcategory-list">
+                            ${subCategories.map(category => {
+                                const subSlug = this.categorySlug(category);
+                                const url =
+                                    `/collection/${encodeURIComponent(mainSlug)}/${encodeURIComponent(subSlug)}`;
+
+                                return `
+                                    <button
+                                        type="button"
+                                        class="mobile-subcategory-link"
+                                        onclick="window.location.href='${url}'"
+                                    >
+                                        ${this.escape(category.name)}
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    </section>
+                `;
+            };
 
             content.innerHTML = [
-                buildGroup('CATEGORY', '.desktop-category-filter', 'mobile-category-filter'),
-                buildGroup('BRANDS', '.desktop-brand-filter', 'mobile-brand-filter'),
-                buildGroup('DISCOUNT', '.desktop-discount-filter', 'mobile-discount-filter')
+                buildGroup(
+                    'CATEGORY',
+                    '.desktop-category-filter',
+                    'mobile-category-filter'
+                ),
+
+                buildSubCategoryNavigation(),
+
+                buildGroup(
+                    'BRANDS',
+                    '.desktop-brand-filter',
+                    'mobile-brand-filter'
+                ),
+
+                buildGroup(
+                    'DISCOUNT',
+                    '.desktop-discount-filter',
+                    'mobile-discount-filter'
+                )
             ].join('');
 
             overlay.classList.add('active');

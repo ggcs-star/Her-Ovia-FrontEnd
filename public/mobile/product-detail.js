@@ -1307,7 +1307,7 @@
                     <div class="pdp-return"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" stroke-linecap="round" stroke-linejoin="round"/></svg><span>7 Days Return & Exchange</span></div>
                     <div class="pdp-cod"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="7" cy="15" r="1.5" fill="currentColor"/><circle cx="17" cy="15" r="1.5" fill="currentColor"/></svg><span>Cash on Delivery available</span></div>
                 </div>
-                <div class="pdp-offers"><h3>Offers and Discounts</h3><div id="offersContainer"></div></div>
+                
                 <div class="pdp-ratings"><h3>Ratings and Reviews</h3>
                     <div class="pdp-rating-summary"><span class="pdp-avg-rating">4.5</span><span class="pdp-stars">${starsHtml}</span><span class="pdp-total-ratings">33 Ratings</span></div>
                     <div id="currentReview"></div>

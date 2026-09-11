@@ -705,3 +705,34 @@ body {
         display: none !important;
     }
 }
+.mobile-subcategory-navigation {
+    border-top: 1px solid #eeeeee;
+    padding-top: 14px;
+}
+
+.mobile-subcategory-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.mobile-subcategory-link {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 0;
+    border: 0;
+    border-bottom: 1px solid #eeeeee;
+    background: transparent;
+    color: #555555;
+    font-size: 13px;
+    font-weight: 400;
+    text-align: left;
+    cursor: pointer;
+}
+
+.mobile-subcategory-link:last-child {
+    border-bottom: 0;
+}
+
+.mobile-subcategory-link:active {
+    opacity: 0.65;
+}

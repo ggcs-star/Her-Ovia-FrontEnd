@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('mobile/profile.css') }}?v={{ time() }}">
 </head>
-<body class="profile-page">
+<body class="profile-page" data-page="profile">
      <div class="desktop-sticky-header">
 
     <div class="herovia-announcement">

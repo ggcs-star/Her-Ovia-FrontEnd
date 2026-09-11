@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('mobile/checkout.css') }}?v={{ time() }}">
 </head>
-<body class="checkout-page">
+<body class="checkout-page" data-page="checkout">
  <div class="desktop-sticky-header">
 
     <div class="herovia-announcement">
