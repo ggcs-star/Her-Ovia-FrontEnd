@@ -93,7 +93,7 @@
         .product img {
             width: 100%;
             height: 160px;
-            object-fit: cover;
+            object-fit: contain;
         }
 
         .product-info {
@@ -120,6 +120,13 @@
             cursor:pointer;
             color:#999;
             font-size:14px;
+        }
+        .product img {
+            width: 100%;
+            height: 160px;
+            object-fit: contain !important;
+            object-position: center;
+            display: block;
         }
     </style>
 </head>

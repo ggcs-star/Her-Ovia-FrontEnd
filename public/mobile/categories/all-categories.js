@@ -936,38 +936,52 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 setTimeout(function() {
-    let categories = ['Necklace', 'Earrings', 'Maang Tikka', 'Bridal Sets', 'Bangles'];
+    let categories = [];
     let index = 0;
-    let isRotating = false;
     let intervalId = null;
+
     const input = document.getElementById('web-search-input');
-    
+
     if (!input) return;
-    
+
     async function fetchCategories() {
         try {
-            const response = await fetch(`${API_BASE_URL}/categories`);
+            const response = await fetch(`${API_BASE_URL}/categories`, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) return;
+
             const data = await response.json();
-            if (data.success && data.data.length > 0) {
-                categories = data.data.map(cat => cat.name);
-                if (!isRotating) startRotation();
-            } else {
-                if (!isRotating) startRotation();
+
+            if (
+                data.success &&
+                Array.isArray(data.data) &&
+                data.data.length > 0
+            ) {
+                categories = data.data
+                    .map(cat => cat.name)
+                    .filter(Boolean);
+
+                startRotation();
             }
-        } catch(e) {
-            if (!isRotating) startRotation();
+
+        } catch (_) {
         }
     }
-    
+
     function startRotation() {
-        if (isRotating) return;
-        isRotating = true;
+        if (!categories.length) return;
+
         input.placeholder = 'Search for ' + categories[0];
-        intervalId = setInterval(function() {
-            input.placeholder = 'Search for ' + categories[index];
+
+        intervalId = setInterval(() => {
             index = (index + 1) % categories.length;
+            input.placeholder = 'Search for ' + categories[index];
         }, 3000);
     }
-    
+
     fetchCategories();
 }, 2000);

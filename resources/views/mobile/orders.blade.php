@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{{ asset('mobile/style.css') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('mobile/orders.css') }}?v={{ time() }}">
 </head>
-<body class="orders-page">
+<body class="orders-page" data-page="orders">
      <div class="desktop-sticky-header">
 
     <div class="herovia-announcement">

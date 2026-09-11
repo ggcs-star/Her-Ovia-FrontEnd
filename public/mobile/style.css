@@ -1808,7 +1808,8 @@ body {
     width: 100%;
     height: 100%;
     background: linear-gradient(135deg, #ede8e2, #d5ccc4);
-    background-size: cover;
+    background-size: 100% auto;
+    background-position: center top;
     background-position: center;
 }.herovia-collection-overlay {
     position: absolute;
@@ -3099,5 +3100,794 @@ body {
     .products-page-wrapper,
     main {
         padding-bottom: 0 !important;
+    }
+}
+@media screen and (max-width: 1024px) {
+
+    body[data-page="landing"] .mobile-landing-header {
+        width: 100%;
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: #fff;
+        border-bottom: 1px solid #eeeeee;
+        box-sizing: border-box;
+        position: relative;
+        z-index: 1001;
+    }
+
+    body[data-page="landing"] .mobile-menu-btn {
+        width: 34px;
+        height: 34px;
+        padding: 7px 5px;
+        border: none;
+        background: transparent;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 4px;
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+
+    body[data-page="landing"] .mobile-menu-btn span {
+        display: block;
+        width: 22px;
+        height: 2px;
+        background: #333;
+        border-radius: 2px;
+        transition: 0.2s ease;
+    }
+
+    body[data-page="landing"] .mobile-menu-btn.active span:nth-child(1) {
+        transform: translateY(6px) rotate(45deg);
+    }
+
+    body[data-page="landing"] .mobile-menu-btn.active span:nth-child(2) {
+        opacity: 0;
+    }
+
+    body[data-page="landing"] .mobile-menu-btn.active span:nth-child(3) {
+        transform: translateY(-6px) rotate(-45deg);
+    }
+
+    body[data-page="landing"] .mobile-landing-logo {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    body[data-page="landing"] .mobile-landing-logo .site-logo {
+        height: 31px;
+        width: auto;
+        max-width: 110px;
+        object-fit: contain;
+    }
+
+    body[data-page="landing"] .mobile-header-icon {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    body[data-page="landing"] .mobile-cart-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    body[data-page="landing"] #mobile-cart-count-badge {
+        position: absolute;
+        top: -7px;
+        right: -8px;
+        min-width: 15px;
+        height: 15px;
+        padding: 0 3px;
+        border-radius: 50%;
+        background: #e5326f;
+        color: #fff;
+        font-size: 9px;
+        line-height: 15px;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    body[data-page="landing"] .mobile-landing-search-panel {
+        display: none;
+        width: 100%;
+        padding: 8px 12px;
+        background: #fff;
+        border-bottom: 1px solid #eeeeee;
+        box-sizing: border-box;
+        position: relative;
+        z-index: 1000;
+    }
+
+    body[data-page="landing"] .mobile-landing-search-panel.active {
+        display: block;
+    }
+
+    body[data-page="landing"] .mobile-landing-search-box {
+        position: relative;
+        width: 100%;
+        background: #f5f5f6;
+        border: 1px solid #e0e0e0;
+        border-radius: 24px;
+        box-sizing: border-box;
+    }
+
+    body[data-page="landing"] #landing-search {
+        width: 100%;
+        height: 40px;
+        padding: 0 15px;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 14px;
+        color: #333;
+        box-sizing: border-box;
+    }
+
+    body[data-page="landing"] #landing-search::placeholder {
+        color: #999;
+    }
+
+    body[data-page="landing"] .mobile-category-menu {
+        width: 100%;
+        background: #fff;
+        border-bottom: 1px solid #eeeeee;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+        position: relative;
+        z-index: 999;
+    }
+
+    body[data-page="landing"] .mobile-category-menu.active {
+        display: block !important;
+    }
+
+    body[data-page="landing"] .mobile-category-menu-inner {
+        display: flex;
+        flex-direction: column;
+        padding: 4px 0;
+    }
+
+    body[data-page="landing"] .mobile-category-item {
+        display: block;
+        padding: 13px 16px;
+        color: #333;
+        text-decoration: none;
+        font-size: 14px;
+        border-bottom: 1px solid #f2f2f2;
+    }
+
+    body[data-page="landing"] .mobile-category-item:last-child {
+        border-bottom: none;
+    }
+}
+.herovia-collections {
+    padding: 40px 0;
+    background: var(--hero-bg);
+}
+
+.herovia-collections .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0;
+}
+.herovia-collections-grid {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    display: grid;
+    grid-template-columns: 2.5fr 1fr;
+    grid-template-rows: 1fr 1fr;
+
+    gap: 16px;
+}
+.herovia-category-feature-card {
+    position: relative;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    width: 100%;
+    min-width: 0;
+
+    overflow: hidden;
+
+    background: var(--hero-bg);
+    border: 1px solid #e5dcd3;
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition: transform 0.3s ease;
+}
+
+.herovia-category-feature-card:hover {
+    transform: translateY(-3px);
+}
+.herovia-category-feature-card.large {
+    grid-row: span 2;
+    min-height: 550px;
+}
+.herovia-category-feature-card.small {
+    min-height: 265px;
+}
+.herovia-category-feature-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+
+    min-width: 0;
+
+    padding: 28px;
+    background: var(--hero-bg);
+}
+
+.herovia-category-feature-number {
+    display: block;
+
+    font-family: "Inter", sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+
+    letter-spacing: 2px;
+
+    color: #8b776c;
+
+    margin-bottom: 12px;
+}
+
+.herovia-category-feature-content h3 {
+    margin: 0 0 10px;
+
+    font-family: "Playfair Display", serif;
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1.15;
+
+    color: #32131f;
+}
+
+.herovia-category-feature-card.small
+.herovia-category-feature-content h3 {
+    font-size: 23px;
+}
+
+.herovia-category-feature-content p {
+    margin: 0 0 20px;
+
+    max-width: 250px;
+
+    font-family: "Inter", sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+
+    color: #6d625d;
+}
+
+.herovia-category-feature-content a {
+    display: inline-block;
+    width: fit-content;
+
+    font-family: "Inter", sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+
+    color: #32131f;
+    text-decoration: none;
+
+    border-bottom: 1px solid #32131f;
+
+    padding-bottom: 4px;
+
+    transition: opacity 0.2s ease;
+}
+
+.herovia-category-feature-content a:hover {
+    opacity: 0.65;
+}
+.herovia-category-feature-image {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    overflow: hidden;
+
+    background: #eee7df;
+}
+
+.herovia-category-feature-image img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    object-position: center;
+
+    transition: transform 0.5s ease;
+}
+
+.herovia-category-feature-card:hover
+.herovia-category-feature-image img {
+    transform: scale(1.03);
+}
+@media (min-width: 768px) and (max-width: 1024px) {
+
+    .herovia-collections {
+        padding: 30px 24px;
+    }
+
+    .herovia-collections .container {
+        max-width: 100%;
+    }
+
+    .herovia-collections-grid {
+        max-width: 100%;
+
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
+
+        gap: 12px;
+    }
+
+    .herovia-category-feature-card.large {
+        grid-column: span 2;
+        grid-row: auto;
+
+        min-height: 400px;
+    }
+
+    .herovia-category-feature-card.small {
+        min-height: 240px;
+    }
+
+    .herovia-category-feature-content {
+        padding: 24px;
+    }
+
+    .herovia-category-feature-content h3 {
+        font-size: 25px;
+    }
+
+    .herovia-category-feature-card.small
+    .herovia-category-feature-content h3 {
+        font-size: 21px;
+    }
+
+    .herovia-category-feature-content p {
+        font-size: 12px;
+        max-width: 220px;
+    }
+}
+@media (max-width: 767px) {
+
+    .herovia-collections {
+        padding: 24px 12px 30px;
+    }
+
+    .herovia-collections .container {
+        max-width: 100%;
+    }
+
+    .herovia-collections-grid {
+        max-width: 100%;
+
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+
+        gap: 10px;
+    }
+
+    .herovia-category-feature-card.large,
+    .herovia-category-feature-card.small {
+        grid-column: auto;
+        grid-row: auto;
+
+        min-height: 230px;
+    }
+
+    .herovia-category-feature-card {
+        grid-template-columns: 1fr 1fr;
+        border-radius: 10px;
+    }
+
+    .herovia-category-feature-content {
+        padding: 18px 16px;
+    }
+
+    .herovia-category-feature-number {
+        font-size: 9px;
+        letter-spacing: 1.5px;
+        margin-bottom: 8px;
+    }
+
+    .herovia-category-feature-content h3 {
+        font-size: 21px;
+        margin-bottom: 7px;
+    }
+
+    .herovia-category-feature-card.small
+    .herovia-category-feature-content h3 {
+        font-size: 19px;
+    }
+
+    .herovia-category-feature-content p {
+        font-size: 11px;
+        line-height: 1.4;
+
+        max-width: 170px;
+
+        margin-bottom: 13px;
+    }
+
+    .herovia-category-feature-content a {
+        font-size: 9px;
+    }
+}
+@media (max-width: 480px) {
+
+    .herovia-collections {
+        padding: 20px 10px 25px;
+    }
+
+    .herovia-collections-grid {
+        gap: 8px;
+    }
+
+    .herovia-category-feature-card.large,
+    .herovia-category-feature-card.small {
+        min-height: 200px;
+    }
+
+    .herovia-category-feature-content {
+        padding: 15px 13px;
+    }
+
+    .herovia-category-feature-number {
+        font-size: 8px;
+        letter-spacing: 1px;
+        margin-bottom: 6px;
+    }
+
+    .herovia-category-feature-content h3 {
+        font-size: 18px;
+    }
+
+    .herovia-category-feature-card.small
+    .herovia-category-feature-content h3 {
+        font-size: 17px;
+    }
+
+    .herovia-category-feature-content p {
+        font-size: 10px;
+        margin-bottom: 10px;
+        max-width: 145px;
+    }
+
+    .herovia-category-feature-content a {
+        font-size: 8px;
+    }
+}
+@media (max-width: 360px) {
+
+    .herovia-category-feature-card.large,
+    .herovia-category-feature-card.small {
+        min-height: 180px;
+    }
+
+    .herovia-category-feature-content {
+        padding: 13px 11px;
+    }
+
+    .herovia-category-feature-content h3 {
+        font-size: 17px;
+    }
+
+    .herovia-category-feature-card.small
+    .herovia-category-feature-content h3 {
+        font-size: 16px;
+    }
+
+    .herovia-category-feature-content p {
+        font-size: 9px;
+    }
+}
+
+.herovia-collections .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 40px !important;
+    padding-right: 40px !important;
+    box-sizing: border-box !important;
+}
+
+.herovia-collections-grid {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+
+    grid-template-columns: 3fr 2fr !important;
+    grid-template-rows: 1fr 1fr !important;
+
+    height: 480px !important;
+}
+.herovia-category-feature-card .herovia-category-image {
+    width: 100% !important;
+    height: 100% !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+
+    background-size: 100% auto !important;
+    background-position: center top !important;
+    background-repeat: no-repeat !important;
+
+    overflow: hidden !important;
+}
+.herovia-category-feature-card .herovia-category-image {
+    background-size: cover !important;
+    background-position: center 15% !important;
+    background-repeat: no-repeat !important;
+}
+
+.herovia-category-feature-image {
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+.herovia-category-feature-image img {
+    width: 100% !important;
+    height: 100% !important;
+
+    object-fit: cover !important;
+    object-position: center top !important;
+
+    display: block !important;
+}
+@media (max-width: 768px) {
+    .herovia-collections {
+        width: 100% !important;
+        padding: 20px 12px !important;
+        box-sizing: border-box !important;
+    }
+
+    .herovia-collections .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* 3 cards one below another */
+    .herovia-collections-grid {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        gap: 10px !important;
+        margin: 0 !important;
+    }
+    .herovia-category-feature-card {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+
+        display: grid !important;
+        grid-template-columns: 45% 55% !important;
+
+        min-height: 0 !important;
+        height: 210px !important;
+
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
+    .herovia-category-feature-card.large {
+        width: 100% !important;
+        height: 250px !important;
+        min-height: 250px !important;
+    }
+    .herovia-category-feature-card.small {
+        width: 100% !important;
+        height: 190px !important;
+        min-height: 190px !important;
+    }
+
+    /* Text side */
+    .herovia-category-feature-content {
+        width: 100% !important;
+        min-width: 0 !important;
+
+        padding: 20px 14px !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+
+        box-sizing: border-box !important;
+    }
+
+    .herovia-category-feature-number {
+        font-size: 9px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .herovia-category-feature-content h3 {
+        font-size: 20px !important;
+        line-height: 1.15 !important;
+        margin: 0 0 8px !important;
+    }
+
+    .herovia-category-feature-content p {
+        font-size: 11px !important;
+        line-height: 1.4 !important;
+        margin: 0 0 12px !important;
+    }
+
+    .herovia-category-feature-content a {
+        font-size: 10px !important;
+        white-space: nowrap !important;
+    }
+
+    /* Image side */
+    .herovia-category-feature-image {
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 0 !important;
+
+        overflow: hidden !important;
+    }
+
+    .herovia-category-feature-image img {
+        width: 100% !important;
+        height: 100% !important;
+
+        display: block !important;
+
+        object-fit: cover !important;
+        object-position: center top !important;
+    }
+}
+
+@media (max-width: 380px) {
+
+    .herovia-collections {
+        padding: 16px 10px !important;
+    }
+
+    .herovia-category-feature-card {
+        grid-template-columns: 44% 56% !important;
+        height: 195px !important;
+        min-height: 195px !important;
+    }
+
+    .herovia-category-feature-card.large {
+        height: 225px !important;
+        min-height: 225px !important;
+    }
+
+    .herovia-category-feature-card.small {
+        height: 175px !important;
+        min-height: 175px !important;
+    }
+
+    .herovia-category-feature-content {
+        padding: 16px 12px !important;
+    }
+
+    .herovia-category-feature-content h3 {
+        font-size: 18px !important;
+    }
+}
+@media (max-width: 768px) {
+
+    .herovia-collections-grid {
+        display: flex !important;
+        flex-direction: column !important;
+
+        width: 100% !important;
+        height: auto !important;
+
+        gap: 10px !important;
+        overflow: visible !important;
+    }
+
+    .herovia-category-feature-card,
+    .herovia-category-feature-card.large,
+    .herovia-category-feature-card.small {
+        position: relative !important;
+
+        display: grid !important;
+        grid-template-columns: 45% 55% !important;
+
+        width: 100% !important;
+        max-width: 100% !important;
+
+        height: 220px !important;
+        min-height: 220px !important;
+        max-height: 220px !important;
+
+        grid-column: auto !important;
+        grid-row: auto !important;
+
+        flex: none !important;
+
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Large card */
+    .herovia-category-feature-card.large {
+        height: 250px !important;
+        min-height: 250px !important;
+        max-height: 250px !important;
+    }
+
+    /* Text */
+    .herovia-category-feature-content {
+        width: 100% !important;
+        height: 100% !important;
+
+        min-width: 0 !important;
+        min-height: 0 !important;
+
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Image wrapper */
+    .herovia-category-feature-image {
+        position: relative !important;
+
+        width: 100% !important;
+        height: 100% !important;
+
+        min-width: 0 !important;
+        min-height: 0 !important;
+
+        overflow: hidden !important;
+    }
+
+    /* Actual image */
+    .herovia-category-feature-image img {
+        position: absolute !important;
+
+        top: 0 !important;
+        left: 0 !important;
+
+        width: 100% !important;
+        height: 100% !important;
+
+        max-width: none !important;
+        max-height: none !important;
+
+        object-fit: cover !important;
+        object-position: center top !important;
+
+        display: block !important;
     }
 }

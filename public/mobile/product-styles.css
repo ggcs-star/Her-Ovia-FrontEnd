@@ -615,7 +615,9 @@ body {
 .pdp-similar-image {
     width: 100%;
     aspect-ratio: 1/1;
-    object-fit: cover;
+    object-fit: contain;
+    background: #f8f8f8;
+    display: block;
 }
 
 .pdp-similar-brand {
@@ -1726,4 +1728,7 @@ body {
 
 .web-suggestion-item:hover {
     background: #f5f5f5;
+}
+.pdp-similar-card:hover .pdp-similar-image {
+    transform: none;
 }

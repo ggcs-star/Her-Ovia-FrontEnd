@@ -1769,8 +1769,11 @@
                             <div class="card-icon">🛍️</div>
                             <div class="card-title">Order Items (${order.items?.length || 0})</div>
                         </div>
+                        
                     </div>
-                    <div class="card-body">${itemsHtml}</div>
+                    <div class="card-body">${itemsHtml}
+                    </div>
+                    
                 </div>
             `;
 
