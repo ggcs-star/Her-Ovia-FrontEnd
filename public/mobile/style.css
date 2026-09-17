@@ -95,7 +95,7 @@
 ;}body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: #000;
-    background: #ffffff;  /* ← SIRF YEH CHANGE KARO */
+    background: #ffffff;  
     line-height: 1.4;
     -webkit-tap-highlight-color: transparent;
     overflow-x: hidden;
@@ -223,11 +223,11 @@ a.logo img {
     width: 300px;
     min-width: 300px;
     height: auto;
-    min-height: 200px;  /* 130px se 200px karo */
+    min-height: 200px;  
     background: linear-gradient(135deg, #fff8f0, #fff) !important;
     border: 1px solid rgba(0, 0, 0, .08) !important;
     border-radius: 16px;
-    padding: 24px 20px 24px 24px;  /* padding badhao */
+    padding: 24px 20px 24px 24px;  
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -340,7 +340,7 @@ a.logo img {
 ;}@media (max-width:480px) {.trending-card {
         width: 280px;
         min-width: 280px;
-        height: 160px;  /* height fix karo */
+        height: 160px;  
         padding: 18px 18px 18px 20px;
     }.trending-main {
         font-size: 18px;
@@ -366,7 +366,7 @@ a.logo img {
     ;}}@media (max-width:480px) {.trending-card {
         width: 280px;
         min-width: 280px;
-        min-height: 180px;  /* 120px se 180px karo */
+        min-height: 180px;  
         padding: 20px 16px 20px 20px;
     }.trending-main {
         font-size: 18px;
@@ -431,7 +431,7 @@ a.logo img {
     gap: 12px;
     flex-shrink: 0
 ;}@media (max-width:768px) {.site-footer {
-        display: none !important;}.logo-search-container {
+        display: block !important;}.logo-search-container {
         padding: 4px 4px 4px 10px
     ;}.site-logo {
         height: 30px;
@@ -908,8 +908,8 @@ a.logo img {
         width: 100% !important;
         min-width: auto !important;
         margin: 0 !important;}
-    .trending-card:nth-child(n/**/+5) {
-        display: none !important;}}@media screen and (min-width:768px) and (max-width:1024px) {.trending-card:nth-child(n/**/+4) {
+    .trending-card:nth-child(n+5) {
+        display: none !important;}}@media screen and (min-width:768px) and (max-width:1024px) {.trending-card:nth-child(n+4) {
         display: none !important;}}.nav-item-figma.active {
     color: #ff3f6c
 ;}.nav-item-figma.active .nav-icon-box svg {
@@ -938,13 +938,25 @@ a.logo img {
 .shop-now-btn {
     cursor: pointer !important;}.slide-img-figma {
     object-fit: cover !important;}
-    @media (max-width:768px) {.trending-section {
+    @media (max-width:768px) {
+    .trending-section {
         padding-left: 0 !important;
-        padding-right: 0 !important;}.hero-slider,
+        padding-right: 0 !important;
+    }
+
+    .hero-slider {
+        height: 250px !important;
+        min-height: 200px !important;
+    }
+
     .slide-img-figma {
-        height: auto !important;}.slide-img-figma {
         width: 100% !important;
-        object-fit: contain !important;}}@media (min-width:769px) and (max-width:1024px) {.hero-slider {
+        height: 200px !important;
+        object-fit: cover !important;
+        object-position: center center !important;
+    }
+}
+        @media (min-width:769px) and (max-width:1024px) {.hero-slider {
         height: 350px !important;}.slide-img-figma {
         height: 100% !important;
         object-fit: cover !important;}}@media (min-width:768px) {.slide-content-figma h1 {
@@ -2886,42 +2898,53 @@ body {
     border-bottom: none !important;
 }.web-header {
     border-bottom: 1px solid #DCC0A8 !important;
-}@media (max-width: 768px) {.hero-section {
+}@media (max-width: 768px) {
+    .hero-section {
         width: 100% !important;
         height: auto !important;
         min-height: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
         overflow: hidden !important;
-    }.hero-slider {
+    }
+
+    .hero-slider {
         width: 100% !important;
-        height: auto !important;
-        min-height: 0 !important;
+        height: 230px !important;
+        min-height: 230px !important;
         margin: 0 !important;
         padding: 0 !important;
         overflow: hidden !important;
         position: relative !important;
-    }.hero-slider .slide {
+    }
+
+    .hero-slider .slide {
         position: relative !important;
         width: 100% !important;
-        height: auto !important;
+        height: 230px !important;
         display: none !important;
         opacity: 0 !important;
-    }.hero-slider .slide.active {
+    }
+
+    .hero-slider .slide.active {
         display: block !important;
         width: 100% !important;
-        height: auto !important;
+        height: 230px !important;
         opacity: 1 !important;
-    }.hero-slider .slide-img-figma {
+    }
+
+    .hero-slider .slide-img-figma {
         position: relative !important;
         top: auto !important;
         left: auto !important;
         width: 100% !important;
-        height: auto !important;
+        height: 230px !important;
         min-height: 0 !important;
         display: block !important;
-        object-fit: contain !important;
-    }}@media screen and (min-width: 1025px) {.web-header {
+        object-fit: cover !important;
+        object-position: center center !important;
+    }
+}@media screen and (min-width: 1025px) {.web-header {
         background: #F8EEE3 !important;
         border-bottom: 1px solid #DCC0A8 !important;
         margin-bottom: 0 !important;
@@ -3681,7 +3704,7 @@ body {
         margin: 0 !important;
     }
 
-    /* 3 cards one below another */
+    
     .herovia-collections-grid {
         width: 100% !important;
         max-width: 100% !important;
@@ -3717,7 +3740,7 @@ body {
         min-height: 190px !important;
     }
 
-    /* Text side */
+    
     .herovia-category-feature-content {
         width: 100% !important;
         min-width: 0 !important;
@@ -3753,7 +3776,7 @@ body {
         white-space: nowrap !important;
     }
 
-    /* Image side */
+    
     .herovia-category-feature-image {
         width: 100% !important;
         height: 100% !important;
@@ -3840,14 +3863,14 @@ body {
         box-sizing: border-box !important;
     }
 
-    /* Large card */
+    
     .herovia-category-feature-card.large {
         height: 250px !important;
         min-height: 250px !important;
         max-height: 250px !important;
     }
 
-    /* Text */
+    
     .herovia-category-feature-content {
         width: 100% !important;
         height: 100% !important;
@@ -3859,7 +3882,7 @@ body {
         box-sizing: border-box !important;
     }
 
-    /* Image wrapper */
+    
     .herovia-category-feature-image {
         position: relative !important;
 
@@ -3872,7 +3895,7 @@ body {
         overflow: hidden !important;
     }
 
-    /* Actual image */
+    
     .herovia-category-feature-image img {
         position: absolute !important;
 
@@ -3889,5 +3912,102 @@ body {
         object-position: center top !important;
 
         display: block !important;
+    }
+}
+/* WEB / DESKTOP HERO BANNER ONLY */
+@media screen and (min-width: 1025px) {
+    .hero-slider {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        aspect-ratio: 2053 / 766 !important;
+        overflow: hidden !important;
+    }
+
+    .hero-slider .slide {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .hero-slider .slide-img-figma {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+        object-position: center center !important;
+    }
+}
+@media screen and (min-width: 1025px) {
+    .web-header .main-header {
+        padding-top: 22px !important;
+        padding-bottom: 22px !important;
+    }
+}
+@media screen and (min-width: 1025px) {
+    .desktop-sticky-header {
+        position: sticky !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        z-index: 999999 !important;
+    }
+    .desktop-sticky-header .herovia-announcement {
+        position: relative !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    .desktop-sticky-header .site-header {
+        position: relative !important;
+        top: auto !important;
+        width: 100% !important;
+        margin: 0 !important;
+        border: none !important;
+    }
+
+    .desktop-sticky-header .web-header {
+        border-bottom: none !important;
+        margin: 0 !important;
+    }    
+}
+/* ===== FINAL DESKTOP STICKY HEADER FIX ===== */
+@media screen and (min-width: 1025px) {
+
+    html,
+    body {
+        overflow-x: clip !important;
+    }
+
+    #real-content {
+        overflow-x: clip !important;
+        overflow-y: visible !important;
+    }
+
+    .desktop-sticky-header {
+        position: sticky !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        z-index: 999999 !important;
+    }
+
+    .desktop-sticky-header .herovia-announcement {
+        position: relative !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    .desktop-sticky-header .site-header {
+        position: relative !important;
+        top: auto !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+}
+/* ===== FIX CATEGORY BOX OVERLAP ===== */
+@media screen and (min-width: 1025px) {
+    .herovia-collections-grid {
+        height: 550px !important;
     }
 }

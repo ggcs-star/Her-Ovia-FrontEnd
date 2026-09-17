@@ -1732,3 +1732,74 @@ body {
 .pdp-similar-card:hover .pdp-similar-image {
     transform: none;
 }
+@media (max-width: 1023px) {
+    .site-header .container {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .site-header .container {
+        padding-left: 6px !important;
+        padding-right: 6px !important;
+    }
+}
+/* ===== SIZE BUTTON WRAPPER ===== */
+.pdp-size-btn-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 4px;
+    position: relative;
+}
+
+/* ===== OUT OF STOCK BUTTON ===== */
+.pdp-size-btn.disabled {
+    background: #f5f5f5 !important;
+    color: #bbb !important;
+    border: 1px solid #e0e0e0 !important;
+    cursor: not-allowed !important;
+    opacity: 0.7 !important;
+    pointer-events: none !important;
+    position: relative;
+    text-decoration: line-through;
+}
+
+/* Diagonal line for out of stock */
+.pdp-size-btn.disabled::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: #bbb;
+    transform: rotate(-15deg);
+    pointer-events: none;
+}
+
+/* ===== OUT OF STOCK LABEL ===== */
+.out-of-stock-label {
+    font-size: 9px;
+    color: #ff3f6c;
+    font-weight: 600;
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+.pdp-details-desktop {
+    display: block;
+}
+
+@media (max-width: 1023px) {
+    .pdp-details-desktop {
+        display: none !important;
+    }
+}
+@media screen and (min-width: 1025px) {
+    body.product-detail-page .pdp-main {
+        padding-top: 24px !important;
+    }
+}

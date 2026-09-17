@@ -2,7 +2,6 @@ const API_BASE_URL = window.API_BASE_URL;
 let PAYMENT_IN_PROGRESS = false;
 let PAYMENT_COMPLETED = false;
 
-// ========== CHECKOUT PAGE - FIXED ==========
 document.addEventListener('DOMContentLoaded', function () {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -17,7 +16,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    // ✅ FIX: Preserve category_id from buy_now_product
     const buyNowProduct = sessionStorage.getItem('buy_now_product');
 
     if (buyNowProduct) {
@@ -29,8 +27,8 @@ document.addEventListener('DOMContentLoaded', function () {
             price: product.price,
             name: product.name,
             image: product.image,
-            categoryId: product.category_id,        // ✅ ADDED
-            subcategoryId: product.subcategory_id,  // ✅ ADDED
+            categoryId: product.category_id,
+            subcategoryId: product.subcategory_id,
             brand: product.brand || '',
             slug: product.slug || ''
         }];
@@ -46,15 +44,27 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    syncCartWithServer().then(() => {
-        loadCheckoutSummary();
+    syncCartWithServer().then((synced) => {
+        if (!synced) {
+            return;
+        }
+
         loadUserAddresses();
         loadAppliedCheckoutCoupon();
+
+        document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                const selectedAddress = document.querySelector(
+                    'input[name="shipping_address"]:checked'
+                )?.value;
+
+                loadCheckoutSummary(selectedAddress || null);
+            });
+        });
     });
     
 });
 
-// ========== SYNC CART WITH SERVER - FIXED ==========
 async function syncCartWithServer() {
     const token = localStorage.getItem('token');
     const localCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -87,22 +97,20 @@ async function syncCartWithServer() {
         for (const item of localCart) {
             let variantId = item.variantId;
             
-            if (!variantId || variantId === null || variantId === 'null') {
-                variantId = item.id;
+            if (variantId === undefined || variantId === null || variantId === '' || variantId === 'null') {
+                variantId = null;
             }
             
-            // ✅ FIX: Include category_id in payload
             const payload = {
                 product_id: item.id,
                 variant_id: variantId,
                 quantity: item.quantity,
+                image: item.image || null,
                 price: Number(item.price) || Number(item.product_price) || 0,
-                category_id: item.categoryId || item.category_id || null,  // ✅ ADDED
-                subcategory_id: item.subcategoryId || item.subcategory_id || null  // ✅ ADDED
+                category_id: item.categoryId || item.category_id || null,
+                subcategory_id: item.subcategoryId || item.subcategory_id || null
             };
-            
-            console.log('Syncing item with category:', payload);
-            
+
             const addRes = await fetch(`${API_BASE_URL}/cart/add`, {
                 method: 'POST',
                 headers: {
@@ -112,34 +120,58 @@ async function syncCartWithServer() {
                 },
                 body: JSON.stringify({ items: [payload] })
             });
-            
-            if (!addRes.ok) {
-                console.error('Add failed for product', item.id);
-                return false;
+
+            const addText = await addRes.text();
+            let addData = null;
+            try { addData = addText ? JSON.parse(addText) : null; } catch (e) {}
+
+            if (!addRes.ok || !addData?.success) {
+                throw new Error(addData?.message || 'Cart sync failed');
             }
+            
         }
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
         return true;
     } catch (error) {
-        console.warn('Cart sync failed', error);
         return false;
     }
 }
-function loadCheckoutSummary() {
+function loadCheckoutSummary(
+    shippingAddressId = null,
+    paymentMethod = null
+) {
     const summaryContainer = document.getElementById('checkout-summary');
     if (!summaryContainer) return;
     
     summaryContainer.innerHTML = '<div class="loading-spinner">Loading summary...</div>';
     
     let url = `${API_BASE_URL}/checkout/summary`;
-    const couponCode = localStorage.getItem('applied_coupon');
-    if (couponCode) {
-        url += `?coupon_code=${encodeURIComponent(couponCode)}`;
+
+    const params = new URLSearchParams();
+    const selectedPayment = document.querySelector(
+        'input[name="payment_method"]:checked'
+    );
+
+    if (selectedPayment) {
+        params.set('payment_method', selectedPayment.value);
     }
-    
-    console.log('Fetching summary from:', url);
-    
+
+    const couponCode = localStorage.getItem('applied_coupon');
+
+    if (couponCode) {
+        params.set('coupon_code', couponCode);
+    }
+
+    if (shippingAddressId) {
+        params.set('shipping_address_id', shippingAddressId);
+    }
+
+    const queryString = params.toString();
+
+    if (queryString) {
+        url += `?${queryString}`;
+    }
+
     fetch(url, {
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -148,12 +180,10 @@ function loadCheckoutSummary() {
     })
     .then(res => res.json())
     .then(response => {
-        console.log('Full checkout summary response:', response);
         
         if (response.success && response.data && response.data.cart) {
             renderCheckoutSummary(response.data.cart);
             
-            // ✅ Check if coupon applied from server response
             if (response.data.cart.discount > 0) {
                 const appliedCode = localStorage.getItem('applied_coupon');
                 if (appliedCode) {
@@ -161,18 +191,17 @@ function loadCheckoutSummary() {
                 }
             }
         } else {
-            console.log('Response success false or no cart data');
             let localCart = JSON.parse(localStorage.getItem('cart')) || [];
             let localSubtotal = 0;
             for(let item of localCart) {
-                let price = Number(item.product_price) || Number(item.price) || 0;
+                let price = Number(item.price) || Number(item.product_price) || 0;
                 localSubtotal += price * (item.quantity || 1);
             }
             
             let tax = response.data?.cart?.tax || 0;
             let shipping = response.data?.cart?.shipping || 0;
             let platformFee = response.data?.cart?.platform_fee || 0;
-            let discount = parseFloat(localStorage.getItem('coupon_discount')) || 0; // ✅ Add this
+            let discount = parseFloat(localStorage.getItem('coupon_discount')) || 0;
             
             let total = localSubtotal + tax + shipping + platformFee - discount;
             
@@ -192,7 +221,6 @@ function loadCheckoutSummary() {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
         summaryContainer.innerHTML = '<div class="error-message">Failed to load summary</div>';
     });
 }
@@ -368,6 +396,12 @@ function renderAddresses(responseData) {
     });
     
     addressContainer.innerHTML = html;
+
+    const defaultAddress = validAddresses.find(addr => addr.is_default === true);
+
+    if (defaultAddress) {
+        loadCheckoutSummary(defaultAddress.id);
+    }
 }
 
 function escapeHtml(str) {
@@ -411,7 +445,6 @@ async function removeAddress(addressId) {
             }
         }
     } catch (error) {
-        console.error('Error removing address:', error);
         showToast('Server error, please try again', 'error');
         if (btn) {
             btn.innerText = originalText;
@@ -556,7 +589,8 @@ function selectAddress(addressId) {
             radio.checked = true;
         }
     });
-    
+        loadCheckoutSummary(addressId);
+
     const token = localStorage.getItem('token');
     
     fetch(`${API_BASE_URL}/user/addresses/${addressId}/set-default`, {
@@ -577,12 +611,9 @@ function selectAddress(addressId) {
         if (data.success) {
             loadUserAddresses();
         } else {
-            console.error('Set default failed:', data.message);
         }
     })
     .catch(err => {
-        console.error('Error setting default:', err);
-        // Don't show toast, just log error
     });
 }
 function placeOrder() {
@@ -738,10 +769,6 @@ async function startRazorpayPayment() {
         coupon_code: localStorage.getItem('applied_coupon') || null
     };
 
-    console.log("=== Razorpay Create Order Debug ===");
-    console.log("API URL:", `${API_BASE_URL}/checkout/razorpay/create-order`);
-    console.log("Payload:", payload);
-
     try {
         const response = await fetch(`${API_BASE_URL}/checkout/razorpay/create-order`, {
             method: 'POST',
@@ -753,34 +780,24 @@ async function startRazorpayPayment() {
             body: JSON.stringify(payload)
         });
 
-        console.log("Response Status:", response.status);
-        console.log("Response OK:", response.ok);
-
         const text = await response.text();
-        console.log("Raw Response:", text);
 
         let data;
         try {
             data = JSON.parse(text);
         } catch (e) {
-            console.error("JSON parse error:", e);
             throw new Error("Invalid JSON response from server");
         }
 
-        console.log("Parsed Response:", data);
-
         if (!response.ok || !data.success) {
             PAYMENT_IN_PROGRESS = false;
-            console.error("Backend Error Message:", data.message);
             throw new Error(data.message || `Server error (${response.status})`);
         }
 
-        console.log("Razorpay order created successfully");
         openRazorpay(data.data);
 
     } catch (err) {
         PAYMENT_IN_PROGRESS = false;
-        console.error("=== Razorpay Error ===", err);
         showToast(err.message, 'error');
     }
 }
@@ -927,89 +944,6 @@ function confirmRemoveAddress() {
         closeConfirmModal();
     }
 }
-function renderCheckoutSummary(cart) {
-    const summaryContainer = document.getElementById('checkout-summary');
-    if (!summaryContainer) return;
-
-    const subtotal = parseFloat(cart.subtotal) || 0;
-    const tax = parseFloat(cart.tax) || 0;
-    const shipping = parseFloat(cart.shipping) || 0;
-    const discount = parseFloat(cart.discount) || 0;
-    const platformFee = parseFloat(cart.platform_fee) || 0;
-    const total = parseFloat(cart.total) || 0;
-    const itemsCount = cart.items_count || 0;
-
-    let html = `
-        <div class="order-details">
-            <h3 class="price-details-title">Price Details (${itemsCount} Items)</h3>
-            <div class="detail-row">
-                <span>Product Price</span>
-                <span>₹${subtotal.toFixed(2)}</span>
-            </div>
-    `;
-
-    if (discount > 0) {
-        html += `
-            <div class="detail-row discount">
-                <span>Coupon Discount</span>
-                <span>-₹${discount.toFixed(2)}</span>
-            </div>
-        `;
-    }
-
-    if (tax > 0) {
-        html += `
-            <div class="detail-row">
-                <span>Tax (GST)</span>
-                <span>₹${tax.toFixed(2)}</span>
-            </div>
-        `;
-    }
-
-    if (shipping > 0) {
-        html += `
-            <div class="detail-row">
-                <span>Delivery Fee</span>
-                <span>₹${shipping.toFixed(2)}</span>
-            </div>
-        `;
-    } else {
-        html += `
-            <div class="detail-row">
-                <span>Delivery Fee</span>
-                <span class="free">FREE</span>
-            </div>
-        `;
-    }
-    
-    if (platformFee > 0) {
-        html += `
-            <div class="detail-row">
-                <span>Platform Fee</span>
-                <span>₹${platformFee.toFixed(2)}</span>
-            </div>
-        `;
-    }
-
-    html += `
-        <div class="detail-row final-total">
-            <span>Final Total</span>
-            <span>₹${total.toFixed(2)}</span>
-        </div>
-    `;
-
-    if (discount > 0) {
-        html += `
-            <div class="total-savings">
-                <span>🎉 Yay! Your total discount is ₹${discount.toFixed(2)}</span>
-            </div>
-        `;
-    }
-
-    summaryContainer.innerHTML = html;
-    summaryContainer.dataset.total = total;
-}
-// ========== CHECKOUT COUPON FUNCTIONS ==========
 
 let allCoupons = [];
 
@@ -1060,7 +994,6 @@ function loadCheckoutCoupons() {
         }
     })
     .catch(err => {
-        console.error('Error loading coupons:', err);
         list.innerHTML = '<div class="no-coupons">Failed to load coupons</div>';
     });
 }
@@ -1069,7 +1002,6 @@ function renderCheckoutCoupons(coupons) {
     const list = document.getElementById('checkoutCouponList');
     if (!list) return;
     
-    // Get current cart total from summary
     const summaryContainer = document.getElementById('checkout-summary');
     const totalMatch = summaryContainer?.innerHTML?.match(/₹([\d.]+)/);
     const cartTotal = totalMatch ? parseFloat(totalMatch[1]) : 0;
@@ -1088,7 +1020,6 @@ function renderCheckoutCoupons(coupons) {
         return;
     }
     
-    // Filter out BANK coupons
     const normalCoupons = applicableCoupons.filter(c => c.coupon_type !== 'BANK');
     
     if (!normalCoupons.length) {
@@ -1116,7 +1047,6 @@ function renderCheckoutCoupons(coupons) {
     list.innerHTML = html;
 }
 
-// ========== APPLY COUPON - FIXED ==========
 function applyCheckoutCoupon(couponCode = null) {
     const input = document.getElementById('checkoutCouponInput');
     const code = couponCode || input?.value?.trim()?.toUpperCase();
@@ -1126,19 +1056,16 @@ function applyCheckoutCoupon(couponCode = null) {
         return;
     }
     
-    // Check if it's a BANK coupon
     const coupon = allCoupons.find(c => c.code === code);
     if (coupon?.coupon_type === 'BANK') {
         showToast('This is a bank offer. It will be applied during payment.', 'info');
         return;
     }
     
-    // Get cart total from summary
     const summaryContainer = document.getElementById('checkout-summary');
     const totalMatch = summaryContainer?.innerHTML?.match(/₹([\d.]+)/);
     const cartTotal = totalMatch ? parseFloat(totalMatch[1]) : 0;
     
-    // Get cart items with proper category data
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     if (!cart.length) {
         showToast('Cart is empty', 'error');
@@ -1147,23 +1074,15 @@ function applyCheckoutCoupon(couponCode = null) {
     
     const firstItem = cart[0];
     
-    // ✅ FIX: Get category_id from cart item, with fallback to fetch from server
     let categoryId = firstItem.categoryId || firstItem.category_id || null;
     let subcategoryId = firstItem.subcategoryId || firstItem.subcategory_id || null;
     
-    // ✅ FIX: If categoryId is still null, try to fetch from server
     if (!categoryId) {
-        // Try to get from product data
         const productId = firstItem.id;
-        // For Buy Now, it should already be in the cart item
-        // If not, we'll use a fallback
-        console.warn('Category ID missing for product:', productId);
-        // Show error to user
         showToast('Product category not found. Please try again.', 'error');
         return;
     }
     
-    // Show loading
     const applyBtn = document.querySelector('.apply-coupon-btn');
     const originalText = applyBtn?.innerHTML || 'Apply';
     if (applyBtn) {
@@ -1171,7 +1090,6 @@ function applyCheckoutCoupon(couponCode = null) {
         applyBtn.disabled = true;
     }
     
-    // ✅ FIX: Include bank_id and card_type if available
     const bankId = document.getElementById('bank-select')?.value || null;
     const cardType = document.querySelector('input[name="card_type"]:checked')?.value || null;
     
@@ -1184,9 +1102,7 @@ function applyCheckoutCoupon(couponCode = null) {
         bank_id: bankId,
         card_type: cardType
     };
-    
-    console.log('Applying coupon with data:', requestData);
-    
+
     fetch(`${API_BASE_URL}/coupons/apply`, {
         method: 'POST',
         headers: {
@@ -1199,23 +1115,17 @@ function applyCheckoutCoupon(couponCode = null) {
     .then(res => res.json())
     .then(response => {
         if (response.success) {
-            // Store in localStorage
             localStorage.setItem('applied_coupon', response.data.coupon_code);
             localStorage.setItem('coupon_discount', response.data.discount);
             
-            // Show applied coupon
             showAppliedCheckoutCoupon(response.data.coupon_code, response.data.discount);
             
-            // Update summary
             loadCheckoutSummary();
             
-            // Show success
             showToast(`Coupon ${response.data.coupon_code} applied! You saved ₹${response.data.discount.toFixed(2)}`, 'success');
             
-            // Clear input
             if (input) input.value = '';
             
-            // Refresh coupon list
             loadCheckoutCoupons();
             
         } else {
@@ -1223,7 +1133,6 @@ function applyCheckoutCoupon(couponCode = null) {
         }
     })
     .catch(err => {
-        console.error('Error applying coupon:', err);
         showToast('Error applying coupon. Please try again.', 'error');
     })
     .finally(() => {
@@ -1264,7 +1173,6 @@ function removeCheckoutCoupon() {
         showToast('Coupon removed', 'info');
     })
     .catch(err => {
-        console.error('Error removing coupon:', err);
         showToast('Error removing coupon', 'error');
     });
 }
@@ -1276,7 +1184,6 @@ function loadAppliedCheckoutCoupon() {
     if (code && discount) {
         showAppliedCheckoutCoupon(code, parseFloat(discount));
         
-        // Auto-expand coupon section
         const body = document.getElementById('checkoutCouponBody');
         const btn = document.querySelector('.coupon-toggle-btn');
         if (body && (body.style.display === 'none' || body.style.display === '')) {

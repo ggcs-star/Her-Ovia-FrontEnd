@@ -63,9 +63,9 @@ function renderOrders(orders) {
         const moreItems = itemCount - 1;
         
         
-        let image = firstItem.variant?.image_url     
-            || firstItem.product?.image_url         
-            || firstItem.image                        
+        let image = firstItem.image
+            || firstItem.variant?.image_url
+            || firstItem.product?.image_url
             || '';
 
         if (image && !image.startsWith('http')) {
@@ -78,11 +78,12 @@ function renderOrders(orders) {
         
         const imageHtml = `<img src="${finalImage}"
                                alt="${firstItem.product_name || 'Product'}"
-                               style="width:80px;height:80px;object-fit:cover;border-radius:8px;"
+                               style="width:80px;height:80px;object-fit:contain;border-radius:8px;"
                                onerror="this.src='${placeholderImage}'">`;
         
         const price = firstItem.price ? parseFloat(firstItem.price) : 0;
         const itemQuantity = firstItem.quantity ? parseInt(firstItem.quantity) : 1;
+        const size = firstItem.variant?.variant_value || '';
 
         html += `
             <div class="order-card" onclick="viewOrderDetails('${order.id}')">
@@ -107,6 +108,7 @@ function renderOrders(orders) {
                     <div class="preview-details">
                         <div class="preview-name">${firstItem.product_name || 'Product'}</div>
                         <div class="preview-price">₹${price.toFixed(2)} x ${itemQuantity}</div>
+                        ${size ? `<div class="preview-size">Size: ${size}</div>` : ''}
                         ${moreItems > 0 ? `<div class="more-items">+${moreItems} more</div>` : ''}
                     </div>
                 </div>
