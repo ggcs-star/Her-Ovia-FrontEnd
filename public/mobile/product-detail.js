@@ -103,13 +103,34 @@
     }
     
     function updateCartBadge() {
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        let totalItems = cart.length;
-        const webBadge = document.getElementById('web-cart-count-badge');
-        if (webBadge) { webBadge.style.display = 'flex'; webBadge.textContent = totalItems; }
-        const cartBadge = document.getElementById('cart-count-badge');
-        if (cartBadge) { cartBadge.style.display = 'flex'; cartBadge.textContent = totalItems; }
+    let cart = [];
+
+    try {
+        cart = JSON.parse(localStorage.getItem('cart')) || [];
+    } catch (error) {
+        console.error('Error reading cart:', error);
     }
+
+    if (!Array.isArray(cart)) {
+        cart = [];
+    }
+
+    const totalItems = cart.length;
+
+    const webBadge = document.getElementById('web-cart-count-badge');
+
+    if (webBadge) {
+        webBadge.style.display = 'flex';
+        webBadge.textContent = totalItems;
+    }
+
+    const cartBadge = document.getElementById('cart-count-badge');
+
+    if (cartBadge) {
+        cartBadge.style.display = 'flex';
+        cartBadge.textContent = totalItems;
+    }
+}
     
     function showConfirmation(productName) {
         const existingToast = document.querySelector('.top-toast-message');
@@ -235,7 +256,12 @@
         const variantValue = selectedVariant?.variant_value || 'S';
         const variantId = selectedVariant?.id || null;
         const availableVariants = product.variants ? product.variants.map(v => ({
-            id: v.id, value: v.variant_value, price: parseFloat(v.final_price) || 0, originalPrice: parseFloat(v.price) || 0
+            id: v.id,
+            value: v.variant_value,
+            price: parseFloat(v.final_price) || 0,
+            originalPrice: parseFloat(v.price) || 0,
+            quantity: Number(v.quantity) || 0,        
+            stock: Number(v.quantity) || 0            
         })) : [];
         let imageUrl = '';
         const mainImage = document.getElementById('mainImage');
@@ -256,6 +282,8 @@
             variantId: variantId,
             categoryId: product.category?.id,
             quantity: 1,
+            stock: selectedVariant?.quantity || 0,              
+            quantity_available: selectedVariant?.quantity || 0,  //
             availableVariants: availableVariants,
             rating: product.rating || 4.5,
             reviewCount: product.review_count || 33
@@ -354,56 +382,56 @@
             const counter = document.getElementById('currentImage');
             if (counter) counter.textContent = `1/1`;
         }
-        const variant = allSizes.find(v => v.color === colorCode);
-        if (variant) {
-            selectedVariant = variant;
-            window.selectedVariant = variant;
-            selectedSize = variant.value;
-            let variantOriginal = parseFloat(variant.price);
-            let variantFinal = parseFloat(variant.final_price) || parseFloat(variant.price);
-            let variantDiscount = 0;
-            if (variantOriginal > variantFinal) {
-                variantDiscount = Math.round(((variantOriginal - variantFinal) / variantOriginal) * 100);
-            }
-            const priceElement = document.getElementById('currentPrice');
-            const buyPriceElement = document.getElementById('buyPrice');
-            const originalPriceSpan = document.querySelector('.pdp-original-price');
-            const discountSpan = document.querySelector('.pdp-discount');
-            if (priceElement) priceElement.textContent = '₹' + variantFinal.toLocaleString('en-IN');
-            if (buyPriceElement) buyPriceElement.textContent = variantFinal.toLocaleString('en-IN');
-            if (variantOriginal > variantFinal) {
-                if (!originalPriceSpan) {
-                    const priceDiv = document.querySelector('.pdp-price');
-                    const currentSpan = document.querySelector('.pdp-current-price');
-                    const newOriginalSpan = document.createElement('span');
-                    newOriginalSpan.className = 'pdp-original-price';
-                    newOriginalSpan.textContent = '₹' + variantOriginal.toLocaleString('en-IN');
-                    if (currentSpan && priceDiv) {
-                        currentSpan.insertAdjacentElement('afterend', newOriginalSpan);
-                    }
-                } else {
-                    originalPriceSpan.textContent = '₹' + variantOriginal.toLocaleString('en-IN');
-                    originalPriceSpan.style.display = 'inline';
-                }
-                if (!discountSpan) {
-                    const priceDiv = document.querySelector('.pdp-price');
-                    const newDiscountSpan = document.createElement('span');
-                    newDiscountSpan.className = 'pdp-discount';
-                    newDiscountSpan.textContent = variantDiscount + '% Off';
-                    if (priceDiv) priceDiv.appendChild(newDiscountSpan);
-                } else {
-                    discountSpan.textContent = variantDiscount + '% Off';
-                    discountSpan.style.display = 'inline';
-                }
-            } else {
-                if (originalPriceSpan) originalPriceSpan.style.display = 'none';
-                if (discountSpan) discountSpan.style.display = 'none';
-            }
-            document.querySelectorAll('.pdp-size-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.textContent === variant.value) btn.classList.add('active');
-            });
-        }
+        // const variant = allSizes.find(v => v.color === colorCode);
+        // if (variant) {
+        //     selectedVariant = variant;
+        //     window.selectedVariant = variant;
+        //     selectedSize = variant.value;
+        //     let variantOriginal = parseFloat(variant.price);
+        //     let variantFinal = parseFloat(variant.final_price) || parseFloat(variant.price);
+        //     let variantDiscount = 0;
+        //     if (variantOriginal > variantFinal) {
+        //         variantDiscount = Math.round(((variantOriginal - variantFinal) / variantOriginal) * 100);
+        //     }
+        //     const priceElement = document.getElementById('currentPrice');
+        //     const buyPriceElement = document.getElementById('buyPrice');
+        //     const originalPriceSpan = document.querySelector('.pdp-original-price');
+        //     const discountSpan = document.querySelector('.pdp-discount');
+        //     if (priceElement) priceElement.textContent = '₹' + variantFinal.toLocaleString('en-IN');
+        //     if (buyPriceElement) buyPriceElement.textContent = variantFinal.toLocaleString('en-IN');
+        //     if (variantOriginal > variantFinal) {
+        //         if (!originalPriceSpan) {
+        //             const priceDiv = document.querySelector('.pdp-price');
+        //             const currentSpan = document.querySelector('.pdp-current-price');
+        //             const newOriginalSpan = document.createElement('span');
+        //             newOriginalSpan.className = 'pdp-original-price';
+        //             newOriginalSpan.textContent = '₹' + variantOriginal.toLocaleString('en-IN');
+        //             if (currentSpan && priceDiv) {
+        //                 currentSpan.insertAdjacentElement('afterend', newOriginalSpan);
+        //             }
+        //         } else {
+        //             originalPriceSpan.textContent = '₹' + variantOriginal.toLocaleString('en-IN');
+        //             originalPriceSpan.style.display = 'inline';
+        //         }
+        //         if (!discountSpan) {
+        //             const priceDiv = document.querySelector('.pdp-price');
+        //             const newDiscountSpan = document.createElement('span');
+        //             newDiscountSpan.className = 'pdp-discount';
+        //             newDiscountSpan.textContent = variantDiscount + '% Off';
+        //             if (priceDiv) priceDiv.appendChild(newDiscountSpan);
+        //         } else {
+        //             discountSpan.textContent = variantDiscount + '% Off';
+        //             discountSpan.style.display = 'inline';
+        //         }
+        //     } else {
+        //         if (originalPriceSpan) originalPriceSpan.style.display = 'none';
+        //         if (discountSpan) discountSpan.style.display = 'none';
+        //     }
+        //     document.querySelectorAll('.pdp-size-btn').forEach(btn => {
+        //         btn.classList.remove('active');
+        //         if (btn.textContent === variant.value) btn.classList.add('active');
+        //     });
+        // }
         if (imageTimer) clearInterval(imageTimer);
     }
     
@@ -415,7 +443,17 @@
         window.closeColorScrollPopup();
     }
     
-    window.selectVariant = function(btn, price, variantId, variantType) {
+        window.selectVariant = function(btn, price, variantId, variantType) {
+            if (btn.disabled || btn.classList.contains('disabled')) {
+            showWishlistToast('This size is out of stock');
+            return;
+        }
+
+        const stock = parseInt(btn.dataset.stock) || 0;
+        if (stock <= 0) {
+            showWishlistToast('This size is out of stock');
+            return;
+        }
         document.querySelectorAll('.pdp-size-btn:not(.disabled)').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         selectedSize = btn.textContent;
@@ -423,6 +461,8 @@
         if (sizeError) sizeError.style.display = 'none';
         const variant = allSizes.find(v => v.id == variantId);
         if (variant) {
+            selectedVariant = variant;
+            window.selectedVariant = variant;
             window.selectedSizeOnly = variant;
             let variantOriginal = parseFloat(variant.price);
             let variantFinal = parseFloat(variant.final_price) || parseFloat(price);
@@ -603,17 +643,83 @@
         else { navigator.clipboard.writeText(window.location.href); alert('Link copied!'); }
     }
     
-    window.checkPincode = function() {
-        const pincode = document.getElementById('pincode').value;
+    window.checkPincode = async function() {
+        const pincodeInput = document.getElementById('pincode');
         const info = document.getElementById('deliveryInfo');
-        if (pincode.length === 6 && /^\d+$/.test(pincode)) {
+
+        if (!pincodeInput || !info) return;
+
+        const pincode = pincodeInput.value.trim();
+
+        if (!/^\d{6}$/.test(pincode)) {
+            info.innerHTML = 'Please enter valid 6-digit pincode';
+            info.className = 'pdp-delivery-info error';
+            return;
+        }
+
+        info.innerHTML = 'Checking delivery availability...';
+        info.className = 'pdp-delivery-info';
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/shipping/check`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    pincode: pincode,
+                    cod: false
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Unable to check delivery availability.');
+            }
+
+            const data = result.data;
+
+            if (!data.serviceable) {
+                info.innerHTML = '❌ Delivery is not available at this pincode';
+                info.className = 'pdp-delivery-info error';
+
+                localStorage.removeItem('lastPincode');
+                return;
+            }
+
             localStorage.setItem('lastPincode', pincode);
-            const date = new Date();
-            date.setDate(date.getDate() + 5);
-            info.innerHTML = `✅ Delivery by ${date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`;
+
+            let deliveryText = '';
+
+            if (data.delivery_date) {
+                deliveryText = `Delivery by ${data.delivery_date}`;
+            } else if (data.estimated_delivery_days) {
+                deliveryText = `Delivery in ${data.estimated_delivery_days} days`;
+            } else {
+                deliveryText = 'Delivery available';
+            }
+
+            let shippingText = '';
+
+            if (data.shipping !== null && data.shipping !== undefined) {
+                shippingText = ` • Shipping ₹${Number(data.shipping).toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}`;
+            }
+
+            info.innerHTML = `✅ ${deliveryText}${shippingText}`;
             info.className = 'pdp-delivery-info success';
-        } else { info.innerHTML = 'Please enter valid 6-digit pincode'; info.className = 'pdp-delivery-info error'; }
-    }
+
+        } catch (error) {
+            console.error('Pincode check failed:', error);
+
+            info.innerHTML = 'Unable to check delivery availability. Please try again.';
+            info.className = 'pdp-delivery-info error';
+        }
+    };
     
     window.showOfferTerms = function(code, event) {
         if (event) event.stopPropagation();
@@ -773,6 +879,9 @@
         variantType: variantType || 'Size',
         size: variantValue || '',
         quantity: 1,
+        color: selectedColor || '',
+        stock: selectedVariant?.quantity || 0,              
+        quantity_available: selectedVariant?.quantity || 0,
         categoryId: categoryId,
         subcategoryId: subcategoryId,
         mrp: variantOriginalPrice || finalPrice,
@@ -781,7 +890,8 @@
             id: v.id,
             value: v.variant_value || v.value || v.size || '',
             price: parseFloat(v.final_price) || parseFloat(v.price) || 0,
-            originalPrice: parseFloat(v.price) || parseFloat(v.final_price) || 0
+            originalPrice: parseFloat(v.price) || parseFloat(v.final_price) || 0,
+            quantity: Number(v.quantity) || 0
         })) : []
     };
     
@@ -797,6 +907,7 @@
         image: imageUrl,
         variant_value: variantValue || '',
         variant_type: variantType || 'Size',
+        color: selectedColor || '',
         brand: currentProduct?.brand || '',
         slug: currentProduct?.slug
     }));
@@ -1220,7 +1331,7 @@
                     id: v.id, type: v.variant_type || 'Size', value: v.variant_value,
                     price: parseFloat(v.price) || variantPrice,
                     final_price: parseFloat(v.final_price) || variantPrice,
-                    stock: v.quantity || 5,
+                    stock: (v.quantity !== undefined && v.quantity !== null) ? Number(v.quantity) : 0,
                     color: v.color, inStock: v.in_stock !== false
                 });
             }
@@ -1289,7 +1400,38 @@
                     </div>
                     <div class="pdp-size">
                         <div class="pdp-size-header"><h3>${allSizes[0]?.type || 'Size'}</h3>${allSizes[0]?.type === 'Size' ? '<span class="pdp-size-chart" onclick="showSizeChart()"></span>' : ''}</div>
-                        <div class="pdp-size-options">${[...new Map(allSizes.map(s => [s.value, s])).values()].map(s => `<button class="pdp-size-btn ${s.stock > 0 ? '' : 'disabled'}" data-variant-id="${s.id || ''}" data-price="${s.price}" onclick="selectVariant(this, '${s.price}', '${s.id || ''}', '${s.type || ''}')" ${s.stock > 0 ? '' : 'disabled'}>${s.value}</button>`).join('')}</div>
+                        <div class="pdp-size-options">
+    ${[...new Map(allSizes.map(s => [s.value, s])).values()].map(s => {
+        const stock = Number(s.stock) || 0;
+        const isOutOfStock = stock <= 0;
+        
+        if (isOutOfStock) {
+            // Out of Stock button - click nahi hoga
+            return `<div class="pdp-size-btn-wrapper">
+                        <button class="pdp-size-btn disabled" 
+                                data-variant-id="${s.id || ''}" 
+                                data-stock="0"
+                                disabled
+                                type="button">
+                            ${s.value}
+                        </button>
+                        <span class="out-of-stock-label">Out of Stock</span>
+                    </div>`;
+        } else {
+            // In Stock button - normal click hoga
+            return `<div class="pdp-size-btn-wrapper">
+                        <button class="pdp-size-btn" 
+                                data-variant-id="${s.id || ''}" 
+                                data-price="${s.price}" 
+                                data-stock="${stock}"
+                                onclick="selectVariant(this, '${s.price}', '${s.id || ''}', '${s.type || ''}')"
+                                type="button">
+                            ${s.value}
+                        </button>
+                    </div>`;
+        }
+    }).join('')}
+</div>
                         <div class="pdp-size-error" style="display: none;">Please select a size</div>
                     </div>
                     <div class="pdp-details pdp-details-desktop" id="productDetailsDesktop"></div>
@@ -1332,11 +1474,14 @@
         updateCartBadge();
         
         setTimeout(() => {
-            if (window.innerWidth >= 1024) {
-                const desktopDetails = document.getElementById('productDetailsDesktop');
-                const mobileDetails = document.querySelector('.pdp-bottom .pdp-details');
-                if (desktopDetails && mobileDetails) desktopDetails.innerHTML = mobileDetails.innerHTML;
+
+            const desktopDetails = document.getElementById('productDetailsDesktop');
+            const mobileDetails = document.querySelector('.pdp-bottom .pdp-details');
+
+            if (desktopDetails && mobileDetails) {
+                desktopDetails.innerHTML = mobileDetails.innerHTML;
             }
+
         }, 100);
         
         const lastPincode = localStorage.getItem('lastPincode');
@@ -1353,6 +1498,9 @@
         fetchProduct();
         fetchAppSettingsForProductPage();
         loadProductDesktopCategories();
+    });
+    window.addEventListener('pageshow', function() {
+        updateCartBadge();
     });
 })();
 

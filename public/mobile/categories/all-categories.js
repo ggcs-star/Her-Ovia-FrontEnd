@@ -935,14 +935,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-setTimeout(function() {
+(function() {
     let categories = [];
     let index = 0;
     let intervalId = null;
 
-    const input = document.getElementById('web-search-input');
+    function getSearchInput() {
+        return document.getElementById('web-search-input');
+    }
 
-    if (!input) return;
+    function updatePlaceholder() {
+        const input = getSearchInput();
+
+        if (!input || !categories.length) return;
+
+        input.placeholder = 'Search for ' + categories[index];
+    }
+
+    function startRotation() {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
+
+        if (!categories.length) return;
+
+        index = 0;
+        updatePlaceholder();
+
+        intervalId = setInterval(() => {
+            index = (index + 1) % categories.length;
+
+            // Always get the latest search input
+            updatePlaceholder();
+        }, 3000);
+    }
 
     async function fetchCategories() {
         try {
@@ -969,19 +995,33 @@ setTimeout(function() {
             }
 
         } catch (_) {
+            // No fallback categories
         }
     }
 
-    function startRotation() {
-        if (!categories.length) return;
+    function watchHeaderChanges() {
+        const header = document.getElementById('site-header');
 
-        input.placeholder = 'Search for ' + categories[0];
+        if (!header) return;
 
-        intervalId = setInterval(() => {
-            index = (index + 1) % categories.length;
-            input.placeholder = 'Search for ' + categories[index];
-        }, 3000);
+        const observer = new MutationObserver(() => {
+            updatePlaceholder();
+        });
+
+        observer.observe(header, {
+            childList: true,
+            subtree: true
+        });
     }
 
-    fetchCategories();
-}, 2000);
+    function init() {
+        fetchCategories();
+        watchHeaderChanges();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init, { once: true });
+    } else {
+        init();
+    }
+})();

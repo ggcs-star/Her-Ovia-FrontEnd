@@ -192,7 +192,7 @@
     width: 80px;
     height: 80px;
     border-radius: 12px;
-    object-fit: cover;
+    object-fit: contain;
     background: white;
     padding: 4px;
     border: 1px solid var(--gray-mid);

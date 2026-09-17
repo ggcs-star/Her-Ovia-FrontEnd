@@ -286,16 +286,22 @@
         if (items.length) {
             items.forEach(item => {
                 const imgUrl = safeImageUrl(
+                    item?.image ||
                     item?.variant?.image_url ||
                     item?.product?.image_url ||
-                    item?.image ||
                     ''
                 );
 
-                const variantName = String(item?.variant?.variant?.name || '');
-                const variantValue = String(item?.variant?.value?.value || '');
-                const variantText = variantName || variantValue
-                    ? `${variantName}: ${variantValue}`
+                const variantType = String(
+                    item?.variant?.variant_type || 'Size'
+                );
+
+                const variantValue = String(
+                    item?.variant?.variant_value || ''
+                );
+
+                const variantText = variantValue
+                    ? `${variantType}: ${variantValue}`
                     : '';
 
                 const itemPrice = Math.max(0, Number(item?.price) || 0);
@@ -364,6 +370,23 @@
                     📅 ${escapeHtml(formatLongDate(order.created_at))} • ${escapeHtml(formatTime(order.created_at))}
                 </div>
                 <div class="order-total">${formatMoney(total)}</div>
+                ${order.estimated_delivery_date ? `
+                    <div style="
+                        margin-top:12px;
+                        padding:10px 14px;
+                        border-radius:10px;
+                        background:#f0fdf4;
+                        border:1px solid #bbf7d0;
+                        color:#166534;
+                        font-size:13px;
+                        font-weight:600;
+                    ">
+                        🚚 Estimated Delivery:
+                        <span style="font-weight:700;">
+                            ${escapeHtml(formatLongDate(order.estimated_delivery_date))}
+                        </span>
+                    </div>
+                ` : ''}
             </div>
 
             <div class="card">
@@ -524,13 +547,8 @@
         }
     }
 
-    function startAutoRefresh() {
-        if (refreshInterval) clearInterval(refreshInterval);
-
-        refreshInterval = window.setInterval(() => {
-            fetchOrderData();
-        }, 5000);
-    }
+   function startAutoRefresh() {
+   }
 
     function stopAutoRefresh() {
         if (refreshInterval) {
@@ -545,7 +563,7 @@
     document.body.classList.add('order-confirmation-page');
 
     fetchOrderData();
-    startAutoRefresh();
+    // startAutoRefresh();
 
 
     document.addEventListener('visibilitychange', () => {
@@ -553,7 +571,7 @@
             stopAutoRefresh();
         } else {
             fetchOrderData();
-            startAutoRefresh();
+            // startAutoRefresh();
         }
     });
 

@@ -27,7 +27,6 @@
     </main>
     
     <input type="file" id="avatarUpload" accept="image/jpeg,image/jpg,image/png,image/webp" style="opacity: 0; position: absolute; z-index: -1; width: 0.1px; height: 0.1px;">
-    <footer class="site-footer" id="site-footer"></footer>
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav"></nav>
     
     <script>

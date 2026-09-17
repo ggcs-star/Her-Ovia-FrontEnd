@@ -374,15 +374,45 @@ class RapidRetailsEngine {
         }
 
         let resizeTimer;
+
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimer);
+
             resizeTimer = setTimeout(() => {
                 if (this.page === 'landing' && this.initialized) {
                     this.renderPromotionalBanners();
                     this.renderHeroSlider();
                     this.renderStyleSpotlight();
                 }
+
+                // Re-render header only after categories are available
+                if (
+                    window.innerWidth >= 1025 &&
+                    (!Array.isArray(this.allCategories) || this.allCategories.length === 0)
+                ) {
+                    if (!this.headerCategoriesPromise) {
+                        this.headerCategoriesPromise = landingService.getCategories()
+                            .then(categories => {
+                                this.allCategories = Array.isArray(categories)
+                                    ? categories
+                                    : [];
+
+                                this.categoriesLoaded =
+                                    this.allCategories.length > 0;
+
+                                this.renderHeader();
+                            })
+                            .catch(() => {})
+                            .finally(() => {
+                                this.headerCategoriesPromise = null;
+                            });
+                    }
+
+                    return;
+                }
+
                 this.renderHeader();
+
             }, 250);
         });
     }
@@ -798,6 +828,7 @@ class RapidRetailsEngine {
                             <input
                                 id="landing-search"
                                 type="text"
+                                onclick="window.location.href='/search'"
                                 placeholder="Search for Category, Product ..."
                             >
 
@@ -2435,13 +2466,29 @@ window.goBack = function() {
 };
 
 function updateCartCountBadge() {
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
-    let totalItems = cart.length;
+    let cart = [];
+
+    try {
+        cart = JSON.parse(localStorage.getItem('cart')) || [];
+    } catch (error) {
+        console.error('Error reading cart:', error);
+    }
+
+    if (!Array.isArray(cart)) {
+        cart = [];
+    }
+
+    const totalItems = cart.length;
+
     const updateBadge = (badgeId) => {
         const badge = document.getElementById(badgeId);
-        if (badge) { badge.style.display = 'flex';
-            badge.textContent = totalItems; }
+
+        if (badge) {
+            badge.style.display = 'flex';
+            badge.textContent = totalItems;
+        }
     };
+
     updateBadge('cart-count-badge');
     updateBadge('web-cart-count-badge');
 }
@@ -2500,45 +2547,83 @@ window.addEventListener("DOMContentLoaded", function() {
 });
 
 (function() {
-    const fallbackCategories = ['Co-ords set', 'Dresses', 'Kurta Sets'];
-    let categories = fallbackCategories.slice();
+    let categories = [];
     let index = 0;
     let intervalId = null;
 
-    function startRotation(input) {
-        if (intervalId) clearInterval(intervalId);
+    function getSearchInput() {
+        return (
+            document.getElementById('web-search-input') ||
+            document.getElementById('landing-search')
+        );
+    }
+
+    function updatePlaceholder() {
+        const input = getSearchInput();
+
         if (!input || !categories.length) return;
 
-        input.placeholder = 'Search for ' + categories[0];
+        input.placeholder = 'Search for ' + categories[index];
+    }
+
+    function startRotation() {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
+
+        if (!categories.length) return;
+
+        updatePlaceholder();
+
         intervalId = setInterval(() => {
             index = (index + 1) % categories.length;
-            input.placeholder = 'Search for ' + categories[index];
+            updatePlaceholder();
         }, 3000);
     }
 
     async function initPlaceholder() {
         try {
             const data = await landingService.getCategories();
-            const names = data.map(cat => cat.name).filter(Boolean);
 
-            if (names.length) {
-                categories = names;
-            }
-        } catch (_) {}
+            const names = Array.isArray(data)
+                ? data.map(cat => cat.name).filter(Boolean)
+                : [];
 
-        const input =
-            document.getElementById('web-search-input') ||
-            document.getElementById('landing-search');
+            if (!names.length) return;
 
-        if (!input) return;
+            categories = names;
+            index = 0;
 
-        startRotation(input);
+            startRotation();
+
+        } catch (error) {
+            console.error('Failed to load search categories:', error);
+        }
+    }
+
+    function watchHeaderChanges() {
+        const header = document.getElementById('site-header');
+
+        if (!header) return;
+
+        const observer = new MutationObserver(() => {
+            updatePlaceholder();
+        });
+
+        observer.observe(header, {
+            childList: true,
+            subtree: true
+        });
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initPlaceholder, { once: true });
+        document.addEventListener('DOMContentLoaded', () => {
+            initPlaceholder();
+            watchHeaderChanges();
+        }, { once: true });
     } else {
         initPlaceholder();
+        watchHeaderChanges();
     }
 })();
 
@@ -3529,3 +3614,8 @@ window.resetAllFilters = () => window.productPage?.resetFilters();
 window.toggleFilter = header => window.productPage?.toggleFilter(header);
 window.toggleWish = (event, button) => window.productPage?.toggleWishlist(event, button);
 window.changeSubcategory = id => window.productPage?.changeSubcategory(id);
+
+
+window.addEventListener('pageshow', function () {
+    updateCartCountBadge();
+});

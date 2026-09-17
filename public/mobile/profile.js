@@ -110,10 +110,10 @@ function renderGuestProfile() {
             </div>
         </div>
         
-        <div class="promo-banner" onclick="window.location.href='/summer-sale'">
-            <h4>🔥 Summer Sale Live!</h4>
-            <p>Min 50% Off on Top Brands</p>
-            <span class="shop-now">Shop Now →</span>
+        <div class="promo-banner" onclick="window.location.href='/top-selling'">
+            <h4>✨ New Styles Just In!</h4>
+            <p>Discover Elegant Looks for Every Occasion</p>
+            <span class="shop-now">Explore Now →</span>
         </div>
     `;
 }
@@ -283,10 +283,10 @@ function renderProfile(user) {
             
             
         
-        <div class="promo-banner" onclick="window.location.href='/summer-sale'">
-            <h4>🔥 Summer Sale Live!</h4>
-            <p>Min 50% Off on Top Brands</p>
-            <span class="shop-now">Shop Now →</span>
+        <div class="promo-banner" onclick="window.location.href='/top-selling'">
+            <h4>✨ New Styles Just In!</h4>
+            <p>Discover Elegant Looks for Every Occasion</p>
+            <span class="shop-now">Explore Now →</span>
         </div>
         
         <div class="version-info">Version 9.29.1 Build 3630</div>

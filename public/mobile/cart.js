@@ -51,7 +51,12 @@ function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `cart-toast ${type}`;
     toast.textContent = message;
+
+    toast.style.position = 'fixed';
+    toast.style.zIndex = '2147483647';
+
     document.body.appendChild(toast);
+
     setTimeout(() => toast.remove(), 3000);
 }
 
@@ -268,164 +273,149 @@ function refreshCartDataInBackground(cart) {
 }
 
 function getCartItemHTML(item, index, qty, price, itemTotal, isWeb) {
-    // ✅ VARIANT VALUE - SAHI SE LE LO
     let variantType = item.variantType || item.type || 'Size';
     let variantValue = item.variantValue || item.size || '';
     
-    // ✅ AGAR VARIANT VALUE EMPTY HAI TOH AVAILABLE VARIANTS SE LE LO
     if (!variantValue && item.availableVariants && item.availableVariants.length > 0) {
-        const matched = item.availableVariants.find(v => v.id === item.variantId);
+        const matched = item.availableVariants.find(v => v.id == item.variantId);
         variantValue = matched?.value || item.availableVariants[0]?.value || '';
     }
     
-    // ✅ CHECK: KYA VARIANT HAI?
     const hasVariant = variantValue && variantValue !== '' && variantValue !== 'Standard';
-    const availableVariants = item.availableVariants || [];
+    const allVariants = item.availableVariants || [];
+    const availableVariants = allVariants.filter(function(v) {
+        const stock = Number(v.quantity ?? v.stock ?? 0);
+        return stock > 0;
+    });
     const { mrp, discountPercent } = getPriceInfo(item);
     const formattedDate = getDeliveryDate();
 
-    // ✅ VARIANT DISPLAY - SIRF TAB JAB ACTUAL VARIANT HO
     let variantDisplayHtml = '';
     if (hasVariant) {
-        variantDisplayHtml = `
-            <div class="cart-item-variant">
-                <span class="variant-label">${variantType}:</span>
-                <span class="variant-value">${variantValue}</span>
-            </div>
-        `;
+        variantDisplayHtml = '<div class="cart-item-variant">' +
+            '<span class="variant-label">' + variantType + ':</span>' +
+            '<span class="variant-value">' + variantValue + '</span>' +
+            '</div>';
     }
 
     let selectorsHtml = '';
     
     if (isWeb) {
         if (availableVariants.length > 1) {
-            const variantsHtml = availableVariants.map(v => `
-                <div class="dropdown-option ${v.value === variantValue ? 'selected' : ''}" 
-                     data-value="${v.value}" data-price="${v.price || 0}" data-original="${v.originalPrice || 0}">
-                    ${v.value}
-                </div>
-            `).join('');
+            let variantsHtml = '';
+            availableVariants.forEach(function(v) {
+                const selClass = v.value === variantValue ? 'selected' : '';
+                variantsHtml += '<div class="dropdown-option ' + selClass + '" ' +
+                    'data-value="' + v.value + '" data-variant-id="' + v.id + '" data-price="' + (v.price || 0) + '" data-original="' + (v.originalPrice || 0) + '">' +
+                    v.value + '</div>';
+            });
             
-            selectorsHtml = `
-                <div class="selector-wrapper">
-                    <div class="selector-trigger" onclick="toggleVariantDropdown(${index})">
-                        <span class="selector-label">${variantType}:</span>
-                        <span class="selector-value">${variantValue || 'Select'}</span>
-                        <span class="dropdown-arrow">▼</span>
-                    </div>
-                    <div class="selector-dropdown" id="variant-dropdown-${index}">
-                        <div class="dropdown-options">${variantsHtml}</div>
-                    </div>
-                </div>
-                <div class="selector-wrapper">
-                    <div class="qty-control">
-                        <button class="qty-btn" onclick="updateWebQty(${index}, -1)">−</button>
-                        <input type="number" class="qty-input" id="qty-input-${index}" value="${qty}" min="1" max="99" onchange="updateWebQtyFromInput(${index})">
-                        <button class="qty-btn" onclick="updateWebQty(${index}, 1)">+</button>
-                    </div>
-                </div>
-            `;
+            selectorsHtml = '<div class="selector-wrapper">' +
+                '<div class="selector-trigger" onclick="toggleVariantDropdown(' + index + ')">' +
+                '<span class="selector-label">' + variantType + ':</span>' +
+                '<span class="selector-value">' + (variantValue || 'Select') + '</span>' +
+                '<span class="dropdown-arrow">▼</span>' +
+                '</div>' +
+                '<div class="selector-dropdown" id="variant-dropdown-' + index + '">' +
+                '<div class="dropdown-options">' + variantsHtml + '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="selector-wrapper">' +
+                '<div class="qty-control">' +
+                '<button class="qty-btn qty-minus-btn" data-index="' + index + '" onclick="updateWebQty(' + index + ', -1)">−</button>' +
+                '<input type="number" class="qty-input" id="qty-input-' + index + '" value="' + qty + '" min="1" max="99" onchange="updateWebQtyFromInput(' + index + ')">' +
+                '<button class="qty-btn qty-plus-btn" data-index="' + index + '" onclick="updateWebQty(' + index + ', 1)">+</button>' +
+                '</div>' +
+                '</div>';
         } else if (hasVariant) {
-            selectorsHtml = `
-                <div class="selector-wrapper">
-                    <div class="selector-trigger" style="cursor:default;">
-                        <span class="selector-label">${variantType}:</span>
-                        <span class="selector-value">${variantValue}</span>
-                        <span class="dropdown-arrow">▼</span>
-                    </div>
-                </div>
-                <div class="selector-wrapper">
-                    <div class="qty-control">
-                        <button class="qty-btn" onclick="updateWebQty(${index}, -1)">−</button>
-                        <input type="number" class="qty-input" id="qty-input-${index}" value="${qty}" min="1" max="99" onchange="updateWebQtyFromInput(${index})">
-                        <button class="qty-btn" onclick="updateWebQty(${index}, 1)">+</button>
-                    </div>
-                </div>
-            `;
+            selectorsHtml = '<div class="selector-wrapper">' +
+                '<div class="selector-trigger" style="cursor:default;">' +
+                '<span class="selector-label">' + variantType + ':</span>' +
+                '<span class="selector-value">' + variantValue + '</span>' +
+                '<span class="dropdown-arrow">▼</span>' +
+                '</div>' +
+                '</div>' +
+                '<div class="selector-wrapper">' +
+                '<div class="qty-control">' +
+                '<button class="qty-btn qty-minus-btn" data-index="' + index + '" onclick="updateWebQty(' + index + ', -1)">−</button>' +
+                '<input type="number" class="qty-input" id="qty-input-' + index + '" value="' + qty + '" min="1" max="99" onchange="updateWebQtyFromInput(' + index + ')">' +
+                '<button class="qty-btn qty-plus-btn" data-index="' + index + '" onclick="updateWebQty(' + index + ', 1)">+</button>' +
+                '</div>' +
+                '</div>';
         } else {
-            selectorsHtml = `
-                <div class="selector-wrapper">
-                    <div class="qty-control">
-                        <button class="qty-btn" onclick="updateWebQty(${index}, -1)">−</button>
-                        <input type="number" class="qty-input" id="qty-input-${index}" value="${qty}" min="1" max="99" onchange="updateWebQtyFromInput(${index})">
-                        <button class="qty-btn" onclick="updateWebQty(${index}, 1)">+</button>
-                    </div>
-                </div>
-            `;
+            selectorsHtml = '<div class="selector-wrapper">' +
+                '<div class="qty-control">' +
+                '<button class="qty-btn qty-minus-btn" data-index="' + index + '" onclick="updateWebQty(' + index + ', -1)">−</button>' +
+                '<input type="number" class="qty-input" id="qty-input-' + index + '" value="' + qty + '" min="1" max="99" onchange="updateWebQtyFromInput(' + index + ')">' +
+                '<button class="qty-btn qty-plus-btn" data-index="' + index + '" onclick="updateWebQty(' + index + ', 1)">+</button>' +
+                '</div>' +
+                '</div>';
         }
     } else {
         if (availableVariants.length > 1) {
-            selectorsHtml = `
-                <div class="selector-box" onclick="openSizePopup(${index}, ${JSON.stringify(variantType)}, ${JSON.stringify(variantValue || '')})">
-                    <span class="selector-label">${variantType}:</span>
-                    <span class="selector-value">${variantValue || 'Select'}</span>
-                    <span class="dropdown-arrow">▼</span>
-                </div>
-                <div class="selector-box" onclick="openQtyPopup(${index}, ${qty})">
-                    <span class="selector-label">Qty:</span>
-                    <span class="selector-value">${qty}</span>
-                    <span class="dropdown-arrow">▼</span>
-                </div>
-            `;
+            selectorsHtml = '<div class="selector-box" onclick="openSizePopup(' + index + ', \'' + variantType + '\', \'' + (variantValue || '') + '\')">' +
+                '<span class="selector-label">' + variantType + ':</span>' +
+                '<span class="selector-value">' + (variantValue || 'Select') + '</span>' +
+                '<span class="dropdown-arrow">▼</span>' +
+                '</div>' +
+                '<div class="selector-box" onclick="openQtyPopup(' + index + ', ' + qty + ')">' +
+                '<span class="selector-label">Qty:</span>' +
+                '<span class="selector-value">' + qty + '</span>' +
+                '<span class="dropdown-arrow">▼</span>' +
+                '</div>';
         } else if (hasVariant) {
-            selectorsHtml = `
-                <div class="selector-box" style="cursor:default;background:#f8f8f8;">
-                    <span class="selector-label">${variantType}:</span>
-                    <span class="selector-value" style="font-weight:600;">${variantValue}</span>
-                </div>
-                <div class="selector-box" onclick="openQtyPopup(${index}, ${qty})">
-                    <span class="selector-label">Qty:</span>
-                    <span class="selector-value">${qty}</span>
-                    <span class="dropdown-arrow">▼</span>
-                </div>
-            `;
+            selectorsHtml = '<div class="selector-box" style="cursor:default;background:#f8f8f8;">' +
+                '<span class="selector-label">' + variantType + ':</span>' +
+                '<span class="selector-value" style="font-weight:600;">' + variantValue + '</span>' +
+                '</div>' +
+                '<div class="selector-box" onclick="openQtyPopup(' + index + ', ' + qty + ')">' +
+                '<span class="selector-label">Qty:</span>' +
+                '<span class="selector-value">' + qty + '</span>' +
+                '<span class="dropdown-arrow">▼</span>' +
+                '</div>';
         } else {
-            selectorsHtml = `
-                <div class="selector-box" onclick="openQtyPopup(${index}, ${qty})">
-                    <span class="selector-label">Qty:</span>
-                    <span class="selector-value">${qty}</span>
-                    <span class="dropdown-arrow">▼</span>
-                </div>
-            `;
+            selectorsHtml = '<div class="selector-box" onclick="openQtyPopup(' + index + ', ' + qty + ')">' +
+                '<span class="selector-label">Qty:</span>' +
+                '<span class="selector-value">' + qty + '</span>' +
+                '<span class="dropdown-arrow">▼</span>' +
+                '</div>';
         }
     }
 
-    return `
-        <div class="cart-item" data-index="${index}" data-product-id="${item.id}">
-            <div class="cart-item-main">
-                <img src="${item.image || 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c'}" 
-                     alt="${item.name}" class="cart-item-img"
-                     onclick="window.location.href='/product/${item.slug || item.id}'"
-                     onerror="this.src='https://images.unsplash.com/photo-1503342217505-b0a15ec3261c'">
-                <div class="cart-item-info">
-                    <div class="cart-item-brand">${item.brand || ''}</div>
-                    <div class="cart-item-name">${item.name}</div>
-                    ${variantDisplayHtml}
-                    <div class="cart-item-rating">
-                        <span class="stars">★★★★☆</span>
-                        <span class="rating-count">4.5 | 33</span>
-                    </div>
-                    <div class="cart-item-price-section">
-                        <span class="current-price">₹${price.toFixed(2)}</span>
-                        ${mrp > price ? `<span class="original-price">₹${mrp.toFixed(2)}</span><span class="discount-badge">${discountPercent}% Off</span>` : ''}
-                    </div>
-                    <div class="cart-item-selectors">${selectorsHtml}</div>
-                    <div class="delivery-info">
-                        <span class="info-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><rect x="2" y="5" width="16" height="12" rx="2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M18 9h4v6h-4"/></svg></span>
-                        <span class="info-text">Delivery by <span class="delivery-date">${formattedDate}</span></span>
-                    </div>
-                    <div class="return-info">
-                        <span class="info-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                        <span class="info-text">7 Days Return & Exchange</span>
-                    </div>
-                </div>
-            </div>
-            <div class="cart-item-actions">
-                <button class="action-btn" onclick="removeItem(${index})">Remove</button>
-                <button class="action-btn" onclick="moveToWishlist(${index})">Move to Wishlist</button>
-            </div>
-        </div>
-    `;
+    return '<div class="cart-item" data-index="' + index + '" data-product-id="' + item.id + '">' +
+        '<div class="cart-item-main">' +
+        '<img src="' + (item.image || 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c') + '" ' +
+        'alt="' + (item.name || '') + '" class="cart-item-img" ' +
+        'onclick="window.location.href=\'/product/' + (item.slug || item.id) + '\'" ' +
+        'onerror="this.src=\'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c\'">' +
+        '<div class="cart-item-info">' +
+        '<div class="cart-item-brand">' + (item.brand || '') + '</div>' +
+        '<div class="cart-item-name">' + (item.name || '') + '</div>' +
+        variantDisplayHtml +
+        '<div class="cart-item-rating">' +
+        '<span class="stars">★★★★☆</span>' +
+        '<span class="rating-count">4.5 | 33</span>' +
+        '</div>' +
+        '<div class="cart-item-price-section">' +
+        '<span class="current-price">₹' + price.toFixed(2) + '</span>' +
+        (mrp > price ? '<span class="original-price">₹' + mrp.toFixed(2) + '</span><span class="discount-badge">' + discountPercent + '% Off</span>' : '') +
+        '</div>' +
+        '<div class="cart-item-selectors">' + selectorsHtml + '</div>' +
+        '<div class="delivery-info">' +
+        '<span class="info-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><rect x="2" y="5" width="16" height="12" rx="2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M18 9h4v6h-4"/></svg></span>' +
+        '<span class="info-text">Delivery by <span class="delivery-date">' + formattedDate + '</span></span>' +
+        '</div>' +
+        '<div class="return-info">' +
+        '<span class="info-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
+        '<span class="info-text">7 Days Return & Exchange</span>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="cart-item-actions">' +
+        '<button class="action-btn" onclick="removeItem(' + index + ')">Remove</button>' +
+        '<button class="action-btn" onclick="moveToWishlist(' + index + ')">Move to Wishlist</button>' +
+        '</div>' +
+        '</div>';
 }
 
 function updatePriceDetails(items) {
@@ -506,22 +496,20 @@ function renderCart(items) {
     updatePriceDetails(fixedItems);
     if (countEl) countEl.innerText = fixedItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
     updateCartCountBadge();
+    fixedItems.forEach((item, index) => {
+        updateQtyButtonState(index);
+    });
 }
 
 function loadCart() {
     const cart = getCart();
 
-    console.log('📦 Cart from localStorage:', cart.length);
-
-    // Render immediately from the local cart.
-    // The cart should never wait for a non-critical API request.
+    // console.log('📦 Cart from localStorage:', cart.length);
     renderCart(cart);
 
-    // Enrich missing/old metadata in the background.
     refreshCartDataInBackground(cart);
 }
 
-// ========== CART ITEM ACTIONS ==========
 function removeItem(index) {
     let cart = getCart();
     cart.splice(index, 1);
@@ -556,36 +544,149 @@ function moveToWishlist(index) {
     }
     loadCart();
 }
+function getVariantStock(item) {
+    const variants = item.availableVariants || [];
 
+    const selectedVariant = variants.find(v =>
+        String(v.id) === String(item.variantId) ||
+        String(v.value) === String(item.variantValue) ||
+        String(v.variant_value) === String(item.variantValue)
+    );
+
+    if (selectedVariant) {
+        return Number(
+            selectedVariant.quantity ??
+            selectedVariant.stock ??
+            item.quantity_available ??
+            item.stock ??
+            99
+        );
+    }
+
+    return Number(item.quantity_available ?? item.stock ?? 99);
+}
+function updateQtyButtonState(index) {
+    const cart = getCart();
+    const item = cart[index];
+
+    if (!item) return;
+
+    const input = document.getElementById(`qty-input-${index}`);
+    if (!input) return;
+
+    const plusBtn = document.querySelector(
+        `.qty-plus-btn[data-index="${index}"]`
+    );
+
+    const minusBtn = document.querySelector(
+        `.qty-minus-btn[data-index="${index}"]`
+    );
+
+    const currentQty = Number(input.value) || 1;
+
+    const selectedVariant = (item.availableVariants || []).find(
+        v => String(v.id) === String(item.variantId)
+    );
+
+    const stock = getVariantStock(item);
+
+    if (plusBtn) {
+    if (stock > 0 && currentQty >= stock) {
+        plusBtn.disabled = false;
+        plusBtn.setAttribute('aria-disabled', 'true');
+        plusBtn.style.pointerEvents = 'auto';
+        plusBtn.style.opacity = '0.4';
+        plusBtn.style.cursor = 'not-allowed';
+
+        plusBtn.onclick = function () {
+            showToast(
+                `Maximum available quantity reached. Only ${stock} items are in stock.`,
+                'error'
+            );
+        };
+    } else {
+        plusBtn.disabled = false;
+        plusBtn.removeAttribute('aria-disabled');
+        plusBtn.style.pointerEvents = 'auto';
+        plusBtn.style.opacity = '1';
+        plusBtn.style.cursor = 'pointer';
+
+        plusBtn.onclick = function () {
+            updateWebQty(index, 1);
+        };
+    }
+}
+    if (minusBtn) {
+        if (currentQty <= 1) {
+            minusBtn.disabled = true;
+            minusBtn.style.pointerEvents = 'none';
+            minusBtn.style.opacity = '0.4';
+            minusBtn.style.cursor = 'not-allowed';
+        } else {
+            minusBtn.disabled = false;
+            minusBtn.style.pointerEvents = 'auto';
+            minusBtn.style.opacity = '1';
+            minusBtn.style.cursor = 'pointer';
+        }
+    }
+}
 function updateWebQty(index, delta) {
     const input = document.getElementById(`qty-input-${index}`);
     if (!input) return;
-    
-    let currentQty = parseInt(input.value) || 1;
-    let newQty = Math.min(99, Math.max(1, currentQty + delta));
-    input.value = newQty;
-    
+
     let cart = getCart();
-    if (cart[index]) {
-        cart[index].quantity = newQty;
-        saveCart(cart);
-        updatePriceDetails(cart);
+    if (!cart[index]) return;
+
+    const item = cart[index];
+
+    let currentQty = parseInt(input.value) || 1;
+    let newQty = currentQty + delta;
+
+    const stock = getVariantStock(item);
+
+    newQty = Math.max(1, newQty);
+
+    if (newQty > stock) {
+        newQty = stock;
+        showToast(`Only ${stock} items available`, 'error');
     }
+
+    newQty = Math.min(99, newQty);
+
+    input.value = newQty;
+    item.quantity = newQty;
+
+    saveCart(cart);
+    updatePriceDetails(cart);
+    updateQtyButtonState(index);
 }
 
 function updateWebQtyFromInput(index) {
     const input = document.getElementById(`qty-input-${index}`);
     if (!input) return;
-    
-    let newQty = Math.min(99, Math.max(1, parseInt(input.value) || 1));
-    input.value = newQty;
-    
+
     let cart = getCart();
-    if (cart[index]) {
-        cart[index].quantity = newQty;
-        saveCart(cart);
-        updatePriceDetails(cart);
+    if (!cart[index]) return;
+
+    const item = cart[index];
+
+    let newQty = Math.max(1, parseInt(input.value) || 1);
+
+    const stock = getVariantStock(item);
+
+    if (newQty > stock) {
+        newQty = stock;
+        showToast(`Only ${stock} items available`, 'error');
     }
+
+    newQty = Math.min(99, newQty);
+
+    input.value = newQty;
+    item.quantity = newQty;
+
+    saveCart(cart);
+    updatePriceDetails(cart);
+    updateQtyButtonState(index);
 }
 
 function toggleVariantDropdown(index) {
@@ -608,15 +709,35 @@ function toggleVariantDropdown(index) {
                 const value = opt.dataset.value;
                 const price = parseFloat(opt.dataset.price);
                 const originalPrice = parseFloat(opt.dataset.original);
+                const variantId = opt.dataset.variantId;
                 
                 let cart = getCart();
                 if (cart[index]) {
                     cart[index].variantValue = value;
                     if (price && !isNaN(price)) cart[index].price = price;
+                    if (variantId) {
+                        cart[index].variantId = variantId;
+                    }
                     if (originalPrice && !isNaN(originalPrice)) {
                         cart[index].mrp = originalPrice;
                         cart[index].originalPrice = originalPrice;
                     }
+                    const selectedVariant = (cart[index].availableVariants || []).find(
+                            v => String(v.id) === String(variantId)
+                        );
+
+                        const stock = Number(
+                            selectedVariant?.quantity ??
+                            selectedVariant?.stock ??
+                            cart[index].quantity_available ??
+                            cart[index].stock ??
+                            99
+                        );
+
+                        if (cart[index].quantity > stock) {
+                            cart[index].quantity = stock;
+                            showToast(`Only ${stock} items available`, 'error');
+                        }
                     saveCart(cart);
                     
                     dropdown.classList.remove('show');
@@ -632,7 +753,6 @@ function toggleVariantDropdown(index) {
     }
 }
 
-// ========== POPUP FUNCTIONS ==========
 function openSizePopup(index, variantType, currentValue) {
     let cart = getCart();
     if (!cart[index]) return;
@@ -641,12 +761,16 @@ function openSizePopup(index, variantType, currentValue) {
     if (checkoutBar) checkoutBar.style.display = 'none';
     
     const availableVariants = cart[index].availableVariants || [];
-    const optionsHtml = `<div class="popup-options-grid">${availableVariants.map(v => `
-        <div class="popup-option ${v.value === currentValue ? 'selected' : ''}" 
-             onclick="selectSizeFromPopup(${index}, ${JSON.stringify(v.value)}, ${Number(v.price) || 0}, ${Number(v.originalPrice) || 0})">
-            ${v.value}
-        </div>
-    `).join('')}</div>`;
+    
+    let optionsHtml = '<div class="popup-options-grid">';
+    availableVariants.forEach(function(v) {
+        const isSelected = v.value === currentValue ? 'selected' : '';
+        optionsHtml += '<div class="popup-option ' + isSelected + '" ' +
+            'onclick="selectSizeFromPopup(' + index + ', \'' + v.value + '\', ' + (Number(v.price) || 0) + ', ' + (Number(v.originalPrice) || 0) + ', ' + (v.id || 0) + ')">' +
+            v.value +
+            '</div>';
+    });
+    optionsHtml += '</div>';
     
     const popupHTML = `
         <div class="popup-overlay" onclick="closePopup()">
@@ -661,16 +785,30 @@ function openSizePopup(index, variantType, currentValue) {
     document.body.style.overflow = 'hidden';
 }
 
-function selectSizeFromPopup(index, value, price, originalPrice) {
+function selectSizeFromPopup(index, value, price, originalPrice, variantId) {
     let cart = getCart();
     if (!cart[index]) return;
     
     cart[index].variantValue = value;
-    if (price) cart[index].price = price;
-    if (originalPrice) {
+    cart[index].size = value;
+    
+    if (variantId && variantId !== 0) {
+        cart[index].variantId = variantId;
+    } else if (cart[index].availableVariants && cart[index].availableVariants.length > 0) {
+        const matchedVariant = cart[index].availableVariants.find(function(v) {
+            return v.value === value;
+        });
+        if (matchedVariant) {
+            cart[index].variantId = matchedVariant.id || cart[index].variantId;
+        }
+    }
+    
+    if (price && !isNaN(price)) cart[index].price = price;
+    if (originalPrice && !isNaN(originalPrice)) {
         cart[index].mrp = originalPrice;
         cart[index].originalPrice = originalPrice;
     }
+    
     saveCart(cart);
     closePopup();
     loadCart();
@@ -711,8 +849,36 @@ function openQtyPopup(index, currentQty) {
 function updateTempQty(index, delta) {
     const input = document.getElementById(`popup-qty-input-${index}`);
     if (!input) return;
-    let newQty = Math.min(99, Math.max(1, (parseInt(input.value) || 1) + delta));
+
+    const cart = getCart();
+    if (!cart[index]) return;
+
+    const item = cart[index];
+
+    let newQty = (parseInt(input.value) || 1) + delta;
+    newQty = Math.max(1, newQty);
+
+    const selectedVariant = (item.availableVariants || []).find(
+        v => String(v.id) === String(item.variantId)
+    );
+
+    const stock = Number(
+        selectedVariant?.quantity ??
+        selectedVariant?.stock ??
+        item.quantity_available ??
+        item.stock ??
+        99
+    );
+
+    if (newQty > stock) {
+        newQty = stock;
+        showToast(`Only ${stock} items available`, 'error');
+    }
+
+    newQty = Math.min(99, newQty);
+
     input.value = newQty;
+
     const popup = document.querySelector('.popup-overlay');
     if (popup) popup.dataset.tempQty = newQty;
 }
@@ -720,8 +886,35 @@ function updateTempQty(index, delta) {
 function updateTempQtyFromInput(index) {
     const input = document.getElementById(`popup-qty-input-${index}`);
     if (!input) return;
-    let newQty = Math.min(99, Math.max(1, parseInt(input.value) || 1));
+
+    const cart = getCart();
+    if (!cart[index]) return;
+
+    const item = cart[index];
+
+    let newQty = Math.max(1, parseInt(input.value) || 1);
+
+    const selectedVariant = (item.availableVariants || []).find(
+        v => String(v.id) === String(item.variantId)
+    );
+
+    const stock = Number(
+        selectedVariant?.quantity ??
+        selectedVariant?.stock ??
+        item.quantity_available ??
+        item.stock ??
+        99
+    );
+
+    if (newQty > stock) {
+        newQty = stock;
+        showToast(`Only ${stock} items available`, 'error');
+    }
+
+    newQty = Math.min(99, newQty);
+
     input.value = newQty;
+
     const popup = document.querySelector('.popup-overlay');
     if (popup) popup.dataset.tempQty = newQty;
 }
@@ -750,31 +943,6 @@ function closeQtyPopup() {
     if (checkoutBar) checkoutBar.style.display = 'flex';
 }
 
-// ========== COUPON FUNCTIONS ==========
-// function initCouponSection() {
-//     const viewCouponsBtn = document.querySelector('.view-coupons-link');
-//     const couponsWrapper = document.querySelector('.applicable-coupons');
-    
-//     if (viewCouponsBtn && couponsWrapper) {
-//         couponsWrapper.style.display = 'none';
-//         viewCouponsBtn.addEventListener('click', function(e) {
-//             e.preventDefault();
-//             const isHidden = couponsWrapper.style.display === 'none';
-//             couponsWrapper.style.display = isHidden ? 'block' : 'none';
-//             if (isHidden) loadAvailableCoupons();
-//             viewCouponsBtn.textContent = isHidden ? 'Hide Coupons' : 'View Coupons';
-//         });
-//     }
-    
-//     const applyBtn = document.getElementById('apply-coupon-btn');
-//     if (applyBtn) applyBtn.addEventListener('click', () => applyCoupon());
-    
-//     const removeBtn = document.getElementById('remove-coupon-btn');
-//     if (removeBtn) removeBtn.addEventListener('click', removeCoupon);
-    
-//     const input = document.getElementById('coupon-code-input');
-//     if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') applyCoupon(); });
-// }
 function initCouponSection() {
 
     const applyBtn = document.getElementById('apply-coupon-btn');
@@ -797,89 +965,10 @@ function initCouponSection() {
     }
 }
 
-// function loadAvailableCoupons() {
-//     const couponsList = document.getElementById('coupons-list');
-//     if (!couponsList) return;
-    
-//     couponsList.innerHTML = '<div class="loading-coupons">Loading coupons...</div>';
-    
-//     fetch(`${API_BASE_URL}/coupons`, { headers: { 'Accept': 'application/json' } })
-//     .then(res => res.ok ? res.json() : Promise.reject(`HTTP ${res.status}`))
-//     .then(response => {
-//         if (response.success && response.data?.length) {
-//             window.allCoupons = response.data;
-//             renderCouponsList(response.data);
-//         } else {
-//             couponsList.innerHTML = '<div class="no-coupons">No coupons available</div>';
-//         }
-//     })
-//     .catch(err => {
-//         console.error('Error loading coupons:', err);
-//         couponsList.innerHTML = '<div class="no-coupons">Failed to load coupons</div>';
-//     });
-// }
-
-// function renderCouponsList(coupons) {
-//     const couponsList = document.getElementById('coupons-list');
-//     if (!couponsList) return;
-    
-//     const bottomTotalEl = document.getElementById('bottom-total');
-//     const cartTotal = parseFloat(bottomTotalEl?.innerText.replace('₹', '').replace(',', '') || 0);
-    
-//     if (cartTotal === 0) {
-//         couponsList.innerHTML = '<div class="no-coupons">Add items to see applicable coupons</div>';
-//         return;
-//     }
-    
-//     const applicableCoupons = coupons.filter(c => cartTotal >= (c.min_order_amount ? parseFloat(c.min_order_amount) : 0));
-//     if (!applicableCoupons.length) {
-//         couponsList.innerHTML = '<div class="no-coupons">No applicable coupons for this order</div>';
-//         return;
-//     }
-    
-//     const bankOffers = applicableCoupons.filter(c => c.coupon_type === 'BANK');
-//     const normalCoupons = applicableCoupons.filter(c => c.coupon_type !== 'BANK');
-    
-//     const getStickerHTML = (coupon, isBank) => {
-//         const valueText = coupon.discount_type === 'PERCENT' ? `${coupon.value}%` : `₹${coupon.value}`;
-//         const icon = isBank ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9L12 3L21 9V20H3V9Z"/><path d="M8 20V12H16V20"/></svg>` : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 10h8M8 14h4"/><circle cx="17" cy="10" r="1.5" fill="currentColor"/><circle cx="17" cy="14" r="1.5" fill="currentColor"/></svg>`;
-//         return `<div class="coupon-sticker ${isBank ? 'bank-sticker' : 'normal-sticker'}" onclick="applyCoupon('${coupon.code}')">
-//             <span class="coupon-sticker-badge">${icon}</span>
-//             <span class="coupon-sticker-code">${coupon.code}</span>
-//             <span class="coupon-sticker-value">${valueText}</span>
-//         </div>`;
-//     };
-    
-//     couponsList.innerHTML = `
-//         <div class="coupon-tabs">
-//             <button class="coupon-tab active" data-tab="all">All (${applicableCoupons.length})</button>
-//             <button class="coupon-tab" data-tab="bank">Bank (${bankOffers.length})</button>
-//             <button class="coupon-tab" data-tab="normal">Coupons (${normalCoupons.length})</button>
-//         </div>
-//         <div class="coupon-tab-content active" id="tab-all"><div class="coupon-stickers-row">${applicableCoupons.map(c => getStickerHTML(c, c.coupon_type === 'BANK')).join('')}</div></div>
-//         <div class="coupon-tab-content" id="tab-bank"><div class="coupon-stickers-row">${bankOffers.length ? bankOffers.map(c => getStickerHTML(c, true)).join('') : '<div class="no-coupons-small">No bank offers</div>'}</div></div>
-//         <div class="coupon-tab-content" id="tab-normal"><div class="coupon-stickers-row">${normalCoupons.length ? normalCoupons.map(c => getStickerHTML(c, false)).join('') : '<div class="no-coupons-small">No coupons available</div>'}</div></div>
-//     `;
-    
-//     document.querySelectorAll('.coupon-tab').forEach(tab => {
-//         tab.addEventListener('click', function() {
-//             document.querySelectorAll('.coupon-tab').forEach(t => t.classList.remove('active'));
-//             document.querySelectorAll('.coupon-tab-content').forEach(c => c.classList.remove('active'));
-//             this.classList.add('active');
-//             document.getElementById(`tab-${this.dataset.tab}`).classList.add('active');
-//         });
-//     });
-// }
-
 function applyCoupon(couponCode = null) {
     const code = couponCode || document.getElementById('coupon-code-input')?.value;
     if (!code) { showToast('Please enter a coupon code', 'error'); return; }
-    
-    // const selectedCoupon = window.allCoupons?.find(c => c.code === code);
-    // if (selectedCoupon?.coupon_type === 'BANK') {
-    //     showToast('This offer can be applied during checkout', 'info');
-    //     return;
-    // }
+
     
     const cartTotal = parseFloat(document.getElementById('final-total-web')?.innerText.replace('₹', '').replace(',', '') || 0);
   const cart = getCart();
@@ -907,7 +996,7 @@ body: JSON.stringify({
     cart_total: cartTotal,
     product_id: firstItem.id,
     category_id: firstItem.categoryId,
-    subcategory_id: firstItem.subcategoryId || null  // ✅ FIXED
+    subcategory_id: firstItem.subcategoryId || null  
 })
     })
     .then(res => res.json())
@@ -997,42 +1086,6 @@ function showCouponSuccessPopup(code, discount) {
 function closeCouponSuccessPopup() {
     document.querySelector('.coupon-success-popup')?.remove();
 }
-
-// function showBankOfferPopup(couponCode) {
-//     const coupon = window.allCoupons?.find(c => c.code === couponCode);
-//     if (!coupon) return;
-    
-//     const popup = document.createElement('div');
-//     popup.className = 'bank-offer-popup';
-//     popup.innerHTML = `
-//         <div class="bank-offer-overlay" onclick="closeBankOfferPopup()"></div>
-//         <div class="bank-offer-content">
-//             <div class="bank-offer-icon">🏦</div>
-//             <h3>Bank Offer</h3>
-//             <div class="bank-offer-code">${coupon.code}</div>
-//             <p class="bank-offer-message">This offer can only be applied during checkout with online payment</p>
-//             <div class="bank-offer-details">
-//                 <div class="bank-offer-save">Save: ₹${parseFloat(coupon.value).toFixed(2)}</div>
-//                 <div class="bank-offer-min">Min. Purchase: ₹${coupon.min_order_amount || 1000}</div>
-//             </div>
-//             <div class="bank-offer-buttons">
-//                 <button class="bank-offer-checkout-btn" onclick="window.location.href='/checkout/shipping'">Proceed to Checkout</button>
-//                 <button class="bank-offer-close-btn" onclick="closeBankOfferPopup()">Later</button>
-//             </div>
-//         </div>
-//     `;
-//     document.body.appendChild(popup);
-// }
-
-// function closeBankOfferPopup() {
-//     document.querySelector('.bank-offer-popup')?.remove();
-// }
-
-// window.showCouponTerms = function(code) {
-//     sessionStorage.setItem('view_coupon_code', code);
-//     window.location.href = '/coupon-terms';
-// }
-
 function proceedToCheckout() {
     let cart = getCart();
     if (cart.length === 0) {
@@ -1073,7 +1126,6 @@ function closeEmptyCartPopup() {
     document.querySelector('.empty-cart-popup')?.remove();
 }
 
-// ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', function() {
     const buyNowOriginalCart = sessionStorage.getItem('buy_now_original_cart');
     if (buyNowOriginalCart && window.location.pathname === '/cart') {
@@ -1122,4 +1174,16 @@ document.addEventListener('click', function(e) {
         document.querySelectorAll('.selector-dropdown').forEach(d => d.classList.remove('show'));
         document.querySelectorAll('.selector-trigger').forEach(t => t.classList.remove('open'));
     }
+});
+let resizeTimer;
+window.addEventListener('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+        if (document.getElementById('cart-items')) {
+            const cart = getCart();
+            if (cart.length > 0) {
+                renderCart(cart);
+            }
+        }
+    }, 300);
 });
