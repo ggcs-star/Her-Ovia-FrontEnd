@@ -62,9 +62,7 @@
     <script src="{{ asset('mobile/product-detail.js') }}?v={{ time() }}"></script>
 
     <script>
-        // ==========================================
-        // HEADER INSTANTLY RENDER - 0ms DELAY
-        // ==========================================
+      
         (function() {
             if (typeof window.app !== 'undefined' && window.app) {
                 window.app.renderHeader();
@@ -162,7 +160,7 @@
             }
         }, 100);
 
-        console.log('✅ Product Details Page - Header rendered from script.js');
+        // console.log('✅ Product Details Page - Header rendered from script.js');
     </script>
 
     @include('mobile.auth.auth')

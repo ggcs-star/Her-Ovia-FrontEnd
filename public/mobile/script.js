@@ -374,9 +374,17 @@ class RapidRetailsEngine {
         }
 
         let resizeTimer;
+        let lastDesktopState = window.innerWidth >= 1025;
 
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimer);
+
+            const currentDesktopState = window.innerWidth >= 1025;
+
+            if (currentDesktopState !== lastDesktopState) {
+                lastDesktopState = currentDesktopState;
+                this.renderHeader();
+            }
 
             resizeTimer = setTimeout(() => {
                 if (this.page === 'landing' && this.initialized) {
@@ -788,6 +796,13 @@ class RapidRetailsEngine {
         const isPrivacyPage =
             document.body.classList.contains('privacy-page') ||
             window.location.pathname === '/privacy-policy';
+        const isCollectionPage =
+            window.location.pathname.startsWith('/collection/');
+
+        const isProductDetailPage =
+            window.location.pathname.startsWith('/product/');
+        const isWriteReviewPage = window.location.pathname === '/write-review';
+        const isCategoriesPage = window.location.pathname === '/categories';
 
         const showBackButton =
             isCartPage ||
@@ -798,7 +813,11 @@ class RapidRetailsEngine {
             isOrderConfirmationPage ||
             isTermsPage ||
             isReturnsPage ||
-            isPrivacyPage;
+            isPrivacyPage ||
+            isCollectionPage ||
+            isProductDetailPage ||
+            isWriteReviewPage ||
+            isCategoriesPage;
 
         header.innerHTML = `
             <div class="container">
@@ -811,18 +830,6 @@ class RapidRetailsEngine {
                     }
 
                     <div class="logo-search-container">
-
-                        <div class="header-logo">
-                            <a href="/">
-                                <img
-                                    src="${this.appSettings?.header_logo || ''}"
-                                    alt="Logo"
-                                    class="site-logo"
-                                    id="site-logo"
-                                    onerror="this.style.display='none'"
-                                >
-                            </a>
-                        </div>
 
                         <div class="search-wrapper">
                             <input
@@ -879,7 +886,29 @@ class RapidRetailsEngine {
                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                             </svg>
                         </button>
+                        ${isProductDetailPage ? `
+                            <button 
+                                class="header-icon-btn" 
+                                onclick="window.location.href='/cart'"
+                                aria-label="Cart"
+                            >
+                                <svg 
+                                    width="28" 
+                                    height="28" 
+                                    viewBox="0 0 24 24" 
+                                    fill="none" 
+                                    stroke="#333333" 
+                                    stroke-width="2"
+                                >
+                                    <path d="M6 6h15l-1.5 9h-12z"/>
+                                    <path d="M6 6L5 3H2"/>
+                                    <circle cx="9" cy="20" r="1"/>
+                                    <circle cx="18" cy="20" r="1"/>
+                                </svg>
 
+                                <span id="mobile-cart-count-badge">0</span>
+                            </button>
+                        ` : ''}
                     </div>
 
                 </div>
@@ -1491,7 +1520,7 @@ renderAllCategoriesPopup() {
                         <circle cx="9" cy="21" r="1.5" fill="currentColor"/>
                         <circle cx="20" cy="21" r="1.5" fill="currentColor"/>
                     </svg>
-                    <span id="cart-count-badge" style="position: absolute; top: -6px; right: -10px; background: red; color: white; font-size: 11px; padding: 2px 6px; border-radius: 50%; display: none;">0</span>
+                    <span id="cart-count-badge" class="cart-count-badge">0</span>
                 </div>
                 <span>Cart</span>
             </a>
@@ -1620,10 +1649,11 @@ renderAllCategoriesPopup() {
         const slider = document.getElementById('hero-slider');
         const dots = document.getElementById('slider-dots');
         if (!slider) return;
-        let heroBanners = this.allBanners.filter(b => b.position === 'hero');
-        if (heroBanners.length === 0 && this.allBanners.length > 0) {
-            heroBanners = this.allBanners;
-        }
+        let heroBanners = this.allBanners.filter(
+            b =>
+                b.position === 'hero' &&
+                (b.page === 'home' || b.page === 'landing')
+        );
         if (heroBanners.length === 0) return;
         const isMobile = window.innerWidth < 768;
         slider.innerHTML = heroBanners.map((b, i) => {
@@ -2491,6 +2521,7 @@ function updateCartCountBadge() {
 
     updateBadge('cart-count-badge');
     updateBadge('web-cart-count-badge');
+    updateBadge('mobile-cart-count-badge');
 }
 
 async function fetchFooterSettings() {
@@ -2899,7 +2930,9 @@ class ProductPage {
         renderPriceFilter(products) {
             if (!this.priceFilters) return;
 
-            const prices = products.map(product => this.getPrice(product)).filter(Boolean);
+            const prices = products
+                .map(product => this.getPrice(product))
+                .filter(price => Number.isFinite(price) && price > 0);
 
             if (!prices.length) {
                 this.priceFilters.innerHTML = '';
@@ -2908,27 +2941,41 @@ class ProductPage {
                 return;
             }
 
-            const max = Math.max(...prices) + 100;
-            // this.maxPrice = max;
+            const min = Math.min(...prices);
+            const max = Math.max(...prices);
 
             this.priceFilters.innerHTML = `
                 <div class="price-slider-wrap">
-                    <input type="range" id="priceRangeSlider" min="0" max="100" value="100">
+                    <input
+                        type="range"
+                        id="priceRangeSlider"
+                        min="0"
+                        max="100"
+                        value="100"
+                        ${min === max ? 'disabled' : ''}
+                    >
                     <div class="price-labels">
-                        <span>₹0</span>
+                        <span>${this.formatPrice(min)}</span>
                         <span>${this.formatPrice(max)}</span>
                     </div>
                 </div>
             `;
 
             this.priceSlider = document.getElementById('priceRangeSlider');
+
             this.priceSlider?.addEventListener('input', event => {
                 const percentage = Number(event.target.value) / 100;
-                const currentMax = Math.round(percentage * max);
+                const currentMax = Math.round(
+                    min + ((max - min) * percentage)
+                );
 
                 const labels = this.priceSlider.parentElement.querySelector('.price-labels');
+
                 if (labels) {
-                    labels.innerHTML = `<span>₹0</span><span>${this.formatPrice(currentMax)}</span>`;
+                    labels.innerHTML = `
+                        <span>${this.formatPrice(min)}</span>
+                        <span>${this.formatPrice(currentMax)}</span>
+                    `;
                 }
 
                 this.maxPrice = currentMax;

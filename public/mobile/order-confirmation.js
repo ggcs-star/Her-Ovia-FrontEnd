@@ -442,7 +442,8 @@
 
             <div class="card" style="border:none; background:transparent; box-shadow:none;">
                 <div class="action-buttons-group">
-                    <button class="btn btn-primary" id="viewOrdersDesktop">📋 View All Orders</button>
+                    <button class="btn btn-primary" id="downloadInvoice">📄 Download Invoice</button>
+                    <button class="btn btn-secondary" id="viewOrdersDesktop">📋 View All Orders</button>
                     <button class="btn btn-secondary" id="continueShopDesktop">✨ Continue Shopping</button>
                 </div>
             </div>
@@ -452,6 +453,10 @@
             <div class="order-main">${mainColumnHtml}</div>
             <div class="order-sidebar">${sidebarHtml}</div>
         `;
+        root.querySelector('#downloadInvoice')?.addEventListener(
+            'click',
+            () => downloadInvoice(order)
+        );
 
         root.querySelector('#viewOrdersDesktop')?.addEventListener(
             'click',
@@ -472,9 +477,58 @@
         });
     }
 
-    // ============================================================
-    // FETCH ORDER
-    // ============================================================
+    async function downloadInvoice(order) {
+        const button = document.getElementById('downloadInvoice');
+
+        if (!order?.id) {
+            alert('Order ID not found.');
+            return;
+        }
+
+        try {
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Downloading...';
+            }
+
+            const response = await fetch(
+                `${API_BASE_URL}/orders/${encodeURIComponent(order.id)}/invoice`,
+                {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: 'application/pdf'
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`Invoice download failed (${response.status})`);
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+
+            link.href = url;
+            link.download = `${order.order_number || order.id}-invoice.pdf`;
+
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            window.URL.revokeObjectURL(url);
+
+        } catch (error) {
+            console.error('Invoice download failed:', error);
+            alert('Unable to download invoice. Please try again.');
+        } finally {
+            if (button) {
+                button.disabled = false;
+                button.textContent = '📄 Download Invoice';
+            }
+        }
+    }
     async function fetchOrderData() {
         const root = document.getElementById('order-root');
 

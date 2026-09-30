@@ -100,6 +100,9 @@ Route::get('/wishlist', function () {
 Route::get('/orders', function () {
     return view('mobile.orders');
 })->name('orders');
+Route::get('/write-review', function () {
+    return view('mobile.write-review');
+})->name('write.review');
 Route::get('/subcategory/{id}', function($id) {
     return view('mobile.subcategory');
 });
@@ -138,6 +141,7 @@ Route::fallback(function () {
 Route::get('/blog', function () {
     return view('errors.404');
 });
+
 /*
 |--------------------------------------------------------------------------
 | Logout
