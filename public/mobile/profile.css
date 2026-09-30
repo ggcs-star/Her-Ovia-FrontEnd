@@ -671,7 +671,7 @@ body {
 .profile-page .web-header .nav-item {
     color: #000000 !important;
     font-weight: 700 !important;
-    font-size: 12px !important;
+    font-size: 10px !important;
 }
 
 .profile-page .web-header .nav-item:hover {
@@ -776,6 +776,6 @@ body {
 }
 @media screen and (min-width: 1025px) {
     .profile-content {
-        padding-top: 140px !important;
+        padding-top: 20px !important;
     }
 }

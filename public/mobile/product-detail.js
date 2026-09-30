@@ -170,12 +170,73 @@
     
     function renderCurrentReview() {
         const review = allReviews[currentReviewIndex];
+
         if (!review) return;
+
         const reviewContainer = document.getElementById('currentReview');
+
         if (!reviewContainer) return;
-        const reviewStars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
-        reviewContainer.innerHTML = `<div class="pdp-review"><div class="pdp-review-header"><span class="pdp-reviewer">${review.reviewer}</span><span class="pdp-review-rating">${reviewStars}</span><span class="pdp-review-date">${review.date}</span></div><div class="pdp-review-title">${review.title}</div><div class="pdp-review-text">${review.text}</div></div>`;
-        document.querySelectorAll('.pdp-review-dot').forEach((dot, i) => dot.classList.toggle('active', i === currentReviewIndex));
+
+        const reviewRating = Number(review.rating || 0);
+
+        const reviewStars = reviewRating > 0
+            ? '★'.repeat(reviewRating) + '☆'.repeat(5 - reviewRating)
+            : '';
+
+        const images = Array.isArray(review.images)
+            ? review.images.filter(Boolean)
+            : [];
+
+        const video = review.video || '';
+
+        const mediaHtml = `
+            ${images.length ? `
+                <div class="pdp-review-media">
+                    ${images.map(image => `
+                        <img
+                            src="${image}"
+                            alt="Review image"
+                            class="pdp-review-image"
+                            loading="lazy"
+                            onclick="window.open('${image}', '_blank')"
+                        >
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            ${video ? `
+                <div class="pdp-review-video">
+                    <video
+                        controls
+                        preload="metadata"
+                        class="pdp-review-video-player"
+                    >
+                        <source src="${video}">
+                        Your browser does not support video playback.
+                    </video>
+                </div>
+            ` : ''}
+        `;
+
+        reviewContainer.innerHTML = `
+            <div class="pdp-review">
+                <div class="pdp-review-header">
+                    <span class="pdp-reviewer">${review.reviewer}</span>
+                    <span class="pdp-review-rating">${reviewStars}</span>
+                    <span class="pdp-review-date">${review.date}</span>
+                </div>
+
+                <div class="pdp-review-title">${review.title || ''}</div>
+
+                <div class="pdp-review-text">${review.text || ''}</div>
+
+                ${mediaHtml}
+            </div>
+        `;
+
+        document.querySelectorAll('.pdp-review-dot').forEach((dot, i) => {
+            dot.classList.toggle('active', i === currentReviewIndex);
+        });
     }
     
     function renderOffers() {
@@ -292,7 +353,7 @@
         if (existingIndex >= 0) cart[existingIndex].quantity += 1;
         else cart.push(cartItem);
         localStorage.setItem('cart', JSON.stringify(cart));
-        updateCartBadge();
+        updateCartCountBadge();
         showConfirmation(product.name);
     }
     
@@ -701,16 +762,7 @@
                 deliveryText = 'Delivery available';
             }
 
-            let shippingText = '';
-
-            if (data.shipping !== null && data.shipping !== undefined) {
-                shippingText = ` • Shipping ₹${Number(data.shipping).toLocaleString('en-IN', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                })}`;
-            }
-
-            info.innerHTML = `✅ ${deliveryText}${shippingText}`;
+            info.innerHTML = `✅ ${deliveryText}`;
             info.className = 'pdp-delivery-info success';
 
         } catch (error) {
@@ -1095,11 +1147,71 @@
     }
     
     async function fetchReviews() {
-        allReviews = [
-            { id: 1, reviewer: 'Priya S.', rating: 5, date: '2 days ago', title: 'Beautiful but size up if between sizes.', text: 'The dress is stunning and the quality is good. I was between S and M, so I chose M and it fits comfortably.' },
-            { id: 2, reviewer: 'Rahul K.', rating: 4, date: '1 week ago', title: 'Perfect for vacation.', text: 'The slit and floral print look so elegant. It\'s comfortable even in warm weather. True to size and exactly like the pictures.' },
-            { id: 3, reviewer: 'Anjali M.', rating: 5, date: '2 weeks ago', title: 'Excellent quality and fit!', text: 'The fabric is soft and breathable. Perfect for summer. I received many compliments.' }
-        ];
+        const productId = currentProduct?.id;
+
+        if (!productId) {
+            allReviews = [];
+            return;
+        }
+
+        try {
+            const data = await fetchJsonOnce(
+                `${API_BASE_URL}/products/${productId}/reviews?per_page=50`,
+                `reviews_${productId}_api`
+            );
+
+            if (!data?.success || !data?.data) {
+                allReviews = [];
+                return;
+            }
+
+            const reviewData = data.data.reviews;
+
+            if (Array.isArray(reviewData)) {
+                allReviews = reviewData;
+            } else if (Array.isArray(reviewData?.data)) {
+                allReviews = reviewData.data;
+            } else {
+                allReviews = [];
+            }
+
+            currentReviewIndex = 0;
+
+            const summary = data.data.summary || {};
+            const pagination = reviewData && !Array.isArray(reviewData)
+                ? reviewData
+                : {};
+
+            window.productReviewSummary = {
+                average_rating: Number(summary.average_rating || 0),
+                rating_count: Number(summary.rating_count || 0),
+                review_count: Number(pagination.total || 0),
+                distribution: summary.distribution || {
+                    5: 0,
+                    4: 0,
+                    3: 0,
+                    2: 0,
+                    1: 0
+                }
+            };
+
+        } catch (error) {
+            console.error('Error fetching product reviews:', error);
+
+            allReviews = [];
+
+            window.productReviewSummary = {
+                average_rating: 0,
+                rating_count: 0,
+                distribution: {
+                    5: 0,
+                    4: 0,
+                    3: 0,
+                    2: 0,
+                    1: 0
+                }
+            };
+        }
     }
     
     async function fetchSimilarProducts() {
@@ -1348,12 +1460,32 @@
         let discountPercentage = originalPrice > displayPrice ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100) : 0;
         const brand = product.brand || 'H&M';
         const name = product.name || 'Maxi Dress';
-        const rating = 4.5;
-        const reviewCount = 33;
+        const reviewSummary = window.productReviewSummary || {
+            average_rating: 0,
+            rating_count: 0,
+            review_count: 0,
+            distribution: {
+                5: 0,
+                4: 0,
+                3: 0,
+                2: 0,
+                1: 0
+            }
+        };
+
+        const rating = Number(reviewSummary.average_rating || 0);
+        const reviewCount = Number(reviewSummary.rating_count || 0);
+
         let starsHtml = '';
-        let fullStars = Math.floor(rating);
-        for (let i = 0; i < fullStars; i++) starsHtml += '★';
-        for (let i = starsHtml.length; i < 5; i++) starsHtml += '☆';
+        const fullStars = Math.floor(rating);
+
+        for (let i = 0; i < fullStars; i++) {
+            starsHtml += '★';
+        }
+
+        for (let i = fullStars; i < 5; i++) {
+            starsHtml += '☆';
+        }
         
         const descriptionPoints = [];
         if (product.style) descriptionPoints.push(`Style: ${product.style}`);
@@ -1450,11 +1582,60 @@
                     <div class="pdp-cod"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="7" cy="15" r="1.5" fill="currentColor"/><circle cx="17" cy="15" r="1.5" fill="currentColor"/></svg><span>Cash on Delivery available</span></div>
                 </div>
                 
-                <div class="pdp-ratings"><h3>Ratings and Reviews</h3>
-                    <div class="pdp-rating-summary"><span class="pdp-avg-rating">4.5</span><span class="pdp-stars">${starsHtml}</span><span class="pdp-total-ratings">33 Ratings</span></div>
-                    <div id="currentReview"></div>
-                    <div class="pdp-review-nav"><button onclick="prevReview()">‹</button><button onclick="nextReview()">›</button></div>
+                <div class="pdp-ratings">
+    <h3>Product Ratings & Reviews</h3>
+
+    <div class="pdp-rating-overview">
+        <div class="pdp-rating-left">
+            <div class="pdp-average">
+                ${rating > 0 ? rating.toFixed(1) : '0.0'}
+                <span>★</span>
+            </div>
+
+            <div class="pdp-rating-counts">
+                <div>${Number(reviewSummary.rating_count || 0).toLocaleString('en-IN')} Ratings</div>
+                <div>${Number(reviewSummary.review_count || 0).toLocaleString('en-IN')} Reviews</div>
+            </div>
+        </div>
+
+        <div class="pdp-rating-breakdown">
+            ${[
+                { rating: 5, label: 'Excellent' },
+                { rating: 4, label: 'Very Good' },
+                { rating: 3, label: 'Good' },
+                { rating: 2, label: 'Average' },
+                { rating: 1, label: 'Poor' }
+            ].map(item => {
+                const count = Number(reviewSummary.distribution?.[item.rating] || 0);
+                const total = Number(reviewSummary.rating_count || 0);
+                const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+
+                return `
+                    <div class="pdp-rating-row">
+                        <span class="pdp-rating-label">${item.label}</span>
+                        <div class="pdp-rating-bar">
+                            <span style="width:${percentage}%"></span>
+                        </div>
+                        <span class="pdp-rating-number">${count.toLocaleString('en-IN')}</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
                 </div>
+
+                <div class="pdp-reviews-section">
+                    <div class="pdp-reviews-title">
+                        Customer Reviews
+                    </div>
+
+                    <div id="currentReview"></div>
+
+                    <div class="pdp-review-nav" ${allReviews.length <= 1 ? 'style="display:none"' : ''}>
+                        <button type="button" onclick="prevReview()">‹</button>
+                        <button type="button" onclick="nextReview()">›</button>
+                    </div>
+                </div>
+            </div>
                 <div class="pdp-similar"><h3>Similar Styles</h3><div class="pdp-similar-grid" id="similarGrid"></div></div>
             </div>
         `;

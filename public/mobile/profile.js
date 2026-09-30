@@ -18,26 +18,31 @@ window.addEventListener('storage', function(e) {
 function initializeProfile() {
     const token = localStorage.getItem('token');
     const container = document.getElementById('profile-container');
+
     if (container) {
         container.innerHTML = '';
     }
-    
+
     if (token) {
         validateAndLoadUserProfile();
+        return;
+    }
+
+    if (typeof showLoginPopup === 'function') {
+        showLoginPopup();
     } else {
-        renderGuestProfile();
+        window.location.href = '/login';
     }
 }
 
 async function validateAndLoadUserProfile() {
     const token = localStorage.getItem('token');
     const container = document.getElementById('profile-container');
+
     if (!container) return;
-    
-    console.log('🔄 Validating profile for token:', token ? token.substring(0, 20) + '...' : 'NO TOKEN');
-    
+
     container.innerHTML = '<div class="loading-spinner">Loading profile...</div>';
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/user/profile`, {
             method: 'GET',
@@ -47,21 +52,39 @@ async function validateAndLoadUserProfile() {
             },
             cache: 'no-store'
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok && data.success && data.data) {
             renderProfile(data.data);
             loadUserStats();
-        } else {
-            renderGuestProfile();
-            if (response.status === 401) {
-                localStorage.removeItem('token');
-            }
+            return;
         }
+
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+
+        container.innerHTML = '';
+
+        if (typeof showLoginPopup === 'function') {
+            showLoginPopup();
+        } else {
+            window.location.href = '/login';
+        }
+
     } catch (error) {
         console.error('Profile error:', error);
-        renderGuestProfile();
+
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+
+        container.innerHTML = '';
+
+        if (typeof showLoginPopup === 'function') {
+            showLoginPopup();
+        } else {
+            window.location.href = '/login';
+        }
     }
 }
 
@@ -222,14 +245,14 @@ function renderProfile(user) {
                     <span>My Orders</span>
                     <span class="menu-arrow">›</span>
                 </div>
-                <div class="menu-item" onclick="return false;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                        <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                    <span>Return Creation Demo</span>
-                    <span class="menu-arrow">›</span>
-                </div>
+               <div class="menu-item" data-link="/write-review">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1-1 1 1-4L16.5 3.5Z"/>
+                </svg>
+                <span>Write a Review</span>
+                <span class="menu-arrow">›</span>
+            </div>
             </div>
             
             <div class="menu-card">

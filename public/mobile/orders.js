@@ -39,7 +39,7 @@ async function loadAllOrders() {
         showEmptyState();
     }
 }
-function renderOrders(orders) {
+async function renderOrders(orders) {
     const container = document.getElementById('orders-list');
     if (!container) return;
     
@@ -47,8 +47,9 @@ function renderOrders(orders) {
         showEmptyState();
         return;
     }
-    
+
     let html = '';
+
     orders.forEach(order => {
         const date = new Date(order.created_at).toLocaleDateString('en-IN', {
             day: 'numeric',
@@ -118,7 +119,14 @@ function renderOrders(orders) {
                         <span>Total:</span>
                         <span class="total-amount">₹${parseFloat(order.total).toFixed(2)}</span>
                     </div>
-                    <button class="view-details-btn">View Details →</button>
+
+                    <div class="order-actions">
+                        <button
+                            class="view-details-btn"
+                            onclick="event.stopPropagation(); viewOrderDetails('${order.id}')">
+                            View Details →
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
