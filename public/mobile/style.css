@@ -31,6 +31,7 @@
     --brand-bg-4: #f8e8ff;
     --brand-bg-5: #e6f3ff;
     --brand-bg-6: #e6ffe6;
+    --stories-bg: #f3ded2;
     --safe-area-inset-top: env(safe-area-inset-top, 0px);
     --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
     --status-bar-height: 24px
@@ -4132,4 +4133,1265 @@ body {
     align-items: center !important;
     justify-content: center !important;
     z-index: 9999 !important;
+}
+.herovia-top-selling {
+    padding: 50px 0;
+    background: var(--hero-bg);
+    border-top: 1px solid var(--hero-border);
+    border-bottom: 1px solid var(--hero-border);
+}
+
+.herovia-top-selling-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.herovia-top-selling-header h2 {
+    font-family: "Playfair Display", serif;
+    font-size: 34px;
+    font-weight: 300;
+    color: var(--hero-text);
+    line-height: 1.15;
+}
+
+.herovia-top-selling-header h2 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--hero-burgundy);
+}
+
+.herovia-top-selling-subtitle {
+    margin-top: 7px;
+    font-family: "Inter", sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--hero-text-muted);
+}
+
+.herovia-top-selling-view-all {
+    flex-shrink: 0;
+    font-family: "Inter", sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--hero-text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--hero-text);
+    padding-bottom: 3px;
+}
+
+.herovia-top-selling-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.herovia-top-selling-card {
+    min-width: 0;
+    overflow: hidden;
+    background: var(--hero-white);
+    border: 1px solid var(--hero-border);
+    border-radius: 10px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.herovia-top-selling-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(46, 27, 27, 0.08);
+}
+
+.herovia-top-selling-image {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: var(--hero-bg);
+    text-decoration: none;
+}
+
+.herovia-top-selling-image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    transition: transform 0.35s ease;
+}
+
+.herovia-top-selling-card:hover .herovia-top-selling-image img {
+    transform: scale(1.03);
+}
+
+.herovia-top-selling-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 4px 9px;
+    border-radius: 20px;
+    background: rgba(68, 12, 44, 0.88);
+    color: #fff;
+    font-family: "Inter", sans-serif;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.herovia-top-selling-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--hero-burgundy);
+    font-family: "Playfair Display", serif;
+    font-size: 18px;
+}
+
+.herovia-top-selling-content {
+    padding: 14px 14px 16px;
+}
+
+.herovia-top-selling-content h3 {
+    margin: 0 0 10px;
+    font-family: "Playfair Display", serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--hero-text);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.herovia-top-selling-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.herovia-top-selling-price {
+    font-family: "Playfair Display", serif;
+    font-size: 16px;
+    color: var(--hero-burgundy);
+}
+
+.herovia-top-selling-link {
+    flex-shrink: 0;
+    font-family: "Inter", sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--hero-text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--hero-text);
+    padding-bottom: 2px;
+}
+
+@media (max-width: 1024px) {
+    .herovia-top-selling-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .herovia-top-selling {
+        padding: 40px 0;
+    }
+
+    .herovia-top-selling-header {
+        align-items: flex-start;
+    }
+
+    .herovia-top-selling-header h2 {
+        font-size: 28px;
+    }
+
+    .herovia-top-selling-grid {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .herovia-top-selling-grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .herovia-top-selling-card {
+        flex: 0 0 190px;
+    }
+}
+
+@media (max-width: 480px) {
+    .herovia-top-selling {
+        padding: 34px 0;
+    }
+
+    .herovia-top-selling-header h2 {
+        font-size: 25px;
+    }
+
+    .herovia-top-selling-subtitle {
+        font-size: 12px;
+    }
+
+    .herovia-top-selling-card {
+        flex-basis: 170px;
+    }
+
+    .herovia-top-selling-content {
+        padding: 12px;
+    }
+
+    .herovia-top-selling-content h3 {
+        font-size: 15px;
+    }
+
+    .herovia-top-selling-price {
+        font-size: 15px;
+    }
+}
+.herovia-top-selling {
+    padding: 52px 0;
+    background: var(--hero-bg);
+    border-top: 1px solid var(--hero-border);
+    border-bottom: 1px solid var(--hero-border);
+}
+
+.herovia-top-selling-header {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.herovia-top-selling-heading {
+    width: 100%;
+    text-align: center;
+}
+
+.herovia-top-selling-header h2 {
+    font-family: "Playfair Display", serif;
+    font-size: 32px;
+    font-weight: 300;
+    color: var(--hero-text);
+    line-height: 1.15;
+}
+
+.herovia-top-selling-header h2 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--hero-burgundy);
+}
+
+.herovia-top-selling-subtitle {
+    margin-top: 7px;
+    font-family: "Inter", sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--hero-text-muted);
+}
+
+.herovia-top-selling-slider {
+    position: relative;
+    width: 100%;
+    padding: 0 42px;
+}
+
+.herovia-top-selling-grid {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.herovia-top-selling-grid::-webkit-scrollbar {
+    display: none;
+}
+
+.herovia-top-selling-card {
+    flex: 0 0 calc((100% - 48px) / 5);
+    min-width: 0;
+    overflow: hidden;
+    background: var(--hero-white);
+    border: 1px solid var(--hero-border);
+    border-radius: 10px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.herovia-top-selling-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(46, 27, 27, 0.08);
+}
+
+.herovia-top-selling-image {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: var(--hero-bg);
+    text-decoration: none;
+}
+
+.herovia-top-selling-image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    object-position: center;
+    transition: transform 0.35s ease;
+}
+
+/* .herovia-top-selling-card:hover .herovia-top-selling-image img {
+    transform: scale(1.025);
+} */
+
+.herovia-top-selling-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8eee5;
+    color: var(--hero-burgundy);
+    font-family: "Playfair Display", serif;
+    font-size: 18px;
+}
+
+.herovia-top-selling-content {
+    padding: 12px 13px 14px;
+}
+
+.herovia-top-selling-content h3 {
+    margin: 0 0 9px;
+    font-family: "Playfair Display", serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--hero-text);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.herovia-top-selling-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.herovia-top-selling-price {
+    font-family: "Playfair Display", serif;
+    font-size: 15px;
+    color: var(--hero-burgundy);
+}
+
+.herovia-top-selling-link {
+    flex-shrink: 0;
+    font-family: "Inter", sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--hero-text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--hero-text);
+    padding-bottom: 2px;
+}
+
+.herovia-top-selling-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid var(--hero-border);
+    border-radius: 50%;
+    background: var(--hero-white);
+    color: var(--hero-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    z-index: 3;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.herovia-top-selling-prev {
+    left: 0;
+}
+
+.herovia-top-selling-next {
+    right: 0;
+}
+
+.herovia-top-selling-arrow:hover {
+    background: var(--hero-burgundy);
+    color: #fff;
+    border-color: var(--hero-burgundy);
+}
+
+.herovia-top-selling-arrow:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+@media (max-width: 1024px) {
+    .herovia-top-selling-card {
+        flex-basis: calc((100% - 36px) / 4);
+    }
+}
+@media (max-width: 768px) {
+    .herovia-top-selling {
+        padding: 38px 0;
+    }
+
+    .herovia-top-selling-header {
+        margin-bottom: 22px;
+        padding: 0 16px;
+    }
+
+    .herovia-top-selling-header h2 {
+        font-size: 27px;
+    }
+
+    .herovia-top-selling-subtitle {
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .herovia-top-selling-slider {
+        width: 100%;
+        padding: 0 34px;
+    }
+
+    .herovia-top-selling-grid {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .herovia-top-selling-grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .herovia-top-selling-card {
+        flex: 0 0 100%;
+        width: 100%;
+        min-width: 100%;
+        border-radius: 9px;
+    }
+
+    .herovia-top-selling-image {
+        width: 100%;
+        aspect-ratio: 1 /1;
+    }
+
+    .herovia-top-selling-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+    }
+
+    .herovia-top-selling-content {
+        padding: 11px 12px 13px;
+    }
+
+    .herovia-top-selling-content h3 {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .herovia-top-selling-price {
+        font-size: 14px;
+    }
+
+    .herovia-top-selling-link {
+        font-size: 10px;
+    }
+
+    .herovia-top-selling-arrow {
+        width: 28px;
+        height: 28px;
+        font-size: 13px;
+        top: 50%;
+    }
+
+    .herovia-top-selling-prev {
+        left: 3px;
+    }
+
+    .herovia-top-selling-next {
+        right: 3px;
+    }
+}
+
+@media (max-width: 480px) {
+    .herovia-top-selling {
+        padding: 34px 0;
+    }
+
+    .herovia-top-selling-header {
+        margin-bottom: 20px;
+    }
+
+    .herovia-top-selling-header h2 {
+        font-size: 25px;
+    }
+
+    .herovia-top-selling-subtitle {
+        font-size: 11px;
+    }
+
+    .herovia-top-selling-slider {
+        padding: 0 34px;
+    }
+
+    .herovia-top-selling-card {
+        flex-basis: 100%;
+        min-width: 100%;
+    }
+
+    .herovia-top-selling-arrow {
+        width: 27px;
+        height: 27px;
+        font-size: 12px;
+    }
+
+    .herovia-top-selling-prev {
+        left: 3px;
+    }
+
+    .herovia-top-selling-next {
+        right: 3px;
+    }
+}
+.herovia-one-set-section {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 40% 60%;
+    min-height: 340px;
+    background: #f8eee5;
+    overflow: hidden;
+}
+
+.herovia-one-set-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px 46px;
+    background: #560d18;
+    color: #fff;
+}
+
+.herovia-one-set-content::after {
+    content: "";
+    position: absolute;
+    width: 180px;
+    height: 250px;
+    right: -35px;
+    top: 45px;
+    opacity: 0.16;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 250'%3E%3Cpath d='M90 235C91 175 103 116 158 48M92 198C62 188 43 168 34 139M99 161C127 151 145 131 151 105M105 125C76 116 60 96 55 71M119 90C141 83 154 68 161 49' fill='none' stroke='%23d7a66b' stroke-width='2'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: contain;
+    pointer-events: none;
+}
+
+.herovia-one-set-eyebrow {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 12px;
+    color: #d9a878;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+}
+
+.herovia-one-set-content h2 {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    max-width: 430px;
+    color: #fff;
+    font-family: Georgia, serif;
+    font-size: 38px;
+    font-weight: 400;
+    line-height: 1.12;
+}
+
+.herovia-one-set-content h2 em {
+    font-style: italic;
+    font-weight: 400;
+}
+
+.herovia-one-set-content p {
+    position: relative;
+    z-index: 1;
+    margin: 16px 0 25px;
+    max-width: 390px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.herovia-one-set-button {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: fit-content;
+    min-width: 150px;
+    padding: 12px 18px;
+    border: 1px solid #fff;
+    color: #fff;
+    background: transparent;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+.herovia-one-set-button:hover {
+    background: #fff;
+    color: #560d18;
+}
+
+.herovia-one-set-cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    align-items: center;
+    padding: 28px 36px;
+    background: #f8eee5;
+}
+
+.herovia-one-set-card {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #dfcdbb;
+    border-radius: 6px;
+    background: #fffaf5;
+    color: #3d1518;
+    text-decoration: none;
+    box-shadow: 0 3px 12px rgba(80, 35, 25, 0.05);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.herovia-one-set-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(80, 35, 25, 0.1);
+}
+
+.herovia-one-set-image {
+    position: relative;
+    width: 100%;
+    height: 245px;
+    overflow: hidden;
+    background: #f5e8dc;
+}
+
+.herovia-one-set-image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center center;
+}
+
+.herovia-one-set-image-fallback {
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    background: #f8eee5;
+    color: #560d18;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.herovia-one-set-card-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 48px;
+    padding: 11px 13px;
+    background: #fffaf5;
+}
+
+.herovia-one-set-card-content > span:first-child {
+    overflow: hidden;
+    color: #3d1518;
+    font-family: Georgia, serif;
+    font-size: 14px;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.herovia-one-set-card-arrow {
+    flex: 0 0 auto;
+    color: #560d18;
+    font-size: 14px;
+}
+
+@media (max-width: 900px) {
+    .herovia-one-set-section {
+        grid-template-columns: 1fr;
+    }
+
+    .herovia-one-set-content {
+        padding: 38px 24px;
+    }
+
+    .herovia-one-set-content h2 {
+        font-size: 30px;
+    }
+
+    .herovia-one-set-cards {
+        grid-template-columns: repeat(3, minmax(220px, 1fr));
+        overflow-x: auto;
+        padding: 20px 24px 26px;
+    }
+
+    .herovia-one-set-image {
+        height: 230px;
+    }
+}
+
+@media (max-width: 600px) {
+    .herovia-one-set-content {
+        min-height: 250px;
+        padding: 32px 20px;
+    }
+
+    .herovia-one-set-eyebrow {
+        font-size: 9px;
+        letter-spacing: 3px;
+    }
+
+    .herovia-one-set-content h2 {
+        max-width: 320px;
+        font-size: 28px;
+    }
+
+    .herovia-one-set-content p {
+        max-width: 300px;
+        margin: 12px 0 20px;
+        font-size: 13px;
+    }
+
+    .herovia-one-set-button {
+        padding: 10px 15px;
+        font-size: 10px;
+    }
+
+    .herovia-one-set-cards {
+        grid-template-columns: repeat(3, 190px);
+        gap: 10px;
+        padding: 16px 14px 20px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+
+    .herovia-one-set-cards::-webkit-scrollbar {
+        display: none;
+    }
+
+    .herovia-one-set-card {
+        scroll-snap-align: start;
+    }
+
+    .herovia-one-set-image {
+        height: 220px;
+    }
+
+    .herovia-one-set-card-content {
+        min-height: 44px;
+        padding: 9px 10px;
+    }
+
+    .herovia-one-set-card-content > span:first-child {
+        font-size: 12px;
+    }
+
+    .herovia-one-set-card-arrow {
+        font-size: 12px;
+    }
+}
+
+.herovia-stories-section {
+    width: 100%;
+    padding: 0 !important;
+    margin: 0;
+     background: var(--stories-bg) !important;
+    overflow: hidden;
+}
+
+.herovia-stories-section > .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+     background: var(--stories-bg) !important;
+}
+
+.herovia-stories-layout {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 40% 60%;
+    min-height: 330px;
+    background: var(--stories-bg) !important;
+}
+
+.herovia-stories-copy {
+    position: relative;
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    padding: 38px 48px;
+
+    background: var(--stories-bg) !important;
+    color: var(--primary) !important;
+
+    overflow: hidden;
+}
+.herovia-stories-copy::after {
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+    height: 250px;
+
+    right: -25px;
+    top: 42px;
+
+    opacity: 0.18;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 250'%3E%3Cpath d='M90 235C91 175 103 116 158 48M92 198C62 188 43 168 34 139M99 161C127 151 145 131 151 105M105 125C76 116 60 96 55 71M119 90C141 83 154 68 161 49' fill='none' stroke='%23440C2C' stroke-width='2'/%3E%3C/svg%3E");
+
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+
+    pointer-events: none;
+}
+
+.herovia-stories-copy .herovia-eyebrow {
+    position: relative;
+    z-index: 2;
+
+    margin: 0 0 10px;
+
+    color: var(--primary) !important;
+
+    font-size: 10px;
+    font-weight: 600;
+
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+.herovia-stories-copy h2 {
+    position: relative;
+    z-index: 2;
+
+    margin: 0;
+
+    max-width: 430px;
+
+    color: var(--primary) !important;
+
+    font-family: Georgia, "Times New Roman", serif;
+
+    font-size: 34px;
+    font-weight: 400;
+
+    line-height: 1.12;
+}
+
+.herovia-stories-copy h2 em {
+    font-style: italic;
+    font-weight: 400;
+}
+.herovia-stories-description {
+    position: relative;
+    z-index: 2;
+
+    margin: 14px 0 22px;
+
+    max-width: 390px;
+
+    color: var(--text-muted) !important;
+
+    font-size: 13px;
+    line-height: 1.55;
+}
+.herovia-stories-button {
+    position: relative;
+    z-index: 2;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: fit-content;
+
+    padding: 10px 17px;
+
+    border: 1px solid var(--primary);
+
+    background: var(--primary) !important;
+    color: var(--white) !important;
+
+    font-size: 10px;
+    font-weight: 600;
+
+    letter-spacing: 1px;
+
+    text-decoration: none;
+
+    transition: var(--transition);
+}
+
+.herovia-stories-button:hover {
+    background: var(--white) !important;
+    color: var(--primary) !important;
+}
+
+.herovia-stories-content {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 22px 32px;
+    background: var(--stories-bg) !important;
+    overflow: hidden;
+}
+.herovia-stories-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.herovia-story-card {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--gray-mid);
+    border-radius: var(--radius);
+    background: var(--white);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.herovia-story-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+.herovia-story-card-image {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 235px;
+    overflow: hidden;
+    background: var(--gray-light);
+    text-decoration: none;
+}
+.herovia-story-card-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center center;
+    background: var(--gray-light);
+    transition: transform 0.3s ease;
+}
+
+.herovia-story-card:hover
+.herovia-story-card-image img {
+    transform: scale(1.02);
+}
+
+.herovia-story-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: var(--gray-light);
+    color: var(--primary);
+    font-size: 15px;
+    font-weight: 600;
+}
+.herovia-story-card-title {
+    display: flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 9px 12px;
+    background: var(--white);
+    color: var(--primary) !important;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 13px;
+    line-height: 1.25;
+    text-decoration: none;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.herovia-stories-dots {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.herovia-stories-dot {
+    width: 6px;
+    height: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--gray-mid);
+    cursor: pointer;
+}
+
+.herovia-stories-dot.active {
+    width: 18px;
+    border-radius: 10px;
+    background: var(--primary);
+}
+
+@media (max-width: 1024px) {
+
+    .herovia-stories-layout {
+        grid-template-columns: 40% 60%;
+        min-height: 300px;
+    }
+
+    .herovia-stories-copy {
+        padding: 32px 28px;
+    }
+
+    .herovia-stories-copy h2 {
+        font-size: 29px;
+    }
+
+    .herovia-stories-description {
+        font-size: 12px;
+        max-width: 290px;
+    }
+
+    .herovia-stories-content {
+        padding: 18px 20px;
+    }
+
+    .herovia-stories-grid {
+        gap: 9px;
+    }
+
+    .herovia-story-card-image {
+        height: 200px;
+    }
+
+    .herovia-story-card-title {
+        font-size: 12px;
+        min-height: 39px;
+        padding: 8px 9px;
+    }
+}
+@media (max-width: 768px) {
+
+    .herovia-stories-section {
+        width: 100%;
+        background: var(--stories-bg) !important;
+    }
+
+    .herovia-stories-layout {
+        display: block;
+        min-height: auto;
+        background: var(--stories-bg) !important;
+    }
+
+    .herovia-stories-copy {
+        min-height: 210px;
+        padding: 28px 20px;
+        background: var(--stories-bg) !important;
+    }
+
+    .herovia-stories-copy::after {
+        width: 125px;
+        height: 180px;
+        right: -22px;
+        top: 22px;
+        opacity: 0.14;
+    }
+
+    .herovia-stories-copy .herovia-eyebrow {
+        font-size: 8px;
+
+        letter-spacing: 3px;
+
+        margin-bottom: 8px;
+    }
+
+    .herovia-stories-copy h2 {
+        max-width: 310px;
+
+        font-size: 27px;
+
+        line-height: 1.12;
+    }
+
+    .herovia-stories-description {
+        max-width: 290px;
+
+        margin: 10px 0 17px;
+
+        font-size: 11px;
+
+        line-height: 1.5;
+    }
+
+    .herovia-stories-button {
+        padding: 9px 14px;
+
+        font-size: 9px;
+    }
+    .herovia-stories-content {
+        width: 100%;
+        padding: 16px 14px 20px;
+        background: var(--stories-bg) !important;
+    }
+    .herovia-stories-grid {
+        display: flex;
+        width: 100%;
+        gap: 10px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .herovia-stories-grid::-webkit-scrollbar {
+        display: none;
+    }
+    .herovia-story-card {
+        flex: 0 0 185px;
+        width: 185px;
+        scroll-snap-align: start;
+        border-radius: var(--radius);
+    }
+
+    .herovia-story-card-image {
+        width: 100%;
+        height: 205px;
+        background: var(--gray-light);
+    }
+
+    .herovia-story-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center center;
+    }
+    .herovia-story-card-title {
+        min-height: 40px;
+        padding: 8px 9px;
+        font-size: 11px;
+        line-height: 1.2;
+    }
+    .herovia-stories-dots {
+        display: flex;
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .herovia-stories-copy {
+        min-height: 200px;
+        padding: 26px 17px;
+    }
+
+    .herovia-stories-copy::after {
+        width: 105px;
+        height: 160px;
+        right: -20px;
+        top: 18px;
+    }
+
+    .herovia-stories-copy .herovia-eyebrow {
+        font-size: 7px;
+        letter-spacing: 2.5px;
+    }
+
+    .herovia-stories-copy h2 {
+        max-width: 290px;
+        font-size: 24px;
+    }
+
+    .herovia-stories-description {
+        max-width: 265px;
+        font-size: 10.5px;
+        margin-bottom: 15px;
+    }
+
+    .herovia-stories-content {
+        padding: 14px 12px 18px;
+    }
+
+    .herovia-stories-grid {
+        gap: 9px;
+    }
+
+    .herovia-story-card {
+        flex: 0 0 170px;
+        width: 170px;
+    }
+
+    .herovia-story-card-image {
+        height: 190px;
+    }
+
+    .herovia-story-card-title {
+        min-height: 38px;
+        padding: 7px 8px;
+        font-size: 10.5px;
+    }
 }

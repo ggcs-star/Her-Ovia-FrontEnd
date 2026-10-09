@@ -104,6 +104,78 @@
                 <div id="dynamic-featured"></div>
             </div>
         </section>
+        <section class="herovia-top-selling">
+            <div class="container">
+                <div class="herovia-top-selling-header">
+                    <div class="herovia-top-selling-heading">
+                        <p class="herovia-eyebrow">
+                            Loved by Her-Ovia women
+                        </p>
+                        <h2>
+                            Our <em>Most Loved</em>
+                        </h2>
+                        <p class="herovia-top-selling-subtitle">
+                            Our most-loved styles, chosen by you.
+                        </p>
+                    </div>
+                </div>
+                <div class="herovia-top-selling-slider">
+                    <button
+                        type="button"
+                        class="herovia-top-selling-arrow herovia-top-selling-prev"
+                        id="topSellingPrev"
+                        aria-label="Previous products"
+                    >
+                        ←
+                    </button>
+                    <div
+                        id="dynamic-top-selling"
+                        class="herovia-top-selling-grid"
+                    ></div>
+                    <button
+                        type="button"
+                        class="herovia-top-selling-arrow herovia-top-selling-next"
+                        id="topSellingNext"
+                        aria-label="Next products"
+                    >
+                        →
+                    </button>
+                </div>
+            </div>
+        </section>
+        <section class="herovia-stories-section">
+            <div class="container">
+                <div class="herovia-stories-layout">
+                    <div class="herovia-stories-copy">
+                        <p class="herovia-eyebrow">ONE SET, MANY STORIES</p>
+
+                        <h2>
+                            One Set, <em>Many Stories</em>
+                        </h2>
+
+                        <p class="herovia-stories-description">
+                            From brunches to celebrations, style it your way.
+                        </p>
+
+                        <a href="/categories" class="herovia-stories-button">
+                            EXPLORE LOOKS <span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+
+                    <div class="herovia-stories-content">
+                        <div
+                            id="dynamic-stories"
+                            class="herovia-stories-grid"
+                        ></div>
+
+                        <div
+                            id="herovia-stories-dots"
+                            class="herovia-stories-dots"
+                        ></div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <section class="herovia-collection-intro">
             <div class="container">

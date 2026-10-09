@@ -410,7 +410,7 @@ function renderTopSellingProducts() {
             loading="lazy"
             data-fallback-image="${FALLBACK_IMAGE}"
           >
-          <span class="category-product-badge">Top Selling</span>
+          
         </div>
 
         <div class="category-product-info">
@@ -498,71 +498,358 @@ function formatPrice(value) {
   }).format(Number(value) || 0);
 }
 
+let categoryHeroTimer = null;
+let categoryHeroCurrentIndex = 0;
+
 async function loadCategoryHeroBanner() {
-  const hero = document.getElementById('categories-hero');
-  const container = document.getElementById('category-hero-image');
+    const hero = document.getElementById('categories-hero');
+    const container = document.getElementById('category-hero-image');
 
-  if (!hero || !container) return;
-
-  try {
-    const result = await fetchJson(`${API_BASE_URL}/banners`);
-    const banners = Array.isArray(result?.data) ? result.data : [];
-    const now = new Date();
-
-    const validBanners = banners
-      .filter(item => {
-        if (item.page !== 'category') return false;
-        if (item.position !== 'hero') return false;
-        if (Number(item.status) !== 1) return false;
-        if (!item.image) return false;
-
-        if (item.start_date) {
-          const startDate = new Date(item.start_date.replace(' ', 'T'));
-          if (now < startDate) return false;
-        }
-
-        if (item.end_date) {
-          const endDate = new Date(item.end_date.replace(' ', 'T'));
-          if (now > endDate) return false;
-        }
-
-        return true;
-      })
-      .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
-
-    const banner = validBanners[0];
-
-    if (!banner) {
-      hero.style.display = 'none';
-      return;
+    if (!hero || !container) {
+        return;
     }
 
-    const picture = document.createElement('picture');
+    try {
+        const result = await fetchJson(`${API_BASE_URL}/banners`);
 
-    if (banner.mobile_image) {
-        const source = document.createElement('source');
+        const banners = Array.isArray(result?.data)
+            ? result.data
+            : [];
 
-        source.media = '(max-width: 767px)';
-        source.srcset = normalizeImageUrl(banner.mobile_image);
+        const now = new Date();
 
-        picture.appendChild(source);
+        const validBanners = banners
+            .filter(item => {
+
+                if (item.page !== 'category') {
+                    return false;
+                }
+
+                if (item.position !== 'hero') {
+                    return false;
+                }
+
+                if (Number(item.status) !== 1) {
+                    return false;
+                }
+
+                if (!item.image) {
+                    return false;
+                }
+
+                if (item.start_date) {
+                    const startDate = new Date(
+                        item.start_date.replace(' ', 'T')
+                    );
+
+                    if (now < startDate) {
+                        return false;
+                    }
+                }
+
+                if (item.end_date) {
+                    const endDate = new Date(
+                        item.end_date.replace(' ', 'T')
+                    );
+
+                    if (now > endDate) {
+                        return false;
+                    }
+                }
+
+                return true;
+            })
+            .sort(
+                (a, b) =>
+                    Number(a.sort_order || 0) -
+                    Number(b.sort_order || 0)
+            );
+
+        // Stop previous slider timer if any
+        if (categoryHeroTimer) {
+            clearInterval(categoryHeroTimer);
+            categoryHeroTimer = null;
+        }
+
+        // Remove old slider content
+        container.innerHTML = '';
+
+        if (!validBanners.length) {
+            hero.style.display = 'none';
+            return;
+        }
+
+        hero.style.display = 'block';
+
+        /*
+         * SINGLE BANNER
+         */
+        if (validBanners.length === 1) {
+
+            const banner = validBanners[0];
+
+            const picture = document.createElement('picture');
+
+            if (banner.mobile_image) {
+
+                const source =
+                    document.createElement('source');
+
+                source.media =
+                    '(max-width: 767px)';
+
+                source.srcset =
+                    normalizeImageUrl(
+                        banner.mobile_image
+                    );
+
+                picture.appendChild(source);
+            }
+
+            const image =
+                document.createElement('img');
+
+            image.src =
+                normalizeImageUrl(
+                    banner.image
+                );
+
+            image.alt =
+                banner.title ||
+                'Her-Ovia Banner';
+
+            image.loading = 'eager';
+
+            image.dataset.fallbackImage =
+                FALLBACK_IMAGE;
+
+            picture.appendChild(image);
+
+            container.appendChild(picture);
+
+            return;
+        }
+
+        /*
+         * MULTIPLE BANNERS
+         */
+
+        const slider = document.createElement('div');
+
+        slider.className =
+            'category-hero-slider';
+
+        const slidesWrapper =
+            document.createElement('div');
+
+        slidesWrapper.className =
+            'category-hero-slides';
+
+        const dots =
+            document.createElement('div');
+
+        dots.className =
+            'category-hero-dots';
+
+        validBanners.forEach((banner, index) => {
+
+            const slide =
+                document.createElement('div');
+
+            slide.className =
+                'category-hero-slide';
+
+            if (index === 0) {
+                slide.classList.add('active');
+            }
+
+            const picture =
+                document.createElement('picture');
+
+            if (banner.mobile_image) {
+
+                const source =
+                    document.createElement('source');
+
+                source.media =
+                    '(max-width: 767px)';
+
+                source.srcset =
+                    normalizeImageUrl(
+                        banner.mobile_image
+                    );
+
+                picture.appendChild(source);
+            }
+
+            const image =
+                document.createElement('img');
+
+            image.src =
+                normalizeImageUrl(
+                    banner.image
+                );
+
+            image.alt =
+                banner.title ||
+                'Her-Ovia Banner';
+
+            image.loading =
+                index === 0
+                    ? 'eager'
+                    : 'lazy';
+
+            image.dataset.fallbackImage =
+                FALLBACK_IMAGE;
+
+            picture.appendChild(image);
+
+            slide.appendChild(picture);
+
+            slidesWrapper.appendChild(slide);
+
+            /*
+             * DOT
+             */
+            const dot =
+                document.createElement('button');
+
+            dot.type = 'button';
+
+            dot.className =
+                'category-hero-dot';
+
+            if (index === 0) {
+                dot.classList.add('active');
+            }
+
+            dot.setAttribute(
+                'aria-label',
+                `Go to banner ${index + 1}`
+            );
+
+            dot.addEventListener(
+                'click',
+                () => {
+
+                    showCategoryHeroSlide(
+                        index,
+                        slidesWrapper,
+                        dots,
+                        validBanners.length
+                    );
+
+                    restartCategoryHeroSlider(
+                        slidesWrapper,
+                        dots,
+                        validBanners.length
+                    );
+                }
+            );
+
+            dots.appendChild(dot);
+        });
+
+        slider.appendChild(slidesWrapper);
+        slider.appendChild(dots);
+
+        container.appendChild(slider);
+
+        categoryHeroCurrentIndex = 0;
+
+        /*
+         * AUTO SLIDE
+         * Every 7 seconds
+         */
+        categoryHeroTimer = setInterval(() => {
+
+            categoryHeroCurrentIndex =
+                (categoryHeroCurrentIndex + 1) %
+                validBanners.length;
+
+            showCategoryHeroSlide(
+                categoryHeroCurrentIndex,
+                slidesWrapper,
+                dots,
+                validBanners.length
+            );
+
+        }, 7000);
+
+    } catch (error) {
+
+        console.error(
+            'Category banner error:',
+            error
+        );
+
+        hero.style.display = 'none';
     }
-
-    const image = document.createElement('img');
-    image.src = banner.image;
-    image.alt = banner.title || 'Her-Ovia Banner';
-    image.loading = 'eager';
-    image.dataset.fallbackImage = FALLBACK_IMAGE;
-
-    picture.appendChild(image);
-    container.replaceChildren(picture);
-    hero.style.display = 'block';
-  } catch (error) {
-    console.error('Category banner error:', error);
-    hero.style.display = 'none';
-  }
 }
 
+
+function showCategoryHeroSlide(
+    index,
+    slidesWrapper,
+    dots,
+    total
+) {
+
+    const slides =
+        slidesWrapper.querySelectorAll(
+            '.category-hero-slide'
+        );
+
+    const dotItems =
+        dots.querySelectorAll(
+            '.category-hero-dot'
+        );
+
+    slides.forEach(
+        slide => slide.classList.remove('active')
+    );
+
+    dotItems.forEach(
+        dot => dot.classList.remove('active')
+    );
+
+    if (slides[index]) {
+        slides[index].classList.add('active');
+    }
+
+    if (dotItems[index]) {
+        dotItems[index].classList.add('active');
+    }
+
+    categoryHeroCurrentIndex = index;
+}
+
+
+function restartCategoryHeroSlider(
+    slidesWrapper,
+    dots,
+    total
+) {
+
+    if (categoryHeroTimer) {
+        clearInterval(categoryHeroTimer);
+    }
+
+    categoryHeroTimer = setInterval(() => {
+
+        categoryHeroCurrentIndex =
+            (categoryHeroCurrentIndex + 1) %
+            total;
+
+        showCategoryHeroSlide(
+            categoryHeroCurrentIndex,
+            slidesWrapper,
+            dots,
+            total
+        );
+
+    }, 7000);
+}
 function openCategory(id) {
   const category = state.categories.find(item => getId(item) === id);
   if (!category) return;

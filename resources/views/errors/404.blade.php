@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <meta name="description" content="404 - Page Not Found | MAHERA JEWEL">
-    <meta name="author" content="MAHERA JEWEL">
-    <title>404 - Page Not Found | MAHERA JEWEL</title>
+    <meta name="description" content="404 - Page Not Found | HER OVIA">
+    <meta name="author" content="HER OVIA">
+    <title>404 - Page Not Found | Her Ovia</title>
     <link rel="icon" type="image/jpeg" href="{{ asset('images/mjlogo.jpeg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

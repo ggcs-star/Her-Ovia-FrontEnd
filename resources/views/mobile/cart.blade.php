@@ -23,7 +23,7 @@
 
 
 <!-- <div class="safety-alert">
-    <i>🔒</i> A gentle reminder to stay alert against prevalent fraudulent practices. MAHERA JEWEL will never ask for OTPs, payments via unofficial links, or personal details for any contests or promotions.
+    <i>🔒</i> A gentle reminder to stay alert against prevalent fraudulent practices. HER OVIA will never ask for OTPs, payments via unofficial links, or personal details for any contests or promotions.
 </div>
 
 <div class="gifts-banner">

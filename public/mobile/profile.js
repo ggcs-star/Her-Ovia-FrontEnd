@@ -280,15 +280,11 @@ function renderProfile(user) {
                     <span class="menu-arrow">›</span>
                 </a>
                 
-                <div class="menu-item" onclick="return false;">
+                <a href="/shipping" class="menu-item" style="text-decoration: none; color: inherit; display: flex; justify-content: space-between; align-items: center;">
                     <span>Shipping Policy</span>
                     <span class="menu-arrow">›</span>
-                </div>
-                <div class="menu-item" onclick="return false;">
-                    <span>Cancellation & Return Policy</span>
-                    <span class="menu-arrow">›</span>
-                </div>
-                
+                </a>
+               
                 <div class="menu-item" onclick="return false;">
                     <span>FAQ</span>
                     <span class="menu-arrow">›</span>
@@ -320,7 +316,7 @@ function renderProfile(user) {
     const fileInput = document.getElementById('avatarUpload');
     if (fileInput) {
         fileInput.addEventListener('change', handleImageUpload);
-        console.log("✅ File upload listener attached");
+        // console.log("✅ File upload listener attached");
     }
 }, 100);
 }

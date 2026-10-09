@@ -205,16 +205,16 @@
             
             <div class="page-header">
                 <h1>Privacy Policy</h1>
-                <p>Effective Date: 2026 | Last Reviewed: 2026</p>
+                <p>Effective Date: {{ date('Y') }} | Last Reviewed: {{ date('Y') }}</p>
             </div>
             
             <div class="policy-content">
                 <div class="policy-section">
-                    <p><strong>THIS PRIVACY POLICY IS AN ELECTRONIC RECORD UNDER THE INFORMATION TECHNOLOGY ACT, 2000 AND THE RULES MADE THEREUNDER. IT DOES NOT REQUIRE ANY PHYSICAL, ELECTRONIC OR DIGITAL SIGNATURE AND IS A LEGALLY BINDING DOCUMENT BETWEEN YOU AND RAIDENTÉ JEWEL.</strong></p>
+                    <p><strong>THIS PRIVACY POLICY IS AN ELECTRONIC RECORD UNDER THE INFORMATION TECHNOLOGY ACT, 2000 AND THE RULES MADE THEREUNDER. IT DOES NOT REQUIRE ANY PHYSICAL, ELECTRONIC OR DIGITAL SIGNATURE AND IS A LEGALLY BINDING DOCUMENT BETWEEN YOU AND HER-OVIA.</strong></p>
                     <p>This Privacy Policy is published in accordance with the Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data of Information) Rules, 2011 under the Information Technology Act, 2000, and the Digital Personal Data Protection Act, 2023.</p>
                     <p>Please read this Privacy Policy carefully. By using our website or services, you agree and consent to the terms herein. If you do not agree, please do not use our website. You provide your unconditional consent under Section 43A and Section 72A of the Information Technology Act, 2000.</p>
                     <div class="highlight">
-                        <strong>📌 Note:</strong> Maherá Jewels ("we", "us", "our", or "Maherá Jewels") is committed to protecting the privacy of all users ("you", "your") who access, browse, purchase from, or otherwise interact with our website (heroviafront.jagods.in), mobile applications, or customer service channels.
+                        <strong>📌 Note:</strong> Her Ovia ("we", "us", "our", or "Her Ovia") is committed to protecting the privacy of all users ("you", "your") who access, browse, purchase from, or otherwise interact with our website (heroviafront.jagods.in), mobile applications, or customer service channels.
                     </div>
                     <p>This Privacy Policy may be amended from time to time. We recommend that you review it regularly. Continued use of our website after any update implies your unconditional acceptance of the revised policy.</p>
                 </div>
@@ -259,12 +259,12 @@
                     </ul>
                     
                     <h3>C. Cookies</h3>
-                    <p>Maherá Jewels may store temporary or permanent cookies on your device to improve your experience. Cookies help us remember your preferences, verify your account, maintain security, and personalise your browsing. You may disable cookies in your browser settings, though this may affect site functionality.</p>
+                    <p>Her Ovia may store temporary or permanent cookies on your device to improve your experience. Cookies help us remember your preferences, verify your account, maintain security, and personalise your browsing. You may disable cookies in your browser settings, though this may affect site functionality.</p>
                 </div>
                 
                 <div class="policy-section">
                     <h2>2. Purpose of Collecting, Using, Storing and Processing Your Information</h2>
-                    <p>Maherá Jewels collects, uses, stores and processes your information for the following purposes:</p>
+                    <p>Her Ovia collects, uses, stores and processes your information for the following purposes:</p>
                     <ul>
                         <li>To facilitate your use of our website and services</li>
                         <li>To process and fulfil your orders, and to communicate with you regarding purchases</li>
@@ -283,12 +283,12 @@
                 
                 <div class="policy-section">
                     <h2>3. Sharing and Disclosure of Your Information</h2>
-                    <p>Maherá Jewels does not sell your Personal Information. We may share or disclose your information in the following circumstances:</p>
+                    <p>Her Ovia does not sell your Personal Information. We may share or disclose your information in the following circumstances:</p>
                     <ul>
                         <li>With trusted third-party service providers (e.g., payment gateways, logistics partners, technology providers) who assist us in operating our business, subject to confidentiality obligations</li>
                         <li>With banks or financial institutions for processing payments</li>
                         <li>To comply with applicable laws, legal processes, court orders, or government/regulatory requests</li>
-                        <li>To protect the rights, property, or safety of Raidenté Jewel, our users, or others</li>
+                        <li>To protect the rights, property, or safety of Her-Ovia, our users, or others</li>
                         <li>To investigate or take action regarding suspected fraud, illegal activities, or violations of our policies</li>
                         <li>In connection with a merger, acquisition, or sale of assets (see Section 7)</li>
                     </ul>
@@ -298,13 +298,13 @@
                 
                 <div class="policy-section">
                     <h2>4. Links to Third-Party Websites</h2>
-                    <p>Our website may contain links to third-party websites or services. Raidenté Jewel is not responsible for the privacy practices, content, or accuracy of information on such third-party websites. We do not endorse any third-party website by providing a link to it.</p>
+                    <p>Our website may contain links to third-party websites or services. Her-Ovia is not responsible for the privacy practices, content, or accuracy of information on such third-party websites. We do not endorse any third-party website by providing a link to it.</p>
                     <p>Information you share with third-party websites will be governed by their respective privacy policies. We strongly recommend reviewing those policies before interacting with any third-party website.</p>
                 </div>
                 
                 <div class="policy-section">
                     <h2>5. Security and Retention</h2>
-                    <p>Maherá Jewels implements industry-standard measures to protect your Personal Information from unauthorised access, alteration, disclosure, or destruction. Our security practices include:</p>
+                    <p>Her Ovia implements industry-standard measures to protect your Personal Information from unauthorised access, alteration, disclosure, or destruction. Our security practices include:</p>
                     <ul>
                         <li>SSL encryption for all transactions</li>
                         <li>Two-factor authentication for internal systems</li>
@@ -326,7 +326,7 @@
                 
                 <div class="policy-section">
                     <h2>7. Business or Asset Transfers</h2>
-                    <p>Maherá Jewels may sell, transfer, or share some or all of its assets, including your information, in connection with a merger, acquisition, restructuring, or sale of assets. In such cases, we will take reasonable steps to ensure your information is handled in a manner consistent with this Privacy Policy. Any acquiring entity will have the right to continue using your information as outlined herein.</p>
+                    <p>Her Ovia may sell, transfer, or share some or all of its assets, including your information, in connection with a merger, acquisition, restructuring, or sale of assets. In such cases, we will take reasonable steps to ensure your information is handled in a manner consistent with this Privacy Policy. Any acquiring entity will have the right to continue using your information as outlined herein.</p>
                 </div>
                 
                 <div class="policy-section">
@@ -340,12 +340,12 @@
                         <li>Object to or restrict certain types of processing</li>
                         <li>File a complaint with the Data Protection Board of India</li>
                     </ul>
-                    <p>To exercise any of the above rights, please write to: info@radiantejewel.com</p>
+                    <p>To exercise any of the above rights, please write to: info@herovia.com</p>
                 </div>
                 
                 <div class="policy-section">
                     <h2>9. Data Security</h2>
-                    <p>Maherá Jewels uses encryption, access controls, and physical security measures to protect the security and integrity of your Personal Information. Once your information is in our possession, we take all reasonable steps to prevent misuse, loss, and unauthorised access or disclosure.</p>
+                    <p>Her Ovia uses encryption, access controls, and physical security measures to protect the security and integrity of your Personal Information. Once your information is in our possession, we take all reasonable steps to prevent misuse, loss, and unauthorised access or disclosure.</p>
                     <p>When you access or update your account information, we utilise secure server connections. We adhere to strict internal security guidelines at all times.</p>
                 </div>
                 
@@ -356,12 +356,12 @@
                 
                 <div class="policy-section">
                     <h2>11. Indemnity</h2>
-                    <p>You agree to indemnify and hold harmless Maherá Jewels, its officers, affiliates, directors, agents, and employees from any claim, demand, or loss (including reasonable legal fees) arising out of your use of our services, your content submissions, your breach of any representation or warranty herein, or your violation of any third-party rights.</p>
+                    <p>You agree to indemnify and hold harmless Her Ovia, its officers, affiliates, directors, agents, and employees from any claim, demand, or loss (including reasonable legal fees) arising out of your use of our services, your content submissions, your breach of any representation or warranty herein, or your violation of any third-party rights.</p>
                 </div>
                 
                 <div class="policy-section">
                     <h2>12. Grievance Redressal</h2>
-                    <p>Maherá Jewels is committed to resolving your privacy-related concerns promptly and transparently. Our grievance redressal principles are:</p>
+                    <p>Her Ovia is committed to resolving your privacy-related concerns promptly and transparently. Our grievance redressal principles are:</p>
                     <ul>
                         <li>All users are treated fairly and with respect at all times</li>
                         <li>Complaints are addressed with an open mind, courtesy, and within a reasonable timeframe</li>
@@ -380,7 +380,7 @@
                 
                 <div class="policy-section">
                     <h2>13. General</h2>
-                    <p>Maherá Jewels may update this Privacy Policy at any time. Updates take effect 30 days after posting, or upon your next use of our services, whichever is sooner. We will notify you of material changes via our website or email.</p>
+                    <p>Her Ovia may update this Privacy Policy at any time. Updates take effect 30 days after posting, or upon your next use of our services, whichever is sooner. We will notify you of material changes via our website or email.</p>
                     <p>If we are involved in a merger or acquisition, we may share your Personal Information with the acquiring entity, subject to this Privacy Policy continuing to apply.</p>
                 </div>
                 
@@ -391,7 +391,7 @@
                 
                 <div class="policy-section">
                     <h2>15. Your Consent</h2>
-                    <p>By using our website and/or providing your information, you consent to the collection, use, and sharing of your information as described in this Privacy Policy. If we update our Privacy Policy, the revised version will be posted at www.Maherájewel.com so you are always aware of our current practices.</p>
+                    <p>By using our website and/or providing your information, you consent to the collection, use, and sharing of your information as described in this Privacy Policy. If we update our Privacy Policy, the revised version will be posted at https://heroviafront.jagods.in/ so you are always aware of our current practices.</p>
                 </div>
                 
                 <div class="policy-section">
@@ -399,15 +399,36 @@
                     <p>For any privacy-related queries, concerns, or requests, please reach us at:</p>
                     
                     <div class="contact-box">
-                        <p><strong>📧 Email:</strong> info@herovia.com</p>
-                        <p><strong>📞 Phone:</strong> +91 9653270168 (Mon–Sat, 10AM – 6PM)</p>
-                        <p><strong>🌐 Website:</strong> heroviafront.jagods.in</p>
-                        <p><strong>📍 Address:</strong> 29th Floor, 2901 Siddhi Samarpan, Jaywant Sawant Marg, Dahisar West, Mumbai, Maharashtra, 400 068.</p>
+                        <p>
+                            <strong>📧 Email:</strong>
+                            <span data-org="email"></span>
+                        </p>
+
+                        <p>
+                            <strong>📞 Phone:</strong>
+                            <span data-org="mobile"></span>
+                            <span data-org="business-hours"></span>
+                        </p>
+
+                        <p>
+                            <strong>🌐 Website:</strong>
+                            <a
+                                data-org="website"
+                                href="#"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            ></a>
+                        </p>
+
+                        <p>
+                            <strong>📍 Address:</strong>
+                            <span data-org="address"></span>
+                        </p>
                     </div>
                 </div>
                 
                 <div class="policy-section" style="text-align: center; border-bottom: none;">
-                    <p style="font-size: 12px; color: #999;">©️ 2026 Maherá Jewels. All rights reserved.</p>
+                    <p style="font-size: 12px; color: #999;">©️ {{ date('Y') }} Her-Ovia. All rights reserved.</p>
                 </div>
             </div>
         </div>
@@ -421,20 +442,91 @@
     </script>
     <script src="{{ asset('mobile/script.js') }}?v={{ time() }}"></script>
     @include('mobile.auth.auth')
-
     <script>
-        // Rotate search placeholder
-        setTimeout(function() {
-            const categories = ['Necklace', 'Earrings', 'Maang Tikka', 'Bridal Sets', 'Bangles'];
-            let index = 0;
-            const input = document.getElementById('web-search-input');
-            if (input) {
-                setInterval(function() {
-                    input.placeholder = 'Search for ' + categories[index];
-                    index = (index + 1) % categories.length;
-                }, 3000);
+document.addEventListener('DOMContentLoaded', async function () {
+
+    try {
+
+        if (!window.API_BASE_URL) {
+            console.error('API_BASE_URL is not defined');
+            return;
+        }
+
+        const response = await fetch(
+            `${window.API_BASE_URL}/organization/footer-details`
+        );
+
+        const result = await response.json();
+
+        console.log('Organization API:', result);
+
+        if (!result.success || !result.data) {
+            console.error('Organization data not available:', result);
+            return;
+        }
+
+        const org = result.data;
+
+        // Email
+        document.querySelectorAll('[data-org="email"]').forEach(el => {
+            el.textContent = org.email || '';
+        });
+
+        // Mobile
+        document.querySelectorAll('[data-org="mobile"]').forEach(el => {
+            el.textContent = org.mobile || '';
+        });
+
+        // Business Hours
+        document.querySelectorAll('[data-org="business-hours"]').forEach(el => {
+            el.textContent = org.business_hours
+                ? ` (${org.business_hours})`
+                : '';
+        });
+
+        // Website
+        document.querySelectorAll('[data-org="website"]').forEach(el => {
+
+            if (org.website) {
+
+                const websiteUrl = org.website.startsWith('http')
+                    ? org.website
+                    : `https://${org.website}`;
+
+                el.textContent = org.website
+                    .replace(/^https?:\/\//, '')
+                    .replace(/\/$/, '');
+
+                el.href = websiteUrl;
+
+            } else {
+                el.textContent = '';
             }
-        }, 2000);
-    </script>
+        });
+
+        // Address
+        document.querySelectorAll('[data-org="address"]').forEach(el => {
+
+            el.textContent = [
+                org.address,
+                org.city,
+                org.state,
+                org.country,
+                org.pincode
+            ].filter(Boolean).join(', ');
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Privacy organization data error:',
+            error
+        );
+
+    }
+
+});
+</script>
+
 </body>
 </html>

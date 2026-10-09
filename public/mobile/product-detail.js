@@ -674,30 +674,328 @@
         if (popup) { popup.remove(); document.body.style.overflow = ''; }
     }
     
-    window.toggleWishlist = function(button, event) {
-        if (event) event.stopPropagation();
-        button.classList.toggle('active');
-        const mainImage = document.getElementById('mainImage');
-        let imageUrl = '';
-        if (mainImage && mainImage.src && mainImage.src !== '') imageUrl = mainImage.src;
-        else if (window.currentProduct?.gallery_images?.length) imageUrl = window.currentProduct.gallery_images[0];
-        else if (window.currentProduct?.image_url) imageUrl = window.currentProduct.image_url;
-        let productPrice = 0;
-        const priceEl = document.getElementById('currentPrice');
-        if (priceEl) productPrice = parseFloat(priceEl.textContent.replace('₹','').replace(/,/g,''));
-        const productData = {
-            id: window.currentProduct?.id, name: window.currentProduct?.name, price: productPrice,
-            image: imageUrl, brand: window.currentProduct?.brand, slug: window.currentProduct?.slug
-        };
-        let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-        if (button.classList.contains('active')) {
-            if (!wishlist.some(item => item.id == productData.id)) { wishlist.push(productData); showWishlistToast('❤️ Added to wishlist'); }
-        } else {
-            wishlist = wishlist.filter(item => item.id != productData.id);
-            showWishlistToast('💔 Removed from wishlist');
-        }
-        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    window.toggleWishlist = async function(button, event) {
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
     }
+
+    const token = localStorage.getItem('token');
+
+    let user = {};
+
+    try {
+        user = JSON.parse(
+            localStorage.getItem('user') || '{}'
+        );
+    } catch (error) {
+        user = {};
+    }
+
+    /*
+     * ================================
+     * LOGIN CHECK
+     * ================================
+     */
+    if (!token || !user.id) {
+
+        sessionStorage.setItem(
+            'redirect_after_login',
+            window.location.pathname
+        );
+
+        const mainImage =
+            document.getElementById('mainImage');
+
+        const priceEl =
+            document.getElementById('currentPrice');
+
+        let imageUrl = '';
+
+        if (
+            mainImage &&
+            mainImage.src
+        ) {
+            imageUrl = mainImage.src;
+
+        } else if (
+            window.currentProduct?.gallery_images?.length
+        ) {
+            imageUrl =
+                window.currentProduct.gallery_images[0];
+
+        } else if (
+            window.currentProduct?.image_url
+        ) {
+            imageUrl =
+                window.currentProduct.image_url;
+        }
+
+        let productPrice = 0;
+
+        if (priceEl) {
+            productPrice =
+                parseFloat(
+                    priceEl.textContent
+                        .replace('₹', '')
+                        .replace(/,/g, '')
+                ) || 0;
+        }
+
+        const wishlistItem = {
+            id: window.currentProduct?.id,
+            name: window.currentProduct?.name || '',
+            price: productPrice,
+            image: imageUrl,
+            brand: window.currentProduct?.brand || '',
+            slug: window.currentProduct?.slug || '',
+            variantId: selectedVariant?.id || null,
+            variantValue: selectedVariant?.variant_value || selectedSize || null,
+            variantType: selectedVariant?.variant_type || 'Size',
+            mrp: productPrice
+        };
+
+        sessionStorage.setItem(
+            'wishlist_item',
+            JSON.stringify(wishlistItem)
+        );
+
+        if (typeof showLoginPopup === 'function') {
+            showLoginPopup();
+        } else {
+            window.location.href = '/user/login';
+        }
+
+        return;
+    }
+
+
+    /*
+     * ================================
+     * PRODUCT DATA
+     * ================================
+     */
+    const mainImage =
+        document.getElementById('mainImage');
+
+    const priceEl =
+        document.getElementById('currentPrice');
+
+    let imageUrl = '';
+
+    if (
+        mainImage &&
+        mainImage.src
+    ) {
+        imageUrl = mainImage.src;
+
+    } else if (
+        window.currentProduct?.gallery_images?.length
+    ) {
+        imageUrl =
+            window.currentProduct.gallery_images[0];
+
+    } else if (
+        window.currentProduct?.image_url
+    ) {
+        imageUrl =
+            window.currentProduct.image_url;
+    }
+
+    let productPrice = 0;
+
+    if (priceEl) {
+        productPrice =
+            parseFloat(
+                priceEl.textContent
+                    .replace('₹', '')
+                    .replace(/,/g, '')
+            ) || 0;
+    }
+
+    const productData = {
+    id: window.currentProduct?.id,
+    name: window.currentProduct?.name || '',
+    price: productPrice,
+    image: imageUrl,
+    brand: window.currentProduct?.brand || '',
+    slug: window.currentProduct?.slug || '',
+    variantId: selectedVariant?.id || null,
+    variantValue:
+        selectedVariant?.variant_value ||
+        selectedSize ||
+        null,
+    variantType:
+        selectedVariant?.variant_type ||
+        'Size',
+
+    availableVariants:
+        Array.isArray(window.currentProduct?.variants)
+            ? window.currentProduct.variants.map(v => ({
+                id: v.id,
+                value: v.variant_value,
+                price: parseFloat(v.final_price) || parseFloat(v.price) || 0,
+                originalPrice: parseFloat(v.price) || parseFloat(v.final_price) || 0,
+                quantity: Number(v.quantity) || 0,
+                stock: Number(v.quantity) || 0
+            }))
+            : [],
+
+    mrp: productPrice
+};
+
+    if (!productData.id) {
+        return;
+    }
+
+
+    /*
+     * ================================
+     * CURRENT LOCAL WISHLIST
+     * ================================
+     */
+    let wishlist = [];
+
+    try {
+        wishlist =
+            JSON.parse(
+                localStorage.getItem('wishlist') || '[]'
+            );
+
+        if (!Array.isArray(wishlist)) {
+            wishlist = [];
+        }
+
+    } catch (error) {
+        wishlist = [];
+    }
+
+
+    const existingIndex =
+        wishlist.findIndex(item =>
+            String(item.id) === String(productData.id)
+        );
+
+
+    /*
+     * ================================
+     * REMOVE FROM WISHLIST
+     * ================================
+     */
+    if (existingIndex >= 0) {
+
+        wishlist.splice(existingIndex, 1);
+
+        localStorage.setItem(
+            'wishlist',
+            JSON.stringify(wishlist)
+        );
+
+        button.classList.remove('active');
+
+        showWishlistToast(
+            '💔 Removed from wishlist'
+        );
+
+
+        /*
+         * API REMOVE
+         */
+        try {
+
+            const response = await fetch(
+                `${window.API_BASE_URL}/wishlist/${productData.id}`,
+                {
+                    method: 'DELETE',
+
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                console.error(
+                    'Wishlist remove API error:',
+                    data
+                );
+            }
+
+        } catch (error) {
+
+            console.error(
+                'Wishlist remove API error:',
+                error
+            );
+        }
+
+        return;
+    }
+
+
+    /*
+     * ================================
+     * ADD TO WISHLIST
+     * ================================
+     */
+    wishlist.push(productData);
+
+    localStorage.setItem(
+        'wishlist',
+        JSON.stringify(wishlist)
+    );
+
+    button.classList.add('active');
+
+    showWishlistToast(
+        '❤️ Added to wishlist'
+    );
+
+
+    /*
+     * ================================
+     * API ADD
+     * ================================
+     */
+    try {
+
+        const response = await fetch(
+            `${window.API_BASE_URL}/wishlist`,
+            {
+                method: 'POST',
+
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+
+                body: JSON.stringify(productData)
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+
+            console.error(
+                'Wishlist add API error:',
+                data
+            );
+        }
+
+    } catch (error) {
+
+        console.error(
+            'Wishlist add API error:',
+            error
+        );
+    }
+};
     
     window.shareProduct = function() {
         if (navigator.share) navigator.share({ title: currentProduct?.name, url: window.location.href });
@@ -992,10 +1290,10 @@
             }
 
             return freshProduct;
-        } catch (error) {
+       } catch (error) {
             console.warn('Product background refresh failed:', error);
-            if (!cachedProduct) showError('Failed to load product');
-            return null;
+
+            return cachedProduct || null;
         }
     }
 
@@ -1004,53 +1302,51 @@
 
         const pathParts = window.location.pathname.split('/').filter(Boolean);
         const slug = pathParts[pathParts.length - 1];
+
         if (!slug) return;
 
         const cached = getCache('product_' + slug);
 
-        // 1) CACHE FIRST: render immediately.
         if (cached) {
             currentProduct = cached;
             window.currentProduct = cached;
 
-            await Promise.all([
+            renderProduct(cached);
+            startImageAutoScroll();
+
+            Promise.allSettled([
                 fetchBrandFromCategory(),
                 fetchCoupons(),
                 fetchReviews()
             ]);
 
-            renderProduct(cached);
-            startImageAutoScroll();
-
-            // 2) API SECOND: refresh in background without blocking UI.
             fetchFreshProduct(slug, cached).then(async freshProduct => {
                 if (!freshProduct) return;
 
-                // Keep brand fresh when API returned changed product data.
                 currentProduct = freshProduct;
                 window.currentProduct = freshProduct;
+
                 await fetchBrandFromCategory();
             });
 
             return;
         }
 
-        // 3) NO CACHE: API is required for first render.
         const freshProduct = await fetchFreshProduct(slug, null, false);
+
         if (!freshProduct) return;
 
         currentProduct = freshProduct;
         window.currentProduct = freshProduct;
 
-        await Promise.all([
+        renderProduct(freshProduct);
+        startImageAutoScroll();
+
+        Promise.allSettled([
             fetchBrandFromCategory(),
             fetchCoupons(),
             fetchReviews()
         ]);
-
-        // Render only after product + dependent data are ready.
-        renderProduct(freshProduct);
-        startImageAutoScroll();
     }
     
     async function fetchBrandFromCategory() {
@@ -1458,7 +1754,7 @@
             }
         }
         let discountPercentage = originalPrice > displayPrice ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100) : 0;
-        const brand = product.brand || 'H&M';
+        const brand = product.brand || '';
         const name = product.name || 'Maxi Dress';
         const reviewSummary = window.productReviewSummary || {
             average_rating: 0,
