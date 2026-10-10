@@ -676,34 +676,94 @@
     
     window.toggleWishlist = async function(button, event) {
 
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
 
-    const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token');
 
-    let user = {};
+        let user = {};
 
-    try {
-        user = JSON.parse(
-            localStorage.getItem('user') || '{}'
-        );
-    } catch (error) {
-        user = {};
-    }
+        try {
+            user = JSON.parse(
+                localStorage.getItem('user') || '{}'
+            );
+        } catch (error) {
+            user = {};
+        }
 
-    /*
-     * ================================
-     * LOGIN CHECK
-     * ================================
-     */
-    if (!token || !user.id) {
+        if (!token || !user.id) {
 
-        sessionStorage.setItem(
-            'redirect_after_login',
-            window.location.pathname
-        );
+            sessionStorage.setItem(
+                'redirect_after_login',
+                window.location.pathname
+            );
+
+            const mainImage =
+                document.getElementById('mainImage');
+
+            const priceEl =
+                document.getElementById('currentPrice');
+
+            let imageUrl = '';
+
+            if (
+                mainImage &&
+                mainImage.src
+            ) {
+                imageUrl = mainImage.src;
+
+            } else if (
+                window.currentProduct?.gallery_images?.length
+            ) {
+                imageUrl =
+                    window.currentProduct.gallery_images[0];
+
+            } else if (
+                window.currentProduct?.image_url
+            ) {
+                imageUrl =
+                    window.currentProduct.image_url;
+            }
+
+            let productPrice = 0;
+
+            if (priceEl) {
+                productPrice =
+                    parseFloat(
+                        priceEl.textContent
+                            .replace('₹', '')
+                            .replace(/,/g, '')
+                    ) || 0;
+            }
+
+            const wishlistItem = {
+                id: window.currentProduct?.id,
+                name: window.currentProduct?.name || '',
+                price: productPrice,
+                image: imageUrl,
+                brand: window.currentProduct?.brand || '',
+                slug: window.currentProduct?.slug || '',
+                variantId: selectedVariant?.id || null,
+                variantValue: selectedVariant?.variant_value || selectedSize || null,
+                variantType: selectedVariant?.variant_type || 'Size',
+                mrp: productPrice
+            };
+
+            sessionStorage.setItem(
+                'wishlist_item',
+                JSON.stringify(wishlistItem)
+            );
+
+            if (typeof showLoginPopup === 'function') {
+                showLoginPopup();
+            } else {
+                window.location.href = '/user/login';
+            }
+
+            return;
+        }
 
         const mainImage =
             document.getElementById('mainImage');
@@ -743,184 +803,148 @@
                 ) || 0;
         }
 
-        const wishlistItem = {
-            id: window.currentProduct?.id,
-            name: window.currentProduct?.name || '',
-            price: productPrice,
-            image: imageUrl,
-            brand: window.currentProduct?.brand || '',
-            slug: window.currentProduct?.slug || '',
-            variantId: selectedVariant?.id || null,
-            variantValue: selectedVariant?.variant_value || selectedSize || null,
-            variantType: selectedVariant?.variant_type || 'Size',
-            mrp: productPrice
-        };
+        const productData = {
+        id: window.currentProduct?.id,
+        name: window.currentProduct?.name || '',
+        price: productPrice,
+        image: imageUrl,
+        brand: window.currentProduct?.brand || '',
+        slug: window.currentProduct?.slug || '',
+        variantId: selectedVariant?.id || null,
+        variantValue:
+            selectedVariant?.variant_value ||
+            selectedSize ||
+            null,
+        variantType:
+            selectedVariant?.variant_type ||
+            'Size',
 
-        sessionStorage.setItem(
-            'wishlist_item',
-            JSON.stringify(wishlistItem)
-        );
+        availableVariants:
+            Array.isArray(window.currentProduct?.variants)
+                ? window.currentProduct.variants.map(v => ({
+                    id: v.id,
+                    value: v.variant_value,
+                    price: parseFloat(v.final_price) || parseFloat(v.price) || 0,
+                    originalPrice: parseFloat(v.price) || parseFloat(v.final_price) || 0,
+                    quantity: Number(v.quantity) || 0,
+                    stock: Number(v.quantity) || 0
+                }))
+                : [],
 
-        if (typeof showLoginPopup === 'function') {
-            showLoginPopup();
-        } else {
-            window.location.href = '/user/login';
+        mrp: productPrice
+    };
+
+        if (!productData.id) {
+            return;
         }
 
-        return;
-    }
+        let wishlist = [];
 
+        try {
+            wishlist =
+                JSON.parse(
+                    localStorage.getItem('wishlist') || '[]'
+                );
 
-    /*
-     * ================================
-     * PRODUCT DATA
-     * ================================
-     */
-    const mainImage =
-        document.getElementById('mainImage');
+            if (!Array.isArray(wishlist)) {
+                wishlist = [];
+            }
 
-    const priceEl =
-        document.getElementById('currentPrice');
-
-    let imageUrl = '';
-
-    if (
-        mainImage &&
-        mainImage.src
-    ) {
-        imageUrl = mainImage.src;
-
-    } else if (
-        window.currentProduct?.gallery_images?.length
-    ) {
-        imageUrl =
-            window.currentProduct.gallery_images[0];
-
-    } else if (
-        window.currentProduct?.image_url
-    ) {
-        imageUrl =
-            window.currentProduct.image_url;
-    }
-
-    let productPrice = 0;
-
-    if (priceEl) {
-        productPrice =
-            parseFloat(
-                priceEl.textContent
-                    .replace('₹', '')
-                    .replace(/,/g, '')
-            ) || 0;
-    }
-
-    const productData = {
-    id: window.currentProduct?.id,
-    name: window.currentProduct?.name || '',
-    price: productPrice,
-    image: imageUrl,
-    brand: window.currentProduct?.brand || '',
-    slug: window.currentProduct?.slug || '',
-    variantId: selectedVariant?.id || null,
-    variantValue:
-        selectedVariant?.variant_value ||
-        selectedSize ||
-        null,
-    variantType:
-        selectedVariant?.variant_type ||
-        'Size',
-
-    availableVariants:
-        Array.isArray(window.currentProduct?.variants)
-            ? window.currentProduct.variants.map(v => ({
-                id: v.id,
-                value: v.variant_value,
-                price: parseFloat(v.final_price) || parseFloat(v.price) || 0,
-                originalPrice: parseFloat(v.price) || parseFloat(v.final_price) || 0,
-                quantity: Number(v.quantity) || 0,
-                stock: Number(v.quantity) || 0
-            }))
-            : [],
-
-    mrp: productPrice
-};
-
-    if (!productData.id) {
-        return;
-    }
-
-
-    /*
-     * ================================
-     * CURRENT LOCAL WISHLIST
-     * ================================
-     */
-    let wishlist = [];
-
-    try {
-        wishlist =
-            JSON.parse(
-                localStorage.getItem('wishlist') || '[]'
-            );
-
-        if (!Array.isArray(wishlist)) {
+        } catch (error) {
             wishlist = [];
         }
 
-    } catch (error) {
-        wishlist = [];
-    }
 
+        const existingIndex =
+            wishlist.findIndex(item =>
+                String(item.id) === String(productData.id)
+            );
 
-    const existingIndex =
-        wishlist.findIndex(item =>
-            String(item.id) === String(productData.id)
-        );
+        if (existingIndex >= 0) {
 
+            wishlist.splice(existingIndex, 1);
 
-    /*
-     * ================================
-     * REMOVE FROM WISHLIST
-     * ================================
-     */
-    if (existingIndex >= 0) {
+            localStorage.setItem(
+                'wishlist',
+                JSON.stringify(wishlist)
+            );
 
-        wishlist.splice(existingIndex, 1);
+            button.classList.remove('active');
+
+            showWishlistToast(
+                '💔 Removed from wishlist'
+            );
+
+            try {
+
+                const response = await fetch(
+                    `${window.API_BASE_URL}/wishlist/${productData.id}`,
+                    {
+                        method: 'DELETE',
+
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    console.error(
+                        'Wishlist remove API error:',
+                        data
+                    );
+                }
+
+            } catch (error) {
+
+                console.error(
+                    'Wishlist remove API error:',
+                    error
+                );
+            }
+
+            return;
+        }
+
+        wishlist.push(productData);
 
         localStorage.setItem(
             'wishlist',
             JSON.stringify(wishlist)
         );
 
-        button.classList.remove('active');
+        button.classList.add('active');
 
         showWishlistToast(
-            '💔 Removed from wishlist'
+            '❤️ Added to wishlist'
         );
 
-
-        /*
-         * API REMOVE
-         */
         try {
 
             const response = await fetch(
-                `${window.API_BASE_URL}/wishlist/${productData.id}`,
+                `${window.API_BASE_URL}/wishlist`,
                 {
-                    method: 'DELETE',
+                    method: 'POST',
 
                     headers: {
+                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
                         'Authorization': `Bearer ${token}`
-                    }
+                    },
+
+                    body: JSON.stringify(productData)
                 }
             );
 
             const data = await response.json();
 
             if (!response.ok || !data.success) {
+
                 console.error(
-                    'Wishlist remove API error:',
+                    'Wishlist add API error:',
                     data
                 );
             }
@@ -928,79 +952,17 @@
         } catch (error) {
 
             console.error(
-                'Wishlist remove API error:',
+                'Wishlist add API error:',
                 error
             );
         }
-
-        return;
-    }
-
-
-    /*
-     * ================================
-     * ADD TO WISHLIST
-     * ================================
-     */
-    wishlist.push(productData);
-
-    localStorage.setItem(
-        'wishlist',
-        JSON.stringify(wishlist)
-    );
-
-    button.classList.add('active');
-
-    showWishlistToast(
-        '❤️ Added to wishlist'
-    );
-
-
-    /*
-     * ================================
-     * API ADD
-     * ================================
-     */
-    try {
-
-        const response = await fetch(
-            `${window.API_BASE_URL}/wishlist`,
-            {
-                method: 'POST',
-
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-
-                body: JSON.stringify(productData)
-            }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
-
-            console.error(
-                'Wishlist add API error:',
-                data
-            );
-        }
-
-    } catch (error) {
-
-        console.error(
-            'Wishlist add API error:',
-            error
-        );
-    }
-};
+    };
     
     window.shareProduct = function() {
         if (navigator.share) navigator.share({ title: currentProduct?.name, url: window.location.href });
         else { navigator.clipboard.writeText(window.location.href); alert('Link copied!'); }
     }
+    
     
     window.checkPincode = async function() {
         const pincodeInput = document.getElementById('pincode');
@@ -1011,12 +973,12 @@
         const pincode = pincodeInput.value.trim();
 
         if (!/^\d{6}$/.test(pincode)) {
-            info.innerHTML = 'Please enter valid 6-digit pincode';
+            info.textContent = 'Please enter valid 6-digit pincode';
             info.className = 'pdp-delivery-info error';
             return;
         }
 
-        info.innerHTML = 'Checking delivery availability...';
+        info.textContent = 'Checking delivery availability...';
         info.className = 'pdp-delivery-info';
 
         try {
@@ -1035,15 +997,42 @@
             const result = await response.json();
 
             if (!response.ok || !result.success) {
-                throw new Error(result.message || 'Unable to check delivery availability.');
+                if (
+                    result.message === 'Shiprocket credentials are not configured.'
+                ) {
+                    const today = new Date();
+
+                    const minDate = new Date(today);
+                    minDate.setDate(minDate.getDate() + 5);
+
+                    const maxDate = new Date(today);
+                    maxDate.setDate(maxDate.getDate() + 7);
+
+                    const formatDate = date =>
+                        date.toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                        });
+
+                    info.textContent = `Estimated delivery: ${formatDate(minDate)}`;
+
+                    info.className = 'pdp-delivery-info success';
+                    return;
+                }
+
+                throw new Error(
+                    'Something went wrong. Please try again later.'
+                );
             }
 
             const data = result.data;
 
-            if (!data.serviceable) {
-                info.innerHTML = '❌ Delivery is not available at this pincode';
-                info.className = 'pdp-delivery-info error';
+            if (!data || !data.serviceable) {
+                info.textContent =
+                    '❌ Delivery is not available at this pincode';
 
+                info.className = 'pdp-delivery-info error';
                 localStorage.removeItem('lastPincode');
                 return;
             }
@@ -1055,21 +1044,25 @@
             if (data.delivery_date) {
                 deliveryText = `Delivery by ${data.delivery_date}`;
             } else if (data.estimated_delivery_days) {
-                deliveryText = `Delivery in ${data.estimated_delivery_days} days`;
+                deliveryText =
+                    `Delivery in ${data.estimated_delivery_days} days`;
             } else {
                 deliveryText = 'Delivery available';
             }
 
-            info.innerHTML = `✅ ${deliveryText}`;
+            info.textContent = `✅ ${deliveryText}`;
             info.className = 'pdp-delivery-info success';
 
         } catch (error) {
             console.error('Pincode check failed:', error);
 
-            info.innerHTML = 'Unable to check delivery availability. Please try again.';
+            info.textContent =
+                'Something went wrong. Please try again later.';
+
             info.className = 'pdp-delivery-info error';
         }
     };
+
     
     window.showOfferTerms = function(code, event) {
         if (event) event.stopPropagation();
