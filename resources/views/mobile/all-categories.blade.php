@@ -54,46 +54,6 @@
             </p>
         </div>
 
-        <div class="categories-benefits">
-
-            <div class="category-benefit">
-                <span aria-hidden="true">♢</span>
-
-                <div>
-                    <strong>Free Shipping</strong>
-                    <small>Above ₹999</small>
-                </div>
-            </div>
-
-            <div class="category-benefit">
-                <span aria-hidden="true">◇</span>
-
-                <div>
-                    <strong>Premium Quality</strong>
-                    <small>Made for you</small>
-                </div>
-            </div>
-
-            <div class="category-benefit">
-                <span aria-hidden="true">↻</span>
-
-                <div>
-                    <strong>Easy Returns</strong>
-                    <small>Hassle free</small>
-                </div>
-            </div>
-
-            <div class="category-benefit">
-                <span aria-hidden="true">♡</span>
-
-                <div>
-                    <strong>24/7 Support</strong>
-                    <small>We're here</small>
-                </div>
-            </div>
-
-        </div>
-
     </div>
 
     <div class="categories-main-layout">
