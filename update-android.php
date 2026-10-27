@@ -1,5 +1,5 @@
 <?php
-$apiUrl = 'https://admin.maherajewels.com/api/app-settings';
+$apiUrl = 'https://heroviabackend.jagods.in/api/app-settings';
 $response = file_get_contents($apiUrl);
 $data = json_decode($response, true);
 

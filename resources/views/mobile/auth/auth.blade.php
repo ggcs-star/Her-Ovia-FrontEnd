@@ -312,23 +312,37 @@ function showLoginPopup() {
                 body: JSON.stringify({email, password})
             });
             const data = await res.json();
-            if(res.ok && data.token) {
-    localStorage.setItem("token", data.token);
-    if(data.user) localStorage.setItem("user", JSON.stringify(data.user));
-    showPopupMessage('login-msg-container', 'Login Successful!', 'success');
-    
-    // 👇 YE CHECK KARO - Agar redirect saved hai toh wahan jao
+            if(res.ok && data.success && data.data?.token) {
+
+    localStorage.setItem("token", data.data.token);
+
+    if(data.data.user) {
+        localStorage.setItem("user", JSON.stringify(data.data.user));
+    }
+
+    showPopupMessage(
+        'login-msg-container',
+        data.message || 'Login completed successfully.',
+        'success'
+    );
+
     const savedRedirect = sessionStorage.getItem('redirect_after_login');
-    
+
     setTimeout(() => {
-        document.getElementById('auth-popup').remove();
-        
+
+        document.getElementById('auth-popup')?.remove();
+
         if(savedRedirect && savedRedirect !== 'null' && savedRedirect !== '') {
-            sessionStorage.removeItem('redirect_after_login');  // Clean up
-            window.location.href = savedRedirect;  // Checkout page pe jao
+
+            sessionStorage.removeItem('redirect_after_login');
+            window.location.href = savedRedirect;
+
         } else {
-            window.location.reload();  // Wahi page reload
+
+            window.location.reload();
+
         }
+
     }, 1500);
 }
              else {
@@ -356,7 +370,7 @@ function showRegisterPopup() {
             
            <div style="flex:1; min-width:280px; position:relative; overflow:hidden; min-height:500px;">
                 <img src="{{ asset('images/jewel.png') }}"
-                    alt="Mahera Jewel"
+                    alt="HER OVIA"
                     style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;">
 
                 <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg, rgba(68,12,44,0.6), rgba(68,12,44,0.8));"></div>
@@ -619,24 +633,30 @@ function showForgotPopup() {
                 body: JSON.stringify({email})
             });
             const data = await res.json();
-            if(res.ok) {
+            if(res.ok && data.success) {
                 showPopupMessage('forgot-msg-container', 'OTP sent to your email', 'success');
+
                 setTimeout(() => {
                     document.getElementById('auth-popup').remove();
                     showVerifyPopup(email, true);
                 }, 1500);
             } else {
-                showPopupMessage('forgot-msg-container', data.message || 'Failed to send OTP', 'error');
+                showPopupMessage(
+                    'forgot-msg-container',
+                    data.message || 'Something went wrong',
+                    'error'
+                );
+
                 btn.disabled = false;
                 btn.innerText = 'Send OTP';
             }
-        } catch(err) { showPopupMessage('forgot-msg-container', 'Server error', 'error'); btn.disabled = false; btn.innerText = 'Send OTP'; }
-    });
-}
+                    } catch(err) { showPopupMessage('forgot-msg-container', 'Server error', 'error'); btn.disabled = false; btn.innerText = 'Send OTP'; }
+                });
+            }
 
-window.showLoginPopup = showLoginPopup;
-window.showRegisterPopup = showRegisterPopup;
-window.showForgotPopup = showForgotPopup;
+        window.showLoginPopup = showLoginPopup;
+        window.showRegisterPopup = showRegisterPopup;
+        window.showForgotPopup = showForgotPopup;
 </script>
 
 <style>

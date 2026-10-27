@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Our Story | Her-Ovia</title>
     <link rel="icon" type="image/jpeg" href="{{ asset('images/her-ovia.png') }}">
-    <meta name="description" content="Discover the story behind Maherá Jewels. From 20 years of crafting polki and kundan jewellery to a direct-to-consumer legacy.">
+    <meta name="description" content="Discover the story behind Her-Ovia, a clothing brand created to bring timeless fashion, effortless style, and thoughtfully designed ethnic wear directly to you.">
     <meta name="robots" content="index, follow">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
     <link rel="preload" href="{{ asset('mobile/style.css') }}?v={{ time() }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -217,43 +217,43 @@
             
             <div class="about-content">
                 <div class="story-intro">
-                    The craft was always ours. The name took twenty years.
+                    Style was always part of our story. Her-Ovia gave it a name.
                 </div>
                 
                 <div class="story-section">
-                    <p>I grew up in a family that knew jewellery the way most people never get to, from the inside. For over 20 years, my family worked as manufacturers in the background, supplying polki jewellery, kundan necklaces, earrings, and bridal sets to retailers and wholesalers across India.</p>
-                    
-                    <p>We weren’t the name anyone saw. But every piece that left a showroom floor, every bridal set that made a bride feel like herself on the most important morning of her life, a piece of our family went with it.</p>
-                    
-                    <p>Unseen. Unnamed. But always there.</p>
+                    <p>Her-Ovia was created with a simple belief: clothing should feel beautiful, comfortable, and true to the woman wearing it. We wanted to create fashion that brings together timeless Indian aesthetics with a fresh, contemporary sense of style.</p>
+
+                    <p>Every outfit is designed to feel special, whether it is something you wear for an everyday moment, a celebration, a festive occasion, or simply because you want to feel your best.</p>
+
+                    <p>Thoughtful. Timeless. Made for you.</p>
                 </div>
                 
                 <div class="quote-block">
-                    <p>“I watched my family spend 20 years perfecting something beautiful, and never once get to see the face of the woman who wore it.”</p>
+                    <p>“We wanted to create clothes that make every woman feel confident, comfortable, and beautifully herself.”</p>
                 </div>
                 
                 <div class="story-section">
-                    <p>That used to weigh on me. Because I knew what went into each piece. I knew the care behind every uncut polki stone, the patience in every hand-set kundan, the weight of what a bridal jewellery set truly means to a family. It isn’t decoration. It’s memory. It’s moment. It’s the thing she’ll look back at in photographs for the rest of her life.</p>
-                    
-                    <p>Something that precious deserved more than a middleman.</p>
-                    
-                    <p>So I made a decision, not just a business one, but a personal one. I wanted to take everything my family had quietly built over two decades and bring it directly to the women it was always meant for. No layers. No markups. No distance between the craft and the customer.</p>
-                    
-                    <p><strong>I wanted to give our legacy a name. That name is Maherá Jewels.</strong></p>
-                    
-                    <p>Today, when you browse our polki jewellery, pick a kundan necklace, or find the bridal set you’ve been dreaming of, you’re not just shopping. You’re connecting directly with a family that has spent 20 years learning how to make this right.</p>
-                    
-                    <p>This is our legacy, wearing its name for the very first time. And it was always made for you.</p>
+                    <p>Fashion is more than what we wear. It is how we express ourselves, how we celebrate moments, and how we carry a little bit of our personality wherever we go.</p>
+
+                    <p>That is why Her-Ovia focuses on creating thoughtfully designed clothing that balances elegance with everyday ease. From coordinated sets and dresses to kurtas and ethnic wear, every collection is designed to become a natural part of your wardrobe.</p>
+
+                    <p>We believe great style should not feel complicated. It should feel effortless, versatile, and personal.</p>
+
+                    <p><strong>We wanted to create a brand that feels personal, timeless, and effortlessly stylish. That name is Her-Ovia.</strong></p>
+
+                    <p>Today, when you explore our collections, discover a new outfit, or find a piece that feels just right for you, you are becoming part of the Her-Ovia story. A story built around fashion, individuality, and the joy of finding something that feels uniquely yours.</p>
+
+                    <p>This is Her-Ovia — thoughtfully designed clothing, timeless style, and fashion made to be a part of your story.</p>
                 </div>
                 
                 <div class="signature-block">
-                    <p class="closing">With love & legacy,</p>
-                    <p class="name">Aryan Sanghani</p>
-                    <p class="title">Founder, Maherá Jewels · Mumbai</p>
+                    <p class="closing">With love & style,</p>
+                    <p class="name">Her-Ovia</p>
+                    <p class="title">Founder, Her-Ovia · Ahmedabad</p>
                 </div>
 
                 <div class="story-section" style="text-align: center; margin-top: 50px; margin-bottom: 0;">
-                    <p style="font-size: 12px; color: #999;">©️ 2026 Maherá Jewels. All rights reserved.</p>
+                    <p style="font-size: 12px; color: #999;">©️ {{ date('Y') }} Her-Ovia. All rights reserved.</p>
                 </div>
             </div>
         </div>
@@ -269,15 +269,32 @@
     @include('mobile.auth.auth')
 
     <script>
-        // Rotate search placeholder
         setTimeout(function() {
-            const categories = ['Necklace', 'Earrings', 'Maang Tikka', 'Bridal Sets', 'Bangles'];
             let index = 0;
             const input = document.getElementById('web-search-input');
+
             if (input) {
-                setInterval(function() {
-                    input.placeholder = 'Search for ' + categories[index];
+                const updatePlaceholder = () => {
+                    const categories = Array.isArray(window.allCategories)
+                        ? window.allCategories
+                        : [];
+
+                    if (!categories.length) {
+                        input.placeholder = 'Search for Category, Product ...';
+                        return;
+                    }
+
+                    input.placeholder = 'Search for ' + (
+                        categories[index]?.name || 'Category'
+                    );
+
                     index = (index + 1) % categories.length;
+                };
+
+                updatePlaceholder();
+
+                setInterval(function() {
+                    updatePlaceholder();
                 }, 3000);
             }
         }, 2000);

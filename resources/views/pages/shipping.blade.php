@@ -273,13 +273,21 @@
             
             <div class="page-header">
                 <h1>Shipping Policy</h1>
-                <p>Effective Date: 2026</p>
-                <p><a href="https://heroviafront.jagods.in" style="color: #666; text-decoration: none;">heroviafront.jagods.in</a></p>
+                <p>Effective Date: {{ date('Y') }}</p>
+                <p>
+                    <a
+                        data-org="website"
+                        href="#"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style="color: #666; text-decoration: none;"
+                    ></a>
+                </p>
             </div>
             
             <div class="policy-content">
                 <div class="policy-section">
-                    <p>At <strong>Maherá Jewels</strong>, we take great care to ensure your order reaches you safely and on time. Please read our Shipping Policy carefully before placing your order.</p>
+                    <p>At <strong>Her Ovia</strong>, we take great care to ensure your order reaches you safely and on time. Please read our Shipping Policy carefully before placing your order.</p>
                 </div>
                 
                 <div class="policy-section">
@@ -319,13 +327,13 @@
                 <div class="policy-section">
                     <h2>4. Shipment Tracking</h2>
                     <p>Once your order is dispatched, you will receive a tracking number via email. You can use this to monitor your shipment’s status in real time.</p>
-                    <p>If you do not receive a tracking email within 3 business days of placing your order, please contact us at info@herovia.com.</p>
+                    <p>If you do not receive a tracking email within 3 business days of placing your order, please contact us at <span data-org="email"></span>.</p>
                 </div>
                 
                 <div class="policy-section">
                     <h2>5. Customs, Duties & Taxes (International Orders)</h2>
-                    <p>International shipments may be subject to import duties, taxes, or customs fees levied by the destination country. These charges are the sole responsibility of the customer and are not included in the order total or shipping fee paid to Maherá Jewels.</p>
-                    <p>Maherá Jewels is not responsible for delays caused by customs processing. We recommend checking your country’s import regulations before placing an order.</p>
+                    <p>International shipments may be subject to import duties, taxes, or customs fees levied by the destination country. These charges are the sole responsibility of the customer and are not included in the order total or shipping fee paid to Her Ovia.</p>
+                    <p>Her Ovia is not responsible for delays caused by customs processing. We recommend checking your country’s import regulations before placing an order.</p>
                 </div>
                 
                 <div class="policy-section">
@@ -344,15 +352,23 @@
                     <p>We accept exchanges within 3 days of delivery for items that are unused, unworn, and in their original packaging with all tags intact. We do not offer refunds, except in verified cases of damage or incorrect fulfilment.</p>
                     <p>To initiate an exchange, please contact us within 3 days of delivery at:</p>
                     <ul>
-                        <li><strong>Email:</strong> info@herovia.com</li>
-                        <li><strong>Phone:</strong> +91 9653270168 (Mon–Sat, 10AM – 6:30PM)</li>
+                        <li>
+                            <strong>Email:</strong>
+                            <span data-org="email"></span>
+                        </li>
+
+                        <li>
+                            <strong>Phone:</strong>
+                            <span data-org="mobile"></span>
+                            <span data-org="business-hours"></span>
+                        </li>
                     </ul>
                     <p>Shipping costs for exchanges are borne by the customer, unless the item received was defective or incorrect.</p>
                 </div>
                 
                 <div class="policy-section">
                     <h2>8. Non-Serviceable Areas</h2>
-                    <p>We currently ship to most locations within India and internationally. However, certain remote or restricted locations may not be serviceable by our logistics partners. If your pin code or country is not supported at checkout, please contact us at info@herovia.com to explore alternative arrangements.</p>
+                    <p>We currently ship to most locations within India and internationally. However, certain remote or restricted locations may not be serviceable by our logistics partners. If your pin code or country is not supported at checkout, please contact us at<span data-org="email"></span> to explore alternative arrangements.</p>
                 </div>
                 
                 <div class="policy-section">
@@ -360,16 +376,42 @@
                     <p>For any shipping-related queries, please reach us at:</p>
                     
                     <div class="contact-box">
-                        <p><strong>📧 Email:</strong> info@herovia.com</p>
-                        <p><strong>📞 Phone:</strong> +91 9653270168</p>
-                        <p><strong>🕐 Hours:</strong> Mon–Sat, 10AM – 6:30PM</p>
-                        <p><strong>🌐 Website:</strong> www.herovia.com</p>
-                        <p><strong>📍 Registered Address:</strong> 29th Floor, 2901 Siddhi Samarpan, Jaywant Sawant Marg, Dahisar West, Mumbai, Maharashtra, 400 068.</p>
-                    </div>
+
+                    <p>
+                        <strong>📧 Email:</strong>
+                        <span data-org="email"></span>
+                    </p>
+
+                    <p>
+                        <strong>📞 Phone:</strong>
+                        <span data-org="mobile"></span>
+                    </p>
+
+                    <p>
+                        <strong>🕐 Hours:</strong>
+                        <span data-org="business-hours"></span>
+                    </p>
+
+                    <p>
+                        <strong>🌐 Website:</strong>
+                        <a
+                            data-org="website"
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        ></a>
+                    </p>
+
+                    <p>
+                        <strong>📍 Registered Address:</strong>
+                        <span data-org="address"></span>
+                    </p>
+
+                </div>
                 </div>
                 
                 <div class="policy-section" style="text-align: center; border-bottom: none;">
-                    <p style="font-size: 12px; color: #999;">©️ 2026 Maherá Jewels. All rights reserved.</p>
+                    <p style="font-size: 12px; color: #999;">©️ {{ date('Y') }} Her-Ovia. All rights reserved.</p>
                 </div>
             </div>
         </div>
@@ -383,20 +425,83 @@
     </script>
     <script src="{{ asset('mobile/script.js') }}?v={{ time() }}"></script>
     @include('mobile.auth.auth')
-
     <script>
-        // Rotate search placeholder
-        setTimeout(function() {
-            const categories = ['Necklace', 'Earrings', 'Maang Tikka', 'Bridal Sets', 'Bangles'];
-            let index = 0;
-            const input = document.getElementById('web-search-input');
-            if (input) {
-                setInterval(function() {
-                    input.placeholder = 'Search for ' + categories[index];
-                    index = (index + 1) % categories.length;
-                }, 3000);
+        document.addEventListener('DOMContentLoaded', async function () {
+
+            try {
+
+                if (!window.API_BASE_URL) {
+                    console.error('API_BASE_URL is not defined');
+                    return;
+                }
+
+                const response = await fetch(
+                    `${window.API_BASE_URL}/organization/footer-details`
+                );
+
+                const result = await response.json();
+
+                if (!result.success || !result.data) {
+                    console.error('Organization data not available:', result);
+                    return;
+                }
+
+                const org = result.data;
+
+                // Email
+                document.querySelectorAll('[data-org="email"]').forEach(el => {
+                    el.textContent = org.email || '';
+                });
+
+                // Mobile
+                document.querySelectorAll('[data-org="mobile"]').forEach(el => {
+                    el.textContent = org.mobile || '';
+                });
+
+                // Business Hours
+                document.querySelectorAll('[data-org="business-hours"]').forEach(el => {
+                    el.textContent = org.business_hours || '';
+                });
+
+                // Website
+                document.querySelectorAll('[data-org="website"]').forEach(el => {
+
+                    if (org.website) {
+
+                        const websiteUrl = org.website.startsWith('http')
+                            ? org.website
+                            : `https://${org.website}`;
+
+                        el.textContent = org.website
+                            .replace(/^https?:\/\//, '')
+                            .replace(/\/$/, '');
+
+                        el.href = websiteUrl;
+                    }
+                });
+
+                // Address
+                document.querySelectorAll('[data-org="address"]').forEach(el => {
+
+                    el.textContent = [
+                        org.address,
+                        org.city,
+                        org.state,
+                        org.country,
+                        org.pincode
+                    ].filter(Boolean).join(', ');
+                });
+
+            } catch (error) {
+
+                console.error(
+                    'Shipping organization data error:',
+                    error
+                );
+
             }
-        }, 2000);
+
+        });
     </script>
 </body>
 </html>

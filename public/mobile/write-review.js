@@ -12,6 +12,7 @@ const reviewRatings = {
 let orders = [];
 let activeOrderIndex = 0;
 let activeProductIndex = 0;
+let orderStripStartIndex = 0;
 
 document.addEventListener('DOMContentLoaded', function () {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -99,6 +100,8 @@ function renderPage() {
     const container = document.getElementById('write-review-list');
     if (!container) return;
 
+    normalizeOrderStripWindow();
+
     container.innerHTML = `
         ${renderOrderStrip()}
         ${renderActiveOrder()}
@@ -109,45 +112,141 @@ function renderPage() {
 }
 
 function renderOrderStrip() {
-    return `
-        <div class="write-review-order-strip">
-            ${orders.map((order, index) => {
-                const reviewed = getReviewedCount(order) === order.reviewProducts.length;
+    const visibleOrders = orders.slice(
+        orderStripStartIndex,
+        orderStripStartIndex + 5
+    );
 
-                return `
-                    <button type="button"
-                        class="write-review-order-strip-card ${index === activeOrderIndex ? 'active' : ''}"
-                        data-action="select-order"
-                        data-order-index="${index}">
-                        <div class="write-review-order-strip-top">
-                            <div>
-                                <div class="write-review-strip-date">${formatDate(order.created_at)}</div>
-                                <div class="write-review-strip-number">#${escapeHtml(order.order_number || order.id || 'Order')}</div>
+    const hasPrevious = orderStripStartIndex > 0;
+    const hasNext = orderStripStartIndex + 5 < orders.length;
+    const showNavigation = orders.length > 5;
+
+    return `
+        <div class="write-review-order-strip-wrapper">
+
+            ${showNavigation ? `
+                <button
+                    type="button"
+                    class="write-review-order-nav prev"
+                    data-action="previous-order"
+                    ${!hasPrevious ? 'disabled' : ''}
+                    aria-label="Previous orders">
+                    ‹
+                </button>
+            ` : ''}
+
+            <div class="write-review-order-strip">
+
+                ${visibleOrders.map((order, visibleIndex) => {
+
+                    const index = orderStripStartIndex + visibleIndex;
+
+                    const reviewed =
+                        getReviewedCount(order) === order.reviewProducts.length;
+
+                    return `
+                        <button
+                            type="button"
+                            class="write-review-order-strip-card ${index === activeOrderIndex ? 'active' : ''}"
+                            data-action="select-order"
+                            data-order-index="${index}">
+
+                            <div class="write-review-strip-top">
+                                <div>
+                                    <div class="write-review-strip-date">
+                                        ${formatDate(order.created_at)}
+                                    </div>
+
+                                    <div class="write-review-strip-number">
+                                        #${escapeHtml(order.order_number || order.id || 'Order')}
+                                    </div>
+                                </div>
+
+                                <span class="write-review-status ${reviewed ? 'reviewed' : 'pending'}">
+                                    ${reviewed ? '✓ Reviewed' : '⌛ Reviews Pending'}
+                                </span>
                             </div>
-                            <span class="write-review-status ${reviewed ? 'reviewed' : 'pending'}">
-                                ${reviewed ? '✓ Reviewed' : '⌛ Reviews Pending'}
-                            </span>
-                        </div>
-                        <div class="write-review-strip-bottom">
-                            <div class="write-review-strip-images">
-                                ${order.reviewProducts.slice(0, 3).map(product => `
-                                    <img src="${escapeAttribute(getProductImage(product.item))}"
-                                        alt="${escapeAttribute(product.item.product_name || 'Product')}"
-                                        onerror="this.src='https://placehold.co/80x100?text=No+Image'">
-                                `).join('')}
+
+                            <div class="write-review-strip-bottom">
+
+                                <div class="write-review-strip-images">
+                                    ${order.reviewProducts.slice(0, 3).map(product => `
+                                        <img
+                                            src="${escapeAttribute(getProductImage(product.item))}"
+                                            alt="${escapeAttribute(product.item.product_name || 'Product')}"
+                                            onerror="this.src='https://placehold.co/80x100?text=No+Image'">
+                                    `).join('')}
+                                </div>
+
+                                <div class="write-review-strip-summary">
+                                    <strong>
+                                        ${order.reviewProducts.length}
+                                        ${order.reviewProducts.length === 1 ? 'Item' : 'Items'}
+                                    </strong>
+
+                                    ${formatCurrency(order.total)}
+                                </div>
+
                             </div>
-                            <div class="write-review-strip-summary">
-                                <strong>${order.reviewProducts.length} ${order.reviewProducts.length === 1 ? 'Item' : 'Items'}</strong>
-                                ${formatCurrency(order.total)}
-                            </div>
-                        </div>
-                    </button>
-                `;
-            }).join('')}
+                        </button>
+                    `;
+                }).join('')}
+
+            </div>
+
+            ${showNavigation ? `
+                <button
+                    type="button"
+                    class="write-review-order-nav next"
+                    data-action="next-order"
+                    ${!hasNext ? 'disabled' : ''}
+                    aria-label="Next orders">
+                    ›
+                </button>
+            ` : ''}
+
         </div>
     `;
 }
+function normalizeOrderStripWindow() {
+    if (orders.length <= 5) {
+        orderStripStartIndex = 0;
+        return;
+    }
 
+    if (activeOrderIndex < orderStripStartIndex) {
+        orderStripStartIndex = activeOrderIndex;
+    }
+
+    if (activeOrderIndex >= orderStripStartIndex + 5) {
+        orderStripStartIndex = activeOrderIndex - 4;
+    }
+
+    const maxStartIndex = orders.length - 5;
+
+    orderStripStartIndex = Math.max(
+        0,
+        Math.min(orderStripStartIndex, maxStartIndex)
+    );
+}
+
+
+function moveOrderStripPrevious() {
+    if (orderStripStartIndex <= 0) return;
+
+    orderStripStartIndex--;
+
+    renderPage();
+}
+
+
+function moveOrderStripNext() {
+    if (orderStripStartIndex + 5 >= orders.length) return;
+
+    orderStripStartIndex++;
+
+    renderPage();
+}
 function renderActiveOrder() {
     const order = orders[activeOrderIndex];
     if (!order) return '';
@@ -340,11 +439,7 @@ function renderProductDetail(order, product) {
                     <div class="write-review-message" data-role="message"></div>
 
                     <div class="write-review-form-actions">
-                        <button type="button"
-                            class="write-review-cancel-btn"
-                            data-action="skip-product">
-                            Skip this product
-                        </button>
+                       
                         <button type="submit" class="write-review-submit-btn">
                             ${review ? 'Update & Save' : 'Save & Next Product →'}
                         </button>
@@ -475,7 +570,17 @@ function bindEvents() {
             scrollToMainCard();
         });
     });
+    document.querySelectorAll('[data-action="previous-order"]').forEach(button => {
+        button.addEventListener('click', function () {
+            moveOrderStripPrevious();
+        });
+    });
 
+    document.querySelectorAll('[data-action="next-order"]').forEach(button => {
+        button.addEventListener('click', function () {
+            moveOrderStripNext();
+        });
+    });
     document.querySelectorAll('[data-action="select-product"]').forEach(button => {
         button.addEventListener('click', function () {
             activeProductIndex = Number(this.dataset.productIndex);
@@ -577,15 +682,43 @@ function bindEvents() {
     });
 
     document.querySelectorAll('[data-action="skip-product"]').forEach(button => {
-        button.addEventListener('click', function () {
-            const order = orders[activeOrderIndex];
+    button.addEventListener('click', function () {
+        const order = orders[activeOrderIndex];
 
-            if (activeProductIndex < order.reviewProducts.length - 1) {
-                activeProductIndex++;
-                renderPage();
-            }
-        });
+        if (!order || !order.reviewProducts?.length) {
+            return;
+        }
+
+        // Current order has another product
+        if (activeProductIndex < order.reviewProducts.length - 1) {
+            activeProductIndex++;
+            renderPage();
+            scrollToMainCard();
+            return;
+        }
+
+        // Current order's last product:
+        // move to the next order having an unreviewed product
+        const nextOrderIndex = orders.findIndex((item, index) =>
+            index !== activeOrderIndex &&
+            item.reviewProducts?.some(product => !product.existingReview)
+        );
+
+        if (nextOrderIndex >= 0) {
+            activeOrderIndex = nextOrderIndex;
+            activeProductIndex = getFirstUnreviewedProductIndex(
+                orders[nextOrderIndex]
+            );
+
+            renderPage();
+            scrollToMainCard();
+            return;
+        }
+
+        // Nothing else to review
+        window.location.href = '/orders';
     });
+});
 
     bindGalleryEvents();
 }
@@ -796,7 +929,9 @@ async function getExistingReview(productId, orderId) {
 
         const data = await response.json();
 
-        return data?.success && data?.exists ? data.data.review : null;
+        return data?.success && data?.data?.exists
+    ? data.data.review
+    : null;
     } catch (error) {
         console.error('Existing review error:', error);
         return null;

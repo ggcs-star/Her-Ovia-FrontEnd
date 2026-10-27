@@ -13,7 +13,6 @@ const APP_CONFIG = {
         BANNERS: `${API_BASE_URL}/banners`,
         APP_SETTINGS: `${API_BASE_URL}/app-settings`,
     },
-    FALLBACK_IMAGE: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop',
 };
 
 class ApiClient {
@@ -436,10 +435,27 @@ class RapidRetailsEngine {
     }
 
     resolveImage(path) {
-        if (!path) return APP_CONFIG.FALLBACK_IMAGE;
+        if (!path) return '';
         if (path.startsWith('http')) return path;
         if (!path.includes('amazonaws.com')) return S3_BASE_URL + path;
         return path;
+    }
+    renderImageFallback(text = 'Her-Ovia') {
+        return `
+            <div style="
+                width:100%;
+                height:100%;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                background:#f8eee5;
+                color:#440C2C;
+                font-size:18px;
+                font-weight:600;
+            ">
+                ${text}
+            </div>
+        `;
     }
 
     applyAppSettings() {
@@ -448,7 +464,7 @@ class RapidRetailsEngine {
         if (headerLogo && this.appSettings.header_logo) {
             headerLogo.src = this.appSettings.header_logo;
             headerLogo.onerror = function() {
-                this.src = 'https://placehold.co/120x40?text=LOGO';
+                this.style.display = 'none';
             };
         }
         if (this.appSettings.app_name) document.title = this.appSettings.app_name;
@@ -1588,7 +1604,9 @@ renderAllCategoriesPopup() {
             this.renderStyleSpotlight(),
             this.renderDynamicCollections(),
             this.renderFeaturedLook(),
+            this.renderTopSelling(),
             this.renderTwoCollections(),
+            this.renderStoriesSection(),
             this.renderMidBanner()
         ]);
 
@@ -1820,7 +1838,7 @@ renderAllCategoriesPopup() {
         ];
         container.innerHTML = categories.map((cat, idx) => {
             const bgGradient = gradients[idx % gradients.length];
-            const imageUrl = this.resolveImage(cat.image_url) || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200&auto=format&fit=crop';
+            const imageUrl = this.resolveImage(cat.image_url);
             return `<div class="trending-card" style="background: ${bgGradient.bg} !important; border: 1px solid ${bgGradient.border} !important;" onclick="redirectToSubcategory(${cat.id})">
                 <div class="trending-card-content">
                     <div class="trending-main">${cat.name}</div>
@@ -1897,7 +1915,7 @@ renderAllCategoriesPopup() {
                         data-hover="${hoverImageUrl}"
                         onmouseenter="this.src=this.dataset.hover"
                         onmouseleave="this.src=this.dataset.main"
-                        onerror="this.src='${APP_CONFIG.FALLBACK_IMAGE}'" 
+                        onerror="this.style.display='none'"
                         loading="lazy" 
                         width="200" 
                         height="200" 
@@ -2035,9 +2053,26 @@ renderAllCategoriesPopup() {
                                 src="${imageUrl}"
                                 alt="${escapeHtml(cat.name)}"
                                 loading="lazy"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                             >`
                             : ''
                     }
+
+                    <div
+                        style="
+                            display:${imageUrl ? 'none' : 'flex'};
+                            width:100%;
+                            height:100%;
+                            align-items:center;
+                            justify-content:center;
+                            background:#f8eee5;
+                            color:#440C2C;
+                            font-size:18px;
+                            font-weight:600;
+                        "
+                    >
+                        Her-Ovia
+                    </div>
                 </div>
 
             </article>
@@ -2156,11 +2191,40 @@ renderAllCategoriesPopup() {
                         onclick="window.location.href='/product/${productSlug}'">
 
                         <div class="herovia-featured-card-image"
-                            style="${productImage
+                            style="position:relative; ${productImage
                                 ? `background-image: url('${productImage}'); background-size: cover; background-position: center;`
-                                : 'background: linear-gradient(135deg, #ede8e2, #d5ccc4);'}"
-                            onmouseenter="this.style.backgroundImage='url(${hoverImage})'"
-                            onmouseleave="this.style.backgroundImage='url(${productImage})'">
+                                : 'background:#f8eee5;'}"
+                            onmouseenter="${hoverImage ? `this.style.backgroundImage='url(${hoverImage})'` : ''}"
+                            onmouseleave="${productImage ? `this.style.backgroundImage='url(${productImage})'` : ''}">
+
+                            ${
+                                productImage
+                                    ? `<img
+                                        src="${productImage}"
+                                        alt="${productName}"
+                                        loading="lazy"
+                                        style="width:100%;height:100%;object-fit:cover;display:none;"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                    >`
+                                    : ''
+                            }
+
+                            <div
+                                style="
+                                    display:${productImage ? 'none' : 'flex'};
+                                    width:100%;
+                                    height:100%;
+                                    min-height:300px;
+                                    align-items:center;
+                                    justify-content:center;
+                                    background:#f8eee5;
+                                    color:#440C2C;
+                                    font-size:18px;
+                                    font-weight:600;
+                                "
+                            >
+                                Her-Ovia
+                            </div>
 
                             <span class="herovia-featured-card-tag">
                                 ${label}
@@ -2282,13 +2346,13 @@ renderAllCategoriesPopup() {
         const galleryImages = product.gallery_images || [];
         const mainImage = galleryImages.length > 0 
             ? this.resolveImage(galleryImages[0]) 
-            : this.resolveImage(product.image_url) || 'https://placehold.co/600x800?text=HER-OVIA';
+            : this.resolveImage(product.image_url);
         const thumbnails = galleryImages.slice(1, 5).map(img => this.resolveImage(img));
         while (thumbnails.length < 3) { thumbnails.push(mainImage); }
         let thumbnailsHtml = thumbnails.map((thumb, idx) => `
             <div class="herovia-featured-box-thumb ${idx === 0 ? 'active' : ''}" 
                  onclick="changeFeaturedImage('${thumb}', this)">
-                <img src="${thumb}" alt="${name} view ${idx + 2}" loading="lazy" onerror="this.src='https://placehold.co/150x180?text=HER-OVIA'">
+                <img src="${thumb}" alt="${name} view ${idx + 2}" loading="lazy" onerror="this.style.display='none'">
             </div>
         `).join('');
         container.innerHTML = `
@@ -2296,7 +2360,7 @@ renderAllCategoriesPopup() {
                 <div class="herovia-featured-box-inner">
                     <div class="herovia-featured-box-image-wrapper">
                         <div class="herovia-featured-box-main">
-                            <img src="${mainImage}" alt="${name}" id="featured-main-image" loading="lazy" onerror="this.src='https://placehold.co/600x800?text=HER-OVIA'">
+                            <img src="${mainImage}" alt="${name}" id="featured-main-image" loading="lazy" onerror="this.style.display='none'">
                         </div>
                         <div class="herovia-featured-box-thumbs">${thumbnailsHtml}</div>
                     </div>
@@ -2320,7 +2384,328 @@ renderAllCategoriesPopup() {
             if (element) element.classList.add('active');
         };
     }
+    renderTopSelling() {
+        const container = document.getElementById('dynamic-top-selling');
 
+        if (!container) return;
+
+        const products = Array.isArray(this.topSellingProducts)
+            ? this.topSellingProducts
+            : [];
+
+        if (!products.length) {
+            container.innerHTML = '';
+            return;
+        }
+
+        const escapeHtml = value => {
+            const div = document.createElement('div');
+            div.textContent = value ?? '';
+            return div.innerHTML;
+        };
+
+        container.innerHTML = products.map(product => {
+            const name = product.name || product.product_name || 'Product';
+            const slug = product.slug || product.id || '';
+            const price = this.getProductPrice(product);
+
+            const galleryImages = Array.isArray(product.gallery_images)
+                ? product.gallery_images
+                : [];
+
+            const image = galleryImages.length
+                ? this.resolveImage(galleryImages[0])
+                : this.resolveImage(product.image_url);
+
+            const hoverImage = galleryImages.length > 1
+                ? this.resolveImage(galleryImages[1])
+                : image;
+
+            const productUrl = `/product/${encodeURIComponent(slug)}`;
+
+            return `
+                <article class="herovia-top-selling-card">
+                    <a
+                        href="${productUrl}"
+                        class="herovia-top-selling-image"
+                    >
+                        ${
+                            image
+                                ? `
+                                    <img
+                                        src="${escapeHtml(image)}"
+                                        alt="${escapeHtml(name)}"
+                                        loading="lazy"
+                                        decoding="async"
+                                        data-main-image="${escapeHtml(image)}"
+                                        data-hover-image="${escapeHtml(hoverImage)}"
+                                    >
+                                `
+                                : `
+                                    <span class="herovia-top-selling-fallback">
+                                        Her-Ovia
+                                    </span>
+                                `
+                        }
+                    </a>
+
+                    <div class="herovia-top-selling-content">
+                        <h3>${escapeHtml(name)}</h3>
+
+                        <div class="herovia-top-selling-bottom">
+                            <span class="herovia-top-selling-price">
+                                ₹${escapeHtml(price)}
+                            </span>
+
+                            <a
+                                href="${productUrl}"
+                                class="herovia-top-selling-link"
+                            >
+                                Shop Now →
+                            </a>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join('');
+
+        container.querySelectorAll('img[data-hover-image]').forEach(img => {
+            const mainImage = img.dataset.mainImage;
+            const hoverImage = img.dataset.hoverImage;
+
+            if (!hoverImage || hoverImage === mainImage) {
+                return;
+            }
+
+            img.addEventListener('mouseenter', () => {
+                img.src = hoverImage;
+            });
+
+            img.addEventListener('mouseleave', () => {
+                img.src = mainImage;
+            });
+        });
+
+        const prevButton = document.getElementById('topSellingPrev');
+        const nextButton = document.getElementById('topSellingNext');
+
+        if (!prevButton || !nextButton) {
+            return;
+        }
+
+        const getScrollAmount = () => {
+            const card = container.querySelector('.herovia-top-selling-card');
+            if (!card) return 0;
+
+            const gap = parseFloat(getComputedStyle(container).gap) || 0;
+
+            return card.getBoundingClientRect().width + gap;
+        };
+
+        prevButton.onclick = () => {
+            container.scrollBy({
+                left: -getScrollAmount(),
+                behavior: 'smooth'
+            });
+        };
+
+        nextButton.onclick = () => {
+            container.scrollBy({
+                left: getScrollAmount(),
+                behavior: 'smooth'
+            });
+        };
+    }
+    renderStoriesSection() {
+    const container = document.getElementById('dynamic-stories');
+
+    if (!container) return;
+
+    const categories = Array.isArray(this.allCategories)
+        ? this.allCategories.slice(0, 3)
+        : [];
+
+    if (!categories.length) {
+        container.innerHTML = '';
+        return;
+    }
+
+    const escapeHtml = value => {
+        const div = document.createElement('div');
+        div.textContent = value ?? '';
+        return div.innerHTML;
+    };
+
+    const slugify = value => {
+        return String(value ?? '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    };
+
+    const stories = categories
+        .map(category => {
+            const firstSubcategory = Array.isArray(category?.children)
+                ? category.children[0]
+                : null;
+
+            const firstSubSubcategory = Array.isArray(firstSubcategory?.children)
+                ? firstSubcategory.children[0]
+                : null;
+
+            if (!firstSubSubcategory) {
+                return null;
+            }
+
+            const name = firstSubSubcategory.name || '';
+
+            const slugify = value => String(value ?? '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+
+            const categorySlug =
+                category?.slug || slugify(category?.name);
+
+            const subcategorySlug =
+                firstSubSubcategory?.slug ||
+                slugify(firstSubSubcategory?.name);
+
+            const image = this.resolveImage(
+                firstSubSubcategory.image_url ||
+                firstSubSubcategory.image ||
+                firstSubcategory?.image_url ||
+                category.image_url ||
+                ''
+            );
+
+            if (!name || !categorySlug || !subcategorySlug) {
+                return null;
+            }
+
+            return {
+                name,
+                categorySlug,
+                subcategorySlug,
+                image
+            };
+        })
+        .filter(Boolean);
+
+    if (!stories.length) {
+        container.innerHTML = '';
+        return;
+    }
+
+    container.innerHTML = stories.map(story => {
+        const url =
+            `/collection/${encodeURIComponent(story.categorySlug)}`;
+
+        return `
+            <article class="herovia-story-card">
+                <a
+                    href="${url}"
+                    class="herovia-story-card-image"
+                    aria-label="${escapeHtml(story.name)}"
+                >
+                    ${
+                        story.image
+                            ? `
+                                <img
+                                    src="${escapeHtml(story.image)}"
+                                    alt="${escapeHtml(story.name)}"
+                                    loading="lazy"
+                                    decoding="async"
+                                >
+                            `
+                            : `
+                                <span class="herovia-story-fallback">
+                                    Her-Ovia
+                                </span>
+                            `
+                    }
+                </a>
+
+                <a
+                    href="${url}"
+                    class="herovia-story-card-title"
+                >
+                    ${escapeHtml(story.name)}
+                </a>
+            </article>
+        `;
+    }).join('');
+    this.initStoriesCarousel(stories.length);
+}
+    initStoriesCarousel(total) {
+        const container = document.getElementById('dynamic-stories');
+        const dotsContainer = document.getElementById('herovia-stories-dots');
+
+        if (!container) return;
+
+        const updateDots = () => {
+            if (!dotsContainer) return;
+
+            const cards = Array.from(
+                container.querySelectorAll('.herovia-story-card')
+            );
+
+            if (!cards.length) return;
+
+            const index = Math.round(
+                container.scrollLeft /
+                Math.max(cards[0].offsetWidth + 12, 1)
+            );
+
+            dotsContainer.innerHTML = cards
+                .map((_, cardIndex) => `
+                    <button
+                        type="button"
+                        class="herovia-stories-dot ${cardIndex === index ? 'active' : ''}"
+                        aria-label="Go to look ${cardIndex + 1}"
+                        data-index="${cardIndex}"
+                    ></button>
+                `)
+                .join('');
+
+            dotsContainer
+                .querySelectorAll('.herovia-stories-dot')
+                .forEach(dot => {
+                    dot.addEventListener('click', () => {
+                        const cardIndex = Number(dot.dataset.index);
+                        const card = cards[cardIndex];
+
+                        if (!card) return;
+
+                        container.scrollTo({
+                            left: card.offsetLeft,
+                            behavior: 'smooth'
+                        });
+                    });
+                });
+        };
+
+        updateDots();
+
+        container.addEventListener(
+            'scroll',
+            () => {
+                window.clearTimeout(this.storiesScrollTimer);
+
+                this.storiesScrollTimer = window.setTimeout(
+                    updateDots,
+                    80
+                );
+            },
+            { passive: true }
+        );
+
+        if (total <= 2 && window.innerWidth < 768) {
+            if (dotsContainer) {
+                dotsContainer.style.display = 'none';
+            }
+        }
+    }
     renderTwoCollections() {
         const container = document.getElementById('dynamic-two-collections');
         if (!container) return;
@@ -2341,16 +2726,34 @@ renderAllCategoriesPopup() {
         displayCategories.forEach((cat, index) => {
             const subcategory = (cat.children && cat.children.length > 0) ? cat.children[0] : null;
             const subName = subcategory ? subcategory.name : cat.name;
-            const subSlug = subcategory ? subcategory.slug : cat.slug;
+            const collectionUrl = subcategory
+                ? `/collection/${cat.slug}/${subcategory.slug}`
+                : `/collection/${cat.slug}`;
             const imageUrl = this.resolveImage(subcategory?.image_url || cat.image_url) || '';
             html += `
                 <article class="herovia-two-collection"
-                    onclick="window.location.href='/collection/${subSlug || '#'}'">
+                    onclick="window.location.href='${collectionUrl}'">
                     <div class="herovia-two-collection-image">
-                        <img src="${imageUrl || 'https://placehold.co/600x700?text=HER-OVIA'}"
-                            alt="${subName}"
-                            loading="lazy"
-                            onerror="this.src='https://placehold.co/600x700?text=HER-OVIA'">
+                        ${imageUrl
+                            ? `<img src="${imageUrl}"
+                                alt="${subName}"
+                                loading="lazy"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
+                            : ''
+                        }
+                        <div style="
+                            width:100%;
+                            height:100%;
+                            display:${imageUrl ? 'none' : 'flex'};
+                            align-items:center;
+                            justify-content:center;
+                            background:#f8eee5;
+                            color:#440C2C;
+                            font-size:18px;
+                            font-weight:600;
+                        ">
+                            Her-Ovia
+                        </div>
                         <span class="herovia-two-collection-badge">
                             ${cat.name.toUpperCase()}
                         </span>
@@ -2365,7 +2768,7 @@ renderAllCategoriesPopup() {
                     <p class="herovia-two-collection-desc">
                         ${descs[index] || 'Premium quality product from ' + cat.name}
                     </p>
-                    <a href="/collection/${subSlug || '#'}">
+                    <a href="${collectionUrl}">
                         Enquire to order <span aria-hidden="true">→</span>
                     </a>
                 </article>
@@ -2408,7 +2811,7 @@ renderAllCategoriesPopup() {
             container.innerHTML = `
                 <div class="herovia-packaging-inner">
                     <div class="herovia-packaging-image">
-                        <img src="${this.resolveImage(bannerImage)}" alt="${title}" loading="lazy" onerror="this.src='https://placehold.co/600x400?text=HER-OVIA'">
+                        <img src="${this.resolveImage(bannerImage)}" alt="${title}" loading="lazy" onerror="this.style.display='none'">
                     </div>
                     <div class="herovia-packaging-copy">
                         <p class="herovia-eyebrow">${b.position === 'mid' ? 'Featured' : 'The Her-Ovia experience'}</p>
@@ -2436,7 +2839,7 @@ renderAllCategoriesPopup() {
             const buttonLink = b.button_link || '#';
             html += `
                 <div class="herovia-mid-card" onclick="window.location.href='${buttonLink}'">
-                    <img src="${this.resolveImage(bannerImage)}" alt="${title}" loading="lazy" onerror="this.src='https://placehold.co/600x340?text=HER-OVIA'">
+                    <img src="${this.resolveImage(bannerImage)}" alt="${title}" loading="lazy" onerror="this.style.display='none'">
                     <div class="herovia-mid-overlay">
                         <h3>${title}</h3>
                         <p>${description}</p>
@@ -2544,9 +2947,25 @@ async function fetchCategoriesForFooter() {
 
     try {
         const categories = (await landingService.getCategories()).slice(0, 6);
+
         if (categories.length) {
             listContainer.innerHTML = categories
-                .map(cat => `<li><a href="/category/${cat.id}">${cat.name}</a></li>`)
+                .map(cat => {
+                    const slug =
+                        cat.slug ||
+                        cat.name
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, '-')
+                            .replace(/^-|-$/g, '');
+
+                    let linkUrl = `/collection/${slug}`;
+
+                    if (slug === 'trending' || slug === 'bestsellers') {
+                        linkUrl = '/top-selling';
+                    }
+
+                    return `<li><a href="${linkUrl}">${cat.name}</a></li>`;
+                })
                 .join('');
         }
     } catch (error) {
@@ -2705,6 +3124,7 @@ class ProductPage {
         this.priceFilters = document.getElementById('desktopPriceFilters');
         this.brandFilters = document.getElementById('desktopBrandFilters');
         this.discountFilters = document.getElementById('desktopDiscountFilters');
+        
 
         this.currentProducts = [];
         this.originalProducts = [];
@@ -2769,7 +3189,7 @@ class ProductPage {
     }
 
     getFallbackImage() {
-        return APP_CONFIG.FALLBACK_IMAGE;
+        return '';
     }
 
     async loadCategories() {
@@ -2835,25 +3255,14 @@ class ProductPage {
                 }
 
                 if (!targetSubId && mainCategory.children?.length) {
-                    const firstSub = mainCategory.children[0];
-                    targetSubId = firstSub.children?.length
-                        ? firstSub.children[0].id
-                        : firstSub.id;
+                    targetSubId = mainCategory.id;
                 }
             }
         }
 
         if (!mainCategory && categories.length) {
             mainCategory = categories[0];
-            const firstSub = mainCategory.children?.[0];
-
-            if (firstSub) {
-                targetSubId = firstSub.children?.length
-                    ? firstSub.children[0].id
-                    : firstSub.id;
-            } else {
-                targetSubId = mainCategory.id;
-            }
+            targetSubId = mainCategory.id;
         }
 
         if (targetSubSubId) targetSubId = targetSubSubId;
@@ -2880,7 +3289,7 @@ class ProductPage {
 
         this.subStrip.innerHTML = children.map(item => {
             const image = this.escape(
-                item.image_url || this.getFallbackImage()
+                item.image_url || ''
             );
             const name = this.escape(item.name || '');
             const active = String(item.id) === String(this.currentSubId);
@@ -2894,7 +3303,7 @@ class ProductPage {
                         <img src="${image}"
                              alt="${name}"
                              loading="lazy"
-                             onerror="this.src='${this.getFallbackImage()}'">
+                             onerror="this.style.display='none'">
                     </div>
                     <div class="sub-name">${name}</div>
                 </div>
@@ -3004,16 +3413,56 @@ class ProductPage {
     renderDiscountFilter(products) {
         if (!this.discountFilters) return;
 
-        const discounts = [...new Set(
-            products.map(product => this.getDiscount(product)).filter(value => value > 0)
-        )].sort((a, b) => a - b);
+        const discounts = products
+            .map(product => this.getDiscount(product))
+            .filter(discount => Number.isFinite(discount) && discount > 0)
+            .map(discount => Math.floor(discount));
 
-        this.discountFilters.innerHTML = discounts.map(discount => `
+        if (!discounts.length) {
+            this.discountFilters.innerHTML = '';
+            return;
+        }
+
+        const minDiscount = Math.min(...discounts);
+        const maxDiscount = Math.max(...discounts);
+
+        const ranges = [];
+
+        let start = Math.floor(minDiscount / 10) * 10 + 1;
+
+        if (start < minDiscount) {
+            start = minDiscount;
+        }
+
+        while (start <= maxDiscount) {
+            const end = Math.min(
+                Math.floor((start - 1) / 10) * 10 + 10,
+                maxDiscount
+            );
+
+            const hasProducts = discounts.some(
+                discount => discount >= start && discount <= end
+            );
+
+            if (hasProducts) {
+                ranges.push({
+                    min: start,
+                    max: end
+                });
+            }
+
+            start = end + 1;
+        }
+
+        this.discountFilters.innerHTML = ranges.map(range => `
             <label class="filter-option">
-                <input type="checkbox"
-                       class="desktop-discount-filter"
-                       value="${discount}">
-                ${discount}% & above
+                <input
+                    type="radio"
+                    name="discount-filter"
+                    class="desktop-discount-filter"
+                    value="${range.min}-${range.max}"
+                >
+                ${range.min}% – ${range.max}%
             </label>
         `).join('');
     }
@@ -3043,7 +3492,6 @@ class ProductPage {
 
         const wishlist = this.getWishlist();
         const wishlistIds = new Set(wishlist.map(item => String(item.id)));
-        const fallback = this.getFallbackImage();
 
         this.grid.innerHTML = products.map(product => {
             const id = product.id;
@@ -3061,9 +3509,17 @@ class ProductPage {
 
             const mainImage = galleryImages.length
                 ? galleryImages[0]
-                : (product.image_url || fallback);
+                : (product.image_url || '');
 
             const hoverImage = galleryImages[1] || mainImage;
+
+            const variants = Array.isArray(product.variants)
+                ? product.variants
+                : [];
+
+            const defaultVariant = variants.length
+                ? variants[0]
+                : null;
 
             const safeProduct = encodeURIComponent(JSON.stringify({
                 id,
@@ -3071,7 +3527,23 @@ class ProductPage {
                 price,
                 image: mainImage,
                 brand,
-                slug
+                slug,
+                mrp,
+
+                // Default / first variant automatically selected
+                variantId: defaultVariant?.id || null,
+                variantValue: defaultVariant?.variant_value || null,
+                variantType: defaultVariant?.variant_type || 'Size',
+
+                // All variants available for later change in cart
+                availableVariants: variants.map(v => ({
+                    id: v.id,
+                    value: v.variant_value,
+                    price: parseFloat(v.final_price) || 0,
+                    originalPrice: parseFloat(v.price) || 0,
+                    quantity: Number(v.quantity) || 0,
+                    stock: Number(v.quantity) || 0
+                }))
             }));
 
             return `
@@ -3080,14 +3552,35 @@ class ProductPage {
                         data-product-slug="${this.escape(slug)}">
 
                     <div class="img-box">
-                        <img src="${this.escape(mainImage)}"
-                            alt="${this.escape(name)}"
-                            loading="lazy"
-                            data-main-image="${this.escape(mainImage)}"
-                            data-hover-image="${this.escape(hoverImage)}"
-                            onmouseenter="this.src=this.dataset.hoverImage"
-                            onmouseleave="this.src=this.dataset.mainImage"
-                            onerror="this.src='${fallback}'">
+                        ${mainImage
+                            ? `<img src="${this.escape(mainImage)}"
+                                alt="${this.escape(name)}"
+                                loading="lazy"
+                                data-main-image="${this.escape(mainImage)}"
+                                data-hover-image="${this.escape(hoverImage)}"
+                                onmouseenter="this.src=this.dataset.hoverImage"
+                                onmouseleave="this.src=this.dataset.mainImage"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">`
+                            : ''
+                        }
+
+                        <div
+                            class="herovia-image-fallback"
+                            style="
+                                display:${mainImage ? 'none' : 'flex'};
+                                width:100%;
+                                height:100%;
+                                min-height:300px;
+                                align-items:center;
+                                justify-content:center;
+                                background:#f8eee5;
+                                color:#440C2C;
+                                font-size:18px;
+                                font-weight:600;
+                            "
+                        >
+                            Her-Ovia
+                        </div>
 
                         ${discount > 20 ? '<span class="badge">Best Seller</span>' : ''}
 
@@ -3097,6 +3590,7 @@ class ProductPage {
                                 aria-label="${inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}">
                             ${inWishlist ? '❤️' : '♡'}
                         </button>
+
                     </div>
 
                     <div class="info">
@@ -3130,19 +3624,107 @@ class ProductPage {
         this.grid.innerHTML = '<div class="loading">Loading products...</div>';
 
         try {
-            let products = await landingService.getCategoryProducts(categoryId);
+            let products = [];
 
-            // If the selected category has no direct products, use its first child.
-            if (!products.length) {
-                const category = this.findCategory(this.allCategories, categoryId);
-                const child = category?.children?.[0];
+            const category = this.findCategory(
+                this.allCategories,
+                categoryId
+            );
 
-                if (child) {
-                    products = await landingService.getCategoryProducts(child.id);
-                    this.currentSubId = child.id;
+            if (category) {
+                const categoryIds = [];
+
+                const collectCategoryIds = (item) => {
+                    if (!item) return;
+
+                    categoryIds.push(item.id);
+
+                    (item.children || []).forEach(child => {
+                        collectCategoryIds(child);
+                    });
+                };
+
+                collectCategoryIds(category);
+
+                const results = await Promise.allSettled(
+                    categoryIds.map(id =>
+                        landingService.getCategoryProducts(id)
+                    )
+                );
+
+                const successfulResults = results
+                    .filter(result => result.status === 'fulfilled')
+                    .map(result => result.value || []);
+
+                const seen = new Set();
+
+                products = successfulResults
+                    .flat()
+                    .filter(product => {
+                        const key = String(product.id);
+
+                        if (seen.has(key)) return false;
+
+                        seen.add(key);
+                        return true;
+                    });
+
+                if (!products.length && results.length) {
+                    await new Promise(resolve =>
+                        setTimeout(resolve, 500)
+                    );
+
+                    const retryResults = await Promise.allSettled(
+                        categoryIds.map(id =>
+                            landingService.getCategoryProducts(id)
+                        )
+                    );
+
+                    const retrySuccessfulResults = retryResults
+                        .filter(result => result.status === 'fulfilled')
+                        .map(result => result.value || []);
+
+                    products = retrySuccessfulResults
+                        .flat()
+                        .filter(product => {
+                            const key = String(product.id);
+
+                            if (seen.has(key)) return false;
+
+                            seen.add(key);
+                            return true;
+                        });
+                }
+
+            } else {
+                try {
+                    products = await landingService.getCategoryProducts(
+                        categoryId
+                    );
+                } catch (error) {
+                    console.warn(
+                        'Category products temporarily unavailable:',
+                        error
+                    );
+
+                    await new Promise(resolve =>
+                        setTimeout(resolve, 500)
+                    );
+
+                    try {
+                        products = await landingService.getCategoryProducts(
+                            categoryId
+                        );
+                    } catch (retryError) {
+                        console.warn(
+                            'Category products retry failed:',
+                            retryError
+                        );
+
+                        products = [];
+                    }
                 }
             }
-
             if (requestToken !== this.productLoadToken) return;
 
             this.currentProducts = products;
@@ -3150,13 +3732,19 @@ class ProductPage {
 
             this.renderProducts(products);
             this.updateFilters(products);
+
         } catch (error) {
             if (requestToken !== this.productLoadToken) return;
+
             console.error('Product loading error:', error);
-            this.grid.innerHTML = '<div class="loading">Error loading products</div>';
+
+            this.currentProducts = [];
+            this.originalProducts = [];
+
+            this.grid.innerHTML =
+                '<div class="loading">No products found</div>';
         }
     }
-
     async loadSearchProducts(query) {
         const q = String(query || '').trim();
         if (!q || !this.grid) return;
@@ -3198,9 +3786,7 @@ class ProductPage {
     async applyAllFilters({ refreshPriceRange = false } = {}) {
         const categoryIds = this.getSelectedValues('.desktop-category-filter');
         const brands = new Set(this.getSelectedValues('.desktop-brand-filter'));
-        const discounts = this.getSelectedValues('.desktop-discount-filter')
-            .map(Number)
-            .filter(Number.isFinite);
+        const discounts = this.getSelectedValues('.desktop-discount-filter');
 
         let sourceProducts = this.originalProducts;
 
@@ -3244,10 +3830,14 @@ class ProductPage {
         }
 
         if (discounts.length) {
+            const [min, max] = discounts[0]
+                .split('-')
+                .map(Number);
+
             filtered = filtered.filter(product => {
                 const discount = this.getDiscount(product);
 
-                return discounts.some(min => discount >= min);
+                return discount >= min && discount <= max;
             });
         }
 
@@ -3289,36 +3879,155 @@ class ProductPage {
         }
     }
 
-    toggleWishlist(event, button) {
+    async toggleWishlist(event, button) {
         event.preventDefault();
         event.stopPropagation();
 
         let product;
+
         try {
-            product = JSON.parse(decodeURIComponent(button.dataset.product || ''));
+            product = JSON.parse(
+                decodeURIComponent(button.dataset.product || '')
+            );
         } catch (_) {
             return;
         }
 
-        const wishlist = this.getWishlist();
-        const index = wishlist.findIndex(item => String(item.id) === String(product.id));
-
-        if (index >= 0) {
-            wishlist.splice(index, 1);
-            button.textContent = '♡';
-            button.classList.remove('active');
-            button.setAttribute('aria-label', 'Add to wishlist');
-        } else {
-            wishlist.push(product);
-            button.textContent = '❤️';
-            button.classList.add('active');
-            button.setAttribute('aria-label', 'Remove from wishlist');
+        if (!product || !product.id) {
+            return;
         }
 
-        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        const token = localStorage.getItem('token');
 
-        if (typeof updateCartCountBadge === 'function') {
-            updateCartCountBadge();
+        let user = {};
+
+        try {
+            user = JSON.parse(
+                localStorage.getItem('user') || '{}'
+            );
+        } catch (_) {
+            user = {};
+        }
+
+        if (!token || !user.id) {
+
+            sessionStorage.setItem(
+                'redirect_after_login',
+                window.location.pathname + window.location.search
+            );
+
+            sessionStorage.setItem(
+                'wishlist_item',
+                JSON.stringify(product)
+            );
+
+            if (typeof showLoginPopup === 'function') {
+                showLoginPopup();
+            } else {
+                window.location.href = '/user/login';
+            }
+
+            return;
+        }
+
+        let wishlist = this.getWishlist();
+
+        if (!Array.isArray(wishlist)) {
+            wishlist = [];
+        }
+
+        const index = wishlist.findIndex(
+            item => String(item.id) === String(product.id)
+        );
+
+        if (index >= 0) {
+
+            wishlist.splice(index, 1);
+
+            localStorage.setItem(
+                'wishlist',
+                JSON.stringify(wishlist)
+            );
+
+            button.textContent = '♡';
+            button.classList.remove('active');
+            button.setAttribute(
+                'aria-label',
+                'Add to wishlist'
+            );
+
+            try {
+
+                const response = await fetch(
+                    `${window.API_BASE_URL}/wishlist/${encodeURIComponent(product.id)}`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    }
+                );
+
+                const data = await response.json().catch(() => null);
+
+                if (!response.ok || !data?.success) {
+                    console.error(
+                        'Wishlist remove API error:',
+                        data
+                    );
+                }
+
+            } catch (error) {
+
+                console.error(
+                    'Wishlist remove API error:',
+                    error
+                );
+            }
+
+            return;
+        }
+
+        wishlist.push(product);
+
+        localStorage.setItem(
+            'wishlist',
+            JSON.stringify(wishlist)
+        );
+
+        button.textContent = '❤️';
+        button.classList.add('active');
+        button.setAttribute(
+            'aria-label',
+            'Remove from wishlist'
+        );
+
+        try {
+
+            const response = await API.post(
+                '/wishlist',
+                product,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!response?.success) {
+                console.error(
+                    'Wishlist add API error:',
+                    response
+                );
+            }
+
+        } catch (error) {
+
+            console.error(
+                'Wishlist add API error:',
+                error
+            );
         }
     }
 
